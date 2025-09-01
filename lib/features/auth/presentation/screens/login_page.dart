@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../../../core/constants/app_colors.dart';
 import '../widgets/auth_button.dart';
@@ -56,9 +57,15 @@ class LoginPage extends StatelessWidget {
                 ],
               ),
               const SizedBox(height: 20),
+              /*
+              Sign in Button
+               */
               AuthButton(
                 text: 'Sign in',
-                onPressed: () {},
+                onPressed: () {
+                  _login();
+                  Navigator.pushReplacementNamed(context, '/home');
+                },
               ),
               const SizedBox(height: 10),
               AuthButton(
@@ -72,5 +79,13 @@ class LoginPage extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  /*
+  Login
+   */
+  Future<void> _login() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool('isLoggedIn', true);
   }
 }
