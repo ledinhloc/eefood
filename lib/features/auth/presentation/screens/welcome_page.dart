@@ -1,3 +1,4 @@
+import 'package:eefood/features/auth/presentation/screens/login_page.dart';
 import 'package:flutter/material.dart';
 
 import '../../../../core/constants/app_colors.dart';
@@ -78,7 +79,10 @@ class WelcomePage extends StatelessWidget {
                  */
                 ElevatedButton(
                   onPressed: () {
-                    Navigator.pushNamed(context, '/home');
+                    // Navigator.pushNamed(context, '/');\
+                    Navigator.push(context, MaterialPageRoute(builder:  (context) {
+                      return LoginPage();
+                    },));
                   },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.red,

@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 
 import 'app_colors.dart';
-
 ThemeData appTheme() {
   return ThemeData(
     primaryColor: primaryColor,
@@ -24,6 +23,12 @@ ThemeData appTheme() {
         foregroundColor: textColor,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
       ),
+    ),
+    bottomNavigationBarTheme: BottomNavigationBarThemeData(
+      backgroundColor: backgroundColor, // hoặc Colors.black
+      selectedItemColor: primaryColor,
+      unselectedItemColor: Colors.grey,
+      type: BottomNavigationBarType.fixed,
     ),
   );
 }

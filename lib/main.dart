@@ -3,8 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'core/constants/app_themes.dart';
-import 'features/auth/presentation/screens/login_page.dart';
-import 'features/noti/presentation/screens/notification_page.dart';
 import 'features/profile/presentation/screens/profile_page.dart';
 import 'features/recipe/presentation/screens/home_page.dart';
 import 'features/recipe/presentation/screens/my_recipes_page.dart';
@@ -43,7 +41,7 @@ class _MyAppState extends State<MyApp> {
     ProfilePage(),
   ];
 
-  void onItemTapped(int index){
+  void _onItemTapped(int index){
     setState(() {
       _selectedIndex = index;
     });
@@ -54,6 +52,23 @@ class _MyAppState extends State<MyApp> {
       debugShowCheckedModeBanner: false,
       title: 'eeFood',
       theme: appTheme(),
+      home: _isLoggedIn
+          ? Scaffold(
+        body: _widgetOptions.elementAt(_selectedIndex),
+        bottomNavigationBar: BottomNavigationBar(
+            items: const <BottomNavigationBarItem>[
+              BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
+              BottomNavigationBarItem(icon: Icon(Icons.search), label: 'Search'),
+              BottomNavigationBarItem(icon: Icon(Icons.book), label: 'MyRecipes'),
+              BottomNavigationBarItem(icon: Icon(Icons.shopping_cart), label: 'Shopping List'),
+              BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Profile'),
+            ],
+          currentIndex: _selectedIndex,
+          // selectedItemColor: Colors.orange,
+          onTap: _onItemTapped,
+        ),
+      )
+          : const WelcomePage(),
       // initialRoute: '/',
       // routes: {
       //   '/': (context) => const WelcomePage(),

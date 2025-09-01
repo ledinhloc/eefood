@@ -1,3 +1,4 @@
+import 'package:eefood/main.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -64,7 +65,10 @@ class LoginPage extends StatelessWidget {
                 text: 'Sign in',
                 onPressed: () {
                   _login();
-                  Navigator.pushReplacementNamed(context, '/home');
+                  // Navigator.pushReplacementNamed(context, '/home');
+                  Navigator.push(context, MaterialPageRoute(builder:  (context) {
+                    return MyApp();
+                  },));
                 },
               ),
               const SizedBox(height: 10),

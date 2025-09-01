@@ -50,19 +50,6 @@ class HomePage extends StatelessWidget {
           ),
         ],
       ),
-      bottomNavigationBar: BottomNavigationBar(
-        items: const [
-          BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
-          BottomNavigationBarItem(icon: Icon(Icons.search), label: 'Search'),
-          BottomNavigationBarItem(icon: Icon(Icons.book), label: 'MyRecipes'),
-          BottomNavigationBarItem(icon: Icon(Icons.shopping_cart), label: 'Shopping List'),
-          BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Profile'),
-        ],
-        currentIndex: 0, // Default to Home
-        onTap: (index) {
-          // Handle navigation (to be implemented with state management)
-        },
-      ),
     );
   }
 }
