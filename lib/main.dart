@@ -8,11 +8,17 @@ import 'features/recipe/presentation/screens/home_page.dart';
 import 'features/recipe/presentation/screens/my_recipes_page.dart';
 import 'features/recipe/presentation/screens/search_page.dart';
 import 'features/recipe/presentation/screens/shopping_list_page.dart';
-
+import 'package:flutter/services.dart';
 /*
   Định nghĩa các route và theme App
  */
 void main() {
+  WidgetsFlutterBinding.ensureInitialized();
+  SystemChrome.setSystemUIOverlayStyle(const SystemUiOverlayStyle(
+    statusBarColor: Colors.transparent, // làm trong suốt
+    statusBarIconBrightness: Brightness.dark, // icon màu đen
+    statusBarBrightness: Brightness.light, // cho iOS
+  ));
   runApp(const MyApp());
 }
 

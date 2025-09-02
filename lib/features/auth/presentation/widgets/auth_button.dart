@@ -5,6 +5,9 @@ class AuthButton extends StatelessWidget {
   final VoidCallback onPressed;
   final IconData? icon;
   final Color? color;
+  final Color? textColor;
+  final ImageProvider? iconImage;
+  final double? iconSize;
 
   const AuthButton({
     super.key,
@@ -12,6 +15,9 @@ class AuthButton extends StatelessWidget {
     required this.onPressed,
     this.icon,
     this.color,
+    this.textColor,
+    this.iconImage,
+    this.iconSize= 20.0,
   });
 
   @override
@@ -21,6 +27,7 @@ class AuthButton extends StatelessWidget {
       style: ElevatedButton.styleFrom(
         minimumSize: const Size(double.infinity, 50),
         backgroundColor: color ?? Theme.of(context).primaryColor,
+        foregroundColor: textColor ?? Theme.of(context).textTheme.bodyMedium?.color,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadiusGeometry.circular(20),
         )
@@ -29,9 +36,26 @@ class AuthButton extends StatelessWidget {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          if (icon != null) Icon(icon, size: 20),
-          if (icon != null) const SizedBox(width: 8),
-          Text(text),
+          if (iconImage != null) ...[
+            Image(
+              image: iconImage!,
+              width: iconSize,
+              height: iconSize,
+              fit: BoxFit.contain,
+            ),
+            SizedBox(width: 8),
+          ] else if (icon != null) ...[
+            Icon(icon, size: iconSize),
+            SizedBox(width: 8),
+          ],
+          Text(
+            text,
+            style: TextStyle(
+              color: textColor ?? Theme.of(context).textTheme.bodyMedium?.color,
+              fontSize: 16,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
         ],
       ),
     );
