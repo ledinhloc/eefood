@@ -1,3 +1,4 @@
+import 'package:eefood/features/auth/presentation/screens/splash_page.dart';
 import 'package:eefood/features/auth/presentation/screens/welcome_page.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -74,7 +75,7 @@ class _MyAppState extends State<MyApp> {
           onTap: _onItemTapped,
         ),
       )
-          : const WelcomePage(),
+          : const SplashPage(),
       // initialRoute: '/',
       // routes: {
       //   '/': (context) => const WelcomePage(),
