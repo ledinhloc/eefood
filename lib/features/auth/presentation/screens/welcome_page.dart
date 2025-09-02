@@ -100,10 +100,18 @@ class WelcomePage extends StatelessWidget {
                 /*
                 Button da co tai khoan
                  */
-                TextButton(
+                ElevatedButton(
                   onPressed: () {
                     Navigator.pushNamed(context, '/login');
                   },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.white,
+                    foregroundColor: Colors.red,
+                    minimumSize: const Size(double.infinity, 50),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(30),
+                    ),
+                  ),
                   child: const Text('I Already Have an Account'),
                 ),
               ],

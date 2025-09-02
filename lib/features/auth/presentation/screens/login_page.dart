@@ -1,3 +1,4 @@
+import 'package:eefood/features/auth/presentation/widgets/custom_text_field.dart';
 import 'package:eefood/main.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -12,75 +13,169 @@ class LoginPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       body: SingleChildScrollView(
-        child: Padding(
-          padding: const EdgeInsets.all(16.0),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Image.asset('assets/images/bg_login.png'), // Thêm hình ảnh từ assets
-              const SizedBox(height: 20),
-              const Text(
-                'Sign in',
-                style: TextStyle(color: textColor, fontSize: 32, fontWeight: FontWeight.bold),
-              ),
-              const SizedBox(height: 20),
-              TextField(
-                decoration: InputDecoration(
-                  labelText: 'Email',
-                  prefixIcon: const Icon(Icons.email),
-                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 7, horizontal: 2),
+                child: Row(
+                  children: [
+                    IconButton(
+                      onPressed: () => Navigator.maybePop(context),
+                      icon: const Icon(Icons.arrow_back),
+                    ),
+                  ],
                 ),
               ),
-              const SizedBox(height: 10),
-              TextField(
-                obscureText: true,
-                decoration: InputDecoration(
-                  labelText: 'Password',
-                  prefixIcon: const Icon(Icons.lock),
-                  suffixIcon: const Icon(Icons.visibility_off),
-                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+              // Top image
+              SizedBox(
+                height: 220,
+                width: double.infinity,
+                child: Center(
+                  child: Image.asset(
+                    'assets/images/bg_login.png',
+                    fit: BoxFit.contain,
+                    width: double.infinity,
+                  ),
                 ),
               ),
-              const SizedBox(height: 10),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Row(
-                    children: [
-                      Checkbox(value: false, onChanged: (value) {}),
-                      const Text('Remember me'),
-                    ],
-                  ),
-                  TextButton(
-                    onPressed: () {},
-                    child: const Text('Forgot password'),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 20),
-              /*
-              Sign in Button
-               */
-              AuthButton(
-                text: 'Sign in',
-                onPressed: () {
-                  _login();
-                  // Navigator.pushReplacementNamed(context, '/home');
-                  Navigator.push(context, MaterialPageRoute(builder:  (context) {
-                    return MyApp();
-                  },));
-                },
-              ),
-              const SizedBox(height: 10),
-              AuthButton(
-                text: 'Continue with Google',
-                icon: Icons.g_mobiledata,
-                onPressed: () {},
-                color: accentColor,
+
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 10,
+                  vertical: 10,
+                ),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(22),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.grey.withOpacity(0.3),
+                      blurRadius: 15,
+                      spreadRadius: 2,
+                      offset: const Offset(0, 6),
+                    ),
+                  ],
+                ),
+                child: Column(
+                  children: [
+                    const SizedBox(height: 10),
+                    const Text(
+                      'Sign in',
+                      style: TextStyle(
+                        color: Color.fromARGB(255, 0, 0, 0),
+                        fontSize: 25,
+                        fontWeight: FontWeight.bold,
+                        fontFamily: 'Poppins',
+                      ),
+                    ),
+                    const SizedBox(height: 10),
+                    CustomTextField(
+                      labelText: 'Email',
+                      prefixIcon: const Icon(Icons.email),
+                      enableClear: true,
+                      borderRadius: 8,
+                      fillColor: Colors.black,
+                      maxLines: 1,
+                    ),
+                    const SizedBox(height: 10),
+                    CustomTextField(
+                      labelText: 'Password',
+                      isPassword: true,
+                      prefixIcon: const Icon(Icons.lock),
+                      suffixIcon: const Icon(Icons.visibility_off),
+
+                      borderRadius: 8,
+                      fillColor: Colors.black,
+                      maxLines: 1,
+                    ),
+                    const SizedBox(height: 5),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Expanded(
+                          child: Row(
+                            children: [
+                              Checkbox(value: false, onChanged: (value) {}),
+                              const Text(
+                                'Remember me',
+                                style: TextStyle(
+                                  color: Colors.black,
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.bold,
+                                  fontFamily: 'Poppins',
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        TextButton(
+                          onPressed: () {},
+                          child: const Text(
+                            'Forgot password',
+                            style: TextStyle(
+                              color: Colors.black,
+                              fontSize: 13,
+                              fontWeight: FontWeight.bold,
+                              fontFamily: 'Poppins',
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 20),
+                    /*
+                    Sign in Button
+                    */
+                    AuthButton(
+                      text: 'Sign in',
+                      onPressed: () {
+                        _login();
+                        // Navigator.pushReplacementNamed(context, '/home');
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) {
+                              return MyApp();
+                            },
+                          ),
+                        );
+                      },
+                    ),
+                    const SizedBox(height: 20),
+                    Row(
+                      children: const [
+                        Expanded(child: Divider(color: Colors.grey)),
+                        Padding(
+                          padding: EdgeInsets.symmetric(horizontal: 8.0),
+                          child: Text(
+                            'or continue with',
+                            style: TextStyle(
+                              color: Color.fromARGB(255, 0, 0, 0),
+                              fontSize: 13,
+                              fontWeight: FontWeight.bold,
+                              fontFamily: 'Poppins',
+                            ),
+                          ),
+                        ),
+                        Expanded(child: Divider(color: Colors.grey)),
+                      ],
+                    ),
+                    const SizedBox(height: 20),
+                    AuthButton(
+                      text: 'Continue with Google',
+                      iconImage: const AssetImage('assets/images/google.png'),
+                      iconSize: 20,
+                      onPressed: () {},
+                      color: Colors.white,
+                      textColor: Colors.black,
+                    ),
+                  ],
+                ),
               ),
             ],
           ),
-        ),
       ),
     );
   }

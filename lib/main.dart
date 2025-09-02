@@ -1,3 +1,4 @@
+import 'package:eefood/features/auth/presentation/screens/splash_page.dart';
 import 'package:eefood/features/auth/presentation/screens/welcome_page.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -8,11 +9,17 @@ import 'features/recipe/presentation/screens/home_page.dart';
 import 'features/recipe/presentation/screens/my_recipes_page.dart';
 import 'features/recipe/presentation/screens/search_page.dart';
 import 'features/recipe/presentation/screens/shopping_list_page.dart';
-
+import 'package:flutter/services.dart';
 /*
   Định nghĩa các route và theme App
  */
 void main() {
+  WidgetsFlutterBinding.ensureInitialized();
+  SystemChrome.setSystemUIOverlayStyle(const SystemUiOverlayStyle(
+    statusBarColor: Colors.transparent, // làm trong suốt
+    statusBarIconBrightness: Brightness.dark, // icon màu đen
+    statusBarBrightness: Brightness.light, // cho iOS
+  ));
   runApp(const MyApp());
 }
 
@@ -69,7 +76,7 @@ class _MyAppState extends State<MyApp> {
           onTap: _onItemTapped,
         ),
       )
-          : const WelcomePage(),
+          : const SplashPage(),
       // initialRoute: '/',
       // routes: {
       //   '/': (context) => const WelcomePage(),
