@@ -1,3 +1,4 @@
+import 'package:eefood/core/constants/app_keys.dart';
 import 'package:eefood/features/auth/presentation/screens/splash_page.dart';
 import 'package:eefood/features/auth/presentation/screens/welcome_page.dart';
 import 'package:flutter/material.dart';
@@ -77,17 +78,6 @@ class _MyAppState extends State<MyApp> {
         ),
       )
           : const SplashPage(),
-      // initialRoute: '/',
-      // routes: {
-      //   '/': (context) => const WelcomePage(),
-      //   '/login': (context) => const LoginPage(),
-      //   '/home': (context) => const HomePage(),
-      //   '/search': (context) => const SearchPage(),
-      //   '/myRecipes': (context) => const MyRecipesPage(),
-      //   '/shoppingList': (context) => const ShoppingListPage(),
-      //   '/profile': (context) => const ProfilePage(),
-      //   '/notification': (context) => const NotificationPage(),
-      // },
     );
   }
 
@@ -97,7 +87,7 @@ class _MyAppState extends State<MyApp> {
   Future<void> _checkLoginStatus() async {
     final prefs = await SharedPreferences.getInstance();
     setState(() {
-      _isLoggedIn = prefs.getBool('isLoggedIn') ?? false;
+      _isLoggedIn = prefs.getBool(AppKeys.isLoginedIn) ?? false;
     });
   }
 }

@@ -1,3 +1,5 @@
+import 'package:dio/dio.dart';
+import 'package:eefood/core/constants/app_keys.dart';
 import 'package:eefood/features/auth/presentation/widgets/custom_text_field.dart';
 import 'package:eefood/main.dart';
 import 'package:flutter/material.dart';
@@ -130,17 +132,17 @@ class LoginPage extends StatelessWidget {
                     */
                     AuthButton(
                       text: 'Sign in',
-                      onPressed: () {
-                        _login();
+                      onPressed: () async {
+                        await _login();
                         // Navigator.pushReplacementNamed(context, '/home');
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) {
-                              return MyApp();
-                            },
-                          ),
-                        );
+                        // Navigator.push(
+                        //   context,
+                        //   MaterialPageRoute(
+                        //     builder: (context) {
+                        //       return MyApp();
+                        //     },
+                        //   ),
+                        // );
                       },
                     ),
                     const SizedBox(height: 20),
@@ -180,11 +182,30 @@ class LoginPage extends StatelessWidget {
     );
   }
 
-  /*
-  Login
-   */
+  /* Login */
   Future<void> _login() async {
+    final Dio dio = Dio();
     final prefs = await SharedPreferences.getInstance();
-    await prefs.setBool('isLoggedIn', true);
+    await prefs.setBool(AppKeys.isLoginedIn, true);
+
+    try{
+      final response = await dio.post(
+        'https://hippo-powerful-fully.ngrok-free.app/api/v1/auth/login',
+        data: {
+          "email": "ledinhloc7@gmail.com",
+          "password": "12345678"
+        },
+      );
+
+      if (response.statusCode == 200) {
+        print(response);
+      } else {
+        print('Error');
+        print(response);
+      }
+    }
+    catch(e){
+      print(e);
+    }
   }
 }
