@@ -33,6 +33,7 @@ class _MyAppState extends State<MyApp> {
     _checkLoginStatus();
   }
 
+  //Danh sach cac pages
   static const List<Widget> _widgetOptions = <Widget>[
     HomePage(),
     SearchPage(),
@@ -83,6 +84,9 @@ class _MyAppState extends State<MyApp> {
     );
   }
 
+  /*
+  Kiểm tra login chưa
+   */
   Future<void> _checkLoginStatus() async {
     final prefs = await SharedPreferences.getInstance();
     setState(() {
