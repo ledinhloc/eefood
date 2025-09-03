@@ -6,10 +6,15 @@ import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../../../core/constants/app_colors.dart';
+import '../../../../core/di/injection.dart';
+import '../../domain/usecases/auth_usecases.dart';
 import '../widgets/auth_button.dart';
 
 class LoginPage extends StatelessWidget {
-  const LoginPage({super.key});
+  LoginPage({super.key});
+  final Login _login = getIt<Login>();
+  final emailControler = TextEditingController();
+  final passControler = TextEditingController();
 
   @override
   Widget build(BuildContext context) {
@@ -74,6 +79,7 @@ class LoginPage extends StatelessWidget {
                     ),
                     const SizedBox(height: 10),
                     CustomTextField(
+                      controller: emailControler,
                       labelText: 'Email',
                       prefixIcon: const Icon(Icons.email),
                       enableClear: true,
@@ -83,6 +89,7 @@ class LoginPage extends StatelessWidget {
                     ),
                     const SizedBox(height: 10),
                     CustomTextField(
+                      controller: passControler,
                       labelText: 'Password',
                       isPassword: true,
                       prefixIcon: const Icon(Icons.lock),
@@ -133,7 +140,7 @@ class LoginPage extends StatelessWidget {
                     AuthButton(
                       text: 'Sign in',
                       onPressed: () async {
-                        await _login();
+                        await _login(emailControler.text, passControler.text);
                         // Navigator.pushReplacementNamed(context, '/home');
                         // Navigator.push(
                         //   context,
@@ -183,7 +190,7 @@ class LoginPage extends StatelessWidget {
   }
 
   /* Login */
-  Future<void> _login() async {
+  Future<void> _loginss() async {
     final Dio dio = Dio();
     final prefs = await SharedPreferences.getInstance();
     await prefs.setBool(AppKeys.isLoginedIn, true);

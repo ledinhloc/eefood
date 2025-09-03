@@ -3,11 +3,14 @@ import 'package:eefood/features/auth/presentation/screens/welcome_page.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../../../../core/di/injection.dart';
+import '../../../auth/domain/usecases/auth_usecases.dart';
 import '../../../auth/presentation/screens/login_page.dart';
 import '../../../auth/presentation/screens/splash_page.dart';
 
 class ProfilePage extends StatelessWidget {
-  const ProfilePage({super.key});
+  ProfilePage({super.key});
+  final Logout _logout = getIt<Logout>();
 
   @override
   Widget build(BuildContext context) {
@@ -50,8 +53,8 @@ class ProfilePage extends StatelessWidget {
   }
 
   /* Logout */
-  Future<void> _logout() async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setBool(AppKeys.isLoginedIn, false);
-  }
+  // Future<void> _logout() async {
+  //   final prefs = await SharedPreferences.getInstance();
+  //   await prefs.setBool(AppKeys.isLoginedIn, false);
+  // }
 }
