@@ -20,7 +20,7 @@ class AuthRepositoryImpl implements AuthRepository {
   Future<User> login(String email, String password) async {
     try {
       final response = await dio.post(
-        '/auth/login',
+        '/v1/auth/login',
         data: {'email': email, 'password': password},
         options: Options(contentType: 'application/json'),
       );
@@ -41,7 +41,7 @@ class AuthRepositoryImpl implements AuthRepository {
       final refreshToken = sharedPreferences.getString('refresh_token');
       if (refreshToken != null) {
         await dio.post(
-          '/auth/logout',
+          '/v1/auth/logout',
           data: {'refresh_token': refreshToken},
           options: Options(contentType: 'application/json'),
         );
@@ -72,7 +72,7 @@ class AuthRepositoryImpl implements AuthRepository {
       final refreshToken = sharedPreferences.getString('refresh_token');
       if (refreshToken != null) {
         final response = await dio.post(
-          '/auth/refresh',
+          '/v1/auth/refresh',
           data: {'refresh_token': refreshToken},
           options: Options(contentType: 'application/json'),
         );
@@ -88,7 +88,7 @@ class AuthRepositoryImpl implements AuthRepository {
   Future<User> getProfile() async {
     try {
       final response = await dio.get(
-        '/users/me',
+        '/v1/users/me',
         options: Options(
           contentType: 'application/json',
           headers: {'Authorization': 'Bearer ${sharedPreferences.getString('access_token')}'},

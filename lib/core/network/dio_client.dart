@@ -4,13 +4,14 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../../features/auth/domain/usecases/auth_usecases.dart';
 import '../di/injection.dart';
 
+/* Setting Dio */
+/* handler refresh token */
 class DioClient {
   final Dio dio = Dio();
-
   DioClient() {
     // Cấu hình base options
     dio.options = BaseOptions(
-      baseUrl: 'https://your-api-endpoint.com/api/v1', // Thay bằng URL thực tế
+      baseUrl: 'https://hippo-powerful-fully.ngrok-free.app/api', // url gateway http://localhost:8222/
       connectTimeout: const Duration(seconds: 5), // Timeout kết nối
       receiveTimeout: const Duration(seconds: 3), // Timeout nhận dữ liệu
       contentType: 'application/json; charset=UTF-8', // Default content type

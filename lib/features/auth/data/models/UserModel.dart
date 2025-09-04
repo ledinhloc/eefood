@@ -16,9 +16,9 @@ class UserModel {
   final String? avatarUrl;
   final List<String> allergies;
   final List<String> eatingPreferences;
-  @JsonKey(name: 'access_token')
+
   final String accessToken;
-  @JsonKey(name: 'refresh_token')
+
   final String refreshToken;
 
   UserModel({
@@ -51,8 +51,8 @@ class UserModel {
       avatarUrl: json['avatarUrl'] as String?,
       allergies: List<String>.from(json['allergies'] ?? []),
       eatingPreferences: List<String>.from(json['eatingPreferences'] ?? []),
-      accessToken: json['access_token'] as String,
-      refreshToken: json['refresh_token'] as String,
+      accessToken: json['accessToken'] as String,
+      refreshToken: json['refreshToken'] as String,
     );
   }
 
@@ -71,8 +71,8 @@ class UserModel {
       'avatarUrl': avatarUrl,
       'allergies': allergies,
       'eatingPreferences': eatingPreferences,
-      'access_token': accessToken,
-      'refresh_token': refreshToken,
+      'accessToken': accessToken,
+      'refreshToken': refreshToken,
     };
   }
 

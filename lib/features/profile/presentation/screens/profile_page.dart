@@ -30,7 +30,7 @@ class ProfilePage extends StatelessWidget {
                 _logout();
                 Navigator.pushAndRemoveUntil(
                   context,
-                  MaterialPageRoute(builder: (context) => SplashPage()),
+                  MaterialPageRoute(builder: (context) => WelcomePage()),
                   (route) => true,
                 );
               },
