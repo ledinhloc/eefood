@@ -9,9 +9,10 @@ import '../di/injection.dart';
 class DioClient {
   final Dio dio = Dio();
   DioClient() {
-    // Cấu hình base options
+    final baseUrl = const String.fromEnvironment('BASE_URL', defaultValue: 'http://localhost:8222/api');
+    print(baseUrl);
     dio.options = BaseOptions(
-      baseUrl: 'https://hippo-powerful-fully.ngrok-free.app/api', // url gateway http://localhost:8222/
+      baseUrl: baseUrl,
       connectTimeout: const Duration(seconds: 5), // Timeout kết nối
       receiveTimeout: const Duration(seconds: 3), // Timeout nhận dữ liệu
       contentType: 'application/json; charset=UTF-8', // Default content type
