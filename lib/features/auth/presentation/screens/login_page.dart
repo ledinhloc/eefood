@@ -1,14 +1,23 @@
+import 'package:dio/dio.dart';
+import 'package:eefood/core/constants/app_keys.dart';
+import 'package:eefood/core/widgets/snack_bar.dart';
 import 'package:eefood/features/auth/presentation/widgets/custom_text_field.dart';
 import 'package:eefood/main.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../../../core/constants/app_colors.dart';
+import '../../../../core/di/injection.dart';
+import '../../domain/entities/user.dart';
+import '../../domain/usecases/auth_usecases.dart';
 import '../widgets/auth_button.dart';
 
 class LoginPage extends StatelessWidget {
-  const LoginPage({super.key});
+  LoginPage({super.key});
+  final Login _login = getIt<Login>();
+  final emailControler = TextEditingController(text: 'ledinhloc7@gmail.com');
 
+  final passControler = TextEditingController(text: '12345678');
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -72,6 +81,7 @@ class LoginPage extends StatelessWidget {
                     ),
                     const SizedBox(height: 10),
                     CustomTextField(
+                      controller: emailControler,
                       labelText: 'Email',
                       prefixIcon: const Icon(Icons.email),
                       enableClear: true,
@@ -81,6 +91,7 @@ class LoginPage extends StatelessWidget {
                     ),
                     const SizedBox(height: 10),
                     CustomTextField(
+                      controller: passControler,
                       labelText: 'Password',
                       isPassword: true,
                       prefixIcon: const Icon(Icons.lock),
@@ -130,17 +141,24 @@ class LoginPage extends StatelessWidget {
                     */
                     AuthButton(
                       text: 'Sign in',
-                      onPressed: () {
-                        _login();
-                        // Navigator.pushReplacementNamed(context, '/home');
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) {
-                              return MyApp();
-                            },
-                          ),
-                        );
+                      onPressed: () async {
+                        try{
+                          User user = await _login(emailControler.text, passControler.text);
+                          // Navigator.pushReplacementNamed(context, '/home');
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) {
+                                return MyApp();
+                              },
+                            ),
+                          );
+                        }catch(e){
+                          // ScaffoldMessenger.of(context).showSnackBar(
+                          //   SnackBar(content: Text('Login failed')),
+                          // );
+                          showCustomSnackBar(context, 'Login failed', isError: true);
+                        }
                       },
                     ),
                     const SizedBox(height: 20),
@@ -178,13 +196,5 @@ class LoginPage extends StatelessWidget {
           ),
       ),
     );
-  }
-
-  /*
-  Login
-   */
-  Future<void> _login() async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setBool('isLoggedIn', true);
   }
 }

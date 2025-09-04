@@ -32,31 +32,31 @@ class WelcomePage extends StatelessWidget {
                   mainAxisAlignment: MainAxisAlignment.center,
                   crossAxisAlignment: CrossAxisAlignment.end,
                   children: [
-                    Text('Welcome to ',
+                    Text(
+                      'Welcome to ',
                       style: TextStyle(
                         fontSize: 28,
                         fontWeight: FontWeight.bold,
-                        color: Colors.white
+                        color: Colors.white,
                       ),
                     ),
-                    Text('eeFood',
+                    Text(
+                      'eeFood',
                       style: TextStyle(
                         fontSize: 28,
                         fontWeight: FontWeight.bold,
-                        color: Colors.orange
-                      ),)
-
+                        color: Colors.orange,
+                      ),
+                    ),
                   ],
                 ),
-                SizedBox(height: 8,),
+                SizedBox(height: 8),
                 const Text(
                   'Experience Expert Food',
                   style: TextStyle(color: Colors.white70, fontSize: 16),
                 ),
                 const SizedBox(height: 100),
-                /*
-                 Google button
-                 */
+                /*Google button*/
                 ElevatedButton.icon(
                   onPressed: () {},
                   style: ElevatedButton.styleFrom(
@@ -80,9 +80,14 @@ class WelcomePage extends StatelessWidget {
                 ElevatedButton(
                   onPressed: () {
                     // Navigator.pushNamed(context, '/');\
-                    Navigator.push(context, MaterialPageRoute(builder:  (context) {
-                      return LoginPage();
-                    },));
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) {
+                          return LoginPage();
+                        },
+                      ),
+                    );
                   },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.red,
@@ -102,7 +107,14 @@ class WelcomePage extends StatelessWidget {
                  */
                 ElevatedButton(
                   onPressed: () {
-                    Navigator.pushNamed(context, '/login');
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) {
+                          return LoginPage();
+                        },
+                      ),
+                    );
                   },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.white,

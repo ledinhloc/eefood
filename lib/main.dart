@@ -1,9 +1,13 @@
+import 'package:eefood/core/constants/app_keys.dart';
 import 'package:eefood/features/auth/presentation/screens/splash_page.dart';
 import 'package:eefood/features/auth/presentation/screens/welcome_page.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'core/constants/app_themes.dart';
+import 'core/di/injection.dart';
+import 'core/di/injection.dart' as di;
+import 'features/auth/domain/usecases/auth_usecases.dart';
 import 'features/profile/presentation/screens/profile_page.dart';
 import 'features/recipe/presentation/screens/home_page.dart';
 import 'features/recipe/presentation/screens/my_recipes_page.dart';
@@ -13,13 +17,14 @@ import 'package:flutter/services.dart';
 /*
   Định nghĩa các route và theme App
  */
-void main() {
+void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   SystemChrome.setSystemUIOverlayStyle(const SystemUiOverlayStyle(
     statusBarColor: Colors.transparent, // làm trong suốt
     statusBarIconBrightness: Brightness.dark, // icon màu đen
     statusBarBrightness: Brightness.light, // cho iOS
   ));
+  await di.setupDependencies();
   runApp(const MyApp());
 }
 
@@ -31,16 +36,19 @@ class MyApp extends StatefulWidget {
 }
 
 class _MyAppState extends State<MyApp> {
+
   int _selectedIndex = 0;
   bool _isLoggedIn = false;
+  final GetCurrentUser _getCurrentUser = getIt<GetCurrentUser>();
 
   @override
   void initState() {
     super.initState();
-    _checkLoginStatus();
+    _loadUser();
   }
 
-  static const List<Widget> _widgetOptions = <Widget>[
+  //Danh sach cac pages
+  final List<Widget> _widgetOptions = <Widget>[
     HomePage(),
     SearchPage(),
     MyRecipesPage(),
@@ -75,26 +83,25 @@ class _MyAppState extends State<MyApp> {
           onTap: _onItemTapped,
         ),
       )
-          : const SplashPage(),
-      // initialRoute: '/',
-      // routes: {
-      //   '/': (context) => const WelcomePage(),
-      //   '/login': (context) => const LoginPage(),
-      //   '/home': (context) => const HomePage(),
-      //   '/search': (context) => const SearchPage(),
-      //   '/myRecipes': (context) => const MyRecipesPage(),
-      //   '/shoppingList': (context) => const ShoppingListPage(),
-      //   '/profile': (context) => const ProfilePage(),
-      //   '/notification': (context) => const NotificationPage(),
-      // },
+          // : const SplashPage(),
+          : const WelcomePage(),
     );
   }
 
-  Future<void> _checkLoginStatus() async {
-    final prefs = await SharedPreferences.getInstance();
+  /*
+  Kiểm tra login chưa
+   */
+  Future<void> _loadUser() async {
+    // final prefs = await SharedPreferences.getInstance();
+    // setState(() {
+    //   _isLoggedIn = prefs.getBool(AppKeys.isLoginedIn) ?? false;
+    // });
+
+    final user = await _getCurrentUser();
     setState(() {
-      _isLoggedIn = prefs.getBool('isLoggedIn') ?? false;
+      _isLoggedIn = (user != null);
     });
+    print(_isLoggedIn);
   }
 }
 
