@@ -8,6 +8,7 @@ import '../di/injection.dart';
 /* handler refresh token */
 class DioClient {
   final Dio dio = Dio();
+
   DioClient() {
     final baseUrl = const String.fromEnvironment('BASE_URL', defaultValue: 'http://localhost:8222/api');
     print(baseUrl);
