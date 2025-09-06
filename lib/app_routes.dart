@@ -1,5 +1,6 @@
 
 import 'package:eefood/features/auth/presentation/screens/login_page.dart';
+import 'package:eefood/features/auth/presentation/screens/splash_page.dart';
 import 'package:eefood/features/auth/presentation/screens/welcome_page.dart';
 import 'package:eefood/main.dart';
 import 'package:eefood/main_screen.dart';
@@ -16,6 +17,7 @@ class AppRoutes{
   static const main = '/main';
   static const login = '/login';
   static const welcome = '/welcome';
+  static const splashPage = '/splashPage'; //trang load dau
 
   // Danh sách các widget cho BottomNavigationBar trong main page
   static List<Widget> widgetOptions = <Widget>[
@@ -31,5 +33,6 @@ class AppRoutes{
     main: (context) => const MainScreen(),
     login: (context) => LoginPage(),
     welcome: (context) => const WelcomePage(),
+    splashPage: (context) => const SplashPage(),
   };
 }

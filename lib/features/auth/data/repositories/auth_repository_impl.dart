@@ -53,6 +53,7 @@ class AuthRepositoryImpl implements AuthRepository {
     }
   }
 
+  /* lay user luu trong local*/
   @override
   Future<User?> getCurrentUser() async {
     try {
