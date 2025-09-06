@@ -1,0 +1,2 @@
+NOTE
+1. Định nghĩa router trong app_routes
