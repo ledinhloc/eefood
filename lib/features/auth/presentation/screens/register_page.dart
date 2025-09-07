@@ -1,23 +1,20 @@
-import 'package:dio/dio.dart';
-import 'package:eefood/core/constants/app_keys.dart';
+import 'package:eefood/core/di/injection.dart';
 import 'package:eefood/core/widgets/snack_bar.dart';
-import 'package:eefood/features/auth/presentation/screens/forgot_password.dart';
-import 'package:eefood/features/auth/presentation/screens/register_page.dart';
+import 'package:eefood/features/auth/data/models/response_data_model.dart';
+import 'package:eefood/features/auth/domain/usecases/auth_usecases.dart';
+import 'package:eefood/features/auth/presentation/screens/login_page.dart';
+import 'package:eefood/features/auth/presentation/screens/verify_otp.dart';
+import 'package:eefood/features/auth/presentation/widgets/auth_button.dart';
 import 'package:eefood/features/auth/presentation/widgets/custom_text_field.dart';
-import 'package:eefood/main.dart';
 import 'package:flutter/material.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'package:lottie/lottie.dart';
-import '../../../../core/di/injection.dart';
 import '../../domain/entities/user.dart';
-import '../../domain/usecases/auth_usecases.dart';
-import '../widgets/auth_button.dart';
 
-class LoginPage extends StatelessWidget {
-  LoginPage({super.key});
-  final Login _login = getIt<Login>();
-  final emailControler = TextEditingController(text: 'ledinhloc7@gmail.com');
-
+class RegisterPage extends StatelessWidget {
+  RegisterPage({super.key});
+  final Register _register = getIt<Register>();
+  final nameControler = TextEditingController(text: 'khoa');
+  final emailControler = TextEditingController(text: 'anhkhoaxn11@gmail.com');
   final passControler = TextEditingController(text: '12345678');
   @override
   Widget build(BuildContext context) {
@@ -37,18 +34,20 @@ class LoginPage extends StatelessWidget {
                 ],
               ),
             ),
+
             // Top image
             SizedBox(
               height: 220,
               width: double.infinity,
               child: Center(
                 child: Lottie.network(
-                  'https://lottie.host/87078e48-ace6-4a3f-beb0-506b31bd1fe1/kebynmuvD5.json',
+                  'https://lottie.host/a9171100-df7a-414e-a585-1bb91b2b15cc/OSPEu04zmQ.json',
                   fit: BoxFit.contain,
                   width: double.infinity,
                 ),
               ),
             ),
+
             Container(
               width: double.infinity,
               padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
@@ -68,13 +67,23 @@ class LoginPage extends StatelessWidget {
                 children: [
                   const SizedBox(height: 10),
                   const Text(
-                    'Sign in',
+                    'Sign up',
                     style: TextStyle(
                       color: Color.fromARGB(255, 0, 0, 0),
                       fontSize: 25,
                       fontWeight: FontWeight.bold,
                       fontFamily: 'Poppins',
                     ),
+                  ),
+                  const SizedBox(height: 10),
+                  CustomTextField(
+                    controller: nameControler,
+                    labelText: 'Username',
+                    prefixIcon: const Icon(Icons.account_circle_rounded),
+                    enableClear: true,
+                    borderRadius: 8,
+                    fillColor: Colors.black,
+                    maxLines: 1,
                   ),
                   const SizedBox(height: 10),
                   CustomTextField(
@@ -98,77 +107,40 @@ class LoginPage extends StatelessWidget {
                     fillColor: Colors.black,
                     maxLines: 1,
                   ),
-                  const SizedBox(height: 5),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Expanded(
-                        child: Row(
-                          children: [
-                            Checkbox(value: false, onChanged: (value) {}),
-                            const Text(
-                              'Remember me',
-                              style: TextStyle(
-                                color: Colors.black,
-                                fontSize: 13,
-                                fontWeight: FontWeight.bold,
-                                fontFamily: 'Poppins',
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                      TextButton(
-                        onPressed: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) {
-                                return ForgotPasswordPage();
-                              },
-                            ),
-                          );
-                        },
-                        child: const Text(
-                          'Forgot password',
-                          style: TextStyle(
-                            color: Colors.black,
-                            fontSize: 13,
-                            fontWeight: FontWeight.bold,
-                            fontFamily: 'Poppins',
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
+
                   const SizedBox(height: 20),
                   /*
-                    Sign in Button
-                    */
+                  Sign in Button
+                  */
                   AuthButton(
-                    text: 'Sign in',
+                    text: 'Sign up',
                     onPressed: () async {
                       try {
-                        User user = await _login(
+                        ResponseDataModel<User> response = await _register(
+                          nameControler.text,
                           emailControler.text,
                           passControler.text,
                         );
-                        // Navigator.pushReplacementNamed(context, '/home');
-                        Navigator.push(
+                        if (response.data==null) {
+                          showCustomSnackBar(
+                            context,
+                            response.message,
+                            isError: true,
+                          );
+                        } else {
+                          Navigator.push(
                           context,
                           MaterialPageRoute(
                             builder: (context) {
-                              return MyApp();
+                              return VerificationOtpPage();
                             },
                           ),
                         );
+                        }
                       } catch (e) {
-                        // ScaffoldMessenger.of(context).showSnackBar(
-                        //   SnackBar(content: Text('Login failed')),
-                        // );
                         showCustomSnackBar(
                           context,
-                          'Login failed',
+                          'Register failed',
                           isError: true,
                         );
                       }
@@ -176,44 +148,18 @@ class LoginPage extends StatelessWidget {
                   ),
                   const SizedBox(height: 20),
                   Row(
-                    children: [
+                    children: const [
                       Expanded(child: Divider(color: Colors.grey)),
                       Padding(
                         padding: EdgeInsets.symmetric(horizontal: 8.0),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Text(
-                              'or continue with? ',
-                              style: TextStyle(
-                                color: Color.fromARGB(255, 0, 0, 0),
-                                fontSize: 13,
-                                fontWeight: FontWeight.normal,
-                                fontFamily: 'Poppins',
-                              ),
-                            ),
-                            InkWell(
-                              onTap: () {
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (context) {
-                                      return RegisterPage();
-                                    },
-                                  ),
-                                );
-                              },
-                              child: Text(
-                                'Sign up',
-                                style: TextStyle(
-                                  color: Color.fromARGB(255, 0, 0, 0),
-                                  fontSize: 13,
-                                  fontWeight: FontWeight.bold,
-                                  fontFamily: 'Poppins',
-                                ),
-                              ),
-                            ),
-                          ],
+                        child: Text(
+                          'or continue with',
+                          style: TextStyle(
+                            color: Color.fromARGB(255, 0, 0, 0),
+                            fontSize: 13,
+                            fontWeight: FontWeight.bold,
+                            fontFamily: 'Poppins',
+                          ),
                         ),
                       ),
                       Expanded(child: Divider(color: Colors.grey)),
