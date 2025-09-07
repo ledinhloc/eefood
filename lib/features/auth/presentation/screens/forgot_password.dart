@@ -1,3 +1,10 @@
+import 'package:eefood/app_routes.dart';
+import 'package:eefood/core/di/injection.dart';
+import 'package:eefood/core/utils/helpers.dart';
+import 'package:eefood/core/widgets/snack_bar.dart';
+import 'package:eefood/features/auth/data/models/otp_model.dart';
+import 'package:eefood/features/auth/data/models/response_data_model.dart';
+import 'package:eefood/features/auth/domain/usecases/auth_usecases.dart';
 import 'package:eefood/features/auth/presentation/screens/verify_otp.dart';
 import 'package:eefood/features/auth/presentation/widgets/auth_button.dart';
 import 'package:eefood/features/auth/presentation/widgets/custom_text_field.dart';
@@ -5,11 +12,14 @@ import 'package:flutter/material.dart';
 import 'package:lottie/lottie.dart';
 
 class ForgotPasswordPage extends StatelessWidget {
-  const ForgotPasswordPage({super.key});
+  ForgotPasswordPage({super.key});
+
+  final ForgotPassword _forgotPassword = getIt<ForgotPassword>();
+  final emailController = TextEditingController(text: 'ledinhloc7@gmail.com');
 
   @override
   Widget build(BuildContext context) {
-    final emailControler = TextEditingController(text: 'ledinhloc7@gmail.com');
+    final emailController = TextEditingController(text: 'ledinhloc7@gmail.com');
 
     return Scaffold(
       body: SafeArea(
@@ -75,7 +85,7 @@ class ForgotPasswordPage extends StatelessWidget {
                           ),
                           SizedBox(height: 10),
                           CustomTextField(
-                            controller: emailControler,
+                            controller: emailController,
                             labelText: 'Email',
                             prefixIcon: const Icon(Icons.email),
                             enableClear: true,
@@ -94,15 +104,44 @@ class ForgotPasswordPage extends StatelessWidget {
               padding: const EdgeInsets.all(16.0),
               child: AuthButton(
                 text: 'Confirm',
-                onPressed: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) {
-                        return VerificationOtpPage();
-                      },
-                    ),
-                  );
+                onPressed: () async {
+                  final String email = emailController.text;
+
+                  if (isValidEmail(email)) {
+                    showCustomSnackBar(
+                      context,
+                      'Email không hợp lệ',
+                      isError: true,
+                    );
+                    return;
+                  }
+
+                  try {
+                    ResponseDataModel<bool> forgotPass = await _forgotPassword(
+                      email,
+                    );
+
+                    (forgotPass.data == true)
+                        ? Navigator.pushNamed(
+                            context,
+                            AppRoutes.verifyOtp,
+                            arguments: {
+                              'email': emailController.text.trim(),
+                              'otpType': OtpType.FORGOT_PASSWORD,
+                            },
+                          )
+                        : showCustomSnackBar(
+                            context,
+                            forgotPass.message,
+                            isError: true,
+                          );
+                  } catch (e) {
+                    showCustomSnackBar(
+                      context,
+                      'Forgot password failed: $e',
+                      isError: true,
+                    );
+                  }
                 },
                 textColor: Colors.white,
               ),

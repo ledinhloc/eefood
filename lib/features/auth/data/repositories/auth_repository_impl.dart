@@ -1,6 +1,7 @@
 import 'package:dio/dio.dart';
 import 'package:eefood/core/constants/app_keys.dart';
 import 'package:eefood/features/auth/data/models/otp_model.dart';
+import 'package:eefood/features/auth/data/models/register_response_model.dart';
 import 'package:eefood/features/auth/data/models/response_data_model.dart';
 import 'package:eefood/features/auth/domain/entities/otp.dart';
 import 'dart:convert';
@@ -108,23 +109,19 @@ class AuthRepositoryImpl implements AuthRepository {
   }
 
   @override
-  Future<ResponseDataModel<User>> register(String username, String email, String password) async {
+  Future<ResponseDataModel<RegisterResponseModel>> register(String username, String email, String password) async {
     try {
       final response = await dio.post(
         '/v1/auth/register',
         data: {'username': username, 'email': email, 'password': password},
         options: Options(contentType: 'application/json'),
       );
-      final userModel = UserModel.fromJson(response.data['data']);
-      final resp = ResponseDataModel.fromJson(
+      print(response.data);
+      final resp = ResponseDataModel<RegisterResponseModel>.fromJson(
         response.data as Map<String, dynamic>,
-        (json) => json as UserModel, 
+        (json) => RegisterResponseModel.fromJson(json as Map<String, dynamic>),
       );
-      return ResponseDataModel<User>(
-        status: resp.status,
-        message: resp.message,
-        data: userModel.toEntity(),
-      );
+      return resp;
     } catch (e) {
       throw Exception('Register failed: $e');
     }
@@ -140,7 +137,7 @@ class AuthRepositoryImpl implements AuthRepository {
       );
       final resp = ResponseDataModel.fromJson(
         response.data as Map<String, dynamic>,
-        (json) => json as bool, 
+        (json) => json as bool,
       );
       return ResponseDataModel<bool>(
         status: resp.status,
@@ -163,7 +160,7 @@ class AuthRepositoryImpl implements AuthRepository {
 
       final resp = ResponseDataModel.fromJson(
         response.data as Map<String, dynamic>,
-        (json) => json as bool, 
+        (json) => json as bool,
       );
       return ResponseDataModel<bool>(
         status: resp.status,
@@ -176,7 +173,11 @@ class AuthRepositoryImpl implements AuthRepository {
   }
 
   @override
-  Future<ResponseDataModel<bool>> resetPassword(String email, String otpCode, String newPassword) async {
+  Future<ResponseDataModel<bool>> resetPassword(
+    String email,
+    String otpCode,
+    String newPassword,
+  ) async {
     try {
       final response = await dio.post(
         '/v1/auth/forgot-password/reset',
@@ -186,14 +187,13 @@ class AuthRepositoryImpl implements AuthRepository {
 
       final resp = ResponseDataModel.fromJson(
         response.data as Map<String, dynamic>,
-        (json) => json as bool, 
+        (json) => json as bool,
       );
       return ResponseDataModel<bool>(
         status: resp.status,
         message: resp.message,
         data: resp.status == 200,
       );
-      
     } catch (e) {
       throw Exception('Reset password failed: $e');
     }

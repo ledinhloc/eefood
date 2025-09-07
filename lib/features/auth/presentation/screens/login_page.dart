@@ -172,7 +172,7 @@ class LoginPage extends StatelessWidget {
                         child: Row(
                           children: [
                             const Text(
-                              'or continue with ',
+                              'or continue with? ',
                               style: TextStyle(
                                 color: Colors.black,
                                 fontSize: 13,
@@ -187,8 +187,10 @@ class LoginPage extends StatelessWidget {
                               child: const Text(
                                 'Sign up',
                                 style: TextStyle(
-                                  color: Colors.blue,
+                                  color: Colors.black,
+                                  fontSize: 13,
                                   fontWeight: FontWeight.bold,
+                                  fontFamily: 'Poppins',
                                 ),
                               ),
                             ),

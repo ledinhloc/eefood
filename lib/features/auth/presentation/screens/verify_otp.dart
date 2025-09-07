@@ -1,12 +1,63 @@
+import 'dart:async';
 import 'package:eefood/app_routes.dart';
-import 'package:eefood/features/auth/presentation/screens/reset_password.dart';
+import 'package:eefood/core/di/injection.dart';
+import 'package:eefood/core/widgets/snack_bar.dart';
+import 'package:eefood/features/auth/data/models/otp_model.dart';
+import 'package:eefood/features/auth/data/models/response_data_model.dart';
+import 'package:eefood/features/auth/domain/usecases/auth_usecases.dart';
 import 'package:eefood/features/auth/presentation/widgets/auth_button.dart';
 import 'package:flutter/material.dart';
 import 'package:lottie/lottie.dart';
 import 'package:pinput/pinput.dart';
 
-class VerificationOtpPage extends StatelessWidget {
-  const VerificationOtpPage({super.key});
+class VerificationOtpPage extends StatefulWidget {
+  final String email;
+  final OtpType otpType;
+
+  const VerificationOtpPage({
+    super.key,
+    required this.email,
+    required this.otpType,
+  });
+
+  @override
+  State<VerificationOtpPage> createState() => _VerificationOtpPageState();
+}
+
+class _VerificationOtpPageState extends State<VerificationOtpPage> {
+  final VerifyOtp _verifyOtp = getIt<VerifyOtp>();
+  final TextEditingController _otpController = TextEditingController();
+  Timer? _timer;
+  int _remainingSeconds = 60;
+
+  @override
+  void initState() {
+    super.initState();
+    _startCountdown();
+  }
+
+  void _startCountdown() {
+    setState(() {
+      _remainingSeconds = 60;
+    });
+    _timer?.cancel();
+    _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
+      if (_remainingSeconds == 0) {
+        timer.cancel();
+      } else {
+        setState(() {
+          _remainingSeconds--;
+        });
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _timer?.cancel();
+    _otpController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -59,74 +110,22 @@ class VerificationOtpPage extends StatelessWidget {
                         ),
                       ),
                     ),
-                    Column(
-                      children: [
-                        Text(
-                          'Verification OTP',
-                          style: TextStyle(
-                            color: Colors.black,
-                            fontSize: 32,
-                            fontWeight: FontWeight.bold,
-                            fontFamily: 'Poppins',
-                          ),
-                        ),
-                        SizedBox(height: 10),
-                        Text(
-                          'Check your email and enter\n a code below',
-                          style: TextStyle(
-                            color: Colors.black,
-                            fontSize: 15,
-                            fontWeight: FontWeight.bold,
-                            fontFamily: 'Poppins',
-                          ),
-                          textAlign: TextAlign.center,
-                        ),
-                        SizedBox(height: 10),
-                        Pinput(
-                          length: 6,
-                          autofocus: true,
-                          defaultPinTheme: defaultPinTheme,
-                          focusedPinTheme: defaultPinTheme.copyWith(
-                            decoration: defaultPinTheme.decoration!.copyWith(
-                              border: Border.all(color: focusedBorderColor),
+                    Padding(
+                      padding: const EdgeInsets.all(4.0),
+                      child: Column(
+                        children: [
+                          const Text(
+                            'Verification OTP',
+                            style: TextStyle(
+                              color: Colors.black,
+                              fontSize: 32,
+                              fontWeight: FontWeight.bold,
+                              fontFamily: 'Poppins',
                             ),
                           ),
-                          submittedPinTheme: defaultPinTheme.copyWith(
-                            decoration: defaultPinTheme.decoration!.copyWith(
-                              color: fillColor,
-                              border: Border.all(color: focusedBorderColor),
-                            ),
-                          ),
-                          errorPinTheme: defaultPinTheme.copyBorderWith(
-                            border: Border.all(color: Colors.redAccent),
-                          ),
-                        ),
-                        SizedBox(height: 15),
-                        Text(
-                          'Didn’t receive email?',
-                          style: TextStyle(
-                            color: Colors.black,
-                            fontSize: 15,
-                            fontWeight: FontWeight.bold,
-                            fontFamily: 'Poppins',
-                          ),
-                          textAlign: TextAlign.center,
-                        ),
-                        SizedBox(height: 10),
-                        Container(
-                          padding: EdgeInsets.only(
-                            bottom: 2, // Space between underline and text
-                          ),
-                          decoration: BoxDecoration(
-                            border: Border(
-                              bottom: BorderSide(
-                                color: Colors.black45,
-                                width: 1.0, // Underline thickness
-                              ),
-                            ),
-                          ),
-                          child: Text(
-                            'Get OTP again',
+                          const SizedBox(height: 10),
+                          const Text(
+                            'Check your email and enter\n a code below',
                             style: TextStyle(
                               color: Colors.black,
                               fontSize: 15,
@@ -135,8 +134,68 @@ class VerificationOtpPage extends StatelessWidget {
                             ),
                             textAlign: TextAlign.center,
                           ),
-                        ),
-                      ],
+                          const SizedBox(height: 10),
+                          Pinput(
+                            length: 6,
+                            controller: _otpController,
+                            autofocus: true,
+                            defaultPinTheme: defaultPinTheme,
+                            focusedPinTheme: defaultPinTheme.copyWith(
+                              decoration: defaultPinTheme.decoration!.copyWith(
+                                border: Border.all(color: focusedBorderColor),
+                              ),
+                            ),
+                            submittedPinTheme: defaultPinTheme.copyWith(
+                              decoration: defaultPinTheme.decoration!.copyWith(
+                                color: fillColor,
+                                border: Border.all(color: focusedBorderColor),
+                              ),
+                            ),
+                            errorPinTheme: defaultPinTheme.copyBorderWith(
+                              border: Border.all(color: Colors.redAccent),
+                            ),
+                          ),
+                          const SizedBox(height: 15),
+                          _remainingSeconds > 0
+                              ? Text(
+                                  'Didn’t receive email?\nYou can resend code in $_remainingSeconds s',
+                                  style: const TextStyle(
+                                    color: Colors.black,
+                                    fontSize: 15,
+                                    fontWeight: FontWeight.bold,
+                                    fontFamily: 'Poppins',
+                                  ),
+                                  textAlign: TextAlign.center,
+                                )
+                              : GestureDetector(
+                                  onTap: () {
+                                    // TODO: gọi API resend OTP ở đây
+                                    _startCountdown();
+                                  },
+                                  child: Container(
+                                    padding: const EdgeInsets.only(bottom: 2),
+                                    decoration: const BoxDecoration(
+                                      border: Border(
+                                        bottom: BorderSide(
+                                          color: Colors.black45,
+                                          width: 1.0,
+                                        ),
+                                      ),
+                                    ),
+                                    child: const Text(
+                                      'Get OTP again',
+                                      style: TextStyle(
+                                        color: Colors.black,
+                                        fontSize: 15,
+                                        fontWeight: FontWeight.bold,
+                                        fontFamily: 'Poppins',
+                                      ),
+                                      textAlign: TextAlign.center,
+                                    ),
+                                  ),
+                                ),
+                        ],
+                      ),
                     ),
                   ],
                 ),
@@ -146,8 +205,54 @@ class VerificationOtpPage extends StatelessWidget {
               padding: const EdgeInsets.all(16.0),
               child: AuthButton(
                 text: 'Confirm',
-                onPressed: () {
-                  Navigator.pushNamed(context, AppRoutes.resetPassword);
+                onPressed: () async {
+                  final otpCode = _otpController.text;
+                  if (otpCode.length != 6) {
+                    showCustomSnackBar(
+                      context,
+                      'OTP không hợp lệ',
+                      isError: true,
+                    );
+                    return;
+                  }
+                  try {
+                    ResponseDataModel<bool> isVerified = await _verifyOtp(
+                      widget.email,
+                      otpCode,
+                      widget.otpType,
+                    );
+
+                    if (isVerified.data == true) {
+                      if (widget.otpType == OtpType.FORGOT_PASSWORD) {
+                        Navigator.pushNamed(
+                          context,
+                          AppRoutes.resetPassword,
+                          arguments: {
+                            'email': widget.email,
+                            'otpCode': otpCode,
+                          },
+                        );
+                      } else {
+                        Navigator.pushNamedAndRemoveUntil(
+                          context,
+                          AppRoutes.login,
+                          (route) => false,
+                        );
+                      }
+                    } else {
+                      showCustomSnackBar(
+                        context,
+                        isVerified.message,
+                        isError: true,
+                      );
+                    }
+                  } catch (e) {
+                    showCustomSnackBar(
+                      context,
+                      'Verify OTP failed $e',
+                      isError: true,
+                    );
+                  }
                 },
                 textColor: Colors.white,
               ),

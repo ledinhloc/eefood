@@ -1,6 +1,8 @@
 import 'package:eefood/app_routes.dart';
 import 'package:eefood/core/di/injection.dart';
 import 'package:eefood/core/widgets/snack_bar.dart';
+import 'package:eefood/features/auth/data/models/otp_model.dart';
+import 'package:eefood/features/auth/data/models/register_response_model.dart';
 import 'package:eefood/features/auth/data/models/response_data_model.dart';
 import 'package:eefood/features/auth/domain/usecases/auth_usecases.dart';
 import 'package:eefood/features/auth/presentation/screens/login_page.dart';
@@ -14,9 +16,11 @@ import '../../domain/entities/user.dart';
 class RegisterPage extends StatelessWidget {
   RegisterPage({super.key});
   final Register _register = getIt<Register>();
-  final nameControler = TextEditingController(text: 'khoa');
-  final emailControler = TextEditingController(text: 'anhkhoaxn11@gmail.com');
-  final passControler = TextEditingController(text: '12345678');
+  final nameController = TextEditingController(text: 'khoa');
+  final emailController = TextEditingController(
+    text: 'anhkhoadevtool2109@gmail.com',
+  );
+  final passController = TextEditingController(text: '12345678');
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -78,7 +82,7 @@ class RegisterPage extends StatelessWidget {
                   ),
                   const SizedBox(height: 10),
                   CustomTextField(
-                    controller: nameControler,
+                    controller: nameController,
                     labelText: 'Username',
                     prefixIcon: const Icon(Icons.account_circle_rounded),
                     enableClear: true,
@@ -88,7 +92,7 @@ class RegisterPage extends StatelessWidget {
                   ),
                   const SizedBox(height: 10),
                   CustomTextField(
-                    controller: emailControler,
+                    controller: emailController,
                     labelText: 'Email',
                     prefixIcon: const Icon(Icons.email),
                     enableClear: true,
@@ -98,7 +102,7 @@ class RegisterPage extends StatelessWidget {
                   ),
                   const SizedBox(height: 10),
                   CustomTextField(
-                    controller: passControler,
+                    controller: passController,
                     labelText: 'Password',
                     isPassword: true,
                     prefixIcon: const Icon(Icons.lock),
@@ -116,28 +120,39 @@ class RegisterPage extends StatelessWidget {
                   AuthButton(
                     text: 'Sign up',
                     onPressed: () async {
-                      try {
-                        ResponseDataModel<User> response = await _register(
-                          nameControler.text,
-                          emailControler.text,
-                          passControler.text,
-                        );
-                        if (response.data==null) {
-                          showCustomSnackBar(
-                            context,
-                            response.message,
-                            isError: true,
+                      try{
+                        ResponseDataModel<RegisterResponseModel> response =
+                          await _register(
+                            nameController.text,
+                            emailController.text,
+                            passController.text,
                           );
-                        } else {
-                          Navigator.pushNamed(context, AppRoutes.verifyOtp);
-                        }
-                      } catch (e) {
+                      print(response.data);
+                      if (response.status != 201) {
                         showCustomSnackBar(
                           context,
-                          'Register failed',
+                          response.message,
+                          isError: true,
+                        );
+                      } else {
+                        Navigator.pushNamed(
+                          context,
+                          AppRoutes.verifyOtp,
+                          arguments: {
+                            'email': emailController.text.trim(),
+                            'otpType': OtpType.REGISTER,
+                          },
+                        );
+                      }
+                      }
+                      catch(e){
+                        showCustomSnackBar(
+                          context,
+                          'Register failed $e',
                           isError: true,
                         );
                       }
+                      
                     },
                   ),
                   const SizedBox(height: 20),

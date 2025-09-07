@@ -1,5 +1,6 @@
 import 'package:eefood/features/auth/data/models/UserModel.dart';
 import 'package:eefood/features/auth/data/models/otp_model.dart';
+import 'package:eefood/features/auth/data/models/register_response_model.dart';
 import 'package:eefood/features/auth/data/models/response_data_model.dart';
 
 import '../entities/user.dart';
@@ -43,7 +44,7 @@ class GetProfile {
 class Register {
   final AuthRepository repository;
   Register(this.repository);
-  Future<ResponseDataModel<User>> call(String username, String email, String password) => repository.register(username, email, password);
+  Future<ResponseDataModel<RegisterResponseModel>> call(String username, String email, String password) => repository.register(username, email, password);
 }
 
 class VerifyOtp {

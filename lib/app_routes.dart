@@ -14,7 +14,7 @@ import 'features/recipe/presentation/screens/my_recipes_page.dart';
 import 'features/recipe/presentation/screens/search_page.dart';
 import 'features/recipe/presentation/screens/shopping_list_page.dart';
 
-class AppRoutes{
+class AppRoutes {
   static const myApp = '/myapp';
   static const main = '/main';
   static const login = '/login';
@@ -41,8 +41,20 @@ class AppRoutes{
     welcome: (context) => const WelcomePage(),
     splashPage: (context) => const SplashPage(),
     register: (context) => RegisterPage(),
-    verifyOtp: (context) => VerificationOtpPage(),
+    verifyOtp: (context) {
+      final args = ModalRoute.of(context)!.settings.arguments as Map<String, dynamic>;
+      return VerificationOtpPage(
+        email: args['email'],
+        otpType: args['otpType'],
+      );
+    },
     forgotPassword: (context) => ForgotPasswordPage(),
-    resetPassword: (context) => ResetPasswordPage(),
+    resetPassword: (context) {
+      final args = ModalRoute.of(context)!.settings.arguments as Map<String, dynamic>;
+      return ResetPasswordPage(
+        email: args['email'],
+        otpCode: args['otpCode'],
+      );
+    },
   };
 }
