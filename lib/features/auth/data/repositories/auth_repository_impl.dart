@@ -3,6 +3,7 @@ import 'dart:convert';
 
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../../../../core/constants/app_keys.dart';
 import '../../domain/entities/user.dart';
 import '../../domain/repositories/auth_repository.dart';
 import '../models/UserModel.dart';
@@ -38,11 +39,11 @@ class AuthRepositoryImpl implements AuthRepository {
   @override
   Future<void> logout() async {
     try {
-      final refreshToken = sharedPreferences.getString('refresh_token');
+      final refreshToken = sharedPreferences.getString(AppKeys.refreshToken);
       if (refreshToken != null) {
         await dio.post(
           '/v1/auth/logout',
-          data: {'refresh_token': refreshToken},
+          data: {'refreshToken': refreshToken},
           options: Options(contentType: 'application/json'),
         );
       }
@@ -52,10 +53,11 @@ class AuthRepositoryImpl implements AuthRepository {
     }
   }
 
+  /* lay user luu trong local*/
   @override
   Future<User?> getCurrentUser() async {
     try {
-      final userJson = sharedPreferences.getString('user');
+      final userJson = sharedPreferences.getString(AppKeys.user);
       if (userJson != null) {
         final userMap = jsonDecode(userJson);
         return UserModel.fromJson(userMap).toEntity();
@@ -69,11 +71,11 @@ class AuthRepositoryImpl implements AuthRepository {
   @override
   Future<void> refreshToken() async {
     try {
-      final refreshToken = sharedPreferences.getString('refresh_token');
+      final refreshToken = sharedPreferences.getString(AppKeys.refreshToken);
       if (refreshToken != null) {
         final response = await dio.post(
           '/v1/auth/refresh',
-          data: {'refresh_token': refreshToken},
+          data: {'refreshToken': refreshToken},
           options: Options(contentType: 'application/json'),
         );
         final userModel = UserModel.fromJson(response.data['data']);
@@ -91,7 +93,7 @@ class AuthRepositoryImpl implements AuthRepository {
         '/v1/users/me',
         options: Options(
           contentType: 'application/json',
-          headers: {'Authorization': 'Bearer ${sharedPreferences.getString('access_token')}'},
+          headers: {'Authorization': 'Bearer ${sharedPreferences.getString(AppKeys.accessToken)}'},
         ),
       );
       final userModel = UserModel.fromJson(response.data['data']);
@@ -103,14 +105,14 @@ class AuthRepositoryImpl implements AuthRepository {
   }
 
   Future<void> _saveUser(UserModel user) async {
-    await sharedPreferences.setString('user', jsonEncode(user.toJson()));
-    await sharedPreferences.setString('access_token', user.accessToken);
-    await sharedPreferences.setString('refresh_token', user.refreshToken);
+    await sharedPreferences.setString(AppKeys.user, jsonEncode(user.toJson()));
+    await sharedPreferences.setString(AppKeys.accessToken, user.accessToken);
+    await sharedPreferences.setString(AppKeys.refreshToken, user.refreshToken);
   }
 
   Future<void> _clearUser() async {
-    await sharedPreferences.remove('user');
-    await sharedPreferences.remove('access_token');
-    await sharedPreferences.remove('refresh_token');
+    await sharedPreferences.remove(AppKeys.user);
+    await sharedPreferences.remove(AppKeys.accessToken);
+    await sharedPreferences.remove(AppKeys.refreshToken);
   }
 }

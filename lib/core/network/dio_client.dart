@@ -1,4 +1,5 @@
 import 'package:dio/dio.dart';
+import 'package:eefood/core/constants/app_keys.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../features/auth/domain/usecases/auth_usecases.dart';
@@ -24,7 +25,7 @@ class DioClient {
       onRequest: (options, handler) async {
         // Lấy access token từ SharedPreferences
         final prefs = getIt<SharedPreferences>();
-        final accessToken = prefs.getString('access_token');
+        final accessToken = prefs.getString(AppKeys.accessToken);
         if (accessToken != null) {
           options.headers['Authorization'] = 'Bearer $accessToken';
         }
@@ -32,12 +33,14 @@ class DioClient {
       },
       onError: (DioException e, handler) async {
         // Xử lý lỗi 401 (Unauthorized) bằng cách refresh token
-        if (e.response?.statusCode == 401) {
+        if (e.response?.statusCode == 401 && !e.requestOptions.path.contains('/auth/refresh')) {
           try {
-            final refreshToken = getIt<SharedPreferences>().getString('refresh_token');
+            final refreshToken = getIt<SharedPreferences>().getString(AppKeys.refreshToken);
             if (refreshToken != null) {
-              await getIt<RefreshToken>()(); // Gọi use case refresh token
-              final newAccessToken = getIt<SharedPreferences>().getString('access_token');
+
+              // Gọi use case refresh token
+              await getIt<RefreshToken>()();
+              final newAccessToken = getIt<SharedPreferences>().getString(AppKeys.accessToken);
               // Tạo lại request với token mới
               final clonedRequest = await dio.request(
                 e.requestOptions.path,
@@ -50,8 +53,15 @@ class DioClient {
               );
               return handler.resolve(clonedRequest);
             }
-          } catch (e) {
-            // return handler.next(e); // Nếu refresh token thất bại, tiếp tục lỗi
+          } catch (err) {
+            return handler.reject(
+              DioException(
+                requestOptions: e.requestOptions,
+                error: 'Refresh token failed',
+                type: DioExceptionType.badResponse,
+                response: e.response,
+              ),
+            );
           }
         }
         return handler.next(e); // Tiếp tục lỗi nếu không phải 401
