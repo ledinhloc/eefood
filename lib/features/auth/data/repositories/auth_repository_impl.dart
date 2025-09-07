@@ -11,6 +11,7 @@ import '../models/UserModel.dart';
 class AuthRepositoryImpl implements AuthRepository {
   final Dio dio;
   final SharedPreferences sharedPreferences;
+  User? _userCache ;
 
   AuthRepositoryImpl({
     required this.dio,
@@ -30,7 +31,8 @@ class AuthRepositoryImpl implements AuthRepository {
 
       //print log
       print(response);
-      return userModel.toEntity();
+      _userCache = userModel.toEntity();
+      return _userCache!;
     } catch (e) {
       throw Exception('Login failed: $e');
     }
@@ -47,6 +49,7 @@ class AuthRepositoryImpl implements AuthRepository {
           options: Options(contentType: 'application/json'),
         );
       }
+      _userCache = null;
       await _clearUser();
     } catch (e) {
       throw Exception('Logout failed: $e');
@@ -56,15 +59,18 @@ class AuthRepositoryImpl implements AuthRepository {
   /* lay user luu trong local*/
   @override
   Future<User?> getCurrentUser() async {
+    //lay user entity trong local
+    if(_userCache!= null) return _userCache;
     try {
       final userJson = sharedPreferences.getString(AppKeys.user);
-      if (userJson != null) {
-        final userMap = jsonDecode(userJson);
-        return UserModel.fromJson(userMap).toEntity();
-      }
-      return null;
+      if(userJson == null) return null;
+
+      final userMap = jsonDecode(userJson);
+      _userCache = UserModel.fromJson(userMap).toEntity();
+      return _userCache;
     } catch (e) {
-      throw Exception('Failed to get user: $e');
+      // throw Exception('Failed to get user: $e');
+      return null;
     }
   }
 
@@ -104,13 +110,15 @@ class AuthRepositoryImpl implements AuthRepository {
     }
   }
 
-  Future<void> _saveUser(UserModel user) async {
-    await sharedPreferences.setString(AppKeys.user, jsonEncode(user.toJson()));
-    await sharedPreferences.setString(AppKeys.accessToken, user.accessToken);
-    await sharedPreferences.setString(AppKeys.refreshToken, user.refreshToken);
+  Future<void> _saveUser(UserModel userModel) async {
+    _userCache = userModel.toEntity();
+    await sharedPreferences.setString(AppKeys.user, jsonEncode(userModel.toJson()));
+    await sharedPreferences.setString(AppKeys.accessToken, userModel.accessToken);
+    await sharedPreferences.setString(AppKeys.refreshToken, userModel.refreshToken);
   }
 
   Future<void> _clearUser() async {
+    _userCache = null;
     await sharedPreferences.remove(AppKeys.user);
     await sharedPreferences.remove(AppKeys.accessToken);
     await sharedPreferences.remove(AppKeys.refreshToken);
