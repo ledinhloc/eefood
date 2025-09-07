@@ -5,6 +5,7 @@ import 'package:eefood/features/auth/data/models/response_data_model.dart';
 import 'package:eefood/features/auth/domain/entities/otp.dart';
 import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
+import '../../../../core/constants/app_keys.dart';
 import '../../domain/entities/user.dart';
 import '../../domain/repositories/auth_repository.dart';
 import '../models/UserModel.dart';
@@ -38,11 +39,11 @@ class AuthRepositoryImpl implements AuthRepository {
   @override
   Future<void> logout() async {
     try {
-      final refreshToken = sharedPreferences.getString('refresh_token');
+      final refreshToken = sharedPreferences.getString(AppKeys.refreshToken);
       if (refreshToken != null) {
         await dio.post(
           '/v1/auth/logout',
-          data: {'refresh_token': refreshToken},
+          data: {'refreshToken': refreshToken},
           options: Options(contentType: 'application/json'),
         );
       }
@@ -52,10 +53,11 @@ class AuthRepositoryImpl implements AuthRepository {
     }
   }
 
+  /* lay user luu trong local*/
   @override
   Future<User?> getCurrentUser() async {
     try {
-      final userJson = sharedPreferences.getString('user');
+      final userJson = sharedPreferences.getString(AppKeys.user);
       if (userJson != null) {
         final userMap = jsonDecode(userJson);
         return UserModel.fromJson(userMap).toEntity();
@@ -69,11 +71,11 @@ class AuthRepositoryImpl implements AuthRepository {
   @override
   Future<void> refreshToken() async {
     try {
-      final refreshToken = sharedPreferences.getString('refresh_token');
+      final refreshToken = sharedPreferences.getString(AppKeys.refreshToken);
       if (refreshToken != null) {
         final response = await dio.post(
           '/v1/auth/refresh',
-          data: {'refresh_token': refreshToken},
+          data: {'refreshToken': refreshToken},
           options: Options(contentType: 'application/json'),
         );
         final userModel = UserModel.fromJson(response.data['data']);

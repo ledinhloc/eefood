@@ -4,8 +4,8 @@ import 'package:eefood/features/auth/presentation/widgets/custom_text_field.dart
 import 'package:flutter/material.dart';
 import 'package:lottie/lottie.dart';
 
-class ResetPassword extends StatelessWidget {
-  ResetPassword({super.key});
+class ResetPasswordPage extends StatelessWidget {
+  ResetPasswordPage({super.key});
   final passControler = TextEditingController(text: '12345678');
   final confirmPassControler = TextEditingController(text: '12345678');
   @override

@@ -1,12 +1,10 @@
-import 'package:dio/dio.dart';
-import 'package:eefood/core/constants/app_keys.dart';
+import 'package:eefood/app_routes.dart';
 import 'package:eefood/core/widgets/snack_bar.dart';
 import 'package:eefood/features/auth/presentation/screens/forgot_password.dart';
 import 'package:eefood/features/auth/presentation/screens/register_page.dart';
 import 'package:eefood/features/auth/presentation/widgets/custom_text_field.dart';
 import 'package:eefood/main.dart';
 import 'package:flutter/material.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'package:lottie/lottie.dart';
 import '../../../../core/di/injection.dart';
 import '../../domain/entities/user.dart';
@@ -15,10 +13,11 @@ import '../widgets/auth_button.dart';
 
 class LoginPage extends StatelessWidget {
   LoginPage({super.key});
-  final Login _login = getIt<Login>();
-  final emailControler = TextEditingController(text: 'ledinhloc7@gmail.com');
 
-  final passControler = TextEditingController(text: '12345678');
+  final Login _login = getIt<Login>();
+  final emailController = TextEditingController(text: 'ledinhloc7@gmail.com');
+  final passController = TextEditingController(text: '12345678');
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -26,6 +25,7 @@ class LoginPage extends StatelessWidget {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
+            // Back button
             Padding(
               padding: const EdgeInsets.symmetric(vertical: 7, horizontal: 2),
               child: Row(
@@ -37,7 +37,8 @@ class LoginPage extends StatelessWidget {
                 ],
               ),
             ),
-            // Top image
+
+            // Top image (Lottie)
             SizedBox(
               height: 220,
               width: double.infinity,
@@ -49,9 +50,11 @@ class LoginPage extends StatelessWidget {
                 ),
               ),
             ),
+
+            // Login form
             Container(
               width: double.infinity,
-              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 20),
               decoration: BoxDecoration(
                 color: Colors.white,
                 borderRadius: BorderRadius.circular(22),
@@ -66,19 +69,20 @@ class LoginPage extends StatelessWidget {
               ),
               child: Column(
                 children: [
-                  const SizedBox(height: 10),
                   const Text(
                     'Sign in',
                     style: TextStyle(
-                      color: Color.fromARGB(255, 0, 0, 0),
+                      color: Colors.black,
                       fontSize: 25,
                       fontWeight: FontWeight.bold,
                       fontFamily: 'Poppins',
                     ),
                   ),
-                  const SizedBox(height: 10),
+                  const SizedBox(height: 20),
+
+                  // Email
                   CustomTextField(
-                    controller: emailControler,
+                    controller: emailController,
                     labelText: 'Email',
                     prefixIcon: const Icon(Icons.email),
                     enableClear: true,
@@ -87,18 +91,22 @@ class LoginPage extends StatelessWidget {
                     maxLines: 1,
                   ),
                   const SizedBox(height: 10),
+
+                  // Password
                   CustomTextField(
-                    controller: passControler,
+                    controller: passController,
                     labelText: 'Password',
                     isPassword: true,
                     prefixIcon: const Icon(Icons.lock),
                     suffixIcon: const Icon(Icons.visibility_off),
-
                     borderRadius: 8,
                     fillColor: Colors.black,
                     maxLines: 1,
                   ),
-                  const SizedBox(height: 5),
+
+                  const SizedBox(height: 10),
+
+                  // Remember me + Forgot password
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
@@ -120,14 +128,7 @@ class LoginPage extends StatelessWidget {
                       ),
                       TextButton(
                         onPressed: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) {
-                                return ForgotPasswordPage();
-                              },
-                            ),
-                          );
+                          Navigator.pushNamed(context, AppRoutes.forgotPassword);
                         },
                         child: const Text(
                           'Forgot password',
@@ -141,52 +142,39 @@ class LoginPage extends StatelessWidget {
                       ),
                     ],
                   ),
+
                   const SizedBox(height: 20),
-                  /*
-                    Sign in Button
-                    */
+
+                  // Sign in button
                   AuthButton(
                     text: 'Sign in',
                     onPressed: () async {
                       try {
                         User user = await _login(
-                          emailControler.text,
-                          passControler.text,
+                          emailController.text,
+                          passController.text,
                         );
-                        // Navigator.pushReplacementNamed(context, '/home');
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) {
-                              return MyApp();
-                            },
-                          ),
-                        );
+                        Navigator.pushNamed(context, AppRoutes.main);
                       } catch (e) {
-                        // ScaffoldMessenger.of(context).showSnackBar(
-                        //   SnackBar(content: Text('Login failed')),
-                        // );
-                        showCustomSnackBar(
-                          context,
-                          'Login failed',
-                          isError: true,
-                        );
+                        showCustomSnackBar(context, 'Login failed', isError: true);
                       }
                     },
                   ),
+
                   const SizedBox(height: 20),
+
+                  // Divider
                   Row(
                     children: [
-                      Expanded(child: Divider(color: Colors.grey)),
+                      const Expanded(child: Divider(color: Colors.grey)),
                       Padding(
-                        padding: EdgeInsets.symmetric(horizontal: 8.0),
+                        padding: const EdgeInsets.symmetric(horizontal: 8.0),
                         child: Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            Text(
-                              'or continue with? ',
+                            const Text(
+                              'or continue with ',
                               style: TextStyle(
-                                color: Color.fromARGB(255, 0, 0, 0),
+                                color: Colors.black,
                                 fontSize: 13,
                                 fontWeight: FontWeight.normal,
                                 fontFamily: 'Poppins',
@@ -194,32 +182,26 @@ class LoginPage extends StatelessWidget {
                             ),
                             InkWell(
                               onTap: () {
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (context) {
-                                      return RegisterPage();
-                                    },
-                                  ),
-                                );
+                                Navigator.pushNamed(context, AppRoutes.register);
                               },
-                              child: Text(
+                              child: const Text(
                                 'Sign up',
                                 style: TextStyle(
-                                  color: Color.fromARGB(255, 0, 0, 0),
-                                  fontSize: 13,
+                                  color: Colors.blue,
                                   fontWeight: FontWeight.bold,
-                                  fontFamily: 'Poppins',
                                 ),
                               ),
                             ),
                           ],
                         ),
                       ),
-                      Expanded(child: Divider(color: Colors.grey)),
+                      const Expanded(child: Divider(color: Colors.grey)),
                     ],
                   ),
+
                   const SizedBox(height: 20),
+
+                  // Google button
                   AuthButton(
                     text: 'Continue with Google',
                     iconImage: const AssetImage('assets/images/google.png'),

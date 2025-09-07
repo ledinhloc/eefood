@@ -1,3 +1,4 @@
+import 'package:eefood/app_routes.dart';
 import 'package:eefood/core/di/injection.dart';
 import 'package:eefood/core/widgets/snack_bar.dart';
 import 'package:eefood/features/auth/data/models/response_data_model.dart';
@@ -128,14 +129,7 @@ class RegisterPage extends StatelessWidget {
                             isError: true,
                           );
                         } else {
-                          Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) {
-                              return VerificationOtpPage();
-                            },
-                          ),
-                        );
+                          Navigator.pushNamed(context, AppRoutes.verifyOtp);
                         }
                       } catch (e) {
                         showCustomSnackBar(

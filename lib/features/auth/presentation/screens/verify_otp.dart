@@ -1,3 +1,4 @@
+import 'package:eefood/app_routes.dart';
 import 'package:eefood/features/auth/presentation/screens/reset_password.dart';
 import 'package:eefood/features/auth/presentation/widgets/auth_button.dart';
 import 'package:flutter/material.dart';
@@ -146,14 +147,7 @@ class VerificationOtpPage extends StatelessWidget {
               child: AuthButton(
                 text: 'Confirm',
                 onPressed: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) {
-                        return ResetPassword();
-                      },
-                    ),
-                  );
+                  Navigator.pushNamed(context, AppRoutes.resetPassword);
                 },
                 textColor: Colors.white,
               ),
