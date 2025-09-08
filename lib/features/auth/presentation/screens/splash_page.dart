@@ -43,37 +43,31 @@ class _SplashPageState extends State<SplashPage> {
   }
   @override
   Widget build(BuildContext context) {
+    final size = MediaQuery.of(context).size; // lấy kích thước màn hình
     return Scaffold(
       backgroundColor: Colors.white,
-      body: SafeArea(child: Column(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          const SizedBox(height: 50),
-          // Logo ở giữa
-          Expanded(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Image.asset(
-                  'assets/images/logo.png',
-                  width: 500,
-                  height: 500,
-                  fit: BoxFit.contain,
-                ),
-                
-              ],
+      body: SafeArea(
+        child: Column(
+          children: [
+            const Spacer(), // đẩy logo xuống giữa
+            Center(
+              child: Image.asset(
+                'assets/images/logo.png',
+                width: size.width * 0.6,  // chiếm 60% chiều ngang màn hình
+                fit: BoxFit.contain,
+              ),
             ),
-          ),
-          // Loading spinner ở dưới
-          const Padding(padding: EdgeInsets.only(bottom: 40),
-            child: SpinKitCircle(
-              color: Colors.orange,
-              size: 50.0,
+            const Spacer(),
+            const Padding(
+              padding: EdgeInsets.only(bottom: 30),
+              child: SpinKitCircle(
+                color: Colors.orange,
+                size: 50.0,
+              ),
             ),
-          ),
-        ],
-        
-      )),
+          ],
+        ),
+      ),
     );
   }
 }

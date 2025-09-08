@@ -3,7 +3,7 @@ import 'package:eefood/app_routes.dart';
 import 'package:eefood/core/di/injection.dart';
 import 'package:eefood/core/widgets/snack_bar.dart';
 import 'package:eefood/features/auth/data/models/otp_model.dart';
-import 'package:eefood/features/auth/data/models/response_data_model.dart';
+import 'package:eefood/features/auth/data/models/result_model.dart';
 import 'package:eefood/features/auth/domain/usecases/auth_usecases.dart';
 import 'package:eefood/features/auth/presentation/widgets/auth_button.dart';
 import 'package:flutter/material.dart';
@@ -50,6 +50,35 @@ class _VerificationOtpPageState extends State<VerificationOtpPage> {
         });
       }
     });
+  }
+
+  void _fetchApiVerifyOtp() async {
+    final otpCode = _otpController.text;
+    if (otpCode.length != 6) {
+      showCustomSnackBar(context,'OTP không hợp lệ',isError: true);
+      return;
+    }
+    try {
+      Result<bool> isVerified = await _verifyOtp(widget.email, otpCode, widget.otpType);
+      if (isVerified.isFailure) {
+        showCustomSnackBar(context,isVerified.error!,isError: true);
+      } 
+      else {
+        if (widget.otpType == OtpType.FORGOT_PASSWORD) {
+          Navigator.pushNamed(context, AppRoutes.resetPassword,
+            arguments: {
+              'email': widget.email,
+              'otpCode': otpCode,
+            },
+          );
+        } 
+        else {
+          Navigator.pushNamedAndRemoveUntil(context,AppRoutes.login,(route) => false);
+        }
+      }
+    } catch (e) {
+      showCustomSnackBar(context,'Verify OTP failed $e',isError: true);
+    }
   }
 
   @override
@@ -206,53 +235,7 @@ class _VerificationOtpPageState extends State<VerificationOtpPage> {
               child: AuthButton(
                 text: 'Confirm',
                 onPressed: () async {
-                  final otpCode = _otpController.text;
-                  if (otpCode.length != 6) {
-                    showCustomSnackBar(
-                      context,
-                      'OTP không hợp lệ',
-                      isError: true,
-                    );
-                    return;
-                  }
-                  try {
-                    ResponseDataModel<bool> isVerified = await _verifyOtp(
-                      widget.email,
-                      otpCode,
-                      widget.otpType,
-                    );
-
-                    if (isVerified.data == true) {
-                      if (widget.otpType == OtpType.FORGOT_PASSWORD) {
-                        Navigator.pushNamed(
-                          context,
-                          AppRoutes.resetPassword,
-                          arguments: {
-                            'email': widget.email,
-                            'otpCode': otpCode,
-                          },
-                        );
-                      } else {
-                        Navigator.pushNamedAndRemoveUntil(
-                          context,
-                          AppRoutes.login,
-                          (route) => false,
-                        );
-                      }
-                    } else {
-                      showCustomSnackBar(
-                        context,
-                        isVerified.message,
-                        isError: true,
-                      );
-                    }
-                  } catch (e) {
-                    showCustomSnackBar(
-                      context,
-                      'Verify OTP failed $e',
-                      isError: true,
-                    );
-                  }
+                  _fetchApiVerifyOtp();
                 },
                 textColor: Colors.white,
               ),
