@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../../core/di/injection.dart';
+import '../../../../core/widgets/user_avatar.dart';
 import '../../../auth/domain/entities/user.dart';
 import '../../../auth/domain/usecases/auth_usecases.dart';
 
@@ -33,11 +34,7 @@ class ProfilePage extends StatelessWidget {
                 // Profile Header
                 Row(
                   children: [
-                    CircleAvatar(
-                      radius: 40,
-                      // backgroundColor: Colors.amber,
-                      backgroundImage: NetworkImage(user.avatarUrl ?? ''),
-                    ),
+                    UserAvatar(avatarUrl: user.avatarUrl, username: user.username,),
                     const SizedBox(width: 16),
                     Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -60,6 +57,10 @@ class ProfilePage extends StatelessWidget {
                         ),
                       ],
                     ),
+                    IconButton(onPressed: () async {
+                      await _logout();
+                      Navigator.pushNamedAndRemoveUntil(context, AppRoutes.welcome, (route) => true,);
+                    }, icon: Icon(Icons.exit_to_app_outlined))
                   ],
                 ),
                 const SizedBox(height: 20),

@@ -49,7 +49,6 @@ class AuthRepositoryImpl implements AuthRepository {
           options: Options(contentType: 'application/json'),
         );
       }
-      _userCache = null;
       await _clearUser();
     } catch (e) {
       throw Exception('Logout failed: $e');
