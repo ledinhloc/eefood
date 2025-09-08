@@ -15,7 +15,7 @@ class LoginPage extends StatelessWidget {
   LoginPage({super.key});
 
   final Login _login = getIt<Login>();
-  final emailController = TextEditingController(text: 'ledinhloc7@gmail.com');
+  final emailController = TextEditingController(text: 'anhkhoadevtool2109@gmail.com');
   final passController = TextEditingController(text: '12345678');
 
   @override
@@ -154,9 +154,11 @@ class LoginPage extends StatelessWidget {
                           emailController.text,
                           passController.text,
                         );
+                        print(user);
                         Navigator.pushNamed(context, AppRoutes.main);
                       } catch (e) {
-                        showCustomSnackBar(context, 'Login failed', isError: true);
+                        showCustomSnackBar(context, 'Login failed: $e', isError: true);
+                        print(e);
                       }
                     },
                   ),

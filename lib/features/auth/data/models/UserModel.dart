@@ -8,10 +8,10 @@ class UserModel {
   final String username;
   final String email;
   final String role;
-  final String dob;
-  final String gender;
+  final String? dob;
+  final String? gender;
   @JsonKey(name: 'address')
-  final AddressModel address;
+  final AddressModel? address;
   final String provider;
   final String? avatarUrl;
   final List<String> allergies;
@@ -26,9 +26,9 @@ class UserModel {
     required this.username,
     required this.email,
     required this.role,
-    required this.dob,
-    required this.gender,
-    required this.address,
+    this.dob,
+    this.gender,
+    this.address,
     required this.provider,
     this.avatarUrl,
     required this.allergies,
@@ -44,11 +44,13 @@ class UserModel {
       username: json['username'] as String,
       email: json['email'] as String,
       role: json['role'] as String,
-      dob: json['dob'] as String,
-      gender: json['gender'] as String,
-      address: AddressModel.fromJson(json['address'] as Map<String, dynamic>),
+      dob: json['dob'] != null ? json['dob'].toString() : null,
+      gender: json['gender'] != null ? json['gender'].toString() : null,
+      address: json['address'] != null
+          ? AddressModel.fromJson(Map<String, dynamic>.from(json['address']))
+          : null,
       provider: json['provider'] as String,
-      avatarUrl: json['avatarUrl'] as String?,
+      avatarUrl: json['avatarUrl'] != null ? json['avatarUrl'].toString() : null,
       allergies: List<String>.from(json['allergies'] ?? []),
       eatingPreferences: List<String>.from(json['eatingPreferences'] ?? []),
       accessToken: json['accessToken'] as String,
@@ -66,7 +68,7 @@ class UserModel {
       'role': role,
       'dob': dob,
       'gender': gender,
-      'address': address.toJson(),
+      'address': address?.toJson(),
       'provider': provider,
       'avatarUrl': avatarUrl,
       'allergies': allergies,
@@ -83,7 +85,7 @@ class UserModel {
     role: role,
     dob: dob,
     gender: gender,
-    address: address.toEntity(),
+    address: address?.toEntity(),
     provider: provider,
     avatarUrl: avatarUrl,
     allergies: allergies,
@@ -101,8 +103,8 @@ class AddressModel {
   // factory AddressModel.fromJson(Map<String, dynamic> json) => _$AddressModelFromJson(json);
   factory AddressModel.fromJson(Map<String, dynamic> json) {
     return AddressModel(
-      city: json['city'] as String,
-      street: json['street'] as String,
+      city: json['city'] != null ? json['city'].toString() : '',
+      street: json['street'] != null ? json['street'].toString() : '',
     );
   }
 

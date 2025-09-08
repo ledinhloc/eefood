@@ -3,6 +3,7 @@ import 'package:eefood/core/constants/app_keys.dart';
 import 'package:eefood/features/auth/data/models/otp_model.dart';
 import 'package:eefood/features/auth/data/models/register_response_model.dart';
 import 'package:eefood/features/auth/data/models/result_model.dart';
+import 'package:flutter/material.dart';
 import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../../../core/constants/app_keys.dart';
@@ -31,9 +32,11 @@ class AuthRepositoryImpl implements AuthRepository {
 
       //print log
       print(response);
+      
       _userCache = userModel.toEntity();
       return _userCache!;
     } catch (e) {
+      print(e);
       throw Exception('Login failed: $e');
     }
   }

@@ -19,7 +19,7 @@ class ForgotPasswordPage extends StatelessWidget {
   void _fetchApiForgotPassword(BuildContext context) async {
     final String email = emailController.text;
 
-    if (isValidEmail(email)) {
+    if (!isValidEmail(email)) {
       showCustomSnackBar(context, 'Email không hợp lệ', isError: true);
       return;
     }
