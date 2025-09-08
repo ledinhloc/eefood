@@ -15,8 +15,12 @@ import 'dart:async';
 class AuthRepositoryImpl implements AuthRepository {
   final Dio dio;
   final SharedPreferences sharedPreferences;
+  User? _userCache ;
 
-  AuthRepositoryImpl({required this.dio, required this.sharedPreferences});
+  AuthRepositoryImpl({
+    required this.dio,
+    required this.sharedPreferences,
+  });
 
   @override
   Future<User> login(String email, String password) async {
@@ -31,7 +35,8 @@ class AuthRepositoryImpl implements AuthRepository {
 
       //print log
       print(response);
-      return userModel.toEntity();
+      _userCache = userModel.toEntity();
+      return _userCache!;
     } catch (e) {
       throw Exception('Login failed: $e');
     }
@@ -57,15 +62,18 @@ class AuthRepositoryImpl implements AuthRepository {
   /* lay user luu trong local*/
   @override
   Future<User?> getCurrentUser() async {
+    //lay user entity trong local
+    if(_userCache!= null) return _userCache;
     try {
       final userJson = sharedPreferences.getString(AppKeys.user);
-      if (userJson != null) {
-        final userMap = jsonDecode(userJson);
-        return UserModel.fromJson(userMap).toEntity();
-      }
-      return null;
+      if(userJson == null) return null;
+
+      final userMap = jsonDecode(userJson);
+      _userCache = UserModel.fromJson(userMap).toEntity();
+      return _userCache;
     } catch (e) {
-      throw Exception('Failed to get user: $e');
+      // throw Exception('Failed to get user: $e');
+      return null;
     }
   }
 
@@ -94,10 +102,7 @@ class AuthRepositoryImpl implements AuthRepository {
         '/v1/users/me',
         options: Options(
           contentType: 'application/json',
-          headers: {
-            'Authorization':
-                'Bearer ${sharedPreferences.getString('access_token')}',
-          },
+          headers: {'Authorization': 'Bearer ${sharedPreferences.getString(AppKeys.accessToken)}'},
         ),
       );
       final userModel = UserModel.fromJson(response.data['data']);
@@ -119,7 +124,7 @@ class AuthRepositoryImpl implements AuthRepository {
       print(response.data);
       final resp = ResponseDataModel<RegisterResponseModel>.fromJson(
         response.data as Map<String, dynamic>,
-        (json) => RegisterResponseModel.fromJson(json as Map<String, dynamic>),
+            (json) => RegisterResponseModel.fromJson(json as Map<String, dynamic>),
       );
       return resp;
     } catch (e) {
@@ -137,7 +142,7 @@ class AuthRepositoryImpl implements AuthRepository {
       );
       final resp = ResponseDataModel.fromJson(
         response.data as Map<String, dynamic>,
-        (json) => json as bool,
+            (json) => json as bool,
       );
       return ResponseDataModel<bool>(
         status: resp.status,
@@ -160,7 +165,7 @@ class AuthRepositoryImpl implements AuthRepository {
 
       final resp = ResponseDataModel.fromJson(
         response.data as Map<String, dynamic>,
-        (json) => json as bool,
+            (json) => json as bool,
       );
       return ResponseDataModel<bool>(
         status: resp.status,
@@ -174,10 +179,10 @@ class AuthRepositoryImpl implements AuthRepository {
 
   @override
   Future<ResponseDataModel<bool>> resetPassword(
-    String email,
-    String otpCode,
-    String newPassword,
-  ) async {
+      String email,
+      String otpCode,
+      String newPassword,
+      ) async {
     try {
       final response = await dio.post(
         '/v1/auth/forgot-password/reset',
@@ -187,7 +192,7 @@ class AuthRepositoryImpl implements AuthRepository {
 
       final resp = ResponseDataModel.fromJson(
         response.data as Map<String, dynamic>,
-        (json) => json as bool,
+            (json) => json as bool,
       );
       return ResponseDataModel<bool>(
         status: resp.status,
@@ -199,13 +204,15 @@ class AuthRepositoryImpl implements AuthRepository {
     }
   }
 
-  Future<void> _saveUser(UserModel user) async {
-    await sharedPreferences.setString(AppKeys.user, jsonEncode(user.toJson()));
-    await sharedPreferences.setString(AppKeys.accessToken, user.accessToken);
-    await sharedPreferences.setString(AppKeys.refreshToken, user.refreshToken);
+  Future<void> _saveUser(UserModel userModel) async {
+    _userCache = userModel.toEntity();
+    await sharedPreferences.setString(AppKeys.user, jsonEncode(userModel.toJson()));
+    await sharedPreferences.setString(AppKeys.accessToken, userModel.accessToken);
+    await sharedPreferences.setString(AppKeys.refreshToken, userModel.refreshToken);
   }
 
   Future<void> _clearUser() async {
+    _userCache = null;
     await sharedPreferences.remove(AppKeys.user);
     await sharedPreferences.remove(AppKeys.accessToken);
     await sharedPreferences.remove(AppKeys.refreshToken);
