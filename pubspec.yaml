@@ -45,6 +45,8 @@ dependencies:
   flutter_bloc: ^9.1.1
 
   flutter_launcher_icons: ^0.14.4
+  image_picker: ^1.2.0 #chon anh
+  permission_handler: ^12.0.1 #xin quyen
 
 
 dev_dependencies:
