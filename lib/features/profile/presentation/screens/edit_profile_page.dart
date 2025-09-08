@@ -1,7 +1,10 @@
 import 'dart:io';
 
+import 'package:eefood/core/di/injection.dart';
 import 'package:eefood/core/widgets/snack_bar.dart';
 import 'package:eefood/core/widgets/user_avatar.dart';
+import 'package:eefood/features/auth/data/models/UserModel.dart';
+import 'package:eefood/features/profile/domain/usecases/profile_usecase.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:permission_handler/permission_handler.dart';
@@ -24,10 +27,10 @@ class _EditProfilePageState extends State<EditProfilePage> {
   late TextEditingController genderController;
   late TextEditingController streetController;
   late TextEditingController cityController;
-  File? _avatarImage;
+  File? _avatarFile;
 
   final ImagePicker _picker = ImagePicker();
-
+  final UpdateProfile _updateProfile = getIt<UpdateProfile>();
 
   @override
   void initState() {
@@ -38,8 +41,8 @@ class _EditProfilePageState extends State<EditProfilePage> {
     roleController = TextEditingController(text: widget.user.role);
     dobController = TextEditingController(text: widget.user.dob);
     genderController = TextEditingController(text: widget.user.gender);
-    streetController = TextEditingController(text: widget.user.address.street);
-    cityController = TextEditingController(text: widget.user.address.city);
+    streetController = TextEditingController(text: widget.user.address?.street);
+    cityController = TextEditingController(text: widget.user.address?.city);
   }
 
   @override
@@ -55,6 +58,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
     super.dispose();
   }
 
+  //chon anh
   Future<void> _handleChangeAvatar() async {
     // Xin quyền đọc ảnh
     bool granted = await _requestPermission(
@@ -75,11 +79,11 @@ class _EditProfilePageState extends State<EditProfilePage> {
 
     if (pickedFile != null) {
       setState(() {
-        _avatarImage = File(pickedFile.path);
+        _avatarFile = File(pickedFile.path);
       });
 
       // TODO: gọi repository upload avatar lên server
-      // ví dụ: await userRepository.updateAvatar(_avatarImage);
+      // ví dụ: await userRepository.updateAvatar(_avatarFile);
     }
   }
 
@@ -88,6 +92,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
     return status.isGranted;
   }
 
+  //chon ngay sinh
   Future<void> _pickDate() async {
     final DateTime? picked = await showDatePicker(
       context: context,
@@ -102,8 +107,22 @@ class _EditProfilePageState extends State<EditProfilePage> {
     }
   }
 
-  void _onSave(){
-    print("Save profile...");
+  //luu thay doi
+  Future<void> _onSave() async {
+    final result = await _updateProfile(
+        UserModel(
+            id: widget.user.id,
+            username: usernameController.text,
+            email: emailController.text,
+            dob: dobController.text,
+            gender: genderController.text,
+            address: AddressModel(city: cityController.text, street: streetController.text),
+        ));
+
+    if(!mounted) return;
+    if (result.isSuccess) {
+      showCustomSnackBar(context, 'Đã lưu thông tin thành công');
+    }
     Navigator.pop(context);
   }
 
@@ -113,7 +132,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
       appBar: AppBar(
         title: Text('Edit profile'),
         actions: [
-          IconButton(onPressed:() => _onSave(), icon: const Icon(Icons.check)),
+          IconButton(onPressed: () async => await _onSave(), icon: const Icon(Icons.check)),
         ],
       ),
       body:SingleChildScrollView(
@@ -124,7 +143,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
             Stack(
               alignment: Alignment.bottomRight,
               children: [
-                UserAvatar(username: widget.user.username, avatarUrl: widget.user.avatarUrl,radius: 60,),
+                UserAvatar(username: widget.user.username, avatarFile: _avatarFile, avatarUrl: widget.user.avatarUrl,radius: 60,),
                 Container(
                   padding: const EdgeInsets.all(1),
                   decoration: BoxDecoration(

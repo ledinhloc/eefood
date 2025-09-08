@@ -207,8 +207,8 @@ class AuthRepositoryImpl implements AuthRepository {
   Future<void> _saveUser(UserModel userModel) async {
     _userCache = userModel.toEntity();
     await sharedPreferences.setString(AppKeys.user, jsonEncode(userModel.toJson()));
-    await sharedPreferences.setString(AppKeys.accessToken, userModel.accessToken);
-    await sharedPreferences.setString(AppKeys.refreshToken, userModel.refreshToken);
+    await sharedPreferences.setString(AppKeys.accessToken, userModel.accessToken ?? '');
+    await sharedPreferences.setString(AppKeys.refreshToken, userModel.refreshToken ?? '');
   }
 
   Future<void> _clearUser() async {
