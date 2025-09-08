@@ -30,4 +30,8 @@ Future<void> setupDependencies() async {
   getIt.registerLazySingleton(() => GetCurrentUser(getIt<AuthRepository>()));
   getIt.registerLazySingleton(() => RefreshToken(getIt<AuthRepository>()));
   getIt.registerLazySingleton(() => GetProfile(getIt<AuthRepository>()));
+  getIt.registerLazySingleton(() => Register(getIt<AuthRepository>()));
+  getIt.registerLazySingleton(() => VerifyOtp(getIt<AuthRepository>()));
+  getIt.registerLazySingleton(() => ForgotPassword(getIt<AuthRepository>()));
+  getIt.registerLazySingleton(() => ResetPassword(getIt<AuthRepository>()));
 }
