@@ -28,7 +28,7 @@ class AuthRepositoryImpl implements AuthRepository {
       final response = await dio.post(
         '/v1/auth/login',
         data: {'email': email, 'password': password},
-        options: Options(contentType: 'application/json'),
+        options: Options(contentType: 'application/json', extra: {'requireAuth': false}),
       );
       final userModel = UserModel.fromJson(response.data['data']);
       await _saveUser(userModel);
@@ -50,11 +50,12 @@ class AuthRepositoryImpl implements AuthRepository {
         await dio.post(
           '/v1/auth/logout',
           data: {'refreshToken': refreshToken},
-          options: Options(contentType: 'application/json'),
+          options: Options(contentType: 'application/json', extra: {'requireAuth': false}),
         );
       }
       await _clearUser();
-    } catch (e) {
+    }
+    catch (e) {
       throw Exception('Logout failed: $e');
     }
   }
@@ -85,7 +86,7 @@ class AuthRepositoryImpl implements AuthRepository {
         final response = await dio.post(
           '/v1/auth/refresh',
           data: {'refreshToken': refreshToken},
-          options: Options(contentType: 'application/json'),
+          options: Options(contentType: 'application/json', extra: {'requireAuth': false}),
         );
         final userModel = UserModel.fromJson(response.data['data']);
         await _saveUser(userModel);
@@ -100,10 +101,7 @@ class AuthRepositoryImpl implements AuthRepository {
     try {
       final response = await dio.get(
         '/v1/users/me',
-        options: Options(
-          contentType: 'application/json',
-          headers: {'Authorization': 'Bearer ${sharedPreferences.getString(AppKeys.accessToken)}'},
-        ),
+        options: Options( contentType: 'application/json',),
       );
       final userModel = UserModel.fromJson(response.data['data']);
       await _saveUser(userModel);
@@ -119,7 +117,7 @@ class AuthRepositoryImpl implements AuthRepository {
       final response = await dio.post(
         '/v1/auth/register',
         data: {'username': username, 'email': email, 'password': password},
-        options: Options(contentType: 'application/json'),
+        options: Options(contentType: 'application/json', extra: {'requireAuth': false}),
       );
       print(response.data);
       final resp = ResponseDataModel<RegisterResponseModel>.fromJson(
@@ -138,7 +136,7 @@ class AuthRepositoryImpl implements AuthRepository {
       final response = await dio.post(
         '/v1/auth/verify-otp',
         data: {'email': email, 'otpCode': otpCode, 'otpType': otpType.name},
-        options: Options(contentType: 'application/json'),
+        options: Options(contentType: 'application/json', extra: {'requireAuth': false}),
       );
       final resp = ResponseDataModel.fromJson(
         response.data as Map<String, dynamic>,
@@ -160,7 +158,7 @@ class AuthRepositoryImpl implements AuthRepository {
       final response = await dio.post(
         '/v1/auth/forgot-password/request',
         data: {'email': email},
-        options: Options(contentType: 'application/json'),
+        options: Options(contentType: 'application/json', extra: {'requireAuth': false}),
       );
 
       final resp = ResponseDataModel.fromJson(
@@ -187,7 +185,7 @@ class AuthRepositoryImpl implements AuthRepository {
       final response = await dio.post(
         '/v1/auth/forgot-password/reset',
         data: {'email': email, 'otp': otpCode, 'newPassword': newPassword},
-        options: Options(contentType: 'application/json'),
+        options: Options(contentType: 'application/json', extra: {'requireAuth': false}),
       );
 
       final resp = ResponseDataModel.fromJson(
