@@ -28,7 +28,7 @@ class RegisterPage extends StatelessWidget {
       if (result.isFailure) {
         showCustomSnackBar(context, result.error!, isError: true);
       } else {
-        Navigator.pushNamed(
+        Navigator.pushReplacementNamed(
           context,
           AppRoutes.verifyOtp,
           arguments: {

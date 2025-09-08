@@ -3,9 +3,9 @@ class User{
   final String username;
   final String email;
   final String role;
-  final String dob;
-  final String gender;
-  final Address address;
+  final String? dob;
+  final String? gender;
+  final Address? address;
   final String provider;
   final String? avatarUrl;
   final List<String> allergies;
@@ -16,9 +16,9 @@ class User{
     required this.username,
     required this.email,
     required this.role,
-    required this.dob,
-    required this.gender,
-    required this.address,
+    this.dob,
+    this.gender,
+    this.address,
     required this.provider,
     this.avatarUrl,
     required this.allergies,
