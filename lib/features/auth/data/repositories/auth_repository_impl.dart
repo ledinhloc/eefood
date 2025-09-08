@@ -144,10 +144,6 @@ class AuthRepositoryImpl implements AuthRepository {
         data: {'email': email, 'otpCode': otpCode, 'otpType': otpType.name},
         options: Options(contentType: 'application/json', extra: {'requireAuth': false}),
       );
-      final resp = ResponseDataModel.fromJson(
-        response.data as Map<String, dynamic>,
-            (json) => json as bool,
-      );
       final json = response.data as Map<String, dynamic>;
       final status = json['status'] as int;
       final message = json['message'] as String;
@@ -170,10 +166,6 @@ class AuthRepositoryImpl implements AuthRepository {
         options: Options(contentType: 'application/json', extra: {'requireAuth': false}),
       );
 
-      final resp = ResponseDataModel.fromJson(
-        response.data as Map<String, dynamic>,
-            (json) => json as bool,
-      );
       final json = response.data as Map<String, dynamic>;
       final status = json['status'] as int;
       final message = json['message'] as String;
@@ -196,10 +188,6 @@ class AuthRepositoryImpl implements AuthRepository {
         options: Options(contentType: 'application/json', extra: {'requireAuth': false}),
       );
 
-      final resp = ResponseDataModel.fromJson(
-        response.data as Map<String, dynamic>,
-            (json) => json as bool,
-      );
       final json = response.data as Map<String, dynamic>;
       final status = json['status'] as int;
       final message = json['message'] as String;
