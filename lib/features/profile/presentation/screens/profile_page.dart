@@ -14,6 +14,41 @@ class ProfilePage extends StatelessWidget {
   final  _logout = getIt<Logout>();
   final _getCurrentUser = getIt<GetCurrentUser>();
 
+  Future<void> _handlerLogout(BuildContext context) async{
+    if (!context.mounted) return;
+
+    final confirm = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text("Confirm Logout"),
+        content: const Text("Are you sure you want to log out?"),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text("Cancel"),
+          ),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.redAccent,
+            ),
+            onPressed: () => Navigator.pop(context, true),
+            child: const Text("Logout"),
+          ),
+        ],
+      ),
+    );
+
+    if (confirm == true) {
+      await _logout();
+      if (!context.mounted) return;
+      Navigator.pushNamedAndRemoveUntil(
+        context,
+        AppRoutes.welcome,
+            (route) => true,
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
@@ -57,10 +92,10 @@ class ProfilePage extends StatelessWidget {
                         ),
                       ],
                     ),
-                    IconButton(onPressed: () async {
-                      await _logout();
-                      Navigator.pushNamedAndRemoveUntil(context, AppRoutes.welcome, (route) => true,);
-                    }, icon: Icon(Icons.exit_to_app_outlined))
+                    const Spacer(),
+                    /* Xu ly logout*/
+                    IconButton(onPressed: () async =>await _handlerLogout(context), icon: Icon(Icons.exit_to_app_outlined, color: Colors.black, size: 30,),
+                    )
                   ],
                 ),
                 const SizedBox(height: 20),
@@ -73,15 +108,15 @@ class ProfilePage extends StatelessWidget {
                 ),
 
                 Card(
-                  color: Colors.amber[50],
+                  color: Colors.red[50],
                   child: ListTile(
-                    leading: const Icon(Icons.star, color: Colors.purple),
+                    leading: const Icon(Icons.star, color: Colors.red),
                     title: const Text(
                         "Try all Plus features for free during your 7-day trial period!"),
                     trailing: ElevatedButton(
                       onPressed: () {},
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.purple,
+                        backgroundColor: Colors.yellow.shade200,
                       ),
                       child: const Text("Try for free"),
                     ),
@@ -101,17 +136,12 @@ class ProfilePage extends StatelessWidget {
                   leading: const Icon(Icons.restore),
                   title: const Text("Restore purchases"),
                 ),
-
                 const SizedBox(height: 16),
                 const Text("System", style: TextStyle(fontWeight: FontWeight.bold)),
                 ListTile(
                   leading: const Icon(Icons.language),
                   title: const Text("Languages"),
                   onTap: () => Navigator.pushNamed(context, AppRoutes.language),
-                ),
-                ListTile(
-                  leading: const Icon(Icons.scale),
-                  title: const Text("Measurement System"),
                 ),
                 ListTile(
                   leading: const Icon(Icons.notifications_none),
