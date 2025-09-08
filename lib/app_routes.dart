@@ -11,6 +11,7 @@ import 'package:eefood/features/profile/presentation/screens/language_page.dart'
 import 'package:eefood/main.dart';
 import 'package:eefood/main_screen.dart';
 import 'package:flutter/material.dart';
+import 'features/auth/presentation/screens/forgot_password.dart';
 import 'features/profile/presentation/screens/profile_page.dart';
 import 'features/recipe/presentation/screens/home_page.dart';
 import 'features/recipe/presentation/screens/my_recipes_page.dart';

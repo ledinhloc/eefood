@@ -23,6 +23,9 @@ class DioClient {
     // Thêm interceptor để xử lý token và refresh token
     dio.interceptors.add(InterceptorsWrapper(
       onRequest: (options, handler) async {
+        //neu khong requireAuth
+        final requireAuth = options.extra['requireAuth'] ?? true;
+        if(!requireAuth) return handler.next(options);
         // Lấy access token từ SharedPreferences
         final prefs = getIt<SharedPreferences>();
         final accessToken = prefs.getString(AppKeys.accessToken);
