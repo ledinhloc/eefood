@@ -1,7 +1,6 @@
-import 'package:eefood/features/auth/data/models/UserModel.dart';
 import 'package:eefood/features/auth/data/models/otp_model.dart';
 import 'package:eefood/features/auth/data/models/register_response_model.dart';
-import 'package:eefood/features/auth/data/models/response_data_model.dart';
+import 'package:eefood/features/auth/data/models/result_model.dart';
 
 import '../entities/user.dart';
 import '../repositories/auth_repository.dart';
@@ -44,23 +43,23 @@ class GetProfile {
 class Register {
   final AuthRepository repository;
   Register(this.repository);
-  Future<ResponseDataModel<RegisterResponseModel>> call(String username, String email, String password) => repository.register(username, email, password);
+  Future<Result<RegisterResponseModel>> call(String username, String email, String password) => repository.register(username, email, password);
 }
 
 class VerifyOtp {
   final AuthRepository repository;
   VerifyOtp(this.repository);
-  Future<ResponseDataModel<bool>> call(String email, String otpCode, OtpType otpType) => repository.verifyOtp(email, otpCode, otpType);
+  Future<Result<bool>> call(String email, String otpCode, OtpType otpType) => repository.verifyOtp(email, otpCode, otpType);
 }
 
 class ForgotPassword {
   final AuthRepository repository;
   ForgotPassword(this.repository);
-  Future<ResponseDataModel<bool>> call(String email) => repository.forgotPassword(email);
+  Future<Result<bool>> call(String email) => repository.forgotPassword(email);
 }
 
 class ResetPassword {
   final AuthRepository repository;
   ResetPassword(this.repository);
-  Future<ResponseDataModel<bool>> call(String email, String otpCode, String newPassword) => repository.resetPassword(email, otpCode, newPassword);
+  Future<Result<bool>> call(String email, String otpCode, String newPassword) => repository.resetPassword(email, otpCode, newPassword);
 }

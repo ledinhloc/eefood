@@ -1,6 +1,6 @@
 import 'package:eefood/core/di/injection.dart';
 import 'package:eefood/core/widgets/snack_bar.dart';
-import 'package:eefood/features/auth/data/models/response_data_model.dart';
+import 'package:eefood/features/auth/data/models/result_model.dart';
 import 'package:eefood/features/auth/domain/usecases/auth_usecases.dart';
 import 'package:eefood/features/auth/presentation/widgets/auth_button.dart';
 import 'package:eefood/features/auth/presentation/widgets/custom_dialog.dart';
@@ -41,12 +41,8 @@ class _ResetPasswordPageState extends State<ResetPasswordPage> {
   }
 
   void _fetchApiRestPassword() async {
-    ResponseDataModel<bool> isReset = await _resetPassword(
-      widget.email,
-      widget.otpCode,
-      confirmPassController.text,
-    );
-    (isReset == true) ?
+    Result<bool> isReset = await _resetPassword(widget.email, widget.otpCode, confirmPassController.text);
+    (isReset.isSuccess && isReset.data == true) ?
       showDialog(
         context: context,
         builder: (context) => CustomDialog(
@@ -59,7 +55,7 @@ class _ResetPasswordPageState extends State<ResetPasswordPage> {
           },
         ),
       )
-    : showCustomSnackBar(context,isReset.message,isError: true);
+    : showCustomSnackBar(context, isReset.error!, isError: true);
   }
 
   @override

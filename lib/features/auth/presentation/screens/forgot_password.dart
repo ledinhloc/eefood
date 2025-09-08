@@ -3,9 +3,8 @@ import 'package:eefood/core/di/injection.dart';
 import 'package:eefood/core/utils/helpers.dart';
 import 'package:eefood/core/widgets/snack_bar.dart';
 import 'package:eefood/features/auth/data/models/otp_model.dart';
-import 'package:eefood/features/auth/data/models/response_data_model.dart';
+import 'package:eefood/features/auth/data/models/result_model.dart';
 import 'package:eefood/features/auth/domain/usecases/auth_usecases.dart';
-import 'package:eefood/features/auth/presentation/screens/verify_otp.dart';
 import 'package:eefood/features/auth/presentation/widgets/auth_button.dart';
 import 'package:eefood/features/auth/presentation/widgets/custom_text_field.dart';
 import 'package:flutter/material.dart';
@@ -16,6 +15,29 @@ class ForgotPasswordPage extends StatelessWidget {
 
   final ForgotPassword _forgotPassword = getIt<ForgotPassword>();
   final emailController = TextEditingController(text: 'ledinhloc7@gmail.com');
+
+  void _fetchApiForgotPassword(BuildContext context) async {
+    final String email = emailController.text;
+
+    if (isValidEmail(email)) {
+      showCustomSnackBar(context, 'Email không hợp lệ', isError: true);
+      return;
+    }
+    try {
+      Result<bool> forgotPass = await _forgotPassword(email);
+
+      (forgotPass.data == true && forgotPass.isSuccess)
+          ? Navigator.pushNamed(context,AppRoutes.verifyOtp,
+              arguments: {
+                'email': emailController.text.trim(),
+                'otpType': OtpType.FORGOT_PASSWORD,
+              },
+            )
+          : showCustomSnackBar(context, forgotPass.error!, isError: true);
+    } catch (e) {
+      showCustomSnackBar(context, 'Forgot password failed: $e', isError: true);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -105,43 +127,7 @@ class ForgotPasswordPage extends StatelessWidget {
               child: AuthButton(
                 text: 'Confirm',
                 onPressed: () async {
-                  final String email = emailController.text;
-
-                  if (isValidEmail(email)) {
-                    showCustomSnackBar(
-                      context,
-                      'Email không hợp lệ',
-                      isError: true,
-                    );
-                    return;
-                  }
-
-                  try {
-                    ResponseDataModel<bool> forgotPass = await _forgotPassword(
-                      email,
-                    );
-
-                    (forgotPass.data == true)
-                        ? Navigator.pushNamed(
-                            context,
-                            AppRoutes.verifyOtp,
-                            arguments: {
-                              'email': emailController.text.trim(),
-                              'otpType': OtpType.FORGOT_PASSWORD,
-                            },
-                          )
-                        : showCustomSnackBar(
-                            context,
-                            forgotPass.message,
-                            isError: true,
-                          );
-                  } catch (e) {
-                    showCustomSnackBar(
-                      context,
-                      'Forgot password failed: $e',
-                      isError: true,
-                    );
-                  }
+                  _fetchApiForgotPassword(context);
                 },
                 textColor: Colors.white,
               ),
