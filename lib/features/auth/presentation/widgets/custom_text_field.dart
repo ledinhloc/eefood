@@ -56,7 +56,7 @@ class CustomTextField extends StatefulWidget {
 }
 
 class _CustomTextFieldState extends State<CustomTextField> {
-  late final TextEditingController _controller;
+  late TextEditingController _controller;
   late bool _obscure;
   bool _showClear = false;
   bool _controllerFromOutside = false;

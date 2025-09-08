@@ -50,17 +50,19 @@ class _SplashPageState extends State<SplashPage> {
         children: [
           const SizedBox(height: 50),
           // Logo ở giữa
-          Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Image.asset(
-                'assets/images/logo.png',
-                width: 500,
-                height: 500,
-                fit: BoxFit.contain,
-              ),
-              
-            ],
+          Expanded(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Image.asset(
+                  'assets/images/logo.png',
+                  width: 500,
+                  height: 500,
+                  fit: BoxFit.contain,
+                ),
+                
+              ],
+            ),
           ),
           // Loading spinner ở dưới
           const Padding(padding: EdgeInsets.only(bottom: 40),
