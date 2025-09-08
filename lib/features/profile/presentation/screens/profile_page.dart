@@ -1,160 +1,189 @@
 import 'package:eefood/app_routes.dart';
 import 'package:eefood/features/auth/presentation/screens/welcome_page.dart';
+import 'package:eefood/features/profile/presentation/provider/profile_cubit.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../../core/di/injection.dart';
+import '../../../../core/widgets/user_avatar.dart';
+import '../../../auth/domain/entities/user.dart';
 import '../../../auth/domain/usecases/auth_usecases.dart';
 
 class ProfilePage extends StatelessWidget {
   ProfilePage({super.key});
-  final Logout _logout = getIt<Logout>();
+  final  _logout = getIt<Logout>();
+  final _getCurrentUser = getIt<GetCurrentUser>();
+
+  Future<void> _handlerLogout(BuildContext context) async{
+    if (!context.mounted) return;
+
+    final confirm = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text("Confirm Logout"),
+        content: const Text("Are you sure you want to log out?"),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text("Cancel"),
+          ),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.redAccent,
+            ),
+            onPressed: () => Navigator.pop(context, true),
+            child: const Text("Logout"),
+          ),
+        ],
+      ),
+    );
+
+    if (confirm == true) {
+      await _logout();
+      if (!context.mounted) return;
+      Navigator.pushNamedAndRemoveUntil(
+        context,
+        AppRoutes.welcome,
+            (route) => true,
+      );
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        automaticallyImplyLeading: false,
-        title: const Text('Profile'),
-        actions: [
-          const Padding(
-            padding: EdgeInsets.all(8),
-            child: Icon(Icons.more_vert),
-          ),
-        ],
-      ),
-      body: ListView(
-        padding: const EdgeInsets.all(16.0),
-        children: [
-          Column(
-            children: [
-              CircleAvatar(
-                radius: 40,
-                backgroundColor: Colors.purple[100],
-                child: const Text(
-                  'JS',
-                  style: TextStyle(fontSize: 24, color: Colors.purple),
-                ),
-              ),
-              const SizedBox(height: 10),
-              const Text(
-                'Zain Malik',
-                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-              ),
-              const Text(
-                'Joined August 17, 2023',
-                style: TextStyle(fontSize: 14, color: Colors.grey),
-              ),
-            ],
-          ),
-          const SizedBox(height: 20),
-          Card(
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-            child: Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Text(
-                    'General',
-                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                  ),
-                  const SizedBox(height: 10),
-                  ListTile(
-                    leading: const Icon(Icons.person),
-                    title: const Text('Zain Malik'),
-                  ),
-                  ListTile(
-                    leading: const Icon(Icons.email),
-                    title: const Text('zainmalik02323@gmail.com'),
-                  ),
-                  ListTile(
-                    leading: const Icon(Icons.phone),
-                    title: const Text('(628) 267-9041'),
-                  ),
-                  ListTile(
-                    leading: const Icon(Icons.feedback),
-                    title: const Text('Feedback'),
-                    onTap: () {
-                      // Xử lý khi nhấn Feedback
-                    },
-                  ),
-                ],
-              ),
+    return BlocProvider(
+      create: (_) => ProfileCubit(getIt<GetCurrentUser>())..loadProfile(),
+      child:  BlocBuilder<ProfileCubit, User?> (
+        builder: (context, user) {
+          if (user == null) {
+            return const Center(child: CircularProgressIndicator(),);
+          }
+          return  Scaffold(
+            appBar: AppBar(
+              automaticallyImplyLeading: false,
+              title: const Text('Profile', style: TextStyle(fontWeight: FontWeight.bold),),
             ),
-          ),
-          const SizedBox(height: 20),
-          Card(
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-            child: Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Text(
-                    'Notifications',
-                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            body: ListView(
+              padding: const EdgeInsets.all(16),
+              children: [
+                // Profile Header
+                Row(
+                  children: [
+                    UserAvatar(avatarUrl: user.avatarUrl, username: user.username,),
+                    const SizedBox(width: 16),
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                        user.username,
+                          style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          "Community member",
+                          style: TextStyle(color: Colors.grey[600]),
+                        ),
+                        const SizedBox(height: 8),
+                        OutlinedButton(
+                          onPressed: () {
+                            Navigator.pushNamed(context, AppRoutes.editProfile);
+                          },
+                          child: const Text("Edit profile"),
+                        ),
+                      ],
+                    ),
+                    const Spacer(),
+                    /* Xu ly logout*/
+                    IconButton(onPressed: () async =>await _handlerLogout(context), icon: Icon(Icons.exit_to_app_outlined, color: Colors.black, size: 30,),
+                    )
+                  ],
+                ),
+                const SizedBox(height: 20),
+                // Account section
+                const Text("Account", style: TextStyle(fontWeight: FontWeight.bold)),
+                const SizedBox(height: 8),
+                ListTile(
+                  title: const Text("Current Plan"),
+                  trailing: const Text("Free"),
+                ),
+
+                Card(
+                  color: Colors.red[50],
+                  child: ListTile(
+                    leading: const Icon(Icons.star, color: Colors.red),
+                    title: const Text(
+                        "Try all Plus features for free during your 7-day trial period!"),
+                    trailing: ElevatedButton(
+                      onPressed: () {},
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.yellow.shade200,
+                      ),
+                      child: const Text("Try for free"),
+                    ),
                   ),
-                  const SizedBox(height: 10),
-                  SwitchListTile(
-                    title: const Text('Push notifications'),
-                    value: true,
-                    onChanged: (value) {
-                      // Xử lý khi thay đổi trạng thái
-                    },
-                    secondary: const Icon(Icons.notifications),
-                  ),
-                  SwitchListTile(
-                    title: const Text('SMS notifications'),
-                    value: false,
-                    onChanged: (value) {
-                      // Xử lý khi thay đổi trạng thái
-                    },
-                    secondary: const Icon(Icons.sms),
-                  ),
-                ],
-              ),
+                ),
+
+                const SizedBox(height: 16),
+                const Text("Account Management",
+                    style: TextStyle(fontWeight: FontWeight.bold)),
+                ListTile(
+                  leading: const Icon(Icons.favorite_border),
+                  title: const Text("Food preferences"),
+                  subtitle: const Text("Only applicable to the For you tab"),
+                  onTap: () => Navigator.pushNamed(context, AppRoutes.foodPreference),
+                ),
+                ListTile(
+                  leading: const Icon(Icons.restore),
+                  title: const Text("Restore purchases"),
+                ),
+                const SizedBox(height: 16),
+                const Text("System", style: TextStyle(fontWeight: FontWeight.bold)),
+                ListTile(
+                  leading: const Icon(Icons.language),
+                  title: const Text("Languages"),
+                  onTap: () => Navigator.pushNamed(context, AppRoutes.language),
+                ),
+                ListTile(
+                  leading: const Icon(Icons.notifications_none),
+                  title: const Text("Notifications"),
+                ),
+                ListTile(
+                  leading: const Icon(Icons.brightness_6_outlined),
+                  title: const Text("Display"),
+                ),
+
+                const SizedBox(height: 16),
+                const Text("Support", style: TextStyle(fontWeight: FontWeight.bold)),
+                ListTile(
+                  leading: const Icon(Icons.chat_bubble_outline),
+                  title: const Text("Feedback"),
+                ),
+                ListTile(
+                  leading: const Icon(Icons.bug_report_outlined),
+                  title: const Text("Report a bug"),
+                ),
+
+                const SizedBox(height: 16),
+                const Text("Recommend",
+                    style: TextStyle(fontWeight: FontWeight.bold)),
+                ListTile(
+                  leading: const Icon(Icons.thumb_up_outlined),
+                  title: const Text("Tell a friend!"),
+                ),
+                ListTile(
+                  leading: const Icon(Icons.star_border),
+                  title: const Text("Rate app"),
+                ),
+              ],
             ),
-          ),
-          const SizedBox(height: 20),
-          Column(
-            children: [
-              /* logout */
-              ElevatedButton(
-                onPressed: () {
-                  _logout();
-                  Navigator.pushNamedAndRemoveUntil(context, AppRoutes.welcome, (route) => false);
-                },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.red,
-                  minimumSize: const Size(double.infinity, 50),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(30),
-                  ),
-                ),
-                child: const Text(
-                  "Logout",
-                  style: TextStyle(color: Colors.white, fontSize: 16),
-                ),
-              ),
-              const SizedBox(height: 10),
-              const Text(
-                'Version 1.18.5 ',
-                style: TextStyle(fontSize: 12, color: Colors.grey),
-              ),
-              const Text(
-                '@2022-23 Powered by Square',
-                style: TextStyle(fontSize: 12, color: Colors.grey),
-              ),
-              const SizedBox(height: 5),
-              const Text(
-                'Buyer Account terms - Square Go terms - Privacy Policy',
-                style: TextStyle(fontSize: 12, color: Colors.blue),
-                textAlign: TextAlign.center,
-              ),
-            ],
-          ),
-        ],
-      ),
+            floatingActionButton: FloatingActionButton(
+              onPressed: () {},
+              backgroundColor: Colors.orange,
+              child: const Icon(Icons.notifications),
+            ),
+          );
+        }
+      )
     );
   }
 }
