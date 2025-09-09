@@ -45,13 +45,15 @@ class _ResetPasswordPageState extends State<ResetPasswordPage> {
     (isReset.isSuccess && isReset.data == true) ?
       showDialog(
         context: context,
+        barrierDismissible: false,
         builder: (context) => CustomDialog(
           title: "Success",
           description: "Your password has been updated",
           buttonText: "Go to Home",
-          imageLottie: "lotties/success_animation.json",
+          imageLottie: "assets/lotties/success_animation.json",
           onPressed: () {
             Navigator.pop(context);
+            Navigator.pushReplacementNamed(context, '/login');
           },
         ),
       )
@@ -136,8 +138,8 @@ class _ResetPasswordPageState extends State<ResetPasswordPage> {
                                 if (value == null || value.isEmpty) {
                                   return "Password cannot be empty";
                                 }
-                                if (value.length < 6) {
-                                  return "Password must be at least 6 characters";
+                                if (value.length < 8) {
+                                  return "Password must be at least 8 characters";
                                 }
                                 return null;
                               },

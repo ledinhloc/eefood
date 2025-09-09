@@ -1,6 +1,6 @@
 import 'package:eefood/app_routes.dart';
 import 'package:eefood/core/widgets/snack_bar.dart';
-import 'package:eefood/features/auth/presentation/screens/forgot_password.dart';
+import 'package:eefood/features/auth/presentation/screens/forgot_password_page.dart';
 import 'package:eefood/features/auth/presentation/screens/register_page.dart';
 import 'package:eefood/features/auth/presentation/widgets/custom_text_field.dart';
 import 'package:eefood/main.dart';
