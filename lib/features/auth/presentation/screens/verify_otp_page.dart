@@ -64,17 +64,16 @@ class _VerificationOtpPageState extends State<VerificationOtpPage> {
         showCustomSnackBar(context,isVerified.error!,isError: true);
       } 
       else {
-        if (widget.otpType == OtpType.FORGOT_PASSWORD) {
+        showCustomSnackBar(context,'Verify otp successfully',isError: false);
+        widget.otpType == OtpType.FORGOT_PASSWORD 
+        ?
           Navigator.pushNamed(context, AppRoutes.resetPassword,
             arguments: {
               'email': widget.email,
               'otpCode': otpCode,
             },
-          );
-        } 
-        else {
-          Navigator.pushNamedAndRemoveUntil(context,AppRoutes.login,(route) => false);
-        }
+          )
+        : Navigator.pushNamedAndRemoveUntil(context,AppRoutes.login,(route) => false);
       }
     } catch (e) {
       showCustomSnackBar(context,'Verify OTP failed $e',isError: true);

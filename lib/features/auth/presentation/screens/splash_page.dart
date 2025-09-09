@@ -31,7 +31,7 @@ class _SplashPageState extends State<SplashPage> {
 
   Future<void> _loadUser() async {
     final user = await _getCurrentUser();
-
+    print('User: $user');
     // kiểm tra widget còn tồn tại
     if (!mounted) return;
     if(user != null){
@@ -53,7 +53,7 @@ class _SplashPageState extends State<SplashPage> {
             Center(
               child: Image.asset(
                 'assets/images/logo.png',
-                width: size.width * 0.6,  // chiếm 60% chiều ngang màn hình
+                width: size.width,  // chiếm 60% chiều ngang màn hình
                 fit: BoxFit.contain,
               ),
             ),

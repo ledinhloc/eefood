@@ -1,9 +1,9 @@
-
+import 'package:eefood/features/auth/presentation/screens/forgot_password_page.dart';
 import 'package:eefood/features/auth/presentation/screens/login_page.dart';
 import 'package:eefood/features/auth/presentation/screens/register_page.dart';
-import 'package:eefood/features/auth/presentation/screens/reset_password.dart';
+import 'package:eefood/features/auth/presentation/screens/reset_password_page.dart';
 import 'package:eefood/features/auth/presentation/screens/splash_page.dart';
-import 'package:eefood/features/auth/presentation/screens/verify_otp.dart';
+import 'package:eefood/features/auth/presentation/screens/verify_otp_page.dart';
 import 'package:eefood/features/auth/presentation/screens/welcome_page.dart';
 import 'package:eefood/features/profile/presentation/screens/edit_profile_page.dart';
 import 'package:eefood/features/profile/presentation/screens/food_preferences_page.dart';
@@ -11,7 +11,6 @@ import 'package:eefood/features/profile/presentation/screens/language_page.dart'
 import 'package:eefood/main.dart';
 import 'package:eefood/main_screen.dart';
 import 'package:flutter/material.dart';
-import 'features/auth/presentation/screens/forgot_password.dart';
 import 'features/profile/presentation/screens/profile_page.dart';
 import 'features/recipe/presentation/screens/home_page.dart';
 import 'features/recipe/presentation/screens/my_recipes_page.dart';
