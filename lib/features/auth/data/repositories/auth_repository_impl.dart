@@ -29,12 +29,7 @@ class AuthRepositoryImpl implements AuthRepository {
       );
       final userModel = UserModel.fromJson(response.data['data']);
       await _saveUser(userModel);
-
-      //print log
-      print(response);
-      
-      _userCache = userModel.toEntity();
-      return _userCache!;
+      return userModel.toEntity();
     } catch (e) {
       print(e);
       throw Exception('Login failed: $e');
@@ -63,7 +58,6 @@ class AuthRepositoryImpl implements AuthRepository {
   @override
   Future<User?> getCurrentUser() async {
     //lay user entity trong local
-    if(_userCache!= null) return _userCache;
     try {
       final userJson = sharedPreferences.getString(AppKeys.user);
       if(userJson == null) return null;

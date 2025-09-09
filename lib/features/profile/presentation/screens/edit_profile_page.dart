@@ -1,14 +1,15 @@
 import 'dart:io';
 
 import 'package:eefood/core/di/injection.dart';
+import 'package:eefood/core/utils/media_picker.dart';
 import 'package:eefood/core/widgets/snack_bar.dart';
 import 'package:eefood/core/widgets/user_avatar.dart';
 import 'package:eefood/features/auth/data/models/UserModel.dart';
 import 'package:eefood/features/profile/domain/usecases/profile_usecase.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:permission_handler/permission_handler.dart';
 
+import '../../../../core/utils/file_upload.dart';
 import '../../../auth/domain/entities/user.dart';
 
 class EditProfilePage extends StatefulWidget {
@@ -28,9 +29,11 @@ class _EditProfilePageState extends State<EditProfilePage> {
   late TextEditingController streetController;
   late TextEditingController cityController;
   File? _avatarFile;
+  ImageProvider? imageProvider ;
 
   final ImagePicker _picker = ImagePicker();
   final UpdateProfile _updateProfile = getIt<UpdateProfile>();
+  final _fileUploader = getIt<FileUploader>();
 
   @override
   void initState() {
@@ -43,6 +46,9 @@ class _EditProfilePageState extends State<EditProfilePage> {
     genderController = TextEditingController(text: widget.user.gender);
     streetController = TextEditingController(text: widget.user.address?.street);
     cityController = TextEditingController(text: widget.user.address?.city);
+    if(widget.user.avatarUrl!=null){
+      imageProvider = NetworkImage(widget.user.avatarUrl!);
+    }
   }
 
   @override
@@ -60,36 +66,13 @@ class _EditProfilePageState extends State<EditProfilePage> {
 
   //chon anh
   Future<void> _handleChangeAvatar() async {
-    // Xin quyền đọc ảnh
-    bool granted = await _requestPermission(
-      Permission.photos, // Android 13+
-    );
-    if (!granted) {
-      if(!mounted) return;
-      showCustomSnackBar(context, 'Permission denied', isError: true);
-      return;
-    }
-
-    final pickedFile = await _picker.pickImage(
-      source: ImageSource.gallery,
-      maxWidth: 512,
-      maxHeight: 512,
-      imageQuality: 85,
-    );
-
+    final pickedFile = await MediaPicker.pickImage();
     if (pickedFile != null) {
       setState(() {
-        _avatarFile = File(pickedFile.path);
+        _avatarFile = pickedFile;
+        imageProvider = FileImage(_avatarFile!);
       });
-
-      // TODO: gọi repository upload avatar lên server
-      // ví dụ: await userRepository.updateAvatar(_avatarFile);
     }
-  }
-
-  Future<bool> _requestPermission(Permission permission) async {
-    final status = await permission.request();
-    return status.isGranted;
   }
 
   //chon ngay sinh
@@ -109,6 +92,11 @@ class _EditProfilePageState extends State<EditProfilePage> {
 
   //luu thay doi
   Future<void> _onSave() async {
+    String? urlImage;
+    if(_avatarFile!=null){
+      urlImage = await _fileUploader.uploadFile(_avatarFile!);
+    }
+
     final result = await _updateProfile(
         UserModel(
             id: widget.user.id,
@@ -117,22 +105,28 @@ class _EditProfilePageState extends State<EditProfilePage> {
             dob: dobController.text,
             gender: genderController.text,
             address: AddressModel(city: cityController.text, street: streetController.text),
+            avatarUrl: urlImage,
         ));
 
     if(!mounted) return;
     if (result.isSuccess) {
       showCustomSnackBar(context, 'Đã lưu thông tin thành công');
+      Navigator.pop(context, true);
+    }else{
+      showCustomSnackBar(context, 'Lưu thất bại!', isError: true);
     }
-    Navigator.pop(context);
   }
 
   @override
   Widget build(BuildContext context) {
+    if(_avatarFile!=null){
+      imageProvider = FileImage(_avatarFile!);
+    }
     return Scaffold(
       appBar: AppBar(
         title: Text('Edit profile'),
         actions: [
-          IconButton(onPressed: () async => await _onSave(), icon: const Icon(Icons.check)),
+          IconButton(onPressed: _onSave, icon: const Icon(Icons.check)),
         ],
       ),
       body:SingleChildScrollView(
@@ -143,7 +137,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
             Stack(
               alignment: Alignment.bottomRight,
               children: [
-                UserAvatar(username: widget.user.username, avatarFile: _avatarFile, avatarUrl: widget.user.avatarUrl,radius: 60,),
+                UserAvatar(username: widget.user.username, imageProvider: imageProvider,radius: 60,),
                 Container(
                   padding: const EdgeInsets.all(1),
                   decoration: BoxDecoration(
@@ -169,7 +163,6 @@ class _EditProfilePageState extends State<EditProfilePage> {
               ],
             ),
             const SizedBox(height: 24),
-
             _buildTextField("Username", usernameController),
             _buildTextField("Email", emailController),
             // _buildTextField("Date of Birth", dobController),

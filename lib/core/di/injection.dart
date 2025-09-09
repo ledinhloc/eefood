@@ -1,3 +1,4 @@
+import 'package:eefood/core/utils/file_upload.dart';
 import 'package:eefood/features/profile/domain/repositories/profile_repository.dart';
 import 'package:eefood/features/profile/domain/usecases/profile_usecase.dart';
 import 'package:get_it/get_it.dart';
@@ -33,6 +34,8 @@ Future<void> setupDependencies() async {
         sharedPreferences: getIt<SharedPreferences>()
       )
   );
+
+  getIt.registerLazySingleton(() => FileUploader(dio: getIt<DioClient>().dio));
 
   // Register UseCases
   getIt.registerLazySingleton(() => Login(getIt<AuthRepository>()));

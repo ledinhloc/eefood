@@ -12,24 +12,23 @@ import '../../../../core/constants/app_keys.dart';
 class ProfileRepositoryImpl extends ProfileRepository{
   final Dio dio;
   final SharedPreferences sharedPreferences;
-
   ProfileRepositoryImpl({required this.dio, required this.sharedPreferences});
   @override
-  Future<Result<User>> updateUser(UserModel userModel) async {
-    print(userModel.toJson());
+  Future<Result<User>> updateUser(UserModel request) async {
+    print(request.toJson());
     try
     {
       final response = await dio.put(
         '/v1/users/update',
-        data: userModel.toJson(),
+        data: request.toJson(),
         options: Options(contentType: 'application/json'),
       );
       final userModelRes = UserModel.fromJson(response.data['data']);
-      _saveUser(userModel);
+      _saveUser(userModelRes);
       return Result.success(userModelRes.toEntity());
     } catch (e) {
       print(e);
-      throw Exception('Login failed: $e');
+      throw Exception('Save failed: $e');
     }
   }
 
