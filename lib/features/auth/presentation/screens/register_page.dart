@@ -16,8 +16,9 @@ class RegisterPage extends StatelessWidget {
   RegisterPage({super.key});
   final Register _register = getIt<Register>();
   final nameController = TextEditingController(text: 'khoa');
-  final emailController = TextEditingController(text: 'anhkhoadevtool2109@gmail.com',);
+  final emailController = TextEditingController(text: 'anhkhoadevtool2109@gmail.com');
   final passController = TextEditingController(text: '12345678');
+  
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
