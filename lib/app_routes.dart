@@ -1,9 +1,9 @@
-import 'package:eefood/features/auth/presentation/screens/forgot_password.dart';
+import 'package:eefood/features/auth/presentation/screens/forgot_password_page.dart';
 import 'package:eefood/features/auth/presentation/screens/login_page.dart';
 import 'package:eefood/features/auth/presentation/screens/register_page.dart';
-import 'package:eefood/features/auth/presentation/screens/reset_password.dart';
+import 'package:eefood/features/auth/presentation/screens/reset_password_page.dart';
 import 'package:eefood/features/auth/presentation/screens/splash_page.dart';
-import 'package:eefood/features/auth/presentation/screens/verify_otp.dart';
+import 'package:eefood/features/auth/presentation/screens/verify_otp_page.dart';
 import 'package:eefood/features/auth/presentation/screens/welcome_page.dart';
 import 'package:eefood/main.dart';
 import 'package:eefood/main_screen.dart';
