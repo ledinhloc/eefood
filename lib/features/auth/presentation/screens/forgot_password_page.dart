@@ -55,106 +55,118 @@ class ForgotPasswordPage extends StatelessWidget {
         child: BlocBuilder<ForgotPasswordCubit, ForgotPasswordState>(
           builder: (context, state) {
             return Scaffold(
-              body: SafeArea(
-                child: Column(
-                  children: [
-                    Expanded(
-                      child: SingleChildScrollView(
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Padding(
-                              padding: const EdgeInsets.symmetric(
-                                vertical: 7,
-                                horizontal: 2,
-                              ),
-                              child: Row(
-                                children: [
-                                  IconButton(
-                                    onPressed: () =>
-                                        Navigator.maybePop(context),
-                                    icon: const Icon(Icons.arrow_back),
+              body: Stack(
+                children: [
+                  SafeArea(
+                    child: Column(
+                      children: [
+                        Expanded(
+                          child: SingleChildScrollView(
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Padding(
+                                  padding: const EdgeInsets.symmetric(
+                                    vertical: 7,
+                                    horizontal: 2,
                                   ),
-                                ],
-                              ),
-                            ),
-                            SizedBox(
-                              height: 220,
-                              width: double.infinity,
-                              child: Center(
-                                child: Lottie.network(
-                                  'https://lottie.host/365fbefa-c236-4ca2-b613-809ba2caffd1/QEyAFz1TSQ.json',
-                                  fit: BoxFit.contain,
-                                  width: double.infinity,
+                                  child: Row(
+                                    children: [
+                                      IconButton(
+                                        onPressed: () =>
+                                            Navigator.maybePop(context),
+                                        icon: const Icon(Icons.arrow_back),
+                                      ),
+                                    ],
+                                  ),
                                 ),
-                              ),
-                            ),
-                            Container(
-                              width: double.infinity,
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 10,
-                                vertical: 10,
-                              ),
-                              child: Column(
-                                children: [
-                                  Text(
-                                    'Forgot password',
-                                    style: TextStyle(
-                                      color: Colors.black,
-                                      fontSize: 32,
-                                      fontWeight: FontWeight.bold,
-                                      fontFamily: 'Poppins',
+                                SizedBox(
+                                  height: 220,
+                                  width: double.infinity,
+                                  child: Center(
+                                    child: Lottie.network(
+                                      'https://lottie.host/365fbefa-c236-4ca2-b613-809ba2caffd1/QEyAFz1TSQ.json',
+                                      fit: BoxFit.contain,
+                                      width: double.infinity,
                                     ),
                                   ),
-                                  SizedBox(height: 10),
-                                  Text(
-                                    'Please enter your email.\nWe will send an OTP code for verification',
-                                    style: TextStyle(
-                                      color: Colors.black,
-                                      fontSize: 15,
-                                      fontWeight: FontWeight.bold,
-                                      fontFamily: 'Poppins',
-                                    ),
-                                    textAlign: TextAlign.center,
+                                ),
+                                Container(
+                                  width: double.infinity,
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 10,
+                                    vertical: 10,
                                   ),
-                                  SizedBox(height: 10),
-                                  CustomTextField(
-                                    controller: emailController,
-                                    validator: (value) =>
-                                        _validateEmail(value!),
-                                    labelText: 'Email',
-                                    prefixIcon: const Icon(Icons.email),
-                                    enableClear: true,
-                                    borderRadius: 8,
-                                    fillColor: Colors.black,
-                                    maxLines: 1,
+                                  child: Column(
+                                    children: [
+                                      Text(
+                                        'Forgot password',
+                                        style: TextStyle(
+                                          color: Colors.black,
+                                          fontSize: 32,
+                                          fontWeight: FontWeight.bold,
+                                          fontFamily: 'Poppins',
+                                        ),
+                                      ),
+                                      SizedBox(height: 10),
+                                      Text(
+                                        'Please enter your email.\nWe will send an OTP code for verification',
+                                        style: TextStyle(
+                                          color: Colors.black,
+                                          fontSize: 15,
+                                          fontWeight: FontWeight.bold,
+                                          fontFamily: 'Poppins',
+                                        ),
+                                        textAlign: TextAlign.center,
+                                      ),
+                                      SizedBox(height: 10),
+                                      CustomTextField(
+                                        controller: emailController,
+                                        validator: (value) =>
+                                            _validateEmail(value!),
+                                        labelText: 'Email',
+                                        prefixIcon: const Icon(Icons.email),
+                                        enableClear: true,
+                                        borderRadius: 8,
+                                        fillColor: Colors.black,
+                                        maxLines: 1,
+                                      ),
+                                    ],
                                   ),
-                                ],
-                              ),
+                                ),
+                              ],
                             ),
-                          ],
+                          ),
+                        ),
+                        Padding(
+                          padding: const EdgeInsets.all(16.0),
+                          child: AuthButton(
+                            text: 'Confirm',
+                            onPressed: () {
+                              context
+                                  .read<ForgotPasswordCubit>()
+                                  .forgotPassword(emailController.text);
+                            },
+                            textColor: Colors.white,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  if (state is ForgotPasswordLoading)
+                    Container(
+                      color: Colors.black.withOpacity(0.3),
+                      child: const Center(
+                        child: Padding(
+                          padding: EdgeInsets.only(bottom: 30),
+                          child: SpinKitCircle(
+                            color: Colors.orange,
+                            size: 50.0,
+                          ),
                         ),
                       ),
                     ),
-                    Padding(
-                      padding: const EdgeInsets.all(16.0),
-                      child: AuthButton(
-                        text: 'Confirm',
-                        onPressed: () {
-                          context.read<ForgotPasswordCubit>().forgotPassword(
-                            emailController.text,
-                          );
-                        },
-                        textColor: Colors.white,
-                      ),
-                    ),
-                    if (state is ForgotPasswordLoading)
-                      const Padding(
-                        padding: EdgeInsets.only(bottom: 30),
-                        child: SpinKitCircle(color: Colors.orange, size: 50.0),
-                      ),
-                  ],
-                ),
+                ],
               ),
             );
           },
