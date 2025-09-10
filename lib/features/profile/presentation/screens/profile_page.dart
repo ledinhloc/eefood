@@ -12,7 +12,7 @@ import '../../../auth/domain/usecases/auth_usecases.dart';
 class ProfilePage extends StatelessWidget {
   ProfilePage({super.key});
   final  _logout = getIt<Logout>();
-  final _getCurrentUser = getIt<GetCurrentUser>();
+  ImageProvider? imageProvider;
 
   Future<void> _handlerLogout(BuildContext context) async{
     if (!context.mounted) return;
@@ -49,6 +49,14 @@ class ProfilePage extends StatelessWidget {
     }
   }
 
+  Future<void> _handlerEditProfile(BuildContext context, User user)  async {
+    final isReload = await Navigator.pushNamed(context, AppRoutes.editProfile, arguments: user);
+    if (isReload == true && context.mounted) {
+      context.read<ProfileCubit>().loadProfile();
+    }
+  }
+
+
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
@@ -57,6 +65,9 @@ class ProfilePage extends StatelessWidget {
         builder: (context, user) {
           if (user == null) {
             return const Center(child: CircularProgressIndicator(),);
+          }
+          if(user.avatarUrl != null){
+            imageProvider = NetworkImage(user.avatarUrl!);
           }
           return  Scaffold(
             appBar: AppBar(
@@ -69,28 +80,30 @@ class ProfilePage extends StatelessWidget {
                 // Profile Header
                 Row(
                   children: [
-                    UserAvatar(avatarUrl: user.avatarUrl, username: user.username,),
+                    UserAvatar(imageProvider: imageProvider, username: user.username,),
                     const SizedBox(width: 16),
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                        user.username,
-                          style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-                        ),
-                        const SizedBox(height: 4),
-                        Text(
-                          "Community member",
-                          style: TextStyle(color: Colors.grey[600]),
-                        ),
-                        const SizedBox(height: 8),
-                        OutlinedButton(
-                          onPressed: () {
-                            Navigator.pushNamed(context, AppRoutes.editProfile);
-                          },
-                          child: const Text("Edit profile"),
-                        ),
-                      ],
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                          user.username,
+                            style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            "Community member",
+                            style: TextStyle(color: Colors.grey[600]),
+                          ),
+                          const SizedBox(height: 8),
+                          OutlinedButton(
+                            onPressed: ()  {
+                              _handlerEditProfile(context, user);
+                            },
+                            child: const Text("Edit profile"),
+                          ),
+                        ],
+                      ),
                     ),
                     const Spacer(),
                     /* Xu ly logout*/

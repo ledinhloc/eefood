@@ -1,15 +1,18 @@
 
+import 'dart:io';
+
 import 'package:flutter/material.dart';
+/* widget avatar user*/
 
 class UserAvatar extends StatelessWidget {
-  final String? avatarUrl;
+  final ImageProvider? imageProvider;
   final String username;
   final double radius;
   final Color backgroundColor;
   const UserAvatar({
     super.key,
     required this.username,
-    this.avatarUrl,
+    this.imageProvider,
     this.radius = 40,
     this.backgroundColor = Colors.blueAccent
   });
@@ -19,10 +22,8 @@ class UserAvatar extends StatelessWidget {
     return CircleAvatar(
       radius: radius,
       backgroundColor: backgroundColor,
-      backgroundImage: avatarUrl != null && avatarUrl!.isNotEmpty
-          ? NetworkImage(avatarUrl!)
-          : null,
-      child: (avatarUrl == null || avatarUrl!.isEmpty)
+      backgroundImage: imageProvider,
+      child: imageProvider == null
           ? Text(
         username.isNotEmpty ? username[0].toUpperCase() : '?',
         style: TextStyle(
@@ -31,7 +32,7 @@ class UserAvatar extends StatelessWidget {
           fontWeight: FontWeight.bold,
         ),
       )
-          : null,
+      : null,
     );
   }
 }

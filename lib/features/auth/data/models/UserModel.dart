@@ -7,59 +7,57 @@ class UserModel {
   final int id;
   final String username;
   final String email;
-  final String role;
+  final String? role;
   final String? dob;
   final String? gender;
   @JsonKey(name: 'address')
   final AddressModel? address;
-  final String provider;
+  final String? provider;
   final String? avatarUrl;
-  final List<String> allergies;
-  final List<String> eatingPreferences;
+  final List<String>? allergies;
+  final List<String>? eatingPreferences;
 
-  final String accessToken;
+  final String? accessToken;
 
-  final String refreshToken;
-
+  final String? refreshToken;
   UserModel({
     required this.id,
     required this.username,
     required this.email,
-    required this.role,
+    this.role,
     this.dob,
     this.gender,
     this.address,
-    required this.provider,
+    this.provider,
     this.avatarUrl,
-    required this.allergies,
-    required this.eatingPreferences,
-    required this.accessToken,
-    required this.refreshToken,
+    this.allergies,
+    this.eatingPreferences,
+    this.accessToken,
+    this.refreshToken,
   });
 
   // factory UserModel.fromJson(Map<String, dynamic> json) => _$UserModelFromJson(json);
   factory UserModel.fromJson(Map<String, dynamic> json) {
     return UserModel(
-      id: json['id'] as int,
-      username: json['username'] as String,
-      email: json['email'] as String,
-      role: json['role'] as String,
-      dob: json['dob'] != null ? json['dob'].toString() : null,
-      gender: json['gender'] != null ? json['gender'].toString() : null,
+      id: json['id'] ,
+      username: json['username'] ,
+      email: json['email'],
+      role: json['role'] ,
+      dob: json['dob']?.toString(),
+      gender: json['gender']?.toString(),
       address: json['address'] != null
           ? AddressModel.fromJson(Map<String, dynamic>.from(json['address']))
           : null,
-      provider: json['provider'] as String,
-      avatarUrl: json['avatarUrl'] != null ? json['avatarUrl'].toString() : null,
+      provider: json['provider'],
+      avatarUrl: json['avatarUrl']?.toString(),
       allergies: List<String>.from(json['allergies'] ?? []),
       eatingPreferences: List<String>.from(json['eatingPreferences'] ?? []),
-      accessToken: json['accessToken'] as String,
-      refreshToken: json['refreshToken'] as String,
+      accessToken: json['accessToken'],
+      refreshToken: json['refreshToken'],
     );
   }
 
   /* Chuyen user thanh json */
-  // Map<String, dynamic> toJson() => _$UserModelToJson(this);
   Map<String, dynamic> toJson() {
     return {
       'id': id,
@@ -82,7 +80,7 @@ class UserModel {
     id: id,
     username: username,
     email: email,
-    role: role,
+    role: role ,
     dob: dob,
     gender: gender,
     address: address?.toEntity(),

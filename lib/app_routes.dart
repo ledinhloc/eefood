@@ -11,6 +11,7 @@ import 'package:eefood/features/profile/presentation/screens/language_page.dart'
 import 'package:eefood/main.dart';
 import 'package:eefood/main_screen.dart';
 import 'package:flutter/material.dart';
+import 'features/auth/domain/entities/user.dart';
 import 'features/profile/presentation/screens/profile_page.dart';
 import 'features/recipe/presentation/screens/home_page.dart';
 import 'features/recipe/presentation/screens/my_recipes_page.dart';
@@ -50,7 +51,10 @@ class AppRoutes {
     login: (context) => LoginPage(),
     welcome: (context) => const WelcomePage(),
     splashPage: (context) => const SplashPage(),
-    editProfile: (context) => const EditProfilePage(),
+    editProfile: (context) {
+      final user = ModalRoute.of(context)!.settings.arguments as User;
+      return EditProfilePage(user: user,);
+    },
     foodPreference: (context) => const FoodPreferencesPage(),
     language: (context) => const LanguagePage(),
     register: (context) => RegisterPage(),
