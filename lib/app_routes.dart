@@ -1,3 +1,4 @@
+import 'package:eefood/features/auth/presentation/screens/cuisine_preference_page.dart';
 import 'package:eefood/features/auth/presentation/screens/forgot_password_page.dart';
 import 'package:eefood/features/auth/presentation/screens/login_page.dart';
 import 'package:eefood/features/auth/presentation/screens/register_page.dart';
@@ -29,7 +30,7 @@ class AppRoutes {
   static const verifyOtp = '/verifyOtp';
   static const forgotPassword = '/forgotPassword';
   static const resetPassword = '/resetPassword';
-
+  static const cuisinePreference = '/cuisinePreference';
 
   /* feat profile*/
   static const editProfile = '/editProfile';
@@ -73,5 +74,6 @@ class AppRoutes {
         otpCode: args['otpCode'],
       );
     },
+    cuisinePreference: (context) => const CuisinePreferencePage(),
   };
 }
