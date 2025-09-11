@@ -7,12 +7,13 @@ import 'package:video_player/video_player.dart';
 class MediaViewPage extends StatefulWidget {
   final String url; // có thể là link hoặc đường dẫn file local
   final bool isVideo; //true la video, false la anh
-  final bool isLocal;    // true: file trong máy, false: link online
+  final bool isLocal; // true: file trong máy, false: link online
 
-  const MediaViewPage({super.key,
+  const MediaViewPage({
+    super.key,
     required this.url,
     required this.isVideo,
-    this.isLocal = false
+    this.isLocal = false,
   });
   @override
   State<MediaViewPage> createState() => _MediaViewPageState();
@@ -32,10 +33,10 @@ class _MediaViewPageState extends State<MediaViewPage> {
           : VideoPlayerController.networkUrl(Uri.parse(widget.url));
 
       _videoController!.initialize().then((_) {
-          setState(() {
-            _videoController?.play();
-          });
+        setState(() {
+          _videoController?.play();
         });
+      });
     }
   }
 
@@ -56,9 +57,10 @@ class _MediaViewPageState extends State<MediaViewPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.black,
+      // extendBody: true, // nội dung kéo dài ra sau navigation bar
       body: Stack(
         children: [
-          Center(
+          Positioned.fill(
             child: widget.isVideo
                 ? (_videoController != null &&
                           _videoController!.value.isInitialized)
@@ -67,9 +69,14 @@ class _MediaViewPageState extends State<MediaViewPage> {
                           child: VideoPlayer(_videoController!),
                         )
                       : const CircularProgressIndicator(color: Colors.white)
-                : (widget.isLocal
-                  ? Image.file(File(widget.url), fit: BoxFit.contain,)
-                  : Image.network(widget.url, fit: BoxFit.contain,)),
+                : InteractiveViewer(
+                    panEnabled: true, // cho phép kéo
+                    minScale: 1.0, // tỉ lệ zoom nhỏ nhất
+                    maxScale: 5.0, // tỉ lệ zoom lớn nhất
+                    child: widget.isLocal
+                        ? Image.file(File(widget.url), fit: BoxFit.contain)
+                        : Image.network(widget.url, fit: BoxFit.contain),
+                  ),
           ),
           Positioned(
             top: 30,
