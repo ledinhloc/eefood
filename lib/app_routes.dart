@@ -1,3 +1,4 @@
+import 'package:eefood/core/widgets/media_view_page.dart';
 import 'package:eefood/features/auth/presentation/screens/forgot_password_page.dart';
 import 'package:eefood/features/auth/presentation/screens/login_page.dart';
 import 'package:eefood/features/auth/presentation/screens/register_page.dart';
@@ -35,6 +36,7 @@ class AppRoutes {
   static const editProfile = '/editProfile';
   static const foodPreference = '/foodPreference';
   static const language = '/language';
+  static const mediaView = '/mediaView';
 
   // Danh sách các widget cho BottomNavigationBar trong main page
   static List<Widget> widgetOptions = <Widget>[
@@ -71,6 +73,13 @@ class AppRoutes {
       return ResetPasswordPage(
         email: args['email'],
         otpCode: args['otpCode'],
+      );
+    },
+    mediaView: (context) {
+      final args = ModalRoute.of(context)!.settings.arguments as Map<String, dynamic>;
+      return MediaViewPage(
+        isVideo: args['isVideo'],
+        url: args['url'],
       );
     },
   };

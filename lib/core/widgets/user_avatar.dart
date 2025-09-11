@@ -1,6 +1,7 @@
 
 import 'dart:io';
 
+import 'package:eefood/app_routes.dart';
 import 'package:flutter/material.dart';
 /* widget avatar user*/
 
@@ -19,20 +20,32 @@ class UserAvatar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return CircleAvatar(
-      radius: radius,
-      backgroundColor: backgroundColor,
-      backgroundImage: imageProvider,
-      child: imageProvider == null
-          ? Text(
-        username.isNotEmpty ? username[0].toUpperCase() : '?',
-        style: TextStyle(
-          fontSize: radius / 2,
-          color: Colors.white,
-          fontWeight: FontWeight.bold,
-        ),
-      )
-      : null,
+    return GestureDetector(
+      onTap: () {
+        Navigator.pushNamed(context, AppRoutes.mediaView,
+        arguments: {
+          'isVideo': true,
+          'url': 'https://res.cloudinary.com/dmymncmab/video/upload/v1745543504/file_jkoy5f.mp4',
+          // 'isVideo': false,
+          // 'url': 'https://cdn.tgdd.vn/Files/2022/04/13/1425497/tim-hieu-ve-ti-le-man-hinh-tren-smartphone-va-su-p-4.jpg',
+          },
+        );
+      },
+      child: CircleAvatar(
+        radius: radius,
+        backgroundColor: backgroundColor,
+        backgroundImage: imageProvider,
+        child: imageProvider == null
+            ? Text(
+          username.isNotEmpty ? username[0].toUpperCase() : '?',
+          style: TextStyle(
+            fontSize: radius / 2,
+            color: Colors.white,
+            fontWeight: FontWeight.bold,
+          ),
+        )
+        : null,
+      ),
     );
   }
 }
