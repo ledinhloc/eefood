@@ -77,7 +77,7 @@ class _MediaViewPageState extends State<MediaViewPage> {
               _videoController != null &&
               _videoController!.value.isInitialized)
             Positioned(
-              bottom: 20,
+              bottom: 24,
               left: 10,
               right: 10,
               child: Row(
@@ -99,7 +99,7 @@ class _MediaViewPageState extends State<MediaViewPage> {
                   Expanded(
                     child: ValueListenableBuilder(
                       valueListenable: _videoController!,
-                      builder: (context,VideoPlayerValue value, child) {
+                      builder: (context, VideoPlayerValue value, child) {
                         final position = value.position.inMilliseconds
                             .toDouble();
                         final duration = value.duration.inMilliseconds
@@ -139,27 +139,30 @@ class _MediaViewPageState extends State<MediaViewPage> {
                 ],
               ),
             ),
+          if (widget.isVideo &&
+              _videoController != null &&
+              _videoController!.value.isInitialized)
+            Align(
+              alignment: Alignment.bottomCenter,
+              child: IconButton(
+                onPressed: () {
+                  setState(() {
+                    _videoController!.value.isPlaying
+                        ? _videoController!.pause()
+                        : _videoController!.play();
+                  });
+                },
+                icon: Icon(
+                  _videoController!.value.isPlaying
+                      ? Icons.pause
+                      : Icons.play_arrow,
+                  color: Colors.white,
+                  size: 32,
+                ),
+              ),
+            ),
         ],
       ),
-      floatingActionButtonLocation: FloatingActionButtonLocation.miniEndFloat,
-      floatingActionButton: widget.isVideo && _videoController != null
-          ? FloatingActionButton(
-              backgroundColor: Colors.white70,
-              onPressed: () {
-                setState(() {
-                  _videoController!.value.isPlaying
-                      ? _videoController!.pause()
-                      : _videoController!.play();
-                });
-              },
-              child: Icon(
-                _videoController!.value.isPlaying
-                    ? Icons.pause
-                    : Icons.play_arrow,
-                color: Colors.black,
-              ),
-            )
-          : null,
     );
   }
 }

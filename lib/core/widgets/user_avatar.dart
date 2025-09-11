@@ -24,10 +24,10 @@ class UserAvatar extends StatelessWidget {
       onTap: () {
         Navigator.pushNamed(context, AppRoutes.mediaView,
         arguments: {
-          'isVideo': true,
-          'url': 'https://res.cloudinary.com/dmymncmab/video/upload/v1745543504/file_jkoy5f.mp4',
-          // 'isVideo': false,
-          // 'url': 'https://cdn.tgdd.vn/Files/2022/04/13/1425497/tim-hieu-ve-ti-le-man-hinh-tren-smartphone-va-su-p-4.jpg',
+          // 'isVideo': true,
+          // 'url': 'https://res.cloudinary.com/dmymncmab/video/upload/v1745543504/file_jkoy5f.mp4',
+          'isVideo': false,
+          'url': 'https://cdn.tgdd.vn/Files/2022/04/13/1425497/tim-hieu-ve-ti-le-man-hinh-tren-smartphone-va-su-p-4.jpg',
           },
         );
       },
