@@ -79,6 +79,7 @@ class AppRoutes {
       final args = ModalRoute.of(context)!.settings.arguments as Map<String, dynamic>;
       return MediaViewPage(
         isVideo: args['isVideo'],
+        isLocal: args['isLocal'] ?? false,
         url: args['url'],
       );
     },

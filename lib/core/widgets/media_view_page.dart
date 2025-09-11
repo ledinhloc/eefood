@@ -1,12 +1,19 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:video_player/video_player.dart';
 
 /* Hien thi anh/video toan man hinh */
 class MediaViewPage extends StatefulWidget {
-  final String url;
+  final String url; // có thể là link hoặc đường dẫn file local
   final bool isVideo; //true la video, false la anh
+  final bool isLocal;    // true: file trong máy, false: link online
 
-  const MediaViewPage({super.key, required this.url, required this.isVideo});
+  const MediaViewPage({super.key,
+    required this.url,
+    required this.isVideo,
+    this.isLocal = false
+  });
   @override
   State<MediaViewPage> createState() => _MediaViewPageState();
 }
@@ -18,9 +25,13 @@ class _MediaViewPageState extends State<MediaViewPage> {
   void initState() {
     // TODO: implement initState
     super.initState();
+    /* Xu ly chon local hay netwo neu la video */
     if (widget.isVideo) {
-      _videoController = VideoPlayerController.networkUrl(Uri.parse(widget.url))
-        ..initialize().then((_) {
+      _videoController = widget.isLocal
+          ? VideoPlayerController.file(File(widget.url))
+          : VideoPlayerController.networkUrl(Uri.parse(widget.url));
+
+      _videoController!.initialize().then((_) {
           setState(() {
             _videoController?.play();
           });
@@ -56,9 +67,9 @@ class _MediaViewPageState extends State<MediaViewPage> {
                           child: VideoPlayer(_videoController!),
                         )
                       : const CircularProgressIndicator(color: Colors.white)
-                : InteractiveViewer(
-                    child: Image.network(widget.url, fit: BoxFit.contain),
-                  ),
+                : (widget.isLocal
+                  ? Image.file(File(widget.url), fit: BoxFit.contain,)
+                  : Image.network(widget.url, fit: BoxFit.contain,)),
           ),
           Positioned(
             top: 30,

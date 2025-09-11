@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'dart:math';
 
 import 'package:eefood/core/di/injection.dart';
 import 'package:eefood/core/utils/media_picker.dart';
@@ -28,12 +29,10 @@ class _EditProfilePageState extends State<EditProfilePage> {
   late TextEditingController genderController;
   late TextEditingController streetController;
   late TextEditingController cityController;
-  File? _avatarFile;
-  ImageProvider? imageProvider ;
-
-  final ImagePicker _picker = ImagePicker();
   final UpdateProfile _updateProfile = getIt<UpdateProfile>();
   final _fileUploader = getIt<FileUploader>();
+  late String? _url; // có thể là link hoặc đường dẫn file local
+  late bool _isLocal = false;    // true: file trong máy, false: link online
 
   @override
   void initState() {
@@ -46,9 +45,8 @@ class _EditProfilePageState extends State<EditProfilePage> {
     genderController = TextEditingController(text: widget.user.gender);
     streetController = TextEditingController(text: widget.user.address?.street);
     cityController = TextEditingController(text: widget.user.address?.city);
-    if(widget.user.avatarUrl!=null){
-      imageProvider = NetworkImage(widget.user.avatarUrl!);
-    }
+    _isLocal = false;
+    _url = widget.user.avatarUrl;
   }
 
   @override
@@ -69,8 +67,8 @@ class _EditProfilePageState extends State<EditProfilePage> {
     final pickedFile = await MediaPicker.pickImage();
     if (pickedFile != null) {
       setState(() {
-        _avatarFile = pickedFile;
-        imageProvider = FileImage(_avatarFile!);
+        _url = pickedFile.path;
+        _isLocal = true;
       });
     }
   }
@@ -93,8 +91,8 @@ class _EditProfilePageState extends State<EditProfilePage> {
   //luu thay doi
   Future<void> _onSave() async {
     String? urlImage;
-    if(_avatarFile!=null){
-      urlImage = await _fileUploader.uploadFile(_avatarFile!);
+    if(_isLocal == true){
+      urlImage = await _fileUploader.uploadFile(File(_url!));
     }
 
     final result = await _updateProfile(
@@ -119,9 +117,6 @@ class _EditProfilePageState extends State<EditProfilePage> {
 
   @override
   Widget build(BuildContext context) {
-    if(_avatarFile!=null){
-      imageProvider = FileImage(_avatarFile!);
-    }
     return Scaffold(
       appBar: AppBar(
         title: Text('Edit profile'),
@@ -137,7 +132,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
             Stack(
               alignment: Alignment.bottomRight,
               children: [
-                UserAvatar(username: widget.user.username, imageProvider: imageProvider,radius: 60,),
+                UserAvatar(url: _url,isLocal: _isLocal, username: widget.user.username,radius: 60,),
                 Container(
                   padding: const EdgeInsets.all(1),
                   decoration: BoxDecoration(
