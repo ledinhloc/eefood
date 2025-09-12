@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'dart:math';
 
 import 'package:eefood/core/di/injection.dart';
 import 'package:eefood/core/utils/media_picker.dart';
@@ -28,12 +29,11 @@ class _EditProfilePageState extends State<EditProfilePage> {
   late TextEditingController genderController;
   late TextEditingController streetController;
   late TextEditingController cityController;
-  File? _avatarFile;
-  ImageProvider? imageProvider ;
-
-  final ImagePicker _picker = ImagePicker();
   final UpdateProfile _updateProfile = getIt<UpdateProfile>();
   final _fileUploader = getIt<FileUploader>();
+  late String? _url; // có thể là link hoặc đường dẫn file local
+  late bool _isLocal = false; // true: file trong máy, false: link online
+  bool _isLoading = false;
 
   @override
   void initState() {
@@ -46,9 +46,8 @@ class _EditProfilePageState extends State<EditProfilePage> {
     genderController = TextEditingController(text: widget.user.gender);
     streetController = TextEditingController(text: widget.user.address?.street);
     cityController = TextEditingController(text: widget.user.address?.city);
-    if(widget.user.avatarUrl!=null){
-      imageProvider = NetworkImage(widget.user.avatarUrl!);
-    }
+    _isLocal = false;
+    _url = widget.user.avatarUrl;
   }
 
   @override
@@ -69,8 +68,8 @@ class _EditProfilePageState extends State<EditProfilePage> {
     final pickedFile = await MediaPicker.pickImage();
     if (pickedFile != null) {
       setState(() {
-        _avatarFile = pickedFile;
-        imageProvider = FileImage(_avatarFile!);
+        _url = pickedFile.path;
+        _isLocal = true;
       });
     }
   }
@@ -92,122 +91,155 @@ class _EditProfilePageState extends State<EditProfilePage> {
 
   //luu thay doi
   Future<void> _onSave() async {
+    setState(() {
+      _isLoading = true;
+    });
+
     String? urlImage;
-    if(_avatarFile!=null){
-      urlImage = await _fileUploader.uploadFile(_avatarFile!);
+    if (_isLocal == true) {
+      urlImage = await _fileUploader.uploadFile(File(_url!));
     }
 
     final result = await _updateProfile(
-        UserModel(
-            id: widget.user.id,
-            username: usernameController.text,
-            email: emailController.text,
-            dob: dobController.text,
-            gender: genderController.text,
-            address: AddressModel(city: cityController.text, street: streetController.text),
-            avatarUrl: urlImage,
-        ));
+      UserModel(
+        id: widget.user.id,
+        username: usernameController.text,
+        email: emailController.text,
+        dob: dobController.text,
+        gender: genderController.text,
+        address: AddressModel(
+          city: cityController.text,
+          street: streetController.text,
+        ),
+        avatarUrl: urlImage,
+      ),
+    );
 
-    if(!mounted) return;
+    if (!mounted) return;
+
+    setState(() {
+      _isLoading = true;
+    });
+
     if (result.isSuccess) {
       showCustomSnackBar(context, 'Đã lưu thông tin thành công');
       Navigator.pop(context, true);
-    }else{
+    } else {
       showCustomSnackBar(context, 'Lưu thất bại!', isError: true);
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    if(_avatarFile!=null){
-      imageProvider = FileImage(_avatarFile!);
-    }
-    return Scaffold(
-      appBar: AppBar(
-        title: Text('Edit profile'),
-        actions: [
-          IconButton(onPressed: _onSave, icon: const Icon(Icons.check)),
-        ],
-      ),
-      body:SingleChildScrollView(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          children: [
-            // Avatar
-            Stack(
-              alignment: Alignment.bottomRight,
+    return Stack(
+      children: [
+        Scaffold(
+          appBar: AppBar(
+            title: Text('Edit profile'),
+            actions: [
+              IconButton(onPressed: _onSave, icon: const Icon(Icons.check)),
+            ],
+          ),
+          body: SingleChildScrollView(
+            padding: const EdgeInsets.all(16),
+            child: Column(
               children: [
-                UserAvatar(username: widget.user.username, imageProvider: imageProvider,radius: 60,),
-                Container(
-                  padding: const EdgeInsets.all(1),
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    border: Border.all(
-                      color: Colors.grey[300]!, // viền màu xám nhạt
-                      width: 2,
+                // Avatar
+                Stack(
+                  alignment: Alignment.bottomRight,
+                  children: [
+                    UserAvatar(
+                      url: _url,
+                      isLocal: _isLocal,
+                      username: widget.user.username,
+                      radius: 60,
                     ),
-                  ),
-                  child: GestureDetector(
-                    onTap: _handleChangeAvatar,
-                    child: CircleAvatar(
-                      radius: 14,
-                      backgroundColor: Colors.white, // nền xám nhạt
-                      child: const Icon(
-                        Icons.camera_alt_outlined,
-                        color: Colors.red,
-                        size: 15,
+                    Container(
+                      padding: const EdgeInsets.all(1),
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        border: Border.all(
+                          color: Colors.grey[300]!, // viền màu xám nhạt
+                          width: 2,
+                        ),
+                      ),
+                      child: GestureDetector(
+                        onTap: _handleChangeAvatar,
+                        child: CircleAvatar(
+                          radius: 14,
+                          backgroundColor: Colors.white, // nền xám nhạt
+                          child: const Icon(
+                            Icons.camera_alt_outlined,
+                            color: Colors.red,
+                            size: 15,
+                          ),
+                        ),
                       ),
                     ),
+                  ],
+                ),
+                const SizedBox(height: 24),
+                _buildTextField("Username", usernameController),
+                _buildTextField("Email", emailController),
+                // _buildTextField("Date of Birth", dobController),
+                TextFormField(
+                  controller: dobController,
+                  readOnly: true,
+                  decoration: const InputDecoration(
+                    labelText: "Date of Birth",
+                    suffixIcon: Icon(Icons.calendar_month_sharp),
                   ),
-                )
+                  onTap: _pickDate,
+                ),
+                // _buildTextField("Gender", genderController),
+                const SizedBox(height: 16),
+                DropdownButtonFormField<String>(
+                  value: genderController.text,
+                  decoration: const InputDecoration(labelText: "Gender"),
+                  items: const [
+                    DropdownMenuItem(value: "MALE", child: Text("MALE")),
+                    DropdownMenuItem(value: "FEMALE", child: Text("FEMALE")),
+                    DropdownMenuItem(value: "OTHER", child: Text("OTHER")),
+                  ],
+                  onChanged: (value) {
+                    setState(() {
+                      genderController.text = value ?? "MALE";
+                    });
+                  },
+                ),
+                const SizedBox(height: 12),
+                const Align(
+                  alignment: Alignment.centerLeft,
+                  child: Text(
+                    "Address",
+                    style: TextStyle(
+                      color: Colors.grey,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+                _buildTextField("Street", streetController),
+                _buildTextField("City", cityController),
               ],
             ),
-            const SizedBox(height: 24),
-            _buildTextField("Username", usernameController),
-            _buildTextField("Email", emailController),
-            // _buildTextField("Date of Birth", dobController),
-            TextFormField(
-              controller: dobController,
-              readOnly: true,
-              decoration: const InputDecoration(
-                labelText: "Date of Birth",
-                suffixIcon: Icon(Icons.calendar_month_sharp),
-              ),
-              onTap: _pickDate,
-            ),
-            // _buildTextField("Gender", genderController),
-            const SizedBox(height: 16),
-            DropdownButtonFormField<String>(
-              value: genderController.text,
-              decoration: const InputDecoration(labelText: "Gender"),
-              items: const [
-                DropdownMenuItem(value: "MALE", child: Text("MALE")),
-                DropdownMenuItem(value: "FEMALE", child: Text("FEMALE")),
-                DropdownMenuItem(value: "OTHER", child: Text("OTHER")),
-              ],
-              onChanged: (value) {
-                setState(() {
-                  genderController.text = value?? "MALE";
-                });
-              },
-            ),
-            const SizedBox(height: 12),
-            const Align(
-              alignment: Alignment.centerLeft,
-              child: Text("Address",
-                  style: TextStyle(
-                      color: Colors.grey, fontWeight: FontWeight.bold)),
-            ),
-            _buildTextField("Street", streetController),
-            _buildTextField("City", cityController),
-          ],
+          ),
         ),
-      ),
+        if(_isLoading)
+          Container(
+            color: Colors.black.withOpacity(0.4),
+            child: Center(
+              child: CircularProgressIndicator(color: Colors.white,),
+            ),
+          )
+      ],
     );
   }
 
-  Widget _buildTextField(String label, TextEditingController controller,
-      {int maxLines = 1}) {
+  Widget _buildTextField(
+    String label,
+    TextEditingController controller, {
+    int maxLines = 1,
+  }) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 16),
       child: TextField(

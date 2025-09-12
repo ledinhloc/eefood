@@ -1,12 +1,16 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 
 /* Custom snack bar*/
 /* cách dùng: showCustomSnackBar(context, 'Login failed', isError: true);   */
-void showCustomSnackBar(
+Future<bool> showCustomSnackBar(
   BuildContext context,
   String message, {
   bool isError = false,
 }) {
+  final completer = Completer<bool>();
+
   final snackBar = SnackBar(
     behavior: SnackBarBehavior.floating, // Nổi lên thay vì dính đáy
     margin: const EdgeInsets.all(16), // Khoảng cách xung quanh
@@ -38,10 +42,16 @@ void showCustomSnackBar(
       label: 'OK',
       textColor: Colors.white,
       onPressed: () {
-        // Có thể thêm hành động nếu muốn
+        completer.complete(true); // Người dùng bấm OK
       },
     ),
   );
 
   ScaffoldMessenger.of(context).showSnackBar(snackBar);
+  // Nếu snackBar biến mất mà chưa bấm OK thì trả false
+  Future.delayed(const Duration(seconds: 3), () {
+    if (!completer.isCompleted) completer.complete(false);
+  });
+
+  return completer.future;
 }

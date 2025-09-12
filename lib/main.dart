@@ -4,12 +4,14 @@ import 'package:flutter/material.dart';
 import 'core/constants/app_themes.dart';
 import 'core/di/injection.dart' as di;
 import 'package:flutter/services.dart';
+final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   SystemChrome.setSystemUIOverlayStyle(const SystemUiOverlayStyle(
-    statusBarColor: Colors.transparent, // làm trong suốt
-    statusBarIconBrightness: Brightness.dark, // icon màu đen
-    statusBarBrightness: Brightness.light, // cho iOS
+    statusBarColor: Colors.transparent, // Status bar trong suốt
+    statusBarIconBrightness: Brightness.light,
+    systemNavigationBarColor: Colors.transparent, // Navigation bar trong suốt
+    systemNavigationBarIconBrightness: Brightness.light, // icon sáng
   ));
   await di.setupDependencies();
   runApp(const MyApp());
@@ -31,6 +33,7 @@ class _MyAppState extends State<MyApp> {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      navigatorKey: navigatorKey,
       debugShowCheckedModeBanner: false,
       title: 'eeFood',
       theme: appTheme(),

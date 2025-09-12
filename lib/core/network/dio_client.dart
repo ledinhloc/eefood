@@ -1,9 +1,15 @@
+import 'dart:math';
+
 import 'package:dio/dio.dart';
+import 'package:eefood/app_routes.dart';
 import 'package:eefood/core/constants/app_keys.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../features/auth/domain/usecases/auth_usecases.dart';
+import '../../main.dart';
 import '../di/injection.dart';
+import '../widgets/snack_bar.dart';
 
 /* Setting Dio */
 /* handler refresh token */
@@ -35,6 +41,15 @@ class DioClient {
         return handler.next(options);
       },
       onError: (DioException e, handler) async {
+        final context = navigatorKey.currentContext;
+        if(e.type == DioExceptionType.connectionError || e.type == DioExceptionType.unknown){
+          print('Khong co ket noi');
+          if (context != null) {
+            showCustomSnackBar(context, "Không có kết nối mạng, vui lòng thử lại", isError: true);
+          }
+          return handler.next(e);
+        }
+
         // Xử lý lỗi 401 (Unauthorized) bằng cách refresh token
         if (e.response?.statusCode == 401 && !e.requestOptions.path.contains('/auth/refresh')) {
           try {
@@ -57,6 +72,18 @@ class DioClient {
               return handler.resolve(clonedRequest);
             }
           } catch (err) {
+            if (context != null) {
+              showCustomSnackBar(context, "Hết phiên đăng nhập, vui lòng đăng nhập lại", isError: true);
+            }
+
+            await getIt<Logout>()();
+
+            // Điều hướng về màn welcome
+            navigatorKey.currentState?.pushNamedAndRemoveUntil(
+              AppRoutes.welcome,
+                  (route) => true,
+            );
+
             return handler.reject(
               DioException(
                 requestOptions: e.requestOptions,
