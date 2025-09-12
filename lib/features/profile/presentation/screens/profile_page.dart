@@ -12,8 +12,6 @@ import '../../../auth/domain/usecases/auth_usecases.dart';
 class ProfilePage extends StatelessWidget {
   ProfilePage({super.key});
   final  _logout = getIt<Logout>();
-  ImageProvider? imageProvider;
-
   Future<void> _handlerLogout(BuildContext context) async{
     if (!context.mounted) return;
 
@@ -66,9 +64,6 @@ class ProfilePage extends StatelessWidget {
           if (user == null) {
             return const Center(child: CircularProgressIndicator(),);
           }
-          if(user.avatarUrl != null){
-            imageProvider = NetworkImage(user.avatarUrl!);
-          }
           return  Scaffold(
             appBar: AppBar(
               automaticallyImplyLeading: false,
@@ -80,7 +75,7 @@ class ProfilePage extends StatelessWidget {
                 // Profile Header
                 Row(
                   children: [
-                    UserAvatar(imageProvider: imageProvider, username: user.username,),
+                    UserAvatar(url: user.avatarUrl, isLocal: false, username: user.username,),
                     const SizedBox(width: 16),
                     Expanded(
                       child: Column(
