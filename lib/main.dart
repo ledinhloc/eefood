@@ -34,7 +34,7 @@ class _MyAppState extends State<MyApp> {
       debugShowCheckedModeBanner: false,
       title: 'eeFood',
       theme: appTheme(),
-      initialRoute: AppRoutes.cuisinePreference,
+      initialRoute: AppRoutes.onBoardingFlow,
       routes: AppRoutes.listRoute,
     );
   }

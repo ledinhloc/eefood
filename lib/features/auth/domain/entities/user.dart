@@ -10,6 +10,7 @@ class User{
   final String? avatarUrl;
   final List<String>? allergies;
   final List<String>? eatingPreferences;
+  final List<String>? dietaryPreferences;
 
   const User({
     required this.id,
@@ -21,8 +22,9 @@ class User{
     this.address,
     required this.provider,
     this.avatarUrl,
-    required this.allergies,
-    required this.eatingPreferences,
+    this.allergies,
+    this.eatingPreferences,
+    this.dietaryPreferences,
   });
 }
 

@@ -1,6 +1,10 @@
+import 'package:eefood/features/auth/presentation/bloc/on_boarding_bloc/on_boarding_cubit.dart';
+import 'package:eefood/features/auth/presentation/screens/allergy_page.dart';
 import 'package:eefood/features/auth/presentation/screens/cuisine_preference_page.dart';
+import 'package:eefood/features/auth/presentation/screens/dietary_preference_page.dart';
 import 'package:eefood/features/auth/presentation/screens/forgot_password_page.dart';
 import 'package:eefood/features/auth/presentation/screens/login_page.dart';
+import 'package:eefood/features/auth/presentation/screens/on_boarding_flow_page.dart';
 import 'package:eefood/features/auth/presentation/screens/register_page.dart';
 import 'package:eefood/features/auth/presentation/screens/reset_password_page.dart';
 import 'package:eefood/features/auth/presentation/screens/splash_page.dart';
@@ -12,6 +16,7 @@ import 'package:eefood/features/profile/presentation/screens/language_page.dart'
 import 'package:eefood/main.dart';
 import 'package:eefood/main_screen.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'features/auth/domain/entities/user.dart';
 import 'features/profile/presentation/screens/profile_page.dart';
 import 'features/recipe/presentation/screens/home_page.dart';
@@ -30,7 +35,7 @@ class AppRoutes {
   static const verifyOtp = '/verifyOtp';
   static const forgotPassword = '/forgotPassword';
   static const resetPassword = '/resetPassword';
-  static const cuisinePreference = '/cuisinePreference';
+  static const onBoardingFlow = '/onBoardingFlow';
 
   /* feat profile*/
   static const editProfile = '/editProfile';
@@ -54,13 +59,14 @@ class AppRoutes {
     splashPage: (context) => const SplashPage(),
     editProfile: (context) {
       final user = ModalRoute.of(context)!.settings.arguments as User;
-      return EditProfilePage(user: user,);
+      return EditProfilePage(user: user);
     },
     foodPreference: (context) => const FoodPreferencesPage(),
     language: (context) => const LanguagePage(),
     register: (context) => RegisterPage(),
     verifyOtp: (context) {
-      final args = ModalRoute.of(context)!.settings.arguments as Map<String, dynamic>;
+      final args =
+          ModalRoute.of(context)!.settings.arguments as Map<String, dynamic>;
       return VerificationOtpPage(
         email: args['email'],
         otpType: args['otpType'],
@@ -68,12 +74,16 @@ class AppRoutes {
     },
     forgotPassword: (context) => ForgotPasswordPage(),
     resetPassword: (context) {
-      final args = ModalRoute.of(context)!.settings.arguments as Map<String, dynamic>;
-      return ResetPasswordPage(
-        email: args['email'],
-        otpCode: args['otpCode'],
+      final args =
+          ModalRoute.of(context)!.settings.arguments as Map<String, dynamic>;
+      return ResetPasswordPage(email: args['email'], otpCode: args['otpCode']);
+    },
+    onBoardingFlow: (context) {
+      final args = ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>?;
+      return BlocProvider(
+        create: (_) => OnBoardingCubit(),
+        child: OnBoardingFlowPage(),
       );
     },
-    cuisinePreference: (context) => const CuisinePreferencePage(),
   };
 }

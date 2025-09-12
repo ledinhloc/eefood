@@ -3,6 +3,7 @@ import 'package:eefood/core/constants/app_keys.dart';
 import 'package:eefood/features/auth/data/models/otp_model.dart';
 import 'package:eefood/features/auth/data/models/register_response_model.dart';
 import 'package:eefood/features/auth/data/models/result_model.dart';
+import 'package:eefood/features/auth/data/models/user_preference_model.dart';
 import 'package:flutter/material.dart';
 import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -195,6 +196,22 @@ class AuthRepositoryImpl implements AuthRepository {
       }
     } catch (e) {
       throw Exception('Reset password failed: $e');
+    }
+  }
+
+  @override
+  Future<Result<User>> updatePreferencesUser(UserUpdatePreferences request) async {
+    try {
+      final response = await dio.put(
+        '/v1/users/update',
+        data: request.toJson(),
+        options: Options(contentType: 'application/json', extra: {'requireAuth': false}),
+      );
+      final userModelRes = UserModel.fromJson(response.data['data']);
+      return Result.success(userModelRes.toEntity());
+    } catch (e) {
+      print(e);
+      throw Exception('Update preferences failed: $e');
     }
   }
 
