@@ -11,6 +11,7 @@ import 'package:eefood/features/auth/presentation/screens/welcome_page.dart';
 import 'package:eefood/features/profile/presentation/screens/edit_profile_page.dart';
 import 'package:eefood/features/profile/presentation/screens/food_preferences_page.dart';
 import 'package:eefood/features/profile/presentation/screens/language_page.dart';
+import 'package:eefood/features/recipe/presentation/screens/recipe_create_page.dart';
 import 'package:eefood/main.dart';
 import 'package:eefood/main_screen.dart';
 import 'package:flutter/material.dart';
@@ -40,6 +41,9 @@ class AppRoutes {
   static const foodPreference = '/foodPreference';
   static const language = '/language';
   static const mediaView = '/mediaView';
+
+  /* feat recipe */
+  static const recipeCreatePage = '/recipeCreatePage';
 
   // Danh sách các widget cho BottomNavigationBar trong main page
   static List<Widget> widgetOptions = <Widget>[
@@ -92,5 +96,6 @@ class AppRoutes {
         url: args['url'],
       );
     },
+    recipeCreatePage: (context) => RecipeCreatePage(),
   };
 }
