@@ -3,7 +3,7 @@ class Ingredient {
   final String name;
   final String? description;
   final String? imageUrl;
-  final int? quantity;
+  final double? quantity;
   final String? unit;
 
   const Ingredient({

@@ -205,23 +205,25 @@ class _BasicInfoSectionState extends State<BasicInfoSection> {
 
   @override
   Widget build(BuildContext context) {
+    final mediaPages = [
+      _buildMediaPage(true), // Image
+      _buildMediaPage(false), // Video
+    ];
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         SizedBox(
           height: 200,
-          child: PageView(
+          child: PageView.builder(
             controller: _pageController,
-            children: [
-              Padding(
+            physics: const BouncingScrollPhysics(),
+            itemCount: mediaPages.length,
+            itemBuilder: (context, index) {
+              return Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 8.0),
-                child: _buildMediaPage(true),
-              ), // Image first
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 8.0),
-                child: _buildMediaPage(false),
-              ), // Video second
-            ],
+                child: mediaPages[index]);
+            },
           ),
         ),
         const SizedBox(height: 8),
@@ -229,11 +231,12 @@ class _BasicInfoSectionState extends State<BasicInfoSection> {
           child: Row(
             mainAxisSize: MainAxisSize.min,
             children: List.generate(
-              2,
-              (index) => Container(
+              mediaPages.length,
+              (index) => AnimatedContainer(
+                duration: const Duration(milliseconds: 300),
                 margin: const EdgeInsets.symmetric(horizontal: 4.0),
-                width: 8.0,
-                height: 8.0,
+                width: _currentPage == index ? 10.0 : 8.0,
+                height: _currentPage == index ? 10.0 : 8.0,
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
                   color: _currentPage == index ? Colors.blue : Colors.grey,

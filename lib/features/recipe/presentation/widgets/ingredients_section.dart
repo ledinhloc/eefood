@@ -1,6 +1,7 @@
-import 'package:eefood/features/recipe/data/models/ingredient_model.dart';
+import 'dart:math';
 import 'package:flutter/material.dart';
 import 'ingredient_bottom_sheet.dart';
+import 'package:eefood/features/recipe/data/models/ingredient_model.dart';
 
 class IngredientsSection extends StatefulWidget {
   final List<IngredientModel> ingredients;
@@ -42,23 +43,47 @@ class _IngredientsSectionState extends State<IngredientsSection> {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
+      builder: (context) => Padding(
+        padding: EdgeInsets.only(
+          bottom: MediaQuery.of(context).viewInsets.bottom,
+        ),
+        child: IngredientBottomSheet(
+          onSaveIngredient: (ingredient, {int? index}) {
+            setState(() {
+              widget.ingredients.add(ingredient);
+            });
+            widget.onIngredientsUpdated();
+          },
+          suggestions: _ingredientSuggestions,
+        ),
+      ),
+    );
+  }
+
+  void _editIngredient(int index) {
+    final ingredient = widget.ingredients[index];
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
       builder: (context) => IngredientBottomSheet(
-        onAddIngredient: (ingredient) {
-          setState(() {
-            widget.ingredients.add(ingredient);
-          });
-          widget.onIngredientsUpdated();
-        },
         suggestions: _ingredientSuggestions,
+        editingIngredient: ingredient,
+        editingIndex: index,
+        onSaveIngredient: (updatedIngredient, {int? index}) {
+          if (index != null) {
+            setState(() {
+              widget.ingredients[index] = updatedIngredient;
+            });
+            widget.onIngredientsUpdated();
+          }
+        },
       ),
     );
   }
 
   void _reorderIngredients(int oldIndex, int newIndex) {
     setState(() {
-      if (newIndex > oldIndex) {
-        newIndex -= 1;
-      }
+      if (newIndex > oldIndex) newIndex -= 1;
       final IngredientModel item = widget.ingredients.removeAt(oldIndex);
       widget.ingredients.insert(newIndex, item);
     });
@@ -74,34 +99,55 @@ class _IngredientsSectionState extends State<IngredientsSection> {
 
   @override
   Widget build(BuildContext context) {
+    const double itemHeight = 64.0;
+    const double maxListHeight = 300.0;
+    final double listHeight = min(
+      widget.ingredients.length * itemHeight,
+      maxListHeight,
+    );
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text('Ingredients', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+        const Text(
+          'Ingredients',
+          style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+        ),
         const SizedBox(height: 16),
         if (widget.ingredients.isEmpty)
           const Center(
-            child: Text('No ingredients added yet', style: TextStyle(color: Colors.grey)),
+            child: Text(
+              'No ingredients added yet',
+              style: TextStyle(color: Colors.grey),
+            ),
           )
         else
-          ReorderableListView.builder(
-            shrinkWrap: true,
-            physics: const NeverScrollableScrollPhysics(),
-            itemCount: widget.ingredients.length,
-            itemBuilder: (context, index) {
-              final ingredient = widget.ingredients[index];
-              return ListTile(
-                key: Key('ingredient_$index'),
-                leading: const Icon(Icons.drag_handle),
-                title: Text(ingredient.name),
-                subtitle: ingredient.quantity != null ? Text('${ingredient.quantity} ${ingredient.unit ?? ''}') : null,
-                trailing: IconButton(
-                  icon: const Icon(Icons.delete, color: Colors.red),
-                  onPressed: () => _removeIngredient(index),
-                ),
-              );
-            },
-            onReorder: _reorderIngredients,
+          SizedBox(
+            height: listHeight,
+            child: ReorderableListView(
+              buildDefaultDragHandles: true,
+              onReorder: _reorderIngredients,
+              children: List.generate(widget.ingredients.length, (index) {
+                final ingredient = widget.ingredients[index];
+                final displayText =
+                    '${ingredient.name} ${ingredient.quantity ?? ''}${ingredient.unit ?? ''}';
+
+                return Card(
+                  key: ValueKey('ingredient_${index}_${ingredient.name}'),
+                  margin: const EdgeInsets.only(bottom: 5),
+                  color: Colors.white,
+                  child: ListTile(
+                    leading: const Icon(Icons.drag_handle),
+                    title: Text(displayText.trim()),
+                    trailing: IconButton(
+                      icon: const Icon(Icons.delete, color: Colors.red),
+                      onPressed: () => _removeIngredient(index),
+                    ),
+                    onTap: () => _editIngredient(index),
+                  ),
+                );
+              }),
+            ),
           ),
         const SizedBox(height: 16),
         Center(

@@ -1,3 +1,6 @@
+import 'package:eefood/features/recipe/data/models/ingredient_model.dart';
+import 'package:eefood/features/recipe/data/models/recipe_step_model.dart';
+
 enum Difficulty { EASY, MEDIUM, HARD }
 
 class Recipe {
@@ -10,8 +13,9 @@ class Recipe {
   final String? region;
   final int? cookTime; // in minutes
   final int? prepTime; // in minutes
-  final List<String>? dietaryPreferences;
-
+  final List<int>? categoryIds;
+  final List<IngredientModel>? ingredients;
+  final List<RecipeStepModel>? steps;
   const Recipe({
     required this.id,
     required this.title,
@@ -22,7 +26,9 @@ class Recipe {
     this.region,
     this.cookTime,
     this.prepTime,
-    this.dietaryPreferences,
+    this.categoryIds,
+    this.ingredients,
+    this.steps
   });
 }
 

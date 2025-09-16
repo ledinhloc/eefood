@@ -24,6 +24,9 @@ class _RecipeCreatePageState extends State<RecipeCreatePage> {
   late List<RecipeStepModel> _instructions;
   final ImagePicker _picker = ImagePicker();
 
+  OverlayEntry? _overlayEntry;
+  final LayerLink _layerLink = LayerLink();
+
   @override
   void initState() {
     super.initState();
@@ -35,15 +38,74 @@ class _RecipeCreatePageState extends State<RecipeCreatePage> {
   void _saveRecipe() {
     if (_formKey.currentState!.validate()) {
       _formKey.currentState!.save();
-      // Here you would typically save _recipe, _ingredients, and _instructions to backend or storage
+      _recipe.steps?.addAll(_instructions);
+      _recipe.ingredients?.addAll(_ingredients);
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Recipe saved successfully')),
       );
     }
   }
 
+  void _deleteRecipe() {
+    setState(() {
+      _recipe = RecipeModel(id: 0, title: '');
+      _ingredients.clear();
+      _instructions.clear();
+    });
+    _removeDropdown();
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(const SnackBar(content: Text('Recipe deleted')));
+  }
+
+  void _toggleDropdown() {
+    if (_overlayEntry == null) {
+      _overlayEntry = _createOverlayEntry();
+      Overlay.of(context).insert(_overlayEntry!);
+    } else {
+      _removeDropdown();
+    }
+  }
+
+  void _removeDropdown() {
+    _overlayEntry?.remove();
+    _overlayEntry = null;
+  }
+
+  OverlayEntry _createOverlayEntry() {
+    RenderBox renderBox = context.findRenderObject() as RenderBox;
+    final size = renderBox.size;
+
+    return OverlayEntry(
+      builder: (context) => Positioned(
+        width: 160,
+        child: CompositedTransformFollower(
+          link: _layerLink,
+          offset: const Offset(-120, 40), // chỉnh vị trí dropdown
+          showWhenUnlinked: false,
+          child: Material(
+            elevation: 4,
+            borderRadius: BorderRadius.circular(8),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                ListTile(
+                  leading: const Icon(Icons.delete, color: Colors.red),
+                  title: const Text("Delete"),
+                  onTap: _deleteRecipe,
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
   Future<void> _selectImage(File? file) async {
-    final XFile? pickedFile = await _picker.pickImage(source: ImageSource.gallery);
+    final XFile? pickedFile = await _picker.pickImage(
+      source: ImageSource.gallery,
+    );
     if (pickedFile != null) {
       setState(() {
         _recipe.imageUrl = pickedFile.path;
@@ -52,7 +114,9 @@ class _RecipeCreatePageState extends State<RecipeCreatePage> {
   }
 
   Future<void> _selectVideo(File? file) async {
-    final XFile? pickedFile = await _picker.pickVideo(source: ImageSource.gallery);
+    final XFile? pickedFile = await _picker.pickVideo(
+      source: ImageSource.gallery,
+    );
     if (pickedFile != null) {
       setState(() {
         _recipe.videoUrl = pickedFile.path;
@@ -61,59 +125,85 @@ class _RecipeCreatePageState extends State<RecipeCreatePage> {
   }
 
   @override
+  void dispose() {
+    _removeDropdown();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Create Recipe'),
-        backgroundColor: Colors.transparent,
-        leading: IconButton(
-            icon: const Icon(Icons.close),
-            onPressed: () => Navigator.pop(context),
-          ),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.settings),
-            onPressed: _saveRecipe,
-          ),
-        ],
-      ),
-      body: Form(
-        key: _formKey,
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.all(16.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              BasicInfoSection(
-                recipe: _recipe,
-                onRecipeUpdated: () => setState(() {}),
-                onImageSelected: _selectImage,
-                onVideoSelected: _selectVideo,
-              ),
-              const SizedBox(height: 24),
-              IngredientsSection(
-                ingredients: _ingredients,
-                onIngredientsUpdated: () => setState(() {}),
-              ),
-              const SizedBox(height: 24),
-              InstructionsSection(
-                instructions: _instructions,
-                onInstructionsUpdated: () => setState(() {}),
-              ),
-              const SizedBox(height: 32),
-              Center(
-                child: ElevatedButton(
-                  onPressed: _saveRecipe,
-                  style: ElevatedButton.styleFrom(
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 40, vertical: 16),
+      backgroundColor: Colors.white,
+      body: SafeArea(
+        child: Column(
+          children: [
+            // AppBar custom
+            Container(
+              height: 56,
+              padding: const EdgeInsets.symmetric(horizontal: 8),
+              child: Row(
+                children: [
+                  IconButton(
+                    icon: const Icon(Icons.close),
+                    onPressed: () => Navigator.pop(context),
                   ),
-                  child: const Text('Save Recipe',
-                      style: TextStyle(fontSize: 18)),
+                  const Expanded(
+                    child: Text(
+                      'Create Recipe',
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                  IconButton(
+                    icon: const Icon(Icons.save),
+                    onPressed: _saveRecipe,
+                  ),
+                  CompositedTransformTarget(
+                    link: _layerLink,
+                    child: IconButton(
+                      icon: const Icon(Icons.menu_sharp),
+                      onPressed: _toggleDropdown,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+
+            // Nội dung chính
+            Expanded(
+              child: Form(
+                key: _formKey,
+                child: SingleChildScrollView(
+                  padding: const EdgeInsets.all(16.0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      BasicInfoSection(
+                        recipe: _recipe,
+                        onRecipeUpdated: () => setState(() {}),
+                        onImageSelected: _selectImage,
+                        onVideoSelected: _selectVideo,
+                      ),
+                      const SizedBox(height: 24),
+                      IngredientsSection(
+                        ingredients: _ingredients,
+                        onIngredientsUpdated: () => setState(() {
+                        }),
+                      ),
+                      const SizedBox(height: 24),
+                      InstructionsSection(
+                        instructions: _instructions,
+                        onInstructionsUpdated: () => setState(() {}),
+                      ),
+                      const SizedBox(height: 32),
+                    ],
+                  ),
                 ),
               ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );

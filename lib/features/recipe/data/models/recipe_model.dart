@@ -1,3 +1,5 @@
+import 'package:eefood/features/recipe/data/models/ingredient_model.dart';
+import 'package:eefood/features/recipe/data/models/recipe_step_model.dart';
 import 'package:eefood/features/recipe/domain/entities/recipe.dart';
 
 class RecipeModel {
@@ -10,7 +12,9 @@ class RecipeModel {
   String? region;
   int? cookTime; // in minutes
   int? prepTime; // in minutes
-  List<String>? dietaryPreferences;
+  List<int>? categoryIds;
+  List<IngredientModel>? ingredients;
+  List<RecipeStepModel>? steps;
   RecipeModel({
     required this.id,
     required this.title,
@@ -21,7 +25,9 @@ class RecipeModel {
     this.region,
     this.cookTime,
     this.prepTime,
-    this.dietaryPreferences,
+    this.categoryIds,
+    this.ingredients,
+    this.steps,
   });
 
   factory RecipeModel.fromJson(Map<String, dynamic> json) {
@@ -35,9 +41,11 @@ class RecipeModel {
       region: json['region'],
       cookTime: json['cookTime'],
       prepTime: json['prepTime'],
-      dietaryPreferences: json['dietaryPreferences'] != null
-          ? List<String>.from(json['dietaryPreferences'])
+      categoryIds: json['categoryIds'] != null
+          ? List<int>.from(json['categoryIds'])
           : null,
+      ingredients: json['ingredients'] != null ? List<IngredientModel>.from(json['ingredients']) : null,
+      steps: json['steps'] !=null ? List<RecipeStepModel>.from(json['steps']) : null,
     );
   }
 
@@ -52,7 +60,9 @@ class RecipeModel {
       'region': region,
       'cookTime': cookTime,
       'prepTime': prepTime,
-      'dietaryPreferences': dietaryPreferences,
+      'categoryIds': categoryIds,
+      'ingredients': ingredients,
+      'steps': steps
     };
   }
 
@@ -66,7 +76,9 @@ class RecipeModel {
       region: region,
       cookTime: cookTime,
       prepTime: prepTime,
-      dietaryPreferences: dietaryPreferences,
+      categoryIds: categoryIds,
+      ingredients: ingredients,
+      steps: steps,
     );
 
   static Difficulty? _difficultyFromString(String? value) {

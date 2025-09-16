@@ -5,7 +5,7 @@ class IngredientModel {
     final String name;
     final String? description;
     final String? image;
-    final int? quantity;
+    final double? quantity;
     final String? unit;
 
     IngredientModel({
@@ -21,7 +21,10 @@ class IngredientModel {
             id: json['id'] as int, 
             name: json['name'],
             description: json['description'],
-            image: json['image']);
+            image: json['image'],
+            quantity: json['quantity'],
+            unit: json['unit']);
+            
     }
 
     Map<String, dynamic> toJson() => {
@@ -29,6 +32,8 @@ class IngredientModel {
         'name': name,
         'description': description,
         'image': image,
+        'quantity': quantity,
+        'unit': unit,
     };
 
     Ingredient toEntity() => Ingredient(
