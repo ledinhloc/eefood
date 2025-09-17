@@ -266,8 +266,8 @@ class _InstructionsSectionState extends State<InstructionsSection> {
         Center(
           child: ElevatedButton.icon(
             onPressed: _addInstruction,
-            icon: const Icon(Icons.add),
-            label: const Text('Add Instruction'),
+            icon: const Icon(Icons.add, color: Colors.white,),
+            label: const Text('Add Instruction',style: TextStyle(color: Colors.white)),
           ),
         ),
       ],

@@ -1,3 +1,6 @@
+import 'package:eefood/core/di/injection.dart';
+import 'package:eefood/core/utils/file_upload.dart';
+import 'package:eefood/core/utils/media_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:eefood/features/recipe/data/models/recipe_model.dart';
 import 'package:eefood/features/recipe/data/models/ingredient_model.dart';
@@ -22,7 +25,7 @@ class _RecipeCreatePageState extends State<RecipeCreatePage> {
   late RecipeModel _recipe;
   late List<IngredientModel> _ingredients;
   late List<RecipeStepModel> _instructions;
-  final ImagePicker _picker = ImagePicker();
+  final _fileUploader = getIt<FileUploader>();
 
   OverlayEntry? _overlayEntry;
   final LayerLink _layerLink = LayerLink();
@@ -102,28 +105,6 @@ class _RecipeCreatePageState extends State<RecipeCreatePage> {
     );
   }
 
-  Future<void> _selectImage(File? file) async {
-    final XFile? pickedFile = await _picker.pickImage(
-      source: ImageSource.gallery,
-    );
-    if (pickedFile != null) {
-      setState(() {
-        _recipe.imageUrl = pickedFile.path;
-      });
-    }
-  }
-
-  Future<void> _selectVideo(File? file) async {
-    final XFile? pickedFile = await _picker.pickVideo(
-      source: ImageSource.gallery,
-    );
-    if (pickedFile != null) {
-      setState(() {
-        _recipe.videoUrl = pickedFile.path;
-      });
-    }
-  }
-
   @override
   void dispose() {
     _removeDropdown();
@@ -183,14 +164,11 @@ class _RecipeCreatePageState extends State<RecipeCreatePage> {
                       BasicInfoSection(
                         recipe: _recipe,
                         onRecipeUpdated: () => setState(() {}),
-                        onImageSelected: _selectImage,
-                        onVideoSelected: _selectVideo,
                       ),
                       const SizedBox(height: 24),
                       IngredientsSection(
                         ingredients: _ingredients,
-                        onIngredientsUpdated: () => setState(() {
-                        }),
+                        onIngredientsUpdated: () => setState(() {}),
                       ),
                       const SizedBox(height: 24),
                       InstructionsSection(

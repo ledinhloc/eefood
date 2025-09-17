@@ -5,20 +5,18 @@ import 'package:flutter/material.dart';
 class ImagePickerButton extends StatelessWidget {
   final String label;
   final IconData icon;
-  final File? file;
-  final String? networkImage;
-  final String? networkVideo;
-  final VoidCallback onPressed;
+  final String? path;
+  final bool isLocal;
   final bool isVideo;
+  final VoidCallback onPressed;
   const ImagePickerButton({
     super.key,
     required this.label,
     required this.icon,
-    this.file,
-    this.networkImage,
-    this.networkVideo,
-    required this.onPressed,
+    this.path,
+    this.isLocal = false,
     this.isVideo = false,
+    required this.onPressed
   });
 
   @override
@@ -44,57 +42,35 @@ class ImagePickerButton extends StatelessWidget {
   }
 
   Widget _buildContent() {
-    if (file != null) {
-      return _buildFilePreview();
-    } else if (networkImage != null && networkImage!.isNotEmpty && !isVideo) {
-      return _buildNetworkImagePreview();
-    } else if (networkVideo != null && networkVideo!.isNotEmpty && isVideo) {
-      return _buildNetworkVideoPreview();
-    } else {
-      return Icon(icon, size: 40, color: Colors.grey);
+    if(path!=null && path!.isNotEmpty){
+      return isVideo ? _buildVideoPreview() : _buildImagePreview();
     }
+    return Icon(icon, size: 40, color: Colors.white70,);
   }
 
-  Widget _buildFilePreview() {
-    return isVideo
-        ? Stack(
-            alignment: Alignment.center,
-            children: [
-              const Icon(Icons.play_circle_fill, size: 50, color: Colors.white70),
-              ClipRRect(
-                borderRadius: BorderRadius.circular(12),
-                child: Opacity(
-                  opacity: 0.7,
-                  child: Image.file(file!, fit: BoxFit.cover),
-                ),
-              ),
-            ],
-          )
-        : ClipRRect(
-            borderRadius: BorderRadius.circular(12),
-            child: Image.file(file!, fit: BoxFit.cover),
-          );
-  }
-
-  Widget _buildNetworkImagePreview() {
+  Widget _buildImagePreview() {
+    final Widget imageWidget = isLocal 
+    ? Image.file(File(path!), fit: BoxFit.cover)
+    : Image.network(path!, fit: BoxFit.cover);
     return ClipRRect(
-      borderRadius: BorderRadius.circular(12),
-      child: Image.network(networkImage!, fit: BoxFit.cover),
+        borderRadius: BorderRadius.circular(12),
+        child: imageWidget,
     );
   }
 
-  Widget _buildNetworkVideoPreview() {
+  Widget _buildVideoPreview() {
+    final Widget thumbnail = isLocal
+    ? Image.file(File(path!), fit: BoxFit.cover)
+    : Image.network(path!, fit: BoxFit.cover);
+
     return Stack(
       alignment: Alignment.center,
       children: [
-        const Icon(Icons.play_circle_fill, size: 50, color: Colors.white70),
+        const Icon(Icons.play_circle_fill, size: 50, color: Colors.white70,),
         ClipRRect(
           borderRadius: BorderRadius.circular(12),
-          child: Opacity(
-            opacity: 0.7,
-            child: Image.network(networkVideo!, fit: BoxFit.cover),
-          ),
-        ),
+          child: Opacity(opacity: 0.7, child: thumbnail),
+        )
       ],
     );
   }

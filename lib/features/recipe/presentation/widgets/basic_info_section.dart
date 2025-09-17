@@ -1,4 +1,7 @@
 import 'dart:io';
+import 'package:eefood/core/di/injection.dart';
+import 'package:eefood/core/utils/file_upload.dart';
+import 'package:eefood/core/utils/media_picker.dart';
 import 'package:eefood/features/auth/presentation/widgets/custom_text_field.dart';
 import 'package:eefood/features/recipe/data/models/recipe_model.dart';
 import 'package:eefood/features/recipe/domain/entities/recipe.dart';
@@ -8,15 +11,12 @@ import 'package:image_picker/image_picker.dart';
 class BasicInfoSection extends StatefulWidget {
   final RecipeModel recipe;
   final VoidCallback onRecipeUpdated;
-  final Function(File?) onImageSelected;
-  final Function(File?) onVideoSelected;
+  
 
   const BasicInfoSection({
     Key? key,
     required this.recipe,
     required this.onRecipeUpdated,
-    required this.onImageSelected,
-    required this.onVideoSelected,
   }) : super(key: key);
 
   @override
@@ -26,7 +26,7 @@ class BasicInfoSection extends StatefulWidget {
 class _BasicInfoSectionState extends State<BasicInfoSection> {
   late TextEditingController _titleController;
   late TextEditingController _descriptionController;
-
+  final _fileUpload = getIt<FileUploader>();
   final List<String> _cookTimes = [
     '5 min',
     '10 min',
@@ -91,28 +91,30 @@ class _BasicInfoSectionState extends State<BasicInfoSection> {
   }
 
   Future<void> _pickImage() async {
-    final XFile? image = await ImagePicker().pickImage(
-      source: ImageSource.gallery,
-    );
+    final File? image = await MediaPicker.pickImage();
     if (image != null) {
-      setState(() {
-        _imageFile = File(image.path);
-      });
-      widget.onImageSelected(_imageFile);
-      widget.onRecipeUpdated();
+      final url = await _fileUpload.uploadFile(image);
+      if (url.isNotEmpty) {
+        setState(() {
+          _imageFile = image;
+          widget.recipe.imageUrl = url;
+        });
+        widget.onRecipeUpdated();
+      }
     }
   }
 
   Future<void> _pickVideo() async {
-    final XFile? video = await ImagePicker().pickVideo(
-      source: ImageSource.gallery,
-    );
+    final File? video = await MediaPicker.pickVideo();
     if (video != null) {
-      setState(() {
-        _videoFile = File(video.path);
-      });
-      widget.onVideoSelected(_videoFile);
-      widget.onRecipeUpdated();
+      final url = await _fileUpload.uploadFile(video);
+      if (url.isNotEmpty) {
+        setState(() {
+          _videoFile = video;
+          widget.recipe.videoUrl = url;
+        });
+        widget.onRecipeUpdated();
+      }
     }
   }
 

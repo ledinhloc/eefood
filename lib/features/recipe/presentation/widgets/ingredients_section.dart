@@ -153,8 +153,8 @@ class _IngredientsSectionState extends State<IngredientsSection> {
         Center(
           child: ElevatedButton.icon(
             onPressed: _addIngredient,
-            icon: const Icon(Icons.add),
-            label: const Text('Add Ingredient'),
+            icon: const Icon(Icons.add, color: Colors.white,),
+            label: const Text('Add Ingredient', style: TextStyle(color: Colors.white),),
           ),
         ),
       ],
