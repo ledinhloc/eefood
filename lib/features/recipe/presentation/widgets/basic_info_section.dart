@@ -1,17 +1,22 @@
 import 'dart:io';
+import 'package:dropdown_search/dropdown_search.dart';
+import 'package:eefood/core/constants/app_constants.dart';
 import 'package:eefood/core/di/injection.dart';
+import 'package:eefood/core/utils/convert_time.dart';
 import 'package:eefood/core/utils/file_upload.dart';
 import 'package:eefood/core/utils/media_picker.dart';
 import 'package:eefood/features/auth/presentation/widgets/custom_text_field.dart';
 import 'package:eefood/features/recipe/data/models/recipe_model.dart';
+import 'package:eefood/features/recipe/data/models/region_model.dart';
 import 'package:eefood/features/recipe/domain/entities/recipe.dart';
+import 'package:eefood/features/recipe/domain/usecases/recipe_usecases.dart';
+import 'package:eefood/features/recipe/presentation/widgets/custom_dropdown.dart';
+import 'package:eefood/features/recipe/presentation/widgets/media_picker_card.dart';
 import 'package:flutter/material.dart';
-import 'package:image_picker/image_picker.dart';
 
 class BasicInfoSection extends StatefulWidget {
   final RecipeModel recipe;
   final VoidCallback onRecipeUpdated;
-  
 
   const BasicInfoSection({
     Key? key,
@@ -26,46 +31,17 @@ class BasicInfoSection extends StatefulWidget {
 class _BasicInfoSectionState extends State<BasicInfoSection> {
   late TextEditingController _titleController;
   late TextEditingController _descriptionController;
+  final PageController _pageController = PageController(viewportFraction: 0.9);
+
   final _fileUpload = getIt<FileUploader>();
-  final List<String> _cookTimes = [
-    '5 min',
-    '10 min',
-    '15 min',
-    '20 min',
-    '30 min',
-    '45 min',
-    '1 hour',
-    '1 hour 30 min',
-    '2 hours',
-    '2+ hours',
-  ];
-  final List<String> _prepTimes = [
-    '5 min',
-    '10 min',
-    '15 min',
-    '20 min',
-    '30 min',
-    '45 min',
-    '1 hour',
-  ];
-  final Map<Difficulty, String> _difficulties = {
-    Difficulty.EASY: 'Easy',
-    Difficulty.MEDIUM: 'Medium',
-    Difficulty.HARD: 'Hard',
-  };
-  final List<String> _regions = [
-    'Vietnam',
-    'Asian',
-    'European',
-    'North American',
-    'South American',
-    'African',
-    'Other',
-  ];
+  final Province _province = getIt<Province>();
+  final Ward _ward = getIt<Ward>();
+
+  ProvinceModel? _selectedProvince;
+  WardModel? _selectedWard;
 
   File? _imageFile;
   File? _videoFile;
-  final PageController _pageController = PageController(viewportFraction: 0.9);
   int _currentPage = 0;
 
   @override
@@ -118,73 +94,8 @@ class _BasicInfoSectionState extends State<BasicInfoSection> {
     }
   }
 
-  int _parseTime(String value) {
-    int minutes = 0;
-    if (value.contains('hour')) {
-      final parts = value.split(' ');
-      for (int i = 0; i < parts.length; i++) {
-        if (parts[i] == 'hour' || parts[i] == 'hours') {
-          minutes += int.parse(parts[i - 1]) * 60;
-        } else if (parts[i] == 'min') {
-          minutes += int.parse(parts[i - 1]);
-        }
-      }
-    } else {
-      minutes = int.parse(value.replaceAll(' min', ''));
-    }
-    if (value == '2+ hours') minutes = 120;
-    return minutes;
-  }
-
-  Widget _buildMediaPage(bool isImage) {
-    final file = isImage ? _imageFile : _videoFile;
-    final url = isImage ? widget.recipe.imageUrl : widget.recipe.videoUrl;
-    final hasMedia = file != null || (url != null && url.isNotEmpty);
-
-    return GestureDetector(
-      onTap: isImage ? _pickImage : _pickVideo,
-      child: Container(
-        height: 200,
-        decoration: BoxDecoration(
-          color: Colors.grey[200],
-          borderRadius: BorderRadius.circular(8),
-        ),
-        child: hasMedia
-            ? Stack(
-                fit: StackFit.expand,
-                children: [
-                  if (file != null)
-                    Image.file(file, fit: BoxFit.cover)
-                  else if (url != null)
-                    Image.network(url, fit: BoxFit.cover),
-                  if (!isImage)
-                    const Center(
-                      child: Icon(
-                        Icons.play_circle_fill,
-                        size: 50,
-                        color: Colors.white70,
-                      ),
-                    ),
-                ],
-              )
-            : Center(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Icon(
-                      isImage ? Icons.add_photo_alternate : Icons.videocam,
-                      size: 40,
-                      color: Colors.grey,
-                    ),
-                    Text(
-                      isImage ? 'Add recipe cover image' : 'Add recipe video',
-                      style: const TextStyle(color: Colors.grey),
-                    ),
-                  ],
-                ),
-              ),
-      ),
-    );
+  String convertRegion(ProvinceModel pm, WardModel wm) {
+    return pm.name.toString() + wm.name.toString();
   }
 
   InputDecoration _dropdownDecoration(String label) {
@@ -208,8 +119,18 @@ class _BasicInfoSectionState extends State<BasicInfoSection> {
   @override
   Widget build(BuildContext context) {
     final mediaPages = [
-      _buildMediaPage(true), // Image
-      _buildMediaPage(false), // Video
+      MediaPickerCard(
+        isImage: true,
+        file: _imageFile,
+        url: widget.recipe.imageUrl,
+        onPick: _pickImage,
+      ),
+      MediaPickerCard(
+        isImage: false,
+        file: _videoFile,
+        url: widget.recipe.videoUrl,
+        onPick: _pickVideo,
+      ),
     ];
 
     return Column(
@@ -224,7 +145,8 @@ class _BasicInfoSectionState extends State<BasicInfoSection> {
             itemBuilder: (context, index) {
               return Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 8.0),
-                child: mediaPages[index]);
+                child: mediaPages[index],
+              );
             },
           ),
         ),
@@ -282,85 +204,131 @@ class _BasicInfoSectionState extends State<BasicInfoSection> {
           },
         ),
         const SizedBox(height: 16),
-        DropdownButtonFormField<String>(
-          value: widget.recipe.cookTime != null
-              ? _cookTimes.firstWhere(
-                  (t) => _parseTime(t) == widget.recipe.cookTime,
-                  orElse: () => _cookTimes[0],
+        CustomDropdownSearch<String>(
+          label: "Cook time *",
+          items: (String? filter, _) {
+            final q = (filter ?? '').trim();
+            if (q.isEmpty) {
+              return AppConstants.cookTimes;
+            }
+            return AppConstants.cookTimes
+                .where((e) => e.toLowerCase().contains(q.toLowerCase()))
+                .toList();
+          },
+          type: DropdownType.bottomSheet,
+          selectedItem: widget.recipe.cookTime != null
+              ? AppConstants.cookTimes.firstWhere(
+                  (t) => TimeParser.fromString(t) == widget.recipe.cookTime,
+                  orElse: () => AppConstants.cookTimes.first,
                 )
               : null,
-          decoration: _dropdownDecoration('Cook time *'),
-          dropdownColor: Colors.white,
-          items: _cookTimes.map((String value) {
-            return DropdownMenuItem<String>(value: value, child: Text(value));
-          }).toList(),
           onChanged: (value) {
             if (value != null) {
-              widget.recipe.cookTime = _parseTime(value);
+              widget.recipe.cookTime = TimeParser.fromString(value);
               widget.onRecipeUpdated();
             }
           },
-          validator: (value) {
-            if (value == null) {
-              return 'Please select cook time';
-            }
-            return null;
-          },
         ),
         const SizedBox(height: 16),
-        DropdownButtonFormField<String>(
-          value: widget.recipe.prepTime != null
-              ? _prepTimes.firstWhere(
-                  (t) => _parseTime(t) == widget.recipe.prepTime,
-                  orElse: () => _prepTimes[0],
+        CustomDropdownSearch<String>(
+          label: "Prep time *",
+          items: (String? filter, _) {
+            final q = (filter ?? '').trim();
+            if (q.isEmpty) {
+              return AppConstants.prepTimes;
+            }
+            return AppConstants.prepTimes
+                .where((e) => e.toLowerCase().contains(q.toLowerCase()))
+                .toList();
+          },
+          type: DropdownType.bottomSheet,
+          selectedItem: widget.recipe.prepTime != null
+              ? AppConstants.prepTimes.firstWhere(
+                  (t) => TimeParser.fromString(t) == widget.recipe.prepTime,
+                  orElse: () => AppConstants.prepTimes[0],
                 )
               : null,
-          decoration: _dropdownDecoration('Prep time'),
-          dropdownColor: Colors.white,
-          items: _prepTimes.map((String value) {
-            return DropdownMenuItem<String>(value: value, child: Text(value));
-          }).toList(),
           onChanged: (value) {
             if (value != null) {
-              widget.recipe.prepTime = _parseTime(value);
+              widget.recipe.prepTime = TimeParser.fromString(value);
               widget.onRecipeUpdated();
             }
           },
-          validator: (value) {
-            if (value == null) {
-              return 'Please select prep time';
-            }
-            return null;
-          },
         ),
         const SizedBox(height: 16),
-        DropdownButtonFormField<Difficulty>(
-          value: widget.recipe.difficulty,
-          decoration: _dropdownDecoration('Difficulty'),
-          dropdownColor: Colors.white,
-          items: _difficulties.entries.map((entry) {
-            return DropdownMenuItem<Difficulty>(
-              value: entry.key,
-              child: Text(entry.value),
-            );
-          }).toList(),
+        CustomDropdownSearch<Difficulty>(
+          label: 'Difficulty',
+          items: (String? filter, _) {
+            return AppConstants.difficulties.keys.toList();
+          },
+          type: DropdownType.menu,
+          selectedItem: widget.recipe.difficulty,
+          itemAsString: (d) => AppConstants.difficulties[d] ?? "",
           onChanged: (value) {
             widget.recipe.difficulty = value;
             widget.onRecipeUpdated();
           },
         ),
         const SizedBox(height: 16),
-        DropdownButtonFormField<String>(
-          value: widget.recipe.region,
-          decoration: _dropdownDecoration('Region'),
-          dropdownColor: Colors.white,
-          items: _regions.map((String value) {
-            return DropdownMenuItem<String>(value: value, child: Text(value));
-          }).toList(),
-          onChanged: (value) {
-            widget.recipe.region = value;
-            widget.onRecipeUpdated();
-          },
+        Row(
+          children: [
+            Expanded(
+              child: CustomDropdownSearch<ProvinceModel>(
+                label: "Province",
+                items: (String? filter, LoadProps? loadProps) async {
+                  final skip = loadProps?.skip ?? 0;
+                  final take = loadProps?.take ?? 10;
+                  final page = (skip ~/ take) + 1;
+                  return await _province(
+                    keyword: filter,
+                    limit: take,
+                    page: page,
+                  );
+                },
+                type: DropdownType.bottomSheet,
+                selectedItem: _selectedProvince,
+                itemAsString: (p) => p.name,
+                compareFn: (a, b) => a?.code == b?.code,
+                onChanged: (province) {
+                  setState(() {
+                    _selectedProvince = province;
+                    _selectedWard = null;
+                  });
+                  widget.onRecipeUpdated();
+                },
+              ),
+            ),
+            const SizedBox(width: 10),
+            Expanded(
+              child: CustomDropdownSearch<WardModel>(
+                label: "Ward",
+                items: (String? filter, LoadProps? loadProps) async {
+                  if (_selectedProvince == null) return <WardModel>[];
+                  final skip = loadProps?.skip ?? 0;
+                  final take = loadProps?.take ?? 10;
+                  final page = (skip ~/ take) + 1;
+                  return await _ward(
+                    _selectedProvince!.code,
+                    keyword: filter,
+                    limit: take,
+                    page: page,
+                  );
+                },
+                type: DropdownType.bottomSheet,
+                selectedItem: _selectedWard,
+                itemAsString: (w) => w.name,
+                compareFn: (a, b) => a?.code == b?.code,
+                onChanged: (ward) {
+                  setState(() => _selectedWard = ward);
+                  widget.recipe.region = convertRegion(
+                    _selectedProvince!,
+                    _selectedWard!,
+                  );
+                  widget.onRecipeUpdated();
+                },
+              ),
+            ),
+          ],
         ),
       ],
     );

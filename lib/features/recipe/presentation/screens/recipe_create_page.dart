@@ -1,12 +1,9 @@
 import 'package:eefood/core/di/injection.dart';
 import 'package:eefood/core/utils/file_upload.dart';
-import 'package:eefood/core/utils/media_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:eefood/features/recipe/data/models/recipe_model.dart';
 import 'package:eefood/features/recipe/data/models/ingredient_model.dart';
 import 'package:eefood/features/recipe/data/models/recipe_step_model.dart';
-import 'dart:io';
-import 'package:image_picker/image_picker.dart';
 import '../widgets/basic_info_section.dart';
 import '../widgets/ingredients_section.dart';
 import '../widgets/instructions_section.dart';
