@@ -154,6 +154,12 @@ class LoginPage extends StatelessWidget {
                           emailController.text,
                           passController.text,
                         );
+
+                        // Kiểm tra nếu user chưa có sở thích nào thì chuyển đến onBoardingFlow
+                        if(user.allergies!.isEmpty && user.dietaryPreferences!.isEmpty && user.eatingPreferences!.isEmpty) {
+                          Navigator.pushReplacementNamed(context, AppRoutes.onBoardingFlow);
+                          return;
+                        }
                         print(user);
                         Navigator.pushNamed(context, AppRoutes.main);
                       } catch (e) {

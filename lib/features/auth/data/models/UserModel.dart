@@ -16,6 +16,7 @@ class UserModel {
   final String? avatarUrl;
   final List<String>? allergies;
   final List<String>? eatingPreferences;
+  final List<String>? dietaryPreferences;
 
   final String? accessToken;
 
@@ -32,6 +33,7 @@ class UserModel {
     this.avatarUrl,
     this.allergies,
     this.eatingPreferences,
+    this.dietaryPreferences,
     this.accessToken,
     this.refreshToken,
   });
@@ -39,7 +41,7 @@ class UserModel {
   // factory UserModel.fromJson(Map<String, dynamic> json) => _$UserModelFromJson(json);
   factory UserModel.fromJson(Map<String, dynamic> json) {
     return UserModel(
-      id: json['id'] ,
+      id: json['id'],
       username: json['username'] ,
       email: json['email'],
       role: json['role'] ,
@@ -52,6 +54,7 @@ class UserModel {
       avatarUrl: json['avatarUrl']?.toString(),
       allergies: List<String>.from(json['allergies'] ?? []),
       eatingPreferences: List<String>.from(json['eatingPreferences'] ?? []),
+      dietaryPreferences: List<String>.from(json['dietaryPreferences'] ?? []),
       accessToken: json['accessToken'],
       refreshToken: json['refreshToken'],
     );
@@ -71,6 +74,7 @@ class UserModel {
       'avatarUrl': avatarUrl,
       'allergies': allergies,
       'eatingPreferences': eatingPreferences,
+      'dietaryPreferences': dietaryPreferences,
       'accessToken': accessToken,
       'refreshToken': refreshToken,
     };
