@@ -1,3 +1,4 @@
+import 'package:eefood/features/recipe/data/models/ingredient_model.dart';
 import 'package:eefood/features/recipe/data/models/region_model.dart';
 import 'package:eefood/features/recipe/domain/repositories/recipe_repository.dart';
 
@@ -14,4 +15,11 @@ class Ward {
 
   Future<List<WardModel>> call(String provinceCode, {String? keyword, int limit = 5, int page = 1}) 
     => repository.getWard(provinceCode, keyword: keyword, limit: limit, page: page);
+}
+
+class Ingredients {
+  final RecipeRepository repository;
+  Ingredients(this.repository);
+
+  Future<List<IngredientModel>> call(String name, int page, int limit) => repository.getAllIngredient(name,page,limit);
 }

@@ -37,7 +37,7 @@ class _MyAppState extends State<MyApp> {
       debugShowCheckedModeBanner: false,
       title: 'eeFood',
       theme: appTheme(),
-      initialRoute: AppRoutes.recipePage,
+      initialRoute: AppRoutes.splashPage,
       routes: AppRoutes.listRoute,
     );
   }

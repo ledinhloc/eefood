@@ -65,4 +65,7 @@ Future<void> setupDependencies() async {
   //region 
   getIt.registerLazySingleton(()=> Province(getIt<RecipeRepository>()));
   getIt.registerLazySingleton(()=> Ward(getIt<RecipeRepository>()));
+
+  // ingredients
+  getIt.registerLazySingleton(() => Ingredients(getIt<RecipeRepository>()));
 }

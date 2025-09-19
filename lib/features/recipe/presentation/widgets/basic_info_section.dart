@@ -95,7 +95,7 @@ class _BasicInfoSectionState extends State<BasicInfoSection> {
   }
 
   String convertRegion(ProvinceModel pm, WardModel wm) {
-    return pm.name.toString() + wm.name.toString();
+    return 'Xã/phường ${wm.name} , thành phố ${pm.name}';
   }
 
   InputDecoration _dropdownDecoration(String label) {
@@ -206,15 +206,7 @@ class _BasicInfoSectionState extends State<BasicInfoSection> {
         const SizedBox(height: 16),
         CustomDropdownSearch<String>(
           label: "Cook time *",
-          items: (String? filter, _) {
-            final q = (filter ?? '').trim();
-            if (q.isEmpty) {
-              return AppConstants.cookTimes;
-            }
-            return AppConstants.cookTimes
-                .where((e) => e.toLowerCase().contains(q.toLowerCase()))
-                .toList();
-          },
+          items: (filter, props) => AppConstants.cookTimes,
           type: DropdownType.bottomSheet,
           selectedItem: widget.recipe.cookTime != null
               ? AppConstants.cookTimes.firstWhere(
@@ -232,20 +224,12 @@ class _BasicInfoSectionState extends State<BasicInfoSection> {
         const SizedBox(height: 16),
         CustomDropdownSearch<String>(
           label: "Prep time *",
-          items: (String? filter, _) {
-            final q = (filter ?? '').trim();
-            if (q.isEmpty) {
-              return AppConstants.prepTimes;
-            }
-            return AppConstants.prepTimes
-                .where((e) => e.toLowerCase().contains(q.toLowerCase()))
-                .toList();
-          },
+          items: (filter, props) => AppConstants.prepTimes,
           type: DropdownType.bottomSheet,
           selectedItem: widget.recipe.prepTime != null
               ? AppConstants.prepTimes.firstWhere(
                   (t) => TimeParser.fromString(t) == widget.recipe.prepTime,
-                  orElse: () => AppConstants.prepTimes[0],
+                  orElse: () => AppConstants.prepTimes.first,
                 )
               : null,
           onChanged: (value) {
@@ -258,9 +242,7 @@ class _BasicInfoSectionState extends State<BasicInfoSection> {
         const SizedBox(height: 16),
         CustomDropdownSearch<Difficulty>(
           label: 'Difficulty',
-          items: (String? filter, _) {
-            return AppConstants.difficulties.keys.toList();
-          },
+          items: (filter, props) => AppConstants.difficulties.keys.toList(),
           type: DropdownType.menu,
           selectedItem: widget.recipe.difficulty,
           itemAsString: (d) => AppConstants.difficulties[d] ?? "",
@@ -275,13 +257,11 @@ class _BasicInfoSectionState extends State<BasicInfoSection> {
             Expanded(
               child: CustomDropdownSearch<ProvinceModel>(
                 label: "Province",
-                items: (String? filter, LoadProps? loadProps) async {
-                  final skip = loadProps?.skip ?? 0;
-                  final take = loadProps?.take ?? 10;
-                  final page = (skip ~/ take) + 1;
+                onFind: (String? filter, int page, int limit) async {
+                  debugPrint('Loading page: $page, limit: $limit');
                   return await _province(
                     keyword: filter,
-                    limit: take,
+                    limit: limit,
                     page: page,
                   );
                 },
@@ -302,15 +282,13 @@ class _BasicInfoSectionState extends State<BasicInfoSection> {
             Expanded(
               child: CustomDropdownSearch<WardModel>(
                 label: "Ward",
-                items: (String? filter, LoadProps? loadProps) async {
+                onFind: (String? filter, int page, int limit) async {
                   if (_selectedProvince == null) return <WardModel>[];
-                  final skip = loadProps?.skip ?? 0;
-                  final take = loadProps?.take ?? 10;
-                  final page = (skip ~/ take) + 1;
+                  debugPrint('Loading page: $page, limit: $limit');
                   return await _ward(
                     _selectedProvince!.code,
                     keyword: filter,
-                    limit: take,
+                    limit: limit,
                     page: page,
                   );
                 },

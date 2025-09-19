@@ -44,7 +44,7 @@ class AppRoutes {
 
   /* feat recipe */
   static const recipeCreatePage = '/recipeCreatePage';
-  static const recipePage = '/recipePage';
+
 
   // Danh sách các widget cho BottomNavigationBar trong main page
   static List<Widget> widgetOptions = <Widget>[
@@ -98,6 +98,5 @@ class AppRoutes {
       );
     },
     recipeCreatePage: (context) => RecipeCreatePage(),
-    recipePage: (context) => MyRecipesPage(),
   };
 }
