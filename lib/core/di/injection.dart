@@ -2,6 +2,9 @@ import 'package:eefood/core/utils/file_upload.dart';
 import 'package:eefood/features/auth/presentation/bloc/on_boarding_bloc/on_boarding_cubit.dart';
 import 'package:eefood/features/profile/domain/repositories/profile_repository.dart';
 import 'package:eefood/features/profile/domain/usecases/profile_usecase.dart';
+import 'package:eefood/features/recipe/data/repositories/recipe_repository_impl.dart';
+import 'package:eefood/features/recipe/domain/repositories/recipe_repository.dart';
+import 'package:eefood/features/recipe/domain/usecases/recipe_usecases.dart';
 import 'package:get_it/get_it.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -36,6 +39,10 @@ Future<void> setupDependencies() async {
       )
   );
 
+  getIt.registerLazySingleton<RecipeRepository>(
+    () => RecipeRepositoryImpl(dio: getIt<DioClient>().dio)
+  );
+
   getIt.registerLazySingleton(() => FileUploader(dio: getIt<DioClient>().dio));
 
   // Register UseCases
@@ -54,4 +61,11 @@ Future<void> setupDependencies() async {
 
   // OnBoarding Cubit (singleton)
   getIt.registerLazySingleton<OnBoardingCubit>(() => OnBoardingCubit());
+
+  //region 
+  getIt.registerLazySingleton(()=> Province(getIt<RecipeRepository>()));
+  getIt.registerLazySingleton(()=> Ward(getIt<RecipeRepository>()));
+
+  // ingredients
+  getIt.registerLazySingleton(() => Ingredients(getIt<RecipeRepository>()));
 }

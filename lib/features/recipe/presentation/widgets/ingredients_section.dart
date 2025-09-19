@@ -1,4 +1,6 @@
 import 'dart:math';
+import 'package:eefood/core/di/injection.dart';
+import 'package:eefood/features/recipe/domain/usecases/recipe_usecases.dart';
 import 'package:flutter/material.dart';
 import 'ingredient_bottom_sheet.dart';
 import 'package:eefood/features/recipe/data/models/ingredient_model.dart';
@@ -18,26 +20,6 @@ class IngredientsSection extends StatefulWidget {
 }
 
 class _IngredientsSectionState extends State<IngredientsSection> {
-  final List<String> _ingredientSuggestions = [
-    'Flour',
-    'Sugar',
-    'Salt',
-    'Butter',
-    'Eggs',
-    'Milk',
-    'Water',
-    'Oil',
-    'Pepper',
-    'Garlic',
-    'Onion',
-    'Tomato',
-    'Rice',
-    'Pasta',
-    'Chicken',
-    'Beef',
-    'Fish',
-    'Cheese',
-  ];
 
   void _addIngredient() {
     showModalBottomSheet(
@@ -54,7 +36,6 @@ class _IngredientsSectionState extends State<IngredientsSection> {
             });
             widget.onIngredientsUpdated();
           },
-          suggestions: _ingredientSuggestions,
         ),
       ),
     );
@@ -66,7 +47,6 @@ class _IngredientsSectionState extends State<IngredientsSection> {
       context: context,
       isScrollControlled: true,
       builder: (context) => IngredientBottomSheet(
-        suggestions: _ingredientSuggestions,
         editingIngredient: ingredient,
         editingIndex: index,
         onSaveIngredient: (updatedIngredient, {int? index}) {

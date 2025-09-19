@@ -1,16 +1,18 @@
+import 'package:dropdown_search/dropdown_search.dart';
+import 'package:eefood/core/di/injection.dart';
 import 'package:eefood/features/recipe/data/models/ingredient_model.dart';
+import 'package:eefood/features/recipe/domain/usecases/recipe_usecases.dart';
+import 'package:eefood/features/recipe/presentation/widgets/custom_dropdown.dart';
 import 'package:flutter/material.dart';
 
 class IngredientBottomSheet extends StatefulWidget {
   final Function(IngredientModel, {int? index}) onSaveIngredient;
-  final List<String> suggestions;
   final IngredientModel? editingIngredient;
   final int? editingIndex;
 
   const IngredientBottomSheet({
     Key? key,
     required this.onSaveIngredient,
-    required this.suggestions,
     this.editingIngredient,
     this.editingIndex,
   }) : super(key: key);
@@ -23,6 +25,7 @@ class _IngredientBottomSheetState extends State<IngredientBottomSheet> {
   final TextEditingController _nameController = TextEditingController();
   final TextEditingController _quantityController = TextEditingController();
   final TextEditingController _unitController = TextEditingController();
+  final Ingredients _ingredientsUsecase = getIt<Ingredients>();
 
   @override
   void initState() {
@@ -39,7 +42,7 @@ class _IngredientBottomSheetState extends State<IngredientBottomSheet> {
     }
   }
 
-  /// Parse chuỗi nhập thành số (hỗ trợ phân số "1/2")
+  /// Hàm chuyển đổi nếu người dùng nhập text phân số
   double? _parseQuantity(String input) {
     input = input.trim();
     if (input.contains("/")) {
@@ -102,35 +105,27 @@ class _IngredientBottomSheetState extends State<IngredientBottomSheet> {
           const SizedBox(height: 16),
 
           // Name field (autocomplete)
-          Autocomplete<String>(
-            optionsBuilder: (TextEditingValue textEditingValue) {
-              if (textEditingValue.text.isEmpty) {
-                return const Iterable<String>.empty();
+          CustomDropdownSearch<String>(
+            label: 'Ingredient name',
+            onFind: (String? filter, int page, int limit) async {
+              // call usecase and map to names
+              final List<IngredientModel> ingredients =
+                  await _ingredientsUsecase(filter ?? '', page, limit);
+              return ingredients.map((e) => e.name).toList();
+            },
+            type: DropdownType.menu,
+            // selectedItem must be null if empty
+            selectedItem: _nameController.text.isEmpty ? null : _nameController.text,
+            showSearchBox: true,
+            searchHint: 'Search ingredient...',
+            onChanged: (value) {
+              if (value != null) {
+                setState(() {
+                  _nameController.text = value;
+                });
               }
-              return widget.suggestions.where((String option) {
-                return option.toLowerCase().contains(
-                  textEditingValue.text.toLowerCase(),
-                );
-              });
             },
-            initialValue: TextEditingValue(text: _nameController.text),
-            onSelected: (String selection) {
-              _nameController.text = selection;
-            },
-            fieldViewBuilder: (context, textEditingController, focusNode, _) {
-              textEditingController.text = _nameController.text;
-              textEditingController.addListener(() {
-                _nameController.text = textEditingController.text;
-              });
-              return TextFormField(
-                controller: textEditingController,
-                focusNode: focusNode,
-                decoration: const InputDecoration(
-                  labelText: 'Ingredient Name',
-                  border: OutlineInputBorder(),
-                ),
-              );
-            },
+            // keep default itemAsString behavior (string already)
           ),
           const SizedBox(height: 16),
 
@@ -144,6 +139,7 @@ class _IngredientBottomSheetState extends State<IngredientBottomSheet> {
                   textAlign: TextAlign.center,
                   keyboardType: TextInputType.numberWithOptions(decimal: true),
                   decoration: InputDecoration(
+                    hintText: '1/2',
                     labelText: "Quantity",
                     border: const OutlineInputBorder(),
                     suffixIcon: Column(

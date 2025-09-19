@@ -17,7 +17,7 @@ class DioClient {
   final Dio dio = Dio();
 
   DioClient() {
-    final baseUrl = const String.fromEnvironment('BASE_URL', defaultValue: 'http://192.168.1.20:8222/api');
+    final baseUrl = const String.fromEnvironment('BASE_URL', defaultValue: 'http://192.168.1.16:8222/api');
     print(baseUrl);
     dio.options = BaseOptions(
       baseUrl: baseUrl,
