@@ -1,9 +1,12 @@
 import 'package:eefood/core/di/injection.dart';
 import 'package:eefood/core/utils/file_upload.dart';
+import 'package:eefood/features/recipe/presentation/provider/recipe_cubit.dart';
+import 'package:eefood/features/recipe/presentation/provider/recipe_state.dart';
 import 'package:flutter/material.dart';
 import 'package:eefood/features/recipe/data/models/recipe_model.dart';
 import 'package:eefood/features/recipe/data/models/ingredient_model.dart';
 import 'package:eefood/features/recipe/data/models/recipe_step_model.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import '../widgets/basic_info_section.dart';
 import '../widgets/ingredients_section.dart';
 import '../widgets/instructions_section.dart';
@@ -38,8 +41,7 @@ class _RecipeCreatePageState extends State<RecipeCreatePage> {
   void _saveRecipe() {
     if (_formKey.currentState!.validate()) {
       _formKey.currentState!.save();
-      _recipe.steps?.addAll(_instructions);
-      _recipe.ingredients?.addAll(_ingredients);
+      context.read<RecipeCrudCubit>().saveRecipe();
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Recipe saved successfully')),
       );
@@ -47,11 +49,7 @@ class _RecipeCreatePageState extends State<RecipeCreatePage> {
   }
 
   void _deleteRecipe() {
-    setState(() {
-      _recipe = RecipeModel(id: 0, title: '');
-      _ingredients.clear();
-      _instructions.clear();
-    });
+    context.read<RecipeCrudCubit>().deleteRecipe();
     _removeDropdown();
     ScaffoldMessenger.of(
       context,
@@ -153,28 +151,23 @@ class _RecipeCreatePageState extends State<RecipeCreatePage> {
             Expanded(
               child: Form(
                 key: _formKey,
-                child: SingleChildScrollView(
-                  padding: const EdgeInsets.all(16.0),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      BasicInfoSection(
-                        recipe: _recipe,
-                        onRecipeUpdated: () => setState(() {}),
+                child: BlocBuilder<RecipeCrudCubit, RecipeCrudState>(
+                  builder: (context, state) {
+                    return SingleChildScrollView(
+                      padding: const EdgeInsets.all(16.0),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          BasicInfoSection(),
+                          const SizedBox(height: 24),
+                          IngredientsSection(),
+                          const SizedBox(height: 24),
+                          InstructionsSection(),
+                          const SizedBox(height: 32),
+                        ],
                       ),
-                      const SizedBox(height: 24),
-                      IngredientsSection(
-                        ingredients: _ingredients,
-                        onIngredientsUpdated: () => setState(() {}),
-                      ),
-                      const SizedBox(height: 24),
-                      InstructionsSection(
-                        instructions: _instructions,
-                        onInstructionsUpdated: () => setState(() {}),
-                      ),
-                      const SizedBox(height: 32),
-                    ],
-                  ),
+                    );
+                  },
                 ),
               ),
             ),

@@ -43,4 +43,22 @@ class RecipeStepModel {
     imageUrl: imageUrl,
     videoUrl: videoUrl,
     stepTime: stepTime);
+
+  RecipeStepModel copyWith({
+    int? id,
+    int? stepNumber,
+    String? instruction,
+    String? imageUrl,
+    String? videoUrl,
+    int? stepTime,
+  }) {
+    return RecipeStepModel(
+      id: id ?? this.id,
+      stepNumber: stepNumber ?? this.stepNumber,
+      instruction: instruction ?? this.instruction,
+      imageUrl: imageUrl ?? this.imageUrl,
+      videoUrl: videoUrl ?? this.videoUrl,
+      stepTime: stepTime ?? this.stepTime,
+    );
+  }
 }

@@ -48,7 +48,7 @@ class MyRecipesPage extends StatelessWidget {
         ),
         floatingActionButton: FloatingActionButton(
           onPressed: () {
-            Navigator.pushNamed(context, AppRoutes.recipeCreatePage);
+            Navigator.pushNamed(context, AppRoutes.recipeCrudPage);
           },
           backgroundColor: Colors.red,
           child: const Icon(Icons.add),

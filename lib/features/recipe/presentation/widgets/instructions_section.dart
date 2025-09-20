@@ -1,18 +1,15 @@
 import 'dart:io';
 import 'dart:math';
+import 'package:eefood/features/recipe/presentation/provider/recipe_cubit.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'instruction_bottom_sheet.dart';
 import 'package:eefood/features/recipe/data/models/recipe_step_model.dart';
 
 class InstructionsSection extends StatefulWidget {
-  final List<RecipeStepModel> instructions;
-  final VoidCallback onInstructionsUpdated;
 
-  const InstructionsSection({
-    Key? key,
-    required this.instructions,
-    required this.onInstructionsUpdated,
-  }) : super(key: key);
+
+  const InstructionsSection({Key? key}) : super(key: key);
 
   @override
   State<InstructionsSection> createState() => _InstructionsSectionState();
@@ -32,10 +29,7 @@ class _InstructionsSectionState extends State<InstructionsSection> {
         ),
         child: InstructionBottomSheet(
           onSaveInstruction: (instruction, {int? index}) {
-            setState(() {
-              widget.instructions.add(instruction);
-            });
-            widget.onInstructionsUpdated();
+            context.read<RecipeCrudCubit>().addStep(instruction);
           },
         ),
       ),
@@ -43,7 +37,8 @@ class _InstructionsSectionState extends State<InstructionsSection> {
   }
 
   void _editInstruction(int index) {
-    final instruction = widget.instructions[index];
+    final cubit = context.read<RecipeCrudCubit>();
+    final instruction = cubit.state.steps[index];
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
@@ -52,10 +47,7 @@ class _InstructionsSectionState extends State<InstructionsSection> {
         editingIndex: index,
         onSaveInstruction: (updatedInstruction, {int? index}) {
           if (index != null) {
-            setState(() {
-              widget.instructions[index] = updatedInstruction;
-            });
-            widget.onInstructionsUpdated();
+            cubit.updateStep(index, updatedInstruction);
           }
         },
       ),
@@ -63,44 +55,11 @@ class _InstructionsSectionState extends State<InstructionsSection> {
   }
 
   void _removeInstruction(int index) {
-    setState(() {
-      widget.instructions.removeAt(index);
-      // cập nhật lại stepNumber
-      for (int i = 0; i < widget.instructions.length; i++) {
-        final old = widget.instructions[i];
-        widget.instructions[i] = RecipeStepModel(
-          id: old.id,
-          stepNumber: i + 1,
-          instruction: old.instruction,
-          imageUrl: old.imageUrl,
-          videoUrl: old.videoUrl,
-          stepTime: old.stepTime,
-        );
-      }
-    });
-    widget.onInstructionsUpdated();
+    context.read<RecipeCrudCubit>().removeStep(index);
   }
 
   void _reorderInstructions(int oldIndex, int newIndex) {
-    setState(() {
-      if (newIndex > oldIndex) newIndex -= 1;
-      final item = widget.instructions.removeAt(oldIndex);
-      widget.instructions.insert(newIndex, item);
-
-      // cập nhật lại stepNumber
-      for (int i = 0; i < widget.instructions.length; i++) {
-        final old = widget.instructions[i];
-        widget.instructions[i] = RecipeStepModel(
-          id: old.id,
-          stepNumber: i + 1,
-          instruction: old.instruction,
-          imageUrl: old.imageUrl,
-          videoUrl: old.videoUrl,
-          stepTime: old.stepTime,
-        );
-      }
-    });
-    widget.onInstructionsUpdated();
+    context.read<RecipeCrudCubit>().reorderSteps(oldIndex, newIndex);
   }
 
   Widget _buildInstructionCard(RecipeStepModel step, int index) {
@@ -157,17 +116,11 @@ class _InstructionsSectionState extends State<InstructionsSection> {
                           color: Colors.white,
                         ),
                         onPressed: () {
-                          setState(() {
-                            widget.instructions[index] = RecipeStepModel(
-                              id: step.id,
-                              stepNumber: step.stepNumber,
-                              instruction: step.instruction,
-                              imageUrl: null,
-                              videoUrl: step.videoUrl,
-                              stepTime: step.stepTime,
-                            );
-                          });
-                          widget.onInstructionsUpdated();
+                          final cubit = context.read<RecipeCrudCubit>();
+                          cubit.updateStep(
+                            index,
+                            step.copyWith(imageUrl: null),
+                          );
                         },
                       ),
                     ),
@@ -200,17 +153,11 @@ class _InstructionsSectionState extends State<InstructionsSection> {
                       child: IconButton(
                         icon: const Icon(Icons.close, color: Colors.white),
                         onPressed: () {
-                          setState(() {
-                            widget.instructions[index] = RecipeStepModel(
-                              id: step.id,
-                              stepNumber: step.stepNumber,
-                              instruction: step.instruction,
-                              imageUrl: step.imageUrl,
-                              videoUrl: null,
-                              stepTime: step.stepTime,
-                            );
-                          });
-                          widget.onInstructionsUpdated();
+                          final cubit = context.read<RecipeCrudCubit>();
+                          cubit.updateStep(
+                            index,
+                            step.copyWith(videoUrl: null),
+                          );
                         },
                       ),
                     ),
@@ -226,8 +173,11 @@ class _InstructionsSectionState extends State<InstructionsSection> {
 
   @override
   Widget build(BuildContext context) {
+
+    final state = context.watch<RecipeCrudCubit>().state;
+    final instructions = state.steps;
     final double listHeight = min(
-      widget.instructions.length * _itemHeight,
+      instructions.length * _itemHeight,
       _maxListHeight,
     );
 
@@ -239,7 +189,7 @@ class _InstructionsSectionState extends State<InstructionsSection> {
           style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
         ),
         const SizedBox(height: 16),
-        if (widget.instructions.isEmpty)
+        if (instructions.isEmpty)
           const Center(
             child: Text(
               'No instructions added yet',
@@ -252,8 +202,8 @@ class _InstructionsSectionState extends State<InstructionsSection> {
             child: ReorderableListView(
               buildDefaultDragHandles: true,
               onReorder: _reorderInstructions,
-              children: List.generate(widget.instructions.length, (index) {
-                final instruction = widget.instructions[index];
+              children: List.generate(instructions.length, (index) {
+                final instruction = instructions[index];
                 return SizedBox(
                   key: ValueKey(instruction.id ?? 'instruction_$index'),
                   width: double.infinity,

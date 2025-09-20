@@ -88,4 +88,36 @@ class RecipeModel {
       orElse: () => Difficulty.EASY,
     );
   }
+
+  RecipeModel copyWith({
+    int? id,
+    String? title,
+    String? description,
+    String? imageUrl,
+    String? videoUrl,
+    Difficulty? difficulty,
+    String? region,
+    int? cookTime,
+    int? prepTime,
+    List<int>? categoryIds,
+    List<IngredientModel>? ingredients,
+    List<RecipeStepModel>? steps,
+  }) {
+    return RecipeModel(
+      id: id ?? this.id,
+      title: title ?? this.title,
+      description: description ?? this.description,
+      imageUrl: imageUrl ?? this.imageUrl,
+      videoUrl: videoUrl ?? this.videoUrl,
+      difficulty: difficulty ?? this.difficulty,
+      region: region ?? this.region,
+      cookTime: cookTime ?? this.cookTime,
+      prepTime: prepTime ?? this.prepTime,
+      categoryIds: categoryIds ?? this.categoryIds,
+      ingredients: ingredients ?? this.ingredients,
+      steps: steps ?? this.steps,
+    );
+  }
 }
+
+
