@@ -1,6 +1,9 @@
+import 'package:eefood/features/recipe/data/models/category_model.dart';
 import 'package:eefood/features/recipe/data/models/ingredient_model.dart';
+import 'package:eefood/features/recipe/data/models/recipe_Ingredient_model.dart';
 import 'package:eefood/features/recipe/data/models/recipe_step_model.dart';
 import 'package:eefood/features/recipe/domain/entities/recipe.dart';
+import 'package:eefood/features/recipe/domain/entities/recipe_ingredient.dart';
 
 class RecipeModel {
   int id;
@@ -12,22 +15,22 @@ class RecipeModel {
   String? region;
   int? cookTime; // in minutes
   int? prepTime; // in minutes
-  List<int>? categoryIds;
-  List<IngredientModel>? ingredients;
+  List<CategoryModel>? categories;
+  List<RecipeIngredientModel>? ingredients;
   List<RecipeStepModel>? steps;
   RecipeModel({
     required this.id,
     required this.title,
     this.description,
+    this.region,
     this.imageUrl,
     this.videoUrl,
     this.difficulty,
-    this.region,
-    this.cookTime,
     this.prepTime,
-    this.categoryIds,
-    this.ingredients,
+    this.cookTime,
+    this.categories,
     this.steps,
+    this.ingredients,
   });
 
   factory RecipeModel.fromJson(Map<String, dynamic> json) {
@@ -41,11 +44,15 @@ class RecipeModel {
       region: json['region'],
       cookTime: json['cookTime'],
       prepTime: json['prepTime'],
-      categoryIds: json['categoryIds'] != null
-          ? List<int>.from(json['categoryIds'])
+      categories: json['categoryIds'] != null
+          ? List<CategoryModel>.from(json['categoryIds'])
           : null,
-      ingredients: json['ingredients'] != null ? List<IngredientModel>.from(json['ingredients']) : null,
-      steps: json['steps'] !=null ? List<RecipeStepModel>.from(json['steps']) : null,
+      ingredients: json['ingredients'] != null
+          ? List<RecipeIngredientModel>.from(json['ingredients'])
+          : null,
+      steps: json['steps'] != null
+          ? List<RecipeStepModel>.from(json['steps'])
+          : null,
     );
   }
 
@@ -56,30 +63,30 @@ class RecipeModel {
       'description': description,
       'imageUrl': imageUrl,
       'videoUrl': videoUrl,
-      'difficulty': difficulty?.name, 
+      'difficulty': difficulty?.name,
       'region': region,
       'cookTime': cookTime,
       'prepTime': prepTime,
-      'categoryIds': categoryIds,
+      'categoryIds': categories,
       'ingredients': ingredients,
-      'steps': steps
+      'steps': steps,
     };
   }
 
   Recipe toEntity() => Recipe(
-      id: id,
-      title: title,
-      description: description,
-      imageUrl: imageUrl,
-      videoUrl: videoUrl,
-      difficulty: difficulty,
-      region: region,
-      cookTime: cookTime,
-      prepTime: prepTime,
-      categoryIds: categoryIds,
-      ingredients: ingredients,
-      steps: steps,
-    );
+    id: id,
+    title: title,
+    description: description,
+    imageUrl: imageUrl,
+    videoUrl: videoUrl,
+    difficulty: difficulty,
+    region: region,
+    cookTime: cookTime,
+    prepTime: prepTime,
+    categories: categories,
+    ingredients: ingredients,
+    steps: steps,
+  );
 
   static Difficulty? _difficultyFromString(String? value) {
     if (value == null) return null;
@@ -99,8 +106,8 @@ class RecipeModel {
     String? region,
     int? cookTime,
     int? prepTime,
-    List<int>? categoryIds,
-    List<IngredientModel>? ingredients,
+    List<CategoryModel>? categories,
+    List<RecipeIngredientModel>? ingredients,
     List<RecipeStepModel>? steps,
   }) {
     return RecipeModel(
@@ -113,11 +120,9 @@ class RecipeModel {
       region: region ?? this.region,
       cookTime: cookTime ?? this.cookTime,
       prepTime: prepTime ?? this.prepTime,
-      categoryIds: categoryIds ?? this.categoryIds,
+      categories: categories ?? this.categories,
       ingredients: ingredients ?? this.ingredients,
       steps: steps ?? this.steps,
     );
   }
 }
-
-

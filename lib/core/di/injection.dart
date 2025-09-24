@@ -70,6 +70,10 @@ Future<void> setupDependencies() async {
 
   // ingredients
   getIt.registerLazySingleton(() => Ingredients(getIt<RecipeRepository>()));
+  // categories
+  getIt.registerLazySingleton(() => Categories(getIt<RecipeRepository>()));
+  // create recipe
+  getIt.registerLazySingleton(() => CreateRecipe(getIt<RecipeRepository>()));
 
   getIt.registerFactoryParam<RecipeCrudCubit, RecipeModel?, void>(
     (initialRecipe, _) => RecipeCrudCubit(initialRecipe),

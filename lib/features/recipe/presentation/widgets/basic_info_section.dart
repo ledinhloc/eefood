@@ -5,6 +5,7 @@ import 'package:eefood/core/utils/convert_time.dart';
 import 'package:eefood/core/utils/file_upload.dart';
 import 'package:eefood/core/utils/media_picker.dart';
 import 'package:eefood/features/auth/presentation/widgets/custom_text_field.dart';
+import 'package:eefood/features/recipe/data/models/category_model.dart';
 import 'package:eefood/features/recipe/data/models/recipe_model.dart';
 import 'package:eefood/features/recipe/data/models/region_model.dart';
 import 'package:eefood/features/recipe/domain/entities/recipe.dart';
@@ -16,7 +17,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 class BasicInfoSection extends StatefulWidget {
-
   const BasicInfoSection({Key? key}) : super(key: key);
 
   @override
@@ -31,10 +31,12 @@ class _BasicInfoSectionState extends State<BasicInfoSection> {
   final _fileUpload = getIt<FileUploader>();
   final Province _province = getIt<Province>();
   final Ward _ward = getIt<Ward>();
+  final Categories _categories = getIt<Categories>();
   final RecipeCrudCubit _recipeCrudCubit = getIt<RecipeCrudCubit>();
 
   ProvinceModel? _selectedProvince;
   WardModel? _selectedWard;
+  CategoryModel? _selectedCategory;
 
   File? _imageFile;
   File? _videoFile;
@@ -43,8 +45,12 @@ class _BasicInfoSectionState extends State<BasicInfoSection> {
   @override
   void initState() {
     super.initState();
-    _titleController = TextEditingController(text: _recipeCrudCubit.state.recipe.title);
-    _descriptionController = TextEditingController(text: _recipeCrudCubit.state.recipe.description);
+    _titleController = TextEditingController(
+      text: _recipeCrudCubit.state.recipe.title,
+    );
+    _descriptionController = TextEditingController(
+      text: _recipeCrudCubit.state.recipe.description,
+    );
     _pageController.addListener(() {
       setState(() {
         _currentPage = _pageController.page?.round() ?? 0;
@@ -63,11 +69,17 @@ class _BasicInfoSectionState extends State<BasicInfoSection> {
   }
 
   void _updateTitle() {
-    _recipeCrudCubit.updateRecipe(_recipeCrudCubit.state.recipe.copyWith(title: _titleController.text));
+    _recipeCrudCubit.updateRecipe(
+      _recipeCrudCubit.state.recipe.copyWith(title: _titleController.text),
+    );
   }
 
   void _updateDescription() {
-    _recipeCrudCubit.updateRecipe(_recipeCrudCubit.state.recipe.copyWith(description: _descriptionController.text));
+    _recipeCrudCubit.updateRecipe(
+      _recipeCrudCubit.state.recipe.copyWith(
+        description: _descriptionController.text,
+      ),
+    );
   }
 
   Future<void> _pickImage() async {
@@ -218,7 +230,9 @@ class _BasicInfoSectionState extends State<BasicInfoSection> {
               : null,
           onChanged: (value) {
             if (value != null) {
-              cubit.updateRecipe(recipe.copyWith(cookTime: TimeParser.fromString(value)));
+              cubit.updateRecipe(
+                recipe.copyWith(cookTime: TimeParser.fromString(value)),
+              );
             }
           },
         ),
@@ -235,7 +249,9 @@ class _BasicInfoSectionState extends State<BasicInfoSection> {
               : null,
           onChanged: (value) {
             if (value != null) {
-              cubit.updateRecipe(recipe.copyWith(prepTime: TimeParser.fromString(value)));
+              cubit.updateRecipe(
+                recipe.copyWith(prepTime: TimeParser.fromString(value)),
+              );
             }
           },
         ),
@@ -250,6 +266,65 @@ class _BasicInfoSectionState extends State<BasicInfoSection> {
             cubit.updateRecipe(recipe.copyWith(difficulty: value));
           },
         ),
+        const SizedBox(height: 16),
+        Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            CustomDropdownSearch<CategoryModel>.multiSelection(
+              label: 'Categories',
+              onFind: (String? filter, int page, int limit) async {
+                debugPrint('Loading page: $page, limit: $limit');
+                return await _categories(filter,page,limit);
+              },
+              type: DropdownType.menu,
+              selectedItems: state.categories,
+              itemAsString: (cat) => cat.description ?? '',
+              onChangedMulti: (selectedList) {
+                // Add or update
+                for (var cat in selectedList) {
+                  final idx = state.categories.indexWhere(
+                    (c) => c.id == cat.id,
+                  );
+                  if (idx == -1) {
+                    cubit.addCategory(cat);
+                  } else {
+                    cubit.updateCategory(idx, cat);
+                  }
+                }
+                // Remove
+                final removed = state.categories
+                    .where((c) => !selectedList.any((s) => s.id == c.id))
+                    .toList();
+                for (var r in removed) {
+                  final idx = state.categories.indexWhere((c) => c.id == r.id);
+                  if (idx != -1) cubit.removeCategory(idx);
+                }
+              },
+            ),
+            Wrap(
+              spacing: 6,
+              runSpacing: -8,
+              children: state.categories.map((c) {
+                return Chip(
+                  label: Text(c.description ?? ""),
+                  avatar: c.iconUrl != null
+                      ? CircleAvatar(backgroundImage: NetworkImage(c.iconUrl!))
+                      : const CircleAvatar(
+                          child: Icon(Icons.category, size: 16),
+                        ),
+                  deleteIcon: const Icon(Icons.close, size: 16),
+                  onDeleted: () {
+                    final index = state.categories.indexWhere(
+                      (cat) => cat.id == c.id,
+                    );
+                    if (index != -1) cubit.removeCategory(index);
+                  },
+                );
+              }).toList(),
+            ),
+          ],
+        ),
+
         const SizedBox(height: 16),
         Row(
           children: [
@@ -296,7 +371,11 @@ class _BasicInfoSectionState extends State<BasicInfoSection> {
                 compareFn: (a, b) => a?.code == b?.code,
                 onChanged: (ward) {
                   setState(() => _selectedWard = ward);
-                  cubit.updateRecipe(recipe.copyWith(region: convertRegion(_selectedProvince!, _selectedWard!)));
+                  cubit.updateRecipe(
+                    recipe.copyWith(
+                      region: convertRegion(_selectedProvince!, _selectedWard!),
+                    ),
+                  );
                 },
               ),
             ),

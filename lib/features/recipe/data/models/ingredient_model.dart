@@ -5,16 +5,13 @@ class IngredientModel {
   final String name;
   final String? description;
   final String? image;
-  final double? quantity;
-  final String? unit;
+
 
   IngredientModel({
     this.id,
     required this.name,
     this.description,
     this.image,
-    this.quantity,
-    this.unit,
   });
 
   factory IngredientModel.fromJson(Map<String, dynamic> json) {
@@ -23,8 +20,6 @@ class IngredientModel {
       name: json['name'],
       description: json['description'],
       image: json['image'],
-      quantity: json['quantity'],
-      unit: json['unit'],
     );
   }
 
@@ -33,8 +28,6 @@ class IngredientModel {
     'name': name,
     'description': description,
     'image': image,
-    'quantity': quantity,
-    'unit': unit,
   };
 
   Ingredient toEntity() => Ingredient(
@@ -42,8 +35,6 @@ class IngredientModel {
     name: name,
     description: description,
     imageUrl: image,
-    quantity: quantity,
-    unit: unit,
   );
   IngredientModel copyWith({
     int? id,
@@ -58,8 +49,6 @@ class IngredientModel {
       name: name ?? this.name,
       description: description ?? this.description,
       image: image ?? this.image,
-      quantity: quantity ?? this.quantity,
-      unit: unit ?? this.unit,
     );
   }
 }

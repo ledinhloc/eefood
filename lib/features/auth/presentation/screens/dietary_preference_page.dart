@@ -1,4 +1,5 @@
 import 'package:eefood/app_routes.dart';
+import 'package:eefood/core/constants/app_constants.dart';
 import 'package:eefood/core/di/injection.dart';
 import 'package:eefood/core/widgets/snack_bar.dart';
 import 'package:eefood/features/auth/data/models/UserModel.dart';
@@ -45,25 +46,11 @@ class DietaryPreferencePage extends StatelessWidget {
   }
   @override
   Widget build(BuildContext context) {
-    final diets = [
-      {"name": "Ăn chay", "icon": "🥦"},
-      {"name": "Thuần chay", "icon": "🌱"},
-      {"name": "Ăn cá", "icon": "🐟"},
-      {"name": "Không gluten", "icon": "🚫🌾"},
-      {"name": "Ít carb", "icon": "🥩"},
-      {"name": "Paleo", "icon": "🍖"},
-      {"name": "Halal", "icon": "🕌"},
-      {"name": "Kosher", "icon": "✡️"},
-      {"name": "Không đường", "icon": "🍬"},
-      {"name": "Thấp natri", "icon": "🧂"},
-      {"name": "Không sữa", "icon": "🥛"},
-      {"name": "Eat Clean", "icon": "🥗"},
-    ];
 
     return PreferenceGridPage(
       title: "Chọn chế độ ăn uống ưa thích của bạn",
       description: "Chọn chế độ ăn uống mà bạn đang dùng.\nBạn có thể bỏ qua bước này.",
-      items: diets,
+      items: AppConstants.diets,
       initialSelection: {},
       onSelectionComplete: (selectedDiets) async{
         await _savePreferences(context, selectedDiets);

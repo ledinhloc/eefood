@@ -1,13 +1,14 @@
   import 'package:dropdown_search/dropdown_search.dart';
   import 'package:eefood/core/di/injection.dart';
   import 'package:eefood/features/recipe/data/models/ingredient_model.dart';
+import 'package:eefood/features/recipe/data/models/recipe_Ingredient_model.dart';
   import 'package:eefood/features/recipe/domain/usecases/recipe_usecases.dart';
   import 'package:eefood/features/recipe/presentation/widgets/custom_dropdown.dart';
   import 'package:flutter/material.dart';
 
   class IngredientBottomSheet extends StatefulWidget {
-    final Function(IngredientModel, {int? index}) onSaveIngredient;
-    final IngredientModel? editingIngredient;
+    final Function(RecipeIngredientModel, {int? index}) onSaveIngredient;
+    final RecipeIngredientModel? editingIngredient;
     final int? editingIndex;
 
     const IngredientBottomSheet({
@@ -31,7 +32,7 @@
     void initState() {
       super.initState();
       if (widget.editingIngredient != null) {
-        _nameController.text = widget.editingIngredient!.name;
+        _nameController.text = widget.editingIngredient!.ingredient!.name;
         if (widget.editingIngredient!.quantity != null) {
           _quantityController.text = widget.editingIngredient!.quantity!
               .toString();
@@ -185,8 +186,8 @@
                   onPressed: () {
                     if (_nameController.text.isNotEmpty) {
                       widget.onSaveIngredient(
-                        IngredientModel(
-                          name: _nameController.text,
+                        RecipeIngredientModel(
+                          ingredient: new IngredientModel(name: _nameController.text),
                           quantity: _parseQuantity(
                             _quantityController.text.trim(),
                           ),

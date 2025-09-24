@@ -1,4 +1,5 @@
 import 'dart:math';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:dropdown_search/dropdown_search.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
@@ -9,9 +10,17 @@ class CustomDropdownSearch<T> extends StatefulWidget {
   final String label;
   final List<T> Function(String? filter, LoadProps? props)? items;
   final Future<List<T>> Function(String? filter, int page, int limit)? onFind;
+
+  // single-select API (existing)
   final T? selectedItem;
-  final String Function(T)? itemAsString;
   final void Function(T?)? onChanged;
+
+  // multi-select API (new)
+  final bool multiSelection;
+  final List<T>? selectedItems;
+  final void Function(List<T>)? onChangedMulti;
+
+  final String Function(T)? itemAsString;
   final bool showSearchBox;
   final String searchHint;
   final bool Function(T?, T?)? compareFn;
@@ -23,13 +32,46 @@ class CustomDropdownSearch<T> extends StatefulWidget {
     this.items,
     this.onFind,
     this.selectedItem,
+    this.selectedItems,
     this.itemAsString,
     this.onChanged,
+    this.onChangedMulti,
     this.showSearchBox = true,
     this.searchHint = 'Tìm kiếm...',
     this.compareFn,
     this.type = DropdownType.menu,
+    this.multiSelection = false,
   }) : super(key: key);
+
+  /// Factory để tương thích với cách gọi `.multiSelection(...)`
+  factory CustomDropdownSearch.multiSelection({
+    Key? key,
+    required String label,
+    List<T> Function(String? filter, LoadProps? props)? items,
+    Future<List<T>> Function(String? filter, int page, int limit)? onFind,
+    List<T>? selectedItems,
+    String Function(T)? itemAsString,
+    void Function(List<T>)? onChangedMulti,
+    bool showSearchBox = true,
+    String searchHint = 'Tìm kiếm...',
+    bool Function(T?, T?)? compareFn,
+    DropdownType type = DropdownType.menu,
+  }) {
+    return CustomDropdownSearch<T>(
+      key: key,
+      label: label,
+      items: items,
+      onFind: onFind,
+      selectedItems: selectedItems,
+      itemAsString: itemAsString,
+      onChangedMulti: onChangedMulti,
+      showSearchBox: showSearchBox,
+      searchHint: searchHint,
+      compareFn: compareFn,
+      type: type,
+      multiSelection: true,
+    );
+  }
 
   @override
   State<CustomDropdownSearch<T>> createState() =>
@@ -44,6 +86,9 @@ class _CustomDropdownSearchState<T> extends State<CustomDropdownSearch<T>> {
   bool _isLoading = false;
   bool _hasMore = true;
 
+  // for multi-select
+  List<T> _selectedItems = [];
+
   String _itemToSingleLineString(T? item) {
     if (item == null) return '';
     final raw = widget.itemAsString != null
@@ -52,12 +97,45 @@ class _CustomDropdownSearchState<T> extends State<CustomDropdownSearch<T>> {
     return raw.replaceAll('\n', ' ');
   }
 
+  bool _equals(T? a, T? b) {
+    if (widget.compareFn != null) return widget.compareFn!(a, b);
+    return a == b;
+  }
+
+  bool _containsItem(List<T> list, T item) {
+    for (final e in list) {
+      if (_equals(e, item)) return true;
+    }
+    return false;
+  }
+
   @override
   void initState() {
     super.initState();
     if (widget.items != null) {
       // Local: load full list at start (keep original behavior)
       _allItems = widget.items!(null, null);
+    }
+
+    // init selected items for multi-select
+    if (widget.multiSelection) {
+      _selectedItems = widget.selectedItems != null
+          ? List<T>.from(widget.selectedItems!)
+          : <T>[];
+    }
+  }
+
+  @override
+  void didUpdateWidget(covariant CustomDropdownSearch<T> oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    // keep selected items in sync if parent updates them
+    if (widget.multiSelection) {
+      if (!listEquals(widget.selectedItems ?? [], oldWidget.selectedItems ?? [])) {
+        _selectedItems =
+            widget.selectedItems != null ? List<T>.from(widget.selectedItems!) : <T>[];
+      }
+    } else {
+      // nothing special for single select
     }
   }
 
@@ -106,29 +184,121 @@ class _CustomDropdownSearchState<T> extends State<CustomDropdownSearch<T>> {
     }
   }
 
+  // toggle selection for multi-select and notify parent
+  void _toggleSelection(T item) {
+    setState(() {
+      final idx = _selectedItems.indexWhere((e) => _equals(e, item));
+      if (idx == -1) {
+        _selectedItems.add(item);
+      } else {
+        _selectedItems.removeAt(idx);
+      }
+    });
+    widget.onChangedMulti?.call(List<T>.from(_selectedItems));
+  }
+
+  Widget? _buildLeadingIcon(T? item) {
+    if (item == null) return null;
+    try {
+      final dynamic dyn = item;
+      final String? imageUrl = dyn.image ?? dyn.imageUrl;
+      if (imageUrl != null && imageUrl.isNotEmpty) {
+        return ClipRRect(
+          borderRadius: BorderRadius.circular(4),
+          child: Image.network(
+            imageUrl,
+            width: 36,
+            height: 36,
+            fit: BoxFit.cover,
+            errorBuilder: (_, __, ___) =>
+                const Icon(Icons.image_not_supported),
+          ),
+        );
+      }
+    } catch (_) {
+      // ignore nếu object không có field image
+    }
+    return null;
+  }
+
   @override
   Widget build(BuildContext context) {
     return DropdownSearch<T>(
       // use null items because we build popup ourselves, but still keep logic
       items: null,
-      selectedItem: widget.selectedItem,
+      // single-select uses selectedItem; multi-select uses dropdownBuilder to show chips
+      selectedItem: widget.multiSelection ? null : widget.selectedItem,
       // Ensure the displayed selected string is a single line (no newlines)
       itemAsString: (item) => _itemToSingleLineString(item),
       compareFn: widget.compareFn ?? (a, b) => a == b,
-      onChanged: widget.onChanged,
-      // custom builder for selected item so it never wraps
+      // single-select onChanged goes through as before; multi-select manages via onChangedMulti
+      onChanged: widget.multiSelection ? null : widget.onChanged,
+      // custom builder for selected item so it never wraps (and for multi-select show chips)
       dropdownBuilder: (context, selectedItem) {
-        final s = _itemToSingleLineString(selectedItem);
-        return Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 5),
-          child: Text(
-            s,
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-            softWrap: false,
-            style: const TextStyle(fontSize: 16),
-          ),
-        );
+        if (widget.multiSelection) {
+          if (_selectedItems.isEmpty) {
+            return Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+              child: Text(
+                widget.label,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(color: Colors.grey.shade600),
+              ),
+            );
+          }
+          return Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+            child: Wrap(
+              spacing: 6,
+              runSpacing: 6,
+              children: _selectedItems.map((c) {
+                final img = _buildLeadingIcon(c);
+                return Chip(
+                  label: ConstrainedBox(
+                    constraints: const BoxConstraints(maxWidth: 160),
+                    child: Text(
+                      widget.itemAsString != null ? widget.itemAsString!(c) : c.toString(),
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                  avatar: img != null
+                      ? CircleAvatar(
+                          backgroundImage: NetworkImage(
+                            // safe: convert to string via itemAsString? but we have image via _buildLeadingIcon logic
+                            // get image url dynamically
+                            ( () {
+                              try {
+                                final dynamic dyn = c;
+                                return dyn.image ?? dyn.imageUrl ?? '';
+                              } catch (_) {
+                                return '';
+                              }
+                            })(),
+                          ),
+                        )
+                      : null,
+                  onDeleted: () {
+                    _toggleSelection(c);
+                  },
+                  deleteIcon: const Icon(Icons.close, size: 16),
+                );
+              }).toList(),
+            ),
+          );
+        } else {
+          final s = _itemToSingleLineString(selectedItem);
+          return Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 5),
+            child: Text(
+              s,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              softWrap: false,
+              style: const TextStyle(fontSize: 16),
+            ),
+          );
+        }
       },
       popupProps: _buildPopupProps(),
       decoratorProps: DropDownDecoratorProps(
@@ -215,6 +385,32 @@ class _CustomDropdownSearchState<T> extends State<CustomDropdownSearch<T>> {
       return min(maxHeight, max(content, minContent));
     }
 
+    // Build a header row with optional Done button (for multi-select)
+    Widget _buildHeaderRow(BuildContext ctx) {
+      return Row(
+        children: [
+          if (widget.multiSelection)
+            TextButton(
+              onPressed: () {
+                // notify parent (already notified on each toggle too), then close
+                widget.onChangedMulti?.call(List<T>.from(_selectedItems));
+                Navigator.pop(ctx);
+              },
+              child: const Text('Done'),
+            ),
+          const Spacer(),
+          Material(
+            color: Colors.transparent,
+            child: IconButton(
+              splashRadius: 20,
+              icon: const Icon(Icons.close),
+              onPressed: () => Navigator.pop(ctx),
+            ),
+          ),
+        ],
+      );
+    }
+
     switch (widget.type) {
       case DropdownType.menu:
         return PopupProps.menu(
@@ -246,20 +442,8 @@ class _CustomDropdownSearchState<T> extends State<CustomDropdownSearch<T>> {
                   ),
                   child: Column(
                     children: [
-                      // Close button on its own line (not same row as search)
-                      Row(
-                        children: [
-                          const Spacer(),
-                          Material(
-                            color: Colors.transparent,
-                            child: IconButton(
-                              splashRadius: 20,
-                              icon: const Icon(Icons.close),
-                              onPressed: () => Navigator.pop(ctx),
-                            ),
-                          ),
-                        ],
-                      ),
+                      // header row (Done + Close)
+                      _buildHeaderRow(ctx),
                       const SizedBox(height: 2),
                       // search - on its own line
                       _buildSmallSearchField(),
@@ -280,9 +464,7 @@ class _CustomDropdownSearchState<T> extends State<CustomDropdownSearch<T>> {
                             onNotification: (scrollNotification) {
                               if (scrollNotification is ScrollEndNotification &&
                                   scrollNotification.metrics.pixels ==
-                                      scrollNotification
-                                          .metrics
-                                          .maxScrollExtent &&
+                                      scrollNotification.metrics.maxScrollExtent &&
                                   _hasMore &&
                                   !_isLoading &&
                                   widget.onFind != null) {
@@ -340,20 +522,8 @@ class _CustomDropdownSearchState<T> extends State<CustomDropdownSearch<T>> {
                       ),
                       child: Column(
                         children: [
-                          // close button on its own line (top-right)
-                          Row(
-                            children: [
-                              const Spacer(),
-                              Material(
-                                color: Colors.transparent,
-                                child: IconButton(
-                                  splashRadius: 20,
-                                  icon: const Icon(Icons.close),
-                                  onPressed: () => Navigator.pop(ctx),
-                                ),
-                              ),
-                            ],
-                          ),
+                          // header row (Done + Close)
+                          _buildHeaderRow(ctx),
                           const SizedBox(height: 2),
                           // search area
                           _buildSmallSearchField(),
@@ -375,9 +545,7 @@ class _CustomDropdownSearchState<T> extends State<CustomDropdownSearch<T>> {
                                   if (scrollNotification
                                           is ScrollEndNotification &&
                                       scrollNotification.metrics.pixels ==
-                                          scrollNotification
-                                              .metrics
-                                              .maxScrollExtent &&
+                                          scrollNotification.metrics.maxScrollExtent &&
                                       _hasMore &&
                                       !_isLoading &&
                                       widget.onFind != null) {
@@ -424,19 +592,10 @@ class _CustomDropdownSearchState<T> extends State<CustomDropdownSearch<T>> {
               ),
               child: Column(
                 children: [
-                  // drag handle
+                  // drag handle + header row (we keep top area compact)
                   Padding(
-                    padding: const EdgeInsets.only(top: 10, bottom: 6),
-                    child: Center(
-                      child: Container(
-                        width: 48,
-                        height: 6,
-                        decoration: BoxDecoration(
-                          color: Colors.grey.shade400,
-                          borderRadius: BorderRadius.circular(3),
-                        ),
-                      ),
-                    ),
+                    padding: const EdgeInsets.only(top: 6, bottom: 6),
+                    child: _buildHeaderRow(ctx),
                   ),
                   // search
                   Padding(
@@ -530,6 +689,45 @@ class _CustomDropdownSearchState<T> extends State<CustomDropdownSearch<T>> {
         }
 
         final item = _allItems[index];
+        final titleText = (widget.itemAsString != null
+                ? widget.itemAsString!(item)
+                : item.toString())
+            .replaceAll('\n', ' ');
+
+        final leading = _buildLeadingIcon(item);
+
+        if (widget.multiSelection) {
+          final isSelected = _containsItem(_selectedItems, item);
+          return Container(
+            color: Colors.white,
+            child: ListTile(
+              dense: true,
+              contentPadding: const EdgeInsets.symmetric(
+                horizontal: 12,
+                vertical: 4,
+              ),
+              leading: leading,
+              title: Text(
+                titleText,
+                style: const TextStyle(fontSize: 15),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                softWrap: false,
+              ),
+              trailing: Checkbox(
+                value: isSelected,
+                onChanged: (v) {
+                  _toggleSelection(item);
+                },
+              ),
+              onTap: () {
+                _toggleSelection(item);
+              },
+            ),
+          );
+        }
+
+        // single-select behavior (unchanged)
         return Container(
           color: Colors.white, // ensure white background per request
           child: ListTile(
@@ -538,12 +736,9 @@ class _CustomDropdownSearchState<T> extends State<CustomDropdownSearch<T>> {
               horizontal: 12,
               vertical: 4,
             ),
+            leading: leading,
             title: Text(
-              // ensure single-line display and ellipsis
-              (widget.itemAsString != null
-                      ? widget.itemAsString!(item)
-                      : item.toString())
-                  .replaceAll('\n', ' '),
+              titleText,
               style: const TextStyle(fontSize: 15),
               maxLines: 1,
               overflow: TextOverflow.ellipsis,

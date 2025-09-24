@@ -1,34 +1,42 @@
+import 'package:eefood/core/di/injection.dart';
+import 'package:eefood/features/recipe/data/models/category_model.dart';
 import 'package:eefood/features/recipe/data/models/ingredient_model.dart';
+import 'package:eefood/features/recipe/data/models/recipe_Ingredient_model.dart';
 import 'package:eefood/features/recipe/data/models/recipe_model.dart';
 import 'package:eefood/features/recipe/data/models/recipe_step_model.dart';
+import 'package:eefood/features/recipe/domain/usecases/recipe_usecases.dart';
 import 'package:eefood/features/recipe/presentation/provider/recipe_state.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 class RecipeCrudCubit extends Cubit<RecipeCrudState> {
-  RecipeCrudCubit(RecipeModel? initialRecipe) : super(RecipeCrudState.initial(initialRecipe));
+  final CreateRecipe _createRecipe = getIt<CreateRecipe>();
+  RecipeCrudCubit(RecipeModel? initialRecipe)
+    : super(RecipeCrudState.initial(initialRecipe));
 
   void updateRecipe(RecipeModel updatedRecipe) {
     emit(state.copyWith(recipe: updatedRecipe));
   }
 
-  void addIngredient(IngredientModel ingredient) {
-    final newIngredients = List<IngredientModel>.from(state.ingredients)..add(ingredient);
+  void addIngredient(RecipeIngredientModel ingredient) {
+    final newIngredients = List<RecipeIngredientModel>.from(state.ingredients)
+      ..add(ingredient);
     emit(state.copyWith(ingredients: newIngredients));
   }
 
-  void updateIngredients(int index, IngredientModel updated) {
-    final newIngredients = List<IngredientModel>.from(state.ingredients);
+  void updateIngredients(int index, RecipeIngredientModel updated) {
+    final newIngredients = List<RecipeIngredientModel>.from(state.ingredients);
     newIngredients[index] = updated;
     emit(state.copyWith(ingredients: newIngredients));
   }
 
   void removeIngredient(int index) {
-    final newIngredients = List<IngredientModel>.from(state.ingredients)..removeAt(index);
+    final newIngredients = List<RecipeIngredientModel>.from(state.ingredients)
+      ..removeAt(index);
     emit(state.copyWith(ingredients: newIngredients));
   }
 
   void reorderIngredients(int oldIndex, int newIndex) {
-    final newIngredients = List<IngredientModel>.from(state.ingredients);
+    final newIngredients = List<RecipeIngredientModel>.from(state.ingredients);
     if (newIndex > oldIndex) newIndex -= 1;
     final item = newIngredients.removeAt(oldIndex);
     newIngredients.insert(newIndex, item);
@@ -36,7 +44,8 @@ class RecipeCrudCubit extends Cubit<RecipeCrudState> {
   }
 
   void addStep(RecipeStepModel step) {
-    final newSteps = List<RecipeStepModel>.from(state.steps)..add(step.copyWith(stepNumber: state.steps.length + 1));
+    final newSteps = List<RecipeStepModel>.from(state.steps)
+      ..add(step.copyWith(stepNumber: state.steps.length + 1));
     emit(state.copyWith(steps: newSteps));
   }
 
@@ -65,17 +74,56 @@ class RecipeCrudCubit extends Cubit<RecipeCrudState> {
     emit(state.copyWith(steps: newSteps));
   }
 
-  void saveRecipe() {
+  void addCategory(CategoryModel category) {
+    if (!state.categories.any((c) => c.id == category.id)) {
+      final newCategories = List<CategoryModel>.from(state.categories)
+        ..add(category);
+      emit(state.copyWith(categories: newCategories));
+    }
+  }
+
+  void updateCategory(int index, CategoryModel updated) {
+    final newCategories = List<CategoryModel>.from(state.categories);
+    newCategories[index] = updated;
+    emit(state.copyWith(categories: newCategories));
+  }
+
+  void removeCategory(int index) {
+    final newCategories = List<CategoryModel>.from(state.categories)
+      ..removeAt(index);
+    emit(state.copyWith(categories: newCategories));
+  }
+
+  void saveRecipe() async {
     final savedRecipe = state.recipe.copyWith(
       ingredients: state.ingredients,
       steps: state.steps,
+      categories: state.categories,
     );
-    emit(state.copyWith(recipe: savedRecipe));
-    // Additional logic like calling a repository can be added here
+    final result = await _createRecipe(savedRecipe);
+
+    if (result.isSuccess && result.data != null) {
+      emit(
+        state.copyWith(
+          recipe: result.data!, 
+          isLoading: false,
+          message: "Recipe created successfully",
+        ),
+      );
+    } else {
+      emit(
+        state.copyWith(
+          isLoading: false,
+          message:
+              "Failed to create recipe: ${result.error ?? "Unknown error"}",
+        ),
+      );
+    }
   }
 
   void deleteRecipe() {
     emit(RecipeCrudState.initial(null));
   }
-
 }
+
+

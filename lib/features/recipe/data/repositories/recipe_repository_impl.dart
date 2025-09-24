@@ -1,6 +1,10 @@
 import 'package:dio/dio.dart';
+import 'package:eefood/features/auth/data/models/result_model.dart';
+import 'package:eefood/features/recipe/data/models/category_model.dart';
 import 'package:eefood/features/recipe/data/models/ingredient_model.dart';
+import 'package:eefood/features/recipe/data/models/recipe_model.dart';
 import 'package:eefood/features/recipe/data/models/region_model.dart';
+import 'package:eefood/features/recipe/domain/entities/recipe.dart';
 import 'package:eefood/features/recipe/domain/repositories/recipe_repository.dart';
 
 class RecipeRepositoryImpl implements RecipeRepository {
@@ -73,7 +77,7 @@ class RecipeRepositoryImpl implements RecipeRepository {
   }
 
   @override
-  Future<List<IngredientModel>> getAllIngredient(String name, int page, int limit) async {
+  Future<List<IngredientModel>> getAllIngredient(String? name, int page, int limit) async {
     try {
       final response = await dio.get(
         '/v1/ingredients',
@@ -98,6 +102,53 @@ class RecipeRepositoryImpl implements RecipeRepository {
     } catch (err) {
       print(err);
       throw Exception('Get ingredients failed: $err');
+    }
+  }
+
+  @override
+  Future<Result<RecipeModel>> createRecipe(RecipeModel request) async{
+    try{
+      final response = await dio.post(
+        '/v1/recipes/',
+        data: request.toJson(),
+        options: Options(contentType: 'application/json'));
+
+      final recipeRes = RecipeModel.fromJson(response.data['data']);
+      return Result.success(recipeRes);
+    }
+    catch(err) {
+      print(err);
+      throw Exception('Create recipe failed: $err');
+    }
+  }
+
+  @override
+  Future<List<CategoryModel>> gettAllCategories(String? name, int page, int limit) async {
+    try{
+      final response = await dio.get(
+        '/v1/categories',
+        queryParameters: {
+          'name': name,
+          'page': page,
+          'limit': limit,
+        },
+      );
+
+      final data = response.data;
+      if (data != null && data['data'] != null) {
+        final content = data['data']['content'] as List<dynamic>;
+        return content
+            .map(
+              (json) => CategoryModel.fromJson(json as Map<String, dynamic>),
+            )
+            .toList();
+      }
+
+      return List.empty();
+    }
+    catch(err) {
+      print(err);
+      throw Exception('Get categories failed: $err');
     }
   }
 }

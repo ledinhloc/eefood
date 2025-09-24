@@ -6,7 +6,6 @@ import 'ingredient_bottom_sheet.dart';
 import 'package:eefood/features/recipe/data/models/ingredient_model.dart';
 
 class IngredientsSection extends StatefulWidget {
-
   const IngredientsSection({Key? key}) : super(key: key);
 
   @override
@@ -14,7 +13,6 @@ class IngredientsSection extends StatefulWidget {
 }
 
 class _IngredientsSectionState extends State<IngredientsSection> {
-
   void _addIngredient() {
     showModalBottomSheet(
       context: context,
@@ -25,7 +23,7 @@ class _IngredientsSectionState extends State<IngredientsSection> {
         ),
         child: IngredientBottomSheet(
           onSaveIngredient: (ingredient, {int? index}) {
-           context.read<RecipeCrudCubit>().addIngredient(ingredient);
+            context.read<RecipeCrudCubit>().addIngredient(ingredient);
           },
         ),
       ),
@@ -43,7 +41,10 @@ class _IngredientsSectionState extends State<IngredientsSection> {
         editingIndex: index,
         onSaveIngredient: (updatedIngredient, {int? index}) {
           if (index != null) {
-            context.read<RecipeCrudCubit>().updateIngredients(index, updatedIngredient);
+            context.read<RecipeCrudCubit>().updateIngredients(
+              index,
+              updatedIngredient,
+            );
           }
         },
       ),
@@ -94,15 +95,49 @@ class _IngredientsSectionState extends State<IngredientsSection> {
               children: List.generate(ingredients.length, (index) {
                 final ingredient = ingredients[index];
                 final displayText =
-                    '${ingredient.name} ${ingredient.quantity ?? ''}${ingredient.unit ?? ''}';
+                    '${ingredient.ingredient!.name} ${ingredient.quantity ?? ''}${ingredient.unit ?? ''}';
 
                 return Card(
-                  key: ValueKey('ingredient_${index}_${ingredient.name}'),
+                  key: ValueKey(
+                    'ingredient_${index}_${ingredient.ingredient!.name}',
+                  ),
                   margin: const EdgeInsets.only(bottom: 5),
                   color: Colors.white,
                   child: ListTile(
-                    leading: const Icon(Icons.drag_handle),
-                    title: Text(displayText.trim()),
+                    leading: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        if (ingredient.ingredient?.image != null &&
+                            ingredient.ingredient!.image!.isNotEmpty)
+                          ClipRRect(
+                            borderRadius: BorderRadius.circular(4),
+                            child: Image.network(
+                              ingredient.ingredient!.image!,
+                              width: 36,
+                              height: 36,
+                              fit: BoxFit.cover,
+                              errorBuilder: (_, __, ___) => const Icon(
+                                Icons.image_not_supported,
+                                size: 24,
+                                color: Colors.grey,
+                              ),
+                            ),
+                          )
+                        else
+                          const Icon(
+                            Icons.fastfood,
+                            size: 28,
+                            color: Colors.orange,
+                          ),
+                        const SizedBox(width: 6),
+                        const Icon(Icons.drag_handle, color: Colors.grey),
+                      ],
+                    ),
+                    title: Text(
+                      displayText.trim(),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
                     trailing: IconButton(
                       icon: const Icon(Icons.delete, color: Colors.red),
                       onPressed: () => _removeIngredient(index),
@@ -117,8 +152,11 @@ class _IngredientsSectionState extends State<IngredientsSection> {
         Center(
           child: ElevatedButton.icon(
             onPressed: _addIngredient,
-            icon: const Icon(Icons.add, color: Colors.white,),
-            label: const Text('Add Ingredient', style: TextStyle(color: Colors.white),),
+            icon: const Icon(Icons.add, color: Colors.white),
+            label: const Text(
+              'Add Ingredient',
+              style: TextStyle(color: Colors.white),
+            ),
           ),
         ),
       ],
