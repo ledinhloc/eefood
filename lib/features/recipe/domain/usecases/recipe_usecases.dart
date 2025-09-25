@@ -32,7 +32,7 @@ class Categories{
   final RecipeRepository repository;
   Categories(this.repository);
 
-  Future<List<CategoryModel>> call(String? name, int page, int limit) => repository.gettAllCategories(name!,page,limit);
+  Future<List<CategoryModel>> call(String? name, int page, int limit) => repository.getAllCategories(name!,page,limit);
 }
 
 class CreateRecipe {

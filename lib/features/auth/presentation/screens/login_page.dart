@@ -156,7 +156,7 @@ class LoginPage extends StatelessWidget {
                         );
 
                         // Kiểm tra nếu user chưa có sở thích nào thì chuyển đến onBoardingFlow
-                        if(user.allergies!.isEmpty && user.dietaryPreferences!.isEmpty && user.eatingPreferences!.isEmpty) {
+                        if(user.allergies!.isEmpty  && user.eatingPreferences!.isEmpty) {
                           Navigator.pushReplacementNamed(context, AppRoutes.onBoardingFlow);
                           return;
                         }

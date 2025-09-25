@@ -109,79 +109,82 @@ class _RecipeCreatePageState extends State<RecipeCreatePage> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Colors.white,
-      body: SafeArea(
-        child: BlocConsumer<RecipeCrudCubit, RecipeCrudState>(
-          listener: (context, state) {
-            if (state.message != null) {
-              ScaffoldMessenger.of(
-                context,
-              ).showSnackBar(SnackBar(content: Text(state.message!)));
-            }
-          },
-          builder: (context, state) {
-            return Column(
-              children: [
-                // AppBar custom
-                Container(
-                  height: 56,
-                  padding: const EdgeInsets.symmetric(horizontal: 8),
-                  child: Row(
-                    children: [
-                      IconButton(
-                        icon: const Icon(Icons.close),
-                        onPressed: () => Navigator.pop(context),
-                      ),
-                      const Expanded(
-                        child: Text(
-                          'Create Recipe',
-                          style: TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold,
+    return BlocProvider(
+      create: (_) => getIt<RecipeCrudCubit>(param1: widget.initialRecipe),
+      child: Scaffold(
+        backgroundColor: Colors.white,
+        body: SafeArea(
+          child: BlocConsumer<RecipeCrudCubit, RecipeCrudState>(
+            listener: (context, state) {
+              if (state.message != null) {
+                ScaffoldMessenger.of(
+                  context,
+                ).showSnackBar(SnackBar(content: Text(state.message!)));
+              }
+            },
+            builder: (context, state) {
+              return Column(
+                children: [
+                  // AppBar custom
+                  Container(
+                    height: 56,
+                    padding: const EdgeInsets.symmetric(horizontal: 8),
+                    child: Row(
+                      children: [
+                        IconButton(
+                          icon: const Icon(Icons.close),
+                          onPressed: () => Navigator.pop(context),
+                        ),
+                        const Expanded(
+                          child: Text(
+                            'Create Recipe',
+                            style: TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                            ),
                           ),
                         ),
-                      ),
-                      if (state.isLoading)
-                        const Padding(
-                          padding: EdgeInsets.only(bottom: 30),
-                          child: SpinKitCircle(
-                            color: Colors.orange,
-                            size: 50.0,
+                        if (state.isLoading)
+                          const Padding(
+                            padding: EdgeInsets.only(bottom: 30),
+                            child: SpinKitCircle(
+                              color: Colors.orange,
+                              size: 50.0,
+                            ),
                           ),
+                        IconButton(
+                          icon: const Icon(Icons.save),
+                          onPressed: () =>
+                              context.read<RecipeCrudCubit>().saveRecipe(),
                         ),
-                      IconButton(
-                        icon: const Icon(Icons.save),
-                        onPressed: () =>
-                            context.read<RecipeCrudCubit>().saveRecipe(),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
-                ),
-
-                // Nội dung chính
-                Expanded(
-                  child: Form(
-                    key: _formKey,
-                    child: SingleChildScrollView(
-                      padding: const EdgeInsets.all(16.0),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: const [
-                          BasicInfoSection(),
-                          SizedBox(height: 24),
-                          IngredientsSection(),
-                          SizedBox(height: 24),
-                          InstructionsSection(),
-                          SizedBox(height: 32),
-                        ],
+      
+                  // Nội dung chính
+                  Expanded(
+                    child: Form(
+                      key: _formKey,
+                      child: SingleChildScrollView(
+                        padding: const EdgeInsets.all(16.0),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: const [
+                            BasicInfoSection(),
+                            SizedBox(height: 24),
+                            IngredientsSection(),
+                            SizedBox(height: 24),
+                            InstructionsSection(),
+                            SizedBox(height: 32),
+                          ],
+                        ),
                       ),
                     ),
                   ),
-                ),
-              ],
-            );
-          },
+                ],
+              );
+            },
+          ),
         ),
       ),
     );

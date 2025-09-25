@@ -123,7 +123,7 @@ class RecipeRepositoryImpl implements RecipeRepository {
   }
 
   @override
-  Future<List<CategoryModel>> gettAllCategories(String? name, int page, int limit) async {
+  Future<List<CategoryModel>> getAllCategories(String? name, int page, int limit) async {
     try{
       final response = await dio.get(
         '/v1/categories',
@@ -132,9 +132,11 @@ class RecipeRepositoryImpl implements RecipeRepository {
           'page': page,
           'limit': limit,
         },
+        options: Options(contentType: 'application/json')
       );
 
       final data = response.data;
+      print(data);
       if (data != null && data['data'] != null) {
         final content = data['data']['content'] as List<dynamic>;
         return content

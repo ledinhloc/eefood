@@ -130,9 +130,13 @@ class _CustomDropdownSearchState<T> extends State<CustomDropdownSearch<T>> {
     super.didUpdateWidget(oldWidget);
     // keep selected items in sync if parent updates them
     if (widget.multiSelection) {
-      if (!listEquals(widget.selectedItems ?? [], oldWidget.selectedItems ?? [])) {
-        _selectedItems =
-            widget.selectedItems != null ? List<T>.from(widget.selectedItems!) : <T>[];
+      if (!listEquals(
+        widget.selectedItems ?? [],
+        oldWidget.selectedItems ?? [],
+      )) {
+        _selectedItems = widget.selectedItems != null
+            ? List<T>.from(widget.selectedItems!)
+            : <T>[];
       }
     } else {
       // nothing special for single select
@@ -201,7 +205,7 @@ class _CustomDropdownSearchState<T> extends State<CustomDropdownSearch<T>> {
     if (item == null) return null;
     try {
       final dynamic dyn = item;
-      final String? imageUrl = dyn.image ?? dyn.imageUrl;
+      final String? imageUrl = dyn.image ?? dyn.imageUrl ?? dyn.iconUrl;
       if (imageUrl != null && imageUrl.isNotEmpty) {
         return ClipRRect(
           borderRadius: BorderRadius.circular(4),
@@ -210,8 +214,7 @@ class _CustomDropdownSearchState<T> extends State<CustomDropdownSearch<T>> {
             width: 36,
             height: 36,
             fit: BoxFit.cover,
-            errorBuilder: (_, __, ___) =>
-                const Icon(Icons.image_not_supported),
+            errorBuilder: (_, __, ___) => const Icon(Icons.image_not_supported),
           ),
         );
       }
@@ -229,7 +232,12 @@ class _CustomDropdownSearchState<T> extends State<CustomDropdownSearch<T>> {
       // single-select uses selectedItem; multi-select uses dropdownBuilder to show chips
       selectedItem: widget.multiSelection ? null : widget.selectedItem,
       // Ensure the displayed selected string is a single line (no newlines)
-      itemAsString: (item) => _itemToSingleLineString(item),
+      itemAsString: (item) {
+        if (widget.itemAsString != null) {
+          return widget.itemAsString!(item);
+        }
+        return _itemToSingleLineString(item);
+      },
       compareFn: widget.compareFn ?? (a, b) => a == b,
       // single-select onChanged goes through as before; multi-select manages via onChangedMulti
       onChanged: widget.multiSelection ? null : widget.onChanged,
@@ -239,51 +247,57 @@ class _CustomDropdownSearchState<T> extends State<CustomDropdownSearch<T>> {
           if (_selectedItems.isEmpty) {
             return Padding(
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
-              child: Text(
-                widget.label,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: TextStyle(color: Colors.grey.shade600),
-              ),
             );
           }
-          return Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
-            child: Wrap(
-              spacing: 6,
-              runSpacing: 6,
-              children: _selectedItems.map((c) {
-                final img = _buildLeadingIcon(c);
-                return Chip(
-                  label: ConstrainedBox(
-                    constraints: const BoxConstraints(maxWidth: 160),
-                    child: Text(
-                      widget.itemAsString != null ? widget.itemAsString!(c) : c.toString(),
-                      overflow: TextOverflow.ellipsis,
-                    ),
+          return SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            child: Row(
+              children: [
+                Padding(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 8,
+                    vertical: 6,
                   ),
-                  avatar: img != null
-                      ? CircleAvatar(
-                          backgroundImage: NetworkImage(
-                            // safe: convert to string via itemAsString? but we have image via _buildLeadingIcon logic
-                            // get image url dynamically
-                            ( () {
-                              try {
-                                final dynamic dyn = c;
-                                return dyn.image ?? dyn.imageUrl ?? '';
-                              } catch (_) {
-                                return '';
-                              }
-                            })(),
+                  child: Wrap(
+                    spacing: 6,
+                    runSpacing: 6,
+                    children: _selectedItems.map((c) {
+                      final img = _buildLeadingIcon(c);
+                      return Chip(
+                        label: ConstrainedBox(
+                          constraints: const BoxConstraints(maxWidth: 160),
+                          child: Text(
+                            widget.itemAsString != null
+                                ? widget.itemAsString!(c)
+                                : c.toString(),
+                            overflow: TextOverflow.ellipsis,
                           ),
-                        )
-                      : null,
-                  onDeleted: () {
-                    _toggleSelection(c);
-                  },
-                  deleteIcon: const Icon(Icons.close, size: 16),
-                );
-              }).toList(),
+                        ),
+                        avatar: img != null
+                            ? CircleAvatar(
+                                backgroundImage: NetworkImage(
+                                  // safe: convert to string via itemAsString? but we have image via _buildLeadingIcon logic
+                                  // get image url dynamically
+                                  (() {
+                                    try {
+                                      final dynamic dyn = c;
+                                      return dyn.image ?? dyn.imageUrl ?? '';
+                                    } catch (_) {
+                                      return '';
+                                    }
+                                  })(),
+                                ),
+                              )
+                            : null,
+                        onDeleted: () {
+                          _toggleSelection(c);
+                        },
+                        deleteIcon: const Icon(Icons.close, size: 16),
+                      );
+                    }).toList(),
+                  ),
+                ),
+              ],
             ),
           );
         } else {
@@ -292,7 +306,6 @@ class _CustomDropdownSearchState<T> extends State<CustomDropdownSearch<T>> {
             padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 5),
             child: Text(
               s,
-              maxLines: 1,
               overflow: TextOverflow.ellipsis,
               softWrap: false,
               style: const TextStyle(fontSize: 16),
@@ -464,7 +477,9 @@ class _CustomDropdownSearchState<T> extends State<CustomDropdownSearch<T>> {
                             onNotification: (scrollNotification) {
                               if (scrollNotification is ScrollEndNotification &&
                                   scrollNotification.metrics.pixels ==
-                                      scrollNotification.metrics.maxScrollExtent &&
+                                      scrollNotification
+                                          .metrics
+                                          .maxScrollExtent &&
                                   _hasMore &&
                                   !_isLoading &&
                                   widget.onFind != null) {
@@ -545,7 +560,9 @@ class _CustomDropdownSearchState<T> extends State<CustomDropdownSearch<T>> {
                                   if (scrollNotification
                                           is ScrollEndNotification &&
                                       scrollNotification.metrics.pixels ==
-                                          scrollNotification.metrics.maxScrollExtent &&
+                                          scrollNotification
+                                              .metrics
+                                              .maxScrollExtent &&
                                       _hasMore &&
                                       !_isLoading &&
                                       widget.onFind != null) {
@@ -689,10 +706,17 @@ class _CustomDropdownSearchState<T> extends State<CustomDropdownSearch<T>> {
         }
 
         final item = _allItems[index];
-        final titleText = (widget.itemAsString != null
-                ? widget.itemAsString!(item)
-                : item.toString())
-            .replaceAll('\n', ' ');
+        final dynamic dyn = item;
+        final String titleText;
+        if(widget.itemAsString != null ){
+          titleText = widget.itemAsString != null 
+          ? widget.itemAsString!(item)
+          : item.toString();
+        }
+        else{
+          titleText = dyn.name ?? item.toString();
+        }
+        
 
         final leading = _buildLeadingIcon(item);
 
@@ -745,8 +769,12 @@ class _CustomDropdownSearchState<T> extends State<CustomDropdownSearch<T>> {
               softWrap: false,
             ),
             onTap: () {
-              widget.onChanged?.call(item);
-              Navigator.pop(context);
+              if (widget.multiSelection) {
+                _toggleSelection(item);
+              } else {
+                widget.onChanged?.call(item);
+                Navigator.pop(context);
+              }
             },
           ),
         );

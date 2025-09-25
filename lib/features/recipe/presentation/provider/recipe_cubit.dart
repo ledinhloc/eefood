@@ -74,31 +74,26 @@ class RecipeCrudCubit extends Cubit<RecipeCrudState> {
     emit(state.copyWith(steps: newSteps));
   }
 
-  void addCategory(CategoryModel category) {
-    if (!state.categories.any((c) => c.id == category.id)) {
-      final newCategories = List<CategoryModel>.from(state.categories)
-        ..add(category);
-      emit(state.copyWith(categories: newCategories));
-    }
+  void setCategories(List<int> categoryIds) {
+    emit(state.copyWith(categoryIds: List<int>.from(categoryIds)));
   }
 
-  void updateCategory(int index, CategoryModel updated) {
-    final newCategories = List<CategoryModel>.from(state.categories);
-    newCategories[index] = updated;
-    emit(state.copyWith(categories: newCategories));
+  void updateCategory(int index, int updatedId) {
+    final newCategories = List<int>.from(state.categoryIds);
+    newCategories[index] = updatedId;
+    emit(state.copyWith(categoryIds: newCategories));
   }
 
-  void removeCategory(int index) {
-    final newCategories = List<CategoryModel>.from(state.categories)
-      ..removeAt(index);
-    emit(state.copyWith(categories: newCategories));
+  void removeCategory(int categoryId) {
+    final newCategories = List<int>.from(state.categoryIds)..remove(categoryId);
+    emit(state.copyWith(categoryIds: newCategories));
   }
 
   void saveRecipe() async {
     final savedRecipe = state.recipe.copyWith(
       ingredients: state.ingredients,
       steps: state.steps,
-      categories: state.categories,
+      categoryIds: state.categoryIds,
     );
     final result = await _createRecipe(savedRecipe);
 

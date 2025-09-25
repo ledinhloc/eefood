@@ -15,7 +15,7 @@ class RecipeModel {
   String? region;
   int? cookTime; // in minutes
   int? prepTime; // in minutes
-  List<CategoryModel>? categories;
+  List<int>? categoryIds;
   List<RecipeIngredientModel>? ingredients;
   List<RecipeStepModel>? steps;
   RecipeModel({
@@ -28,7 +28,7 @@ class RecipeModel {
     this.difficulty,
     this.prepTime,
     this.cookTime,
-    this.categories,
+    this.categoryIds,
     this.steps,
     this.ingredients,
   });
@@ -44,8 +44,8 @@ class RecipeModel {
       region: json['region'],
       cookTime: json['cookTime'],
       prepTime: json['prepTime'],
-      categories: json['categoryIds'] != null
-          ? List<CategoryModel>.from(json['categoryIds'])
+      categoryIds: json['categoryIds'] != null
+          ? List<int>.from(json['categoryIds'])
           : null,
       ingredients: json['ingredients'] != null
           ? List<RecipeIngredientModel>.from(json['ingredients'])
@@ -67,7 +67,7 @@ class RecipeModel {
       'region': region,
       'cookTime': cookTime,
       'prepTime': prepTime,
-      'categoryIds': categories,
+      'categoryIds': categoryIds,
       'ingredients': ingredients,
       'steps': steps,
     };
@@ -83,7 +83,7 @@ class RecipeModel {
     region: region,
     cookTime: cookTime,
     prepTime: prepTime,
-    categories: categories,
+    categoryIds: categoryIds,
     ingredients: ingredients,
     steps: steps,
   );
@@ -106,7 +106,7 @@ class RecipeModel {
     String? region,
     int? cookTime,
     int? prepTime,
-    List<CategoryModel>? categories,
+    List<int>? categoryIds,
     List<RecipeIngredientModel>? ingredients,
     List<RecipeStepModel>? steps,
   }) {
@@ -120,7 +120,7 @@ class RecipeModel {
       region: region ?? this.region,
       cookTime: cookTime ?? this.cookTime,
       prepTime: prepTime ?? this.prepTime,
-      categories: categories ?? this.categories,
+      categoryIds: categoryIds ?? this.categoryIds,
       ingredients: ingredients ?? this.ingredients,
       steps: steps ?? this.steps,
     );

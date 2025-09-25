@@ -36,7 +36,7 @@ class _BasicInfoSectionState extends State<BasicInfoSection> {
 
   ProvinceModel? _selectedProvince;
   WardModel? _selectedWard;
-  CategoryModel? _selectedCategory;
+  List<CategoryModel>? _listCategories;
 
   File? _imageFile;
   File? _videoFile;
@@ -56,6 +56,8 @@ class _BasicInfoSectionState extends State<BasicInfoSection> {
         _currentPage = _pageController.page?.round() ?? 0;
       });
     });
+
+    _loadAllCategories();
   }
 
   @override
@@ -66,6 +68,21 @@ class _BasicInfoSectionState extends State<BasicInfoSection> {
     _descriptionController.dispose();
     _pageController.dispose();
     super.dispose();
+  }
+
+  Future<void> _loadAllCategories() async {
+    try {
+      // chọn limit đủ lớn, tùy backend — nếu có pagination cần làm lazy load khi mở bottomsheet
+      final result = await _categories(null, 1, 100);
+      setState(() {
+        _listCategories = result;
+      });
+    } catch (e) {
+      debugPrint('Load categories failed: $e');
+      setState(() {
+        _listCategories = <CategoryModel>[];
+      });
+    }
   }
 
   void _updateTitle() {
@@ -222,6 +239,7 @@ class _BasicInfoSectionState extends State<BasicInfoSection> {
           label: "Cook time *",
           items: (filter, props) => AppConstants.cookTimes,
           type: DropdownType.bottomSheet,
+          itemAsString: (item) => item.toString(),
           selectedItem: recipe.cookTime != null
               ? AppConstants.cookTimes.firstWhere(
                   (t) => TimeParser.fromString(t) == recipe.cookTime,
@@ -241,6 +259,7 @@ class _BasicInfoSectionState extends State<BasicInfoSection> {
           label: "Prep time *",
           items: (filter, props) => AppConstants.prepTimes,
           type: DropdownType.bottomSheet,
+          itemAsString: (item) => item.toString(),
           selectedItem: recipe.prepTime != null
               ? AppConstants.prepTimes.firstWhere(
                   (t) => TimeParser.fromString(t) == recipe.prepTime,
@@ -274,50 +293,48 @@ class _BasicInfoSectionState extends State<BasicInfoSection> {
               label: 'Categories',
               onFind: (String? filter, int page, int limit) async {
                 debugPrint('Loading page: $page, limit: $limit');
-                return await _categories(filter,page,limit);
+                final result = await _categories(filter, page, limit);
+                debugPrint(result.toString());
+                // cập nhật _listCategories để UI ở ngoài (Chips) cũng biết
+                setState(() {
+                  _listCategories = result;
+                });
+                return result;
               },
-              type: DropdownType.menu,
-              selectedItems: state.categories,
+              type: DropdownType.bottomSheet,
+              // selectedItems phải dựa vào state.categoryIds map ra CategoryModel từ _listCategories
+              selectedItems:
+                  _listCategories
+                      ?.where((cat) => state.categoryIds.contains(cat.id))
+                      .toList() ??
+                  [],
               itemAsString: (cat) => cat.description ?? '',
               onChangedMulti: (selectedList) {
-                // Add or update
-                for (var cat in selectedList) {
-                  final idx = state.categories.indexWhere(
-                    (c) => c.id == cat.id,
-                  );
-                  if (idx == -1) {
-                    cubit.addCategory(cat);
-                  } else {
-                    cubit.updateCategory(idx, cat);
-                  }
-                }
-                // Remove
-                final removed = state.categories
-                    .where((c) => !selectedList.any((s) => s.id == c.id))
-                    .toList();
-                for (var r in removed) {
-                  final idx = state.categories.indexWhere((c) => c.id == r.id);
-                  if (idx != -1) cubit.removeCategory(idx);
-                }
+                // selectedList là List<CategoryModel>
+                final selectedIds = selectedList.map((c) => c.id!).toList();
+                // set 1 lần thay vì add/remove nhiều lần
+                _recipeCrudCubit.setCategories(selectedIds);
               },
             ),
             Wrap(
               spacing: 6,
               runSpacing: -8,
-              children: state.categories.map((c) {
+              children: state.categoryIds.map((id) {
+                final c = _listCategories?.firstWhere(
+                  (cat) => cat.id == id,
+                  orElse: () => CategoryModel(id: id),
+                );
                 return Chip(
-                  label: Text(c.description ?? ""),
-                  avatar: c.iconUrl != null
-                      ? CircleAvatar(backgroundImage: NetworkImage(c.iconUrl!))
+                  label: Text(c?.description ?? ""),
+                  avatar: c?.iconUrl != null
+                      ? CircleAvatar(backgroundImage: NetworkImage(c!.iconUrl!))
                       : const CircleAvatar(
                           child: Icon(Icons.category, size: 16),
                         ),
                   deleteIcon: const Icon(Icons.close, size: 16),
                   onDeleted: () {
-                    final index = state.categories.indexWhere(
-                      (cat) => cat.id == c.id,
-                    );
-                    if (index != -1) cubit.removeCategory(index);
+                    // giờ removeCategory nhận id (không phải index)
+                    _recipeCrudCubit.removeCategory(id);
                   },
                 );
               }).toList(),

@@ -16,7 +16,7 @@ class Recipe {
   final Difficulty? difficulty;
   final int? cookTime; // in minutes
   final int? prepTime; // in minutes
-  final List<CategoryModel>? categories;
+  final List<int>? categoryIds;
   final List<RecipeIngredientModel>? ingredients;
   final List<RecipeStepModel>? steps;
   const Recipe({
@@ -29,7 +29,7 @@ class Recipe {
     this.difficulty,
     this.prepTime,
     this.cookTime,
-    this.categories,
+    this.categoryIds,
     this.steps,
     this.ingredients,
   });
