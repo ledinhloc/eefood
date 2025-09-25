@@ -31,6 +31,8 @@ class DietaryPreferencePage extends StatelessWidget {
       id: user!.id,
       username: user.username,
       email: user.email,
+      role: user.role,
+      provider: user.provider,
       eatingPreferences: selectedCuisines.toList(),
       allergies: selectedAllergies.toList(),
       dietaryPreferences: selectedDiets.toList(),

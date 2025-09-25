@@ -2,11 +2,11 @@ class User{
   final int id;
   final String username;
   final String email;
-  final String? role;
+  final String role;
   final String? dob;
   final String? gender;
   final Address? address;
-  final String? provider;
+  final String provider;
   final String? avatarUrl;
   final List<String>? allergies;
   final List<String>? eatingPreferences;

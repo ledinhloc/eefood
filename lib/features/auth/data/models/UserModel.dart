@@ -7,12 +7,12 @@ class UserModel {
   final int id;
   final String username;
   final String email;
-  final String? role;
+  final String role;
   final String? dob;
   final String? gender;
   @JsonKey(name: 'address')
   final AddressModel? address;
-  final String? provider;
+  final String provider;
   final String? avatarUrl;
   final List<String>? allergies;
   final List<String>? eatingPreferences;
@@ -25,11 +25,11 @@ class UserModel {
     required this.id,
     required this.username,
     required this.email,
-    this.role,
+    required this.role,
     this.dob,
     this.gender,
     this.address,
-    this.provider,
+    required this.provider,
     this.avatarUrl,
     this.allergies,
     this.eatingPreferences,
@@ -92,6 +92,7 @@ class UserModel {
     avatarUrl: avatarUrl,
     allergies: allergies,
     eatingPreferences: eatingPreferences,
+    dietaryPreferences: dietaryPreferences,
   );
 }
 
