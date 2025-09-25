@@ -105,6 +105,8 @@ class _EditProfilePageState extends State<EditProfilePage> {
         id: widget.user.id,
         username: usernameController.text,
         email: emailController.text,
+        role: widget.user.role,
+        provider: widget.user.provider,
         dob: dobController.text,
         gender: genderController.text,
         address: AddressModel(
