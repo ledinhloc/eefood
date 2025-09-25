@@ -1,28 +1,23 @@
 import 'dart:io';
-import 'package:dropdown_search/dropdown_search.dart';
 import 'package:eefood/core/constants/app_constants.dart';
 import 'package:eefood/core/di/injection.dart';
 import 'package:eefood/core/utils/convert_time.dart';
 import 'package:eefood/core/utils/file_upload.dart';
 import 'package:eefood/core/utils/media_picker.dart';
 import 'package:eefood/features/auth/presentation/widgets/custom_text_field.dart';
+import 'package:eefood/features/recipe/data/models/category_model.dart';
 import 'package:eefood/features/recipe/data/models/recipe_model.dart';
 import 'package:eefood/features/recipe/data/models/region_model.dart';
 import 'package:eefood/features/recipe/domain/entities/recipe.dart';
 import 'package:eefood/features/recipe/domain/usecases/recipe_usecases.dart';
+import 'package:eefood/features/recipe/presentation/provider/recipe_cubit.dart';
 import 'package:eefood/features/recipe/presentation/widgets/custom_dropdown.dart';
 import 'package:eefood/features/recipe/presentation/widgets/media_picker_card.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 
 class BasicInfoSection extends StatefulWidget {
-  final RecipeModel recipe;
-  final VoidCallback onRecipeUpdated;
-
-  const BasicInfoSection({
-    Key? key,
-    required this.recipe,
-    required this.onRecipeUpdated,
-  }) : super(key: key);
+  const BasicInfoSection({Key? key}) : super(key: key);
 
   @override
   State<BasicInfoSection> createState() => _BasicInfoSectionState();
@@ -36,9 +31,12 @@ class _BasicInfoSectionState extends State<BasicInfoSection> {
   final _fileUpload = getIt<FileUploader>();
   final Province _province = getIt<Province>();
   final Ward _ward = getIt<Ward>();
+  final Categories _categories = getIt<Categories>();
+  final RecipeCrudCubit _recipeCrudCubit = getIt<RecipeCrudCubit>();
 
   ProvinceModel? _selectedProvince;
   WardModel? _selectedWard;
+  CategoryModel? _selectedCategory;
 
   File? _imageFile;
   File? _videoFile;
@@ -47,9 +45,11 @@ class _BasicInfoSectionState extends State<BasicInfoSection> {
   @override
   void initState() {
     super.initState();
-    _titleController = TextEditingController(text: widget.recipe.title);
+    _titleController = TextEditingController(
+      text: _recipeCrudCubit.state.recipe.title,
+    );
     _descriptionController = TextEditingController(
-      text: widget.recipe.description,
+      text: _recipeCrudCubit.state.recipe.description,
     );
     _pageController.addListener(() {
       setState(() {
@@ -60,10 +60,26 @@ class _BasicInfoSectionState extends State<BasicInfoSection> {
 
   @override
   void dispose() {
+    _titleController.removeListener(_updateTitle);
+    _descriptionController.removeListener(_updateDescription);
     _titleController.dispose();
     _descriptionController.dispose();
     _pageController.dispose();
     super.dispose();
+  }
+
+  void _updateTitle() {
+    _recipeCrudCubit.updateRecipe(
+      _recipeCrudCubit.state.recipe.copyWith(title: _titleController.text),
+    );
+  }
+
+  void _updateDescription() {
+    _recipeCrudCubit.updateRecipe(
+      _recipeCrudCubit.state.recipe.copyWith(
+        description: _descriptionController.text,
+      ),
+    );
   }
 
   Future<void> _pickImage() async {
@@ -71,11 +87,12 @@ class _BasicInfoSectionState extends State<BasicInfoSection> {
     if (image != null) {
       final url = await _fileUpload.uploadFile(image);
       if (url.isNotEmpty) {
+        final cubit = context.read<RecipeCrudCubit>();
         setState(() {
           _imageFile = image;
-          widget.recipe.imageUrl = url;
         });
-        widget.onRecipeUpdated();
+
+        cubit.updateRecipe(cubit.state.recipe.copyWith(imageUrl: url));
       }
     }
   }
@@ -85,11 +102,12 @@ class _BasicInfoSectionState extends State<BasicInfoSection> {
     if (video != null) {
       final url = await _fileUpload.uploadFile(video);
       if (url.isNotEmpty) {
+        final cubit = context.read<RecipeCrudCubit>();
         setState(() {
           _videoFile = video;
-          widget.recipe.videoUrl = url;
         });
-        widget.onRecipeUpdated();
+
+        cubit.updateRecipe(cubit.state.recipe.copyWith(videoUrl: url));
       }
     }
   }
@@ -118,17 +136,21 @@ class _BasicInfoSectionState extends State<BasicInfoSection> {
 
   @override
   Widget build(BuildContext context) {
+    final cubit = context.read<RecipeCrudCubit>();
+    final state = context.watch<RecipeCrudCubit>().state;
+    final recipe = state.recipe;
+
     final mediaPages = [
       MediaPickerCard(
         isImage: true,
         file: _imageFile,
-        url: widget.recipe.imageUrl,
+        url: recipe.imageUrl,
         onPick: _pickImage,
       ),
       MediaPickerCard(
         isImage: false,
         file: _videoFile,
-        url: widget.recipe.videoUrl,
+        url: recipe.videoUrl,
         onPick: _pickVideo,
       ),
     ];
@@ -178,10 +200,6 @@ class _BasicInfoSectionState extends State<BasicInfoSection> {
           focusedBorderColor: Colors.green[300],
           enableClear: true,
           maxLines: 1,
-          onChanged: (value) {
-            widget.recipe.title = value;
-            widget.onRecipeUpdated();
-          },
           validator: (value) {
             if (value == null || value.isEmpty) {
               return 'Please enter a recipe title';
@@ -198,26 +216,23 @@ class _BasicInfoSectionState extends State<BasicInfoSection> {
           focusedBorderColor: Colors.green[300],
           enableClear: true,
           maxLines: 3,
-          onChanged: (value) {
-            widget.recipe.description = value;
-            widget.onRecipeUpdated();
-          },
         ),
         const SizedBox(height: 16),
         CustomDropdownSearch<String>(
           label: "Cook time *",
           items: (filter, props) => AppConstants.cookTimes,
           type: DropdownType.bottomSheet,
-          selectedItem: widget.recipe.cookTime != null
+          selectedItem: recipe.cookTime != null
               ? AppConstants.cookTimes.firstWhere(
-                  (t) => TimeParser.fromString(t) == widget.recipe.cookTime,
+                  (t) => TimeParser.fromString(t) == recipe.cookTime,
                   orElse: () => AppConstants.cookTimes.first,
                 )
               : null,
           onChanged: (value) {
             if (value != null) {
-              widget.recipe.cookTime = TimeParser.fromString(value);
-              widget.onRecipeUpdated();
+              cubit.updateRecipe(
+                recipe.copyWith(cookTime: TimeParser.fromString(value)),
+              );
             }
           },
         ),
@@ -226,16 +241,17 @@ class _BasicInfoSectionState extends State<BasicInfoSection> {
           label: "Prep time *",
           items: (filter, props) => AppConstants.prepTimes,
           type: DropdownType.bottomSheet,
-          selectedItem: widget.recipe.prepTime != null
+          selectedItem: recipe.prepTime != null
               ? AppConstants.prepTimes.firstWhere(
-                  (t) => TimeParser.fromString(t) == widget.recipe.prepTime,
+                  (t) => TimeParser.fromString(t) == recipe.prepTime,
                   orElse: () => AppConstants.prepTimes.first,
                 )
               : null,
           onChanged: (value) {
             if (value != null) {
-              widget.recipe.prepTime = TimeParser.fromString(value);
-              widget.onRecipeUpdated();
+              cubit.updateRecipe(
+                recipe.copyWith(prepTime: TimeParser.fromString(value)),
+              );
             }
           },
         ),
@@ -244,13 +260,71 @@ class _BasicInfoSectionState extends State<BasicInfoSection> {
           label: 'Difficulty',
           items: (filter, props) => AppConstants.difficulties.keys.toList(),
           type: DropdownType.menu,
-          selectedItem: widget.recipe.difficulty,
+          selectedItem: recipe.difficulty,
           itemAsString: (d) => AppConstants.difficulties[d] ?? "",
           onChanged: (value) {
-            widget.recipe.difficulty = value;
-            widget.onRecipeUpdated();
+            cubit.updateRecipe(recipe.copyWith(difficulty: value));
           },
         ),
+        const SizedBox(height: 16),
+        Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            CustomDropdownSearch<CategoryModel>.multiSelection(
+              label: 'Categories',
+              onFind: (String? filter, int page, int limit) async {
+                debugPrint('Loading page: $page, limit: $limit');
+                return await _categories(filter,page,limit);
+              },
+              type: DropdownType.menu,
+              selectedItems: state.categories,
+              itemAsString: (cat) => cat.description ?? '',
+              onChangedMulti: (selectedList) {
+                // Add or update
+                for (var cat in selectedList) {
+                  final idx = state.categories.indexWhere(
+                    (c) => c.id == cat.id,
+                  );
+                  if (idx == -1) {
+                    cubit.addCategory(cat);
+                  } else {
+                    cubit.updateCategory(idx, cat);
+                  }
+                }
+                // Remove
+                final removed = state.categories
+                    .where((c) => !selectedList.any((s) => s.id == c.id))
+                    .toList();
+                for (var r in removed) {
+                  final idx = state.categories.indexWhere((c) => c.id == r.id);
+                  if (idx != -1) cubit.removeCategory(idx);
+                }
+              },
+            ),
+            Wrap(
+              spacing: 6,
+              runSpacing: -8,
+              children: state.categories.map((c) {
+                return Chip(
+                  label: Text(c.description ?? ""),
+                  avatar: c.iconUrl != null
+                      ? CircleAvatar(backgroundImage: NetworkImage(c.iconUrl!))
+                      : const CircleAvatar(
+                          child: Icon(Icons.category, size: 16),
+                        ),
+                  deleteIcon: const Icon(Icons.close, size: 16),
+                  onDeleted: () {
+                    final index = state.categories.indexWhere(
+                      (cat) => cat.id == c.id,
+                    );
+                    if (index != -1) cubit.removeCategory(index);
+                  },
+                );
+              }).toList(),
+            ),
+          ],
+        ),
+
         const SizedBox(height: 16),
         Row(
           children: [
@@ -274,7 +348,6 @@ class _BasicInfoSectionState extends State<BasicInfoSection> {
                     _selectedProvince = province;
                     _selectedWard = null;
                   });
-                  widget.onRecipeUpdated();
                 },
               ),
             ),
@@ -298,11 +371,11 @@ class _BasicInfoSectionState extends State<BasicInfoSection> {
                 compareFn: (a, b) => a?.code == b?.code,
                 onChanged: (ward) {
                   setState(() => _selectedWard = ward);
-                  widget.recipe.region = convertRegion(
-                    _selectedProvince!,
-                    _selectedWard!,
+                  cubit.updateRecipe(
+                    recipe.copyWith(
+                      region: convertRegion(_selectedProvince!, _selectedWard!),
+                    ),
                   );
-                  widget.onRecipeUpdated();
                 },
               ),
             ),

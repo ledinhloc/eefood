@@ -1,26 +1,18 @@
 import 'dart:math';
-import 'package:eefood/core/di/injection.dart';
-import 'package:eefood/features/recipe/domain/usecases/recipe_usecases.dart';
+import 'package:eefood/features/recipe/presentation/provider/recipe_cubit.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'ingredient_bottom_sheet.dart';
 import 'package:eefood/features/recipe/data/models/ingredient_model.dart';
 
 class IngredientsSection extends StatefulWidget {
-  final List<IngredientModel> ingredients;
-  final VoidCallback onIngredientsUpdated;
-
-  const IngredientsSection({
-    Key? key,
-    required this.ingredients,
-    required this.onIngredientsUpdated,
-  }) : super(key: key);
+  const IngredientsSection({Key? key}) : super(key: key);
 
   @override
   _IngredientsSectionState createState() => _IngredientsSectionState();
 }
 
 class _IngredientsSectionState extends State<IngredientsSection> {
-
   void _addIngredient() {
     showModalBottomSheet(
       context: context,
@@ -31,10 +23,7 @@ class _IngredientsSectionState extends State<IngredientsSection> {
         ),
         child: IngredientBottomSheet(
           onSaveIngredient: (ingredient, {int? index}) {
-            setState(() {
-              widget.ingredients.add(ingredient);
-            });
-            widget.onIngredientsUpdated();
+            context.read<RecipeCrudCubit>().addIngredient(ingredient);
           },
         ),
       ),
@@ -42,7 +31,8 @@ class _IngredientsSectionState extends State<IngredientsSection> {
   }
 
   void _editIngredient(int index) {
-    final ingredient = widget.ingredients[index];
+    final cubit = context.read<RecipeCrudCubit>();
+    final ingredient = cubit.state.ingredients[index];
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
@@ -51,10 +41,10 @@ class _IngredientsSectionState extends State<IngredientsSection> {
         editingIndex: index,
         onSaveIngredient: (updatedIngredient, {int? index}) {
           if (index != null) {
-            setState(() {
-              widget.ingredients[index] = updatedIngredient;
-            });
-            widget.onIngredientsUpdated();
+            context.read<RecipeCrudCubit>().updateIngredients(
+              index,
+              updatedIngredient,
+            );
           }
         },
       ),
@@ -62,27 +52,22 @@ class _IngredientsSectionState extends State<IngredientsSection> {
   }
 
   void _reorderIngredients(int oldIndex, int newIndex) {
-    setState(() {
-      if (newIndex > oldIndex) newIndex -= 1;
-      final IngredientModel item = widget.ingredients.removeAt(oldIndex);
-      widget.ingredients.insert(newIndex, item);
-    });
-    widget.onIngredientsUpdated();
+    context.read<RecipeCrudCubit>().reorderIngredients(oldIndex, newIndex);
   }
 
   void _removeIngredient(int index) {
-    setState(() {
-      widget.ingredients.removeAt(index);
-    });
-    widget.onIngredientsUpdated();
+    context.read<RecipeCrudCubit>().removeIngredient(index);
   }
 
   @override
   Widget build(BuildContext context) {
+    final state = context.watch<RecipeCrudCubit>().state;
+    final ingredients = state.ingredients;
+
     const double itemHeight = 64.0;
     const double maxListHeight = 300.0;
     final double listHeight = min(
-      widget.ingredients.length * itemHeight,
+      ingredients.length * itemHeight,
       maxListHeight,
     );
 
@@ -94,7 +79,7 @@ class _IngredientsSectionState extends State<IngredientsSection> {
           style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
         ),
         const SizedBox(height: 16),
-        if (widget.ingredients.isEmpty)
+        if (ingredients.isEmpty)
           const Center(
             child: Text(
               'No ingredients added yet',
@@ -107,18 +92,52 @@ class _IngredientsSectionState extends State<IngredientsSection> {
             child: ReorderableListView(
               buildDefaultDragHandles: true,
               onReorder: _reorderIngredients,
-              children: List.generate(widget.ingredients.length, (index) {
-                final ingredient = widget.ingredients[index];
+              children: List.generate(ingredients.length, (index) {
+                final ingredient = ingredients[index];
                 final displayText =
-                    '${ingredient.name} ${ingredient.quantity ?? ''}${ingredient.unit ?? ''}';
+                    '${ingredient.ingredient!.name} ${ingredient.quantity ?? ''}${ingredient.unit ?? ''}';
 
                 return Card(
-                  key: ValueKey('ingredient_${index}_${ingredient.name}'),
+                  key: ValueKey(
+                    'ingredient_${index}_${ingredient.ingredient!.name}',
+                  ),
                   margin: const EdgeInsets.only(bottom: 5),
                   color: Colors.white,
                   child: ListTile(
-                    leading: const Icon(Icons.drag_handle),
-                    title: Text(displayText.trim()),
+                    leading: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        if (ingredient.ingredient?.image != null &&
+                            ingredient.ingredient!.image!.isNotEmpty)
+                          ClipRRect(
+                            borderRadius: BorderRadius.circular(4),
+                            child: Image.network(
+                              ingredient.ingredient!.image!,
+                              width: 36,
+                              height: 36,
+                              fit: BoxFit.cover,
+                              errorBuilder: (_, __, ___) => const Icon(
+                                Icons.image_not_supported,
+                                size: 24,
+                                color: Colors.grey,
+                              ),
+                            ),
+                          )
+                        else
+                          const Icon(
+                            Icons.fastfood,
+                            size: 28,
+                            color: Colors.orange,
+                          ),
+                        const SizedBox(width: 6),
+                        const Icon(Icons.drag_handle, color: Colors.grey),
+                      ],
+                    ),
+                    title: Text(
+                      displayText.trim(),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
                     trailing: IconButton(
                       icon: const Icon(Icons.delete, color: Colors.red),
                       onPressed: () => _removeIngredient(index),
@@ -133,8 +152,11 @@ class _IngredientsSectionState extends State<IngredientsSection> {
         Center(
           child: ElevatedButton.icon(
             onPressed: _addIngredient,
-            icon: const Icon(Icons.add, color: Colors.white,),
-            label: const Text('Add Ingredient', style: TextStyle(color: Colors.white),),
+            icon: const Icon(Icons.add, color: Colors.white),
+            label: const Text(
+              'Add Ingredient',
+              style: TextStyle(color: Colors.white),
+            ),
           ),
         ),
       ],

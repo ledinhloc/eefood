@@ -27,4 +27,19 @@ class AppConstants {
     Difficulty.MEDIUM: 'Medium',
     Difficulty.HARD: 'Hard',
   };
+
+  static const diets = [
+      {"name": "Ăn chay", "icon": "🥦"},
+      {"name": "Thuần chay", "icon": "🌱"},
+      {"name": "Ăn cá", "icon": "🐟"},
+      {"name": "Không gluten", "icon": "🚫🌾"},
+      {"name": "Ít carb", "icon": "🥩"},
+      {"name": "Paleo", "icon": "🍖"},
+      {"name": "Halal", "icon": "🕌"},
+      {"name": "Kosher", "icon": "✡️"},
+      {"name": "Không đường", "icon": "🍬"},
+      {"name": "Thấp natri", "icon": "🧂"},
+      {"name": "Không sữa", "icon": "🥛"},
+      {"name": "Eat Clean", "icon": "🥗"},
+    ];
 }

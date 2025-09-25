@@ -1,9 +1,13 @@
 import 'package:eefood/core/di/injection.dart';
 import 'package:eefood/core/utils/file_upload.dart';
+import 'package:eefood/features/recipe/presentation/provider/recipe_cubit.dart';
+import 'package:eefood/features/recipe/presentation/provider/recipe_state.dart';
 import 'package:flutter/material.dart';
 import 'package:eefood/features/recipe/data/models/recipe_model.dart';
 import 'package:eefood/features/recipe/data/models/ingredient_model.dart';
 import 'package:eefood/features/recipe/data/models/recipe_step_model.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_spinkit/flutter_spinkit.dart';
 import '../widgets/basic_info_section.dart';
 import '../widgets/ingredients_section.dart';
 import '../widgets/instructions_section.dart';
@@ -38,8 +42,7 @@ class _RecipeCreatePageState extends State<RecipeCreatePage> {
   void _saveRecipe() {
     if (_formKey.currentState!.validate()) {
       _formKey.currentState!.save();
-      _recipe.steps?.addAll(_instructions);
-      _recipe.ingredients?.addAll(_ingredients);
+      context.read<RecipeCrudCubit>().saveRecipe();
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Recipe saved successfully')),
       );
@@ -47,11 +50,7 @@ class _RecipeCreatePageState extends State<RecipeCreatePage> {
   }
 
   void _deleteRecipe() {
-    setState(() {
-      _recipe = RecipeModel(id: 0, title: '');
-      _ingredients.clear();
-      _instructions.clear();
-    });
+    context.read<RecipeCrudCubit>().deleteRecipe();
     _removeDropdown();
     ScaffoldMessenger.of(
       context,
@@ -113,72 +112,76 @@ class _RecipeCreatePageState extends State<RecipeCreatePage> {
     return Scaffold(
       backgroundColor: Colors.white,
       body: SafeArea(
-        child: Column(
-          children: [
-            // AppBar custom
-            Container(
-              height: 56,
-              padding: const EdgeInsets.symmetric(horizontal: 8),
-              child: Row(
-                children: [
-                  IconButton(
-                    icon: const Icon(Icons.close),
-                    onPressed: () => Navigator.pop(context),
-                  ),
-                  const Expanded(
-                    child: Text(
-                      'Create Recipe',
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ),
-                  IconButton(
-                    icon: const Icon(Icons.save),
-                    onPressed: _saveRecipe,
-                  ),
-                  CompositedTransformTarget(
-                    link: _layerLink,
-                    child: IconButton(
-                      icon: const Icon(Icons.menu_sharp),
-                      onPressed: _toggleDropdown,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-
-            // Nội dung chính
-            Expanded(
-              child: Form(
-                key: _formKey,
-                child: SingleChildScrollView(
-                  padding: const EdgeInsets.all(16.0),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
+        child: BlocConsumer<RecipeCrudCubit, RecipeCrudState>(
+          listener: (context, state) {
+            if (state.message != null) {
+              ScaffoldMessenger.of(
+                context,
+              ).showSnackBar(SnackBar(content: Text(state.message!)));
+            }
+          },
+          builder: (context, state) {
+            return Column(
+              children: [
+                // AppBar custom
+                Container(
+                  height: 56,
+                  padding: const EdgeInsets.symmetric(horizontal: 8),
+                  child: Row(
                     children: [
-                      BasicInfoSection(
-                        recipe: _recipe,
-                        onRecipeUpdated: () => setState(() {}),
+                      IconButton(
+                        icon: const Icon(Icons.close),
+                        onPressed: () => Navigator.pop(context),
                       ),
-                      const SizedBox(height: 24),
-                      IngredientsSection(
-                        ingredients: _ingredients,
-                        onIngredientsUpdated: () => setState(() {}),
+                      const Expanded(
+                        child: Text(
+                          'Create Recipe',
+                          style: TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
                       ),
-                      const SizedBox(height: 24),
-                      InstructionsSection(
-                        instructions: _instructions,
-                        onInstructionsUpdated: () => setState(() {}),
+                      if (state.isLoading)
+                        const Padding(
+                          padding: EdgeInsets.only(bottom: 30),
+                          child: SpinKitCircle(
+                            color: Colors.orange,
+                            size: 50.0,
+                          ),
+                        ),
+                      IconButton(
+                        icon: const Icon(Icons.save),
+                        onPressed: () =>
+                            context.read<RecipeCrudCubit>().saveRecipe(),
                       ),
-                      const SizedBox(height: 32),
                     ],
                   ),
                 ),
-              ),
-            ),
-          ],
+
+                // Nội dung chính
+                Expanded(
+                  child: Form(
+                    key: _formKey,
+                    child: SingleChildScrollView(
+                      padding: const EdgeInsets.all(16.0),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: const [
+                          BasicInfoSection(),
+                          SizedBox(height: 24),
+                          IngredientsSection(),
+                          SizedBox(height: 24),
+                          InstructionsSection(),
+                          SizedBox(height: 32),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            );
+          },
         ),
       ),
     );
