@@ -34,23 +34,25 @@ class _RecipeCreatePageState extends State<RecipeCreatePage> {
   @override
   void initState() {
     super.initState();
-    _recipe = widget.initialRecipe ?? RecipeModel(id: 0, title: '');
+    _recipe = widget.initialRecipe ?? RecipeModel( title: '');
     _ingredients = [];
     _instructions = [];
   }
 
-  void _saveRecipe() {
+  void _saveRecipe(BuildContext context){
     if (_formKey.currentState!.validate()) {
+      final cubit = context.read<RecipeCrudCubit>();
       _formKey.currentState!.save();
-      context.read<RecipeCrudCubit>().saveRecipe();
+      cubit.saveRecipe();
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Recipe saved successfully')),
       );
     }
   }
 
-  void _deleteRecipe() {
-    context.read<RecipeCrudCubit>().deleteRecipe();
+  void _deleteRecipe(BuildContext context) {
+    final cubit = context.read<RecipeCrudCubit>();
+     cubit.saveRecipe();
     _removeDropdown();
     ScaffoldMessenger.of(
       context,
@@ -91,7 +93,7 @@ class _RecipeCreatePageState extends State<RecipeCreatePage> {
                 ListTile(
                   leading: const Icon(Icons.delete, color: Colors.red),
                   title: const Text("Delete"),
-                  onTap: _deleteRecipe,
+                  onTap: () =>  _deleteRecipe(context),
                 ),
               ],
             ),
@@ -155,7 +157,7 @@ class _RecipeCreatePageState extends State<RecipeCreatePage> {
                         IconButton(
                           icon: const Icon(Icons.save),
                           onPressed: () =>
-                              context.read<RecipeCrudCubit>().saveRecipe(),
+                              _saveRecipe(context)
                         ),
                       ],
                     ),

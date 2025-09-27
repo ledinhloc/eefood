@@ -33,7 +33,7 @@ class RecipeIngredientModel {
       'id': id,
       'quantity': quantity,
       'unit': unit,
-      'ingredient': ingredient?.toJson()
+      'ingredientId': ingredient?.id,
     };
   }
 

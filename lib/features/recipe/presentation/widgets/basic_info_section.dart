@@ -32,7 +32,6 @@ class _BasicInfoSectionState extends State<BasicInfoSection> {
   final Province _province = getIt<Province>();
   final Ward _ward = getIt<Ward>();
   final Categories _categories = getIt<Categories>();
-  final RecipeCrudCubit _recipeCrudCubit = getIt<RecipeCrudCubit>();
 
   ProvinceModel? _selectedProvince;
   WardModel? _selectedWard;
@@ -45,12 +44,10 @@ class _BasicInfoSectionState extends State<BasicInfoSection> {
   @override
   void initState() {
     super.initState();
-    _titleController = TextEditingController(
-      text: _recipeCrudCubit.state.recipe.title,
-    );
-    _descriptionController = TextEditingController(
-      text: _recipeCrudCubit.state.recipe.description,
-    );
+    final cubit = context.read<RecipeCrudCubit>();
+    _titleController = TextEditingController(text: cubit.state.recipe.title);
+    _descriptionController = TextEditingController(text: cubit.state.recipe.description);
+
     _pageController.addListener(() {
       setState(() {
         _currentPage = _pageController.page?.round() ?? 0;
@@ -62,8 +59,6 @@ class _BasicInfoSectionState extends State<BasicInfoSection> {
 
   @override
   void dispose() {
-    _titleController.removeListener(_updateTitle);
-    _descriptionController.removeListener(_updateDescription);
     _titleController.dispose();
     _descriptionController.dispose();
     _pageController.dispose();
@@ -83,20 +78,6 @@ class _BasicInfoSectionState extends State<BasicInfoSection> {
         _listCategories = <CategoryModel>[];
       });
     }
-  }
-
-  void _updateTitle() {
-    _recipeCrudCubit.updateRecipe(
-      _recipeCrudCubit.state.recipe.copyWith(title: _titleController.text),
-    );
-  }
-
-  void _updateDescription() {
-    _recipeCrudCubit.updateRecipe(
-      _recipeCrudCubit.state.recipe.copyWith(
-        description: _descriptionController.text,
-      ),
-    );
   }
 
   Future<void> _pickImage() async {
@@ -223,6 +204,11 @@ class _BasicInfoSectionState extends State<BasicInfoSection> {
             }
             return null;
           },
+          onChanged: (value) {
+            if (value != null) {
+              cubit.updateRecipe(recipe.copyWith(title: value));
+            }
+          },
         ),
         const SizedBox(height: 16),
         CustomTextField(
@@ -233,6 +219,11 @@ class _BasicInfoSectionState extends State<BasicInfoSection> {
           focusedBorderColor: Colors.green[300],
           enableClear: true,
           maxLines: 3,
+          onChanged: (value) {
+            if (value != null) {
+              cubit.updateRecipe(recipe.copyWith(description: value));
+            }
+          },
         ),
         const SizedBox(height: 16),
         CustomDropdownSearch<String>(
@@ -292,17 +283,16 @@ class _BasicInfoSectionState extends State<BasicInfoSection> {
             CustomDropdownSearch<CategoryModel>.multiSelection(
               label: 'Categories',
               onFind: (String? filter, int page, int limit) async {
+                final result;
+                filter = filter == null ? '' : filter;
                 debugPrint('Loading page: $page, limit: $limit');
-                final result = await _categories(filter, page, limit);
-                debugPrint(result.toString());
-                // cập nhật _listCategories để UI ở ngoài (Chips) cũng biết
-                setState(() {
-                  _listCategories = result;
-                });
+                result = await _categories(filter, page, limit);
+                debugPrint(
+                  'BasicInfoSection onFind returned ${result.length} items',
+                );
                 return result;
               },
               type: DropdownType.bottomSheet,
-              // selectedItems phải dựa vào state.categoryIds map ra CategoryModel từ _listCategories
               selectedItems:
                   _listCategories
                       ?.where((cat) => state.categoryIds.contains(cat.id))
@@ -311,31 +301,50 @@ class _BasicInfoSectionState extends State<BasicInfoSection> {
               itemAsString: (cat) => cat.description ?? '',
               onChangedMulti: (selectedList) {
                 // selectedList là List<CategoryModel>
-                final selectedIds = selectedList.map((c) => c.id!).toList();
-                // set 1 lần thay vì add/remove nhiều lần
-                _recipeCrudCubit.setCategories(selectedIds);
+                final selectedIds = selectedList
+                    .map((c) => c.id)
+                    .whereType<int>()
+                    .toList();
+                cubit.setCategories(selectedIds);
+
+                setState(() {
+                  _listCategories = selectedList;
+                });
               },
             ),
             Wrap(
-              spacing: 6,
-              runSpacing: -8,
+              spacing: 8,
+              runSpacing: 6,
               children: state.categoryIds.map((id) {
                 final c = _listCategories?.firstWhere(
                   (cat) => cat.id == id,
                   orElse: () => CategoryModel(id: id),
                 );
+                final iconUrl = c?.iconUrl;
                 return Chip(
-                  label: Text(c?.description ?? ""),
-                  avatar: c?.iconUrl != null
-                      ? CircleAvatar(backgroundImage: NetworkImage(c!.iconUrl!))
+                  label: Text(
+                    c?.description ?? "",
+                    style: const TextStyle(fontSize: 13),
+                  ),
+                  avatar: (iconUrl ?? '').isNotEmpty
+                      ? CircleAvatar(
+                          backgroundImage: NetworkImage(iconUrl!),
+                          radius: 14,
+                        )
                       : const CircleAvatar(
+                          radius: 14,
                           child: Icon(Icons.category, size: 16),
                         ),
                   deleteIcon: const Icon(Icons.close, size: 16),
                   onDeleted: () {
-                    // giờ removeCategory nhận id (không phải index)
-                    _recipeCrudCubit.removeCategory(id);
+                    cubit.removeCategory(id);
+                    // nếu bạn muốn đồng bộ _listCategories (nếu bạn lưu local selections) thì không cần làm gì thêm
                   },
+                  backgroundColor: Colors.grey.shade100,
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 6,
+                    vertical: 0,
+                  ),
                 );
               }).toList(),
             ),
@@ -365,6 +374,11 @@ class _BasicInfoSectionState extends State<BasicInfoSection> {
                     _selectedProvince = province;
                     _selectedWard = null;
                   });
+                  cubit.updateRecipe(
+                    recipe.copyWith(
+                      region: convertRegion(_selectedProvince!, _selectedWard!),
+                    ),
+                  );
                 },
               ),
             ),

@@ -23,7 +23,7 @@ class RecipeCrudState {
 
   factory RecipeCrudState.initial(RecipeModel? initialRecipe) {
     return RecipeCrudState(
-      recipe: initialRecipe ?? RecipeModel(id: 0, title: ''),
+      recipe: initialRecipe ?? RecipeModel(title: ''),
       ingredients: initialRecipe?.ingredients ?? [],
       steps: initialRecipe?.steps ?? [],
       categoryIds: initialRecipe?.categoryIds ?? [],

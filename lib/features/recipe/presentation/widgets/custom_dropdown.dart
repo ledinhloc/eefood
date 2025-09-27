@@ -1,3 +1,4 @@
+// --- Replace your current CustomDropdownSearch with this updated implementation ---
 import 'dart:math';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -113,22 +114,36 @@ class _CustomDropdownSearchState<T> extends State<CustomDropdownSearch<T>> {
   void initState() {
     super.initState();
     if (widget.items != null) {
-      // Local: load full list at start (keep original behavior)
       _allItems = widget.items!(null, null);
     }
 
-    // init selected items for multi-select
+  
     if (widget.multiSelection) {
       _selectedItems = widget.selectedItems != null
           ? List<T>.from(widget.selectedItems!)
           : <T>[];
+    }
+
+    
+    if (widget.onFind != null && _allItems.isEmpty) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        debugPrint('[CustomDropdownSearch] initial load onFind page=1');
+        _loadMoreItems(reset: true, filter: _searchController.text);
+      });
+    }
+
+    
+    if (widget.selectedItems != null && widget.selectedItems!.isNotEmpty) {
+      for (final s in widget.selectedItems!) {
+        if (!_containsItem(_allItems, s)) _allItems.add(s);
+      }
     }
   }
 
   @override
   void didUpdateWidget(covariant CustomDropdownSearch<T> oldWidget) {
     super.didUpdateWidget(oldWidget);
-    // keep selected items in sync if parent updates them
+    
     if (widget.multiSelection) {
       if (!listEquals(
         widget.selectedItems ?? [],
@@ -137,15 +152,21 @@ class _CustomDropdownSearchState<T> extends State<CustomDropdownSearch<T>> {
         _selectedItems = widget.selectedItems != null
             ? List<T>.from(widget.selectedItems!)
             : <T>[];
+        
+        if (widget.selectedItems != null) {
+          for (final s in widget.selectedItems!) {
+            if (!_containsItem(_allItems, s)) {
+              setState(() => _allItems.add(s));
+            }
+          }
+        }
       }
-    } else {
-      // nothing special for single select
-    }
+    } 
   }
 
   @override
   void dispose() {
-    _searchController.dispose();
+    
     super.dispose();
   }
 
@@ -162,19 +183,26 @@ class _CustomDropdownSearchState<T> extends State<CustomDropdownSearch<T>> {
     });
 
     try {
+      debugPrint(
+        '[CustomDropdownSearch] calling onFind page=$_page filter=$filter',
+      );
       final newItems = await widget.onFind!(
-        filter?.isEmpty ?? true ? null : filter,
+        (filter?.isEmpty ?? true) ? null : filter,
         _page,
         10,
       );
 
       setState(() {
-        _allItems.addAll(newItems);
+        
+        for (final ni in newItems) {
+          if (!_containsItem(_allItems, ni)) _allItems.add(ni);
+        }
         _isLoading = false;
         _hasMore = newItems.length == 10;
         _page++;
       });
     } catch (e) {
+      debugPrint('[CustomDropdownSearch] onFind error: $e');
       setState(() => _isLoading = false);
     }
   }
@@ -188,7 +216,7 @@ class _CustomDropdownSearchState<T> extends State<CustomDropdownSearch<T>> {
     }
   }
 
-  // toggle selection for multi-select and notify parent
+  
   void _toggleSelection(T item) {
     setState(() {
       final idx = _selectedItems.indexWhere((e) => _equals(e, item));
@@ -276,8 +304,6 @@ class _CustomDropdownSearchState<T> extends State<CustomDropdownSearch<T>> {
                         avatar: img != null
                             ? CircleAvatar(
                                 backgroundImage: NetworkImage(
-                                  // safe: convert to string via itemAsString? but we have image via _buildLeadingIcon logic
-                                  // get image url dynamically
                                   (() {
                                     try {
                                       final dynamic dyn = c;
@@ -430,13 +456,6 @@ class _CustomDropdownSearchState<T> extends State<CustomDropdownSearch<T>> {
           showSearchBox: false,
           constraints: const BoxConstraints(maxHeight: 420),
           containerBuilder: (ctx, popupWidget) {
-            // ensure initial remote load
-            if (widget.onFind != null && _allItems.isEmpty && !_isLoading) {
-              WidgetsBinding.instance.addPostFrameCallback((_) {
-                _loadMoreItems(reset: true, filter: _searchController.text);
-              });
-            }
-
             final availableMaxHeight = 360.0;
             final visibleCount = _allItems.isEmpty ? 3 : _allItems.length;
             final height = computeHeightForItems(
@@ -505,13 +524,6 @@ class _CustomDropdownSearchState<T> extends State<CustomDropdownSearch<T>> {
         return PopupProps.modalBottomSheet(
           showSearchBox: false,
           containerBuilder: (ctx, popupWidget) {
-            // ensure remote initial load
-            if (widget.onFind != null && _allItems.isEmpty && !_isLoading) {
-              WidgetsBinding.instance.addPostFrameCallback((_) {
-                _loadMoreItems(reset: true, filter: _searchController.text);
-              });
-            }
-
             final screenW = MediaQuery.of(ctx).size.width;
             final screenH = MediaQuery.of(ctx).size.height;
             final maxW = min(600.0, screenW * 0.95);
@@ -590,12 +602,6 @@ class _CustomDropdownSearchState<T> extends State<CustomDropdownSearch<T>> {
         return PopupProps.bottomSheet(
           showSearchBox: false,
           containerBuilder: (ctx, popupWidget) {
-            if (widget.onFind != null && _allItems.isEmpty && !_isLoading) {
-              WidgetsBinding.instance.addPostFrameCallback((_) {
-                _loadMoreItems(reset: true, filter: _searchController.text);
-              });
-            }
-
             final height = MediaQuery.of(ctx).size.height * 0.6;
 
             return Container(
@@ -707,16 +713,9 @@ class _CustomDropdownSearchState<T> extends State<CustomDropdownSearch<T>> {
 
         final item = _allItems[index];
         final dynamic dyn = item;
-        final String titleText;
-        if(widget.itemAsString != null ){
-          titleText = widget.itemAsString != null 
-          ? widget.itemAsString!(item)
-          : item.toString();
-        }
-        else{
-          titleText = dyn.name ?? item.toString();
-        }
-        
+        final String titleText = widget.itemAsString != null
+            ? widget.itemAsString!(item)
+            : (dyn?.name ?? item.toString() ?? dyn?.description);
 
         final leading = _buildLeadingIcon(item);
 

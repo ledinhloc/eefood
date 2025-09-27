@@ -6,6 +6,7 @@ import 'package:eefood/features/recipe/data/models/recipe_model.dart';
 import 'package:eefood/features/recipe/data/models/region_model.dart';
 import 'package:eefood/features/recipe/domain/entities/recipe.dart';
 import 'package:eefood/features/recipe/domain/repositories/recipe_repository.dart';
+import 'package:flutter/foundation.dart';
 
 class RecipeRepositoryImpl implements RecipeRepository {
   final Dio dio;
@@ -107,13 +108,15 @@ class RecipeRepositoryImpl implements RecipeRepository {
 
   @override
   Future<Result<RecipeModel>> createRecipe(RecipeModel request) async{
+    print(request.toJson());
     try{
       final response = await dio.post(
-        '/v1/recipes/',
+        '/v1/recipes',
         data: request.toJson(),
         options: Options(contentType: 'application/json'));
 
       final recipeRes = RecipeModel.fromJson(response.data['data']);
+      print(recipeRes);
       return Result.success(recipeRes);
     }
     catch(err) {
@@ -139,6 +142,7 @@ class RecipeRepositoryImpl implements RecipeRepository {
       print(data);
       if (data != null && data['data'] != null) {
         final content = data['data']['content'] as List<dynamic>;
+        debugPrint(content.toString());
         return content
             .map(
               (json) => CategoryModel.fromJson(json as Map<String, dynamic>),

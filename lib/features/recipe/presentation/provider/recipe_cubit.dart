@@ -90,17 +90,33 @@ class RecipeCrudCubit extends Cubit<RecipeCrudState> {
   }
 
   void saveRecipe() async {
+    print('=== BEFORE SAVE - DEBUG ===');
+    print('Title: "${state.recipe.title}"');
+    print('Category IDs: ${state.categoryIds}');
+    print('Ingredients count: ${state.ingredients.length}');
+
+    for (var i = 0; i < state.ingredients.length; i++) {
+      var ing = state.ingredients[i];
+      print(
+        'Ingredient $i: ${ing.ingredient?.name} (ID: ${ing.ingredient?.id})',
+      );
+      print('  Quantity: ${ing.quantity}, Unit: ${ing.unit}');
+      print('  toJson(): ${ing.toJson()}');
+    }
     final savedRecipe = state.recipe.copyWith(
       ingredients: state.ingredients,
       steps: state.steps,
       categoryIds: state.categoryIds,
     );
+
+    print('=== FINAL JSON TO SEND ===');
+    print(savedRecipe.toJson());  
     final result = await _createRecipe(savedRecipe);
 
     if (result.isSuccess && result.data != null) {
       emit(
         state.copyWith(
-          recipe: result.data!, 
+          recipe: result.data!,
           isLoading: false,
           message: "Recipe created successfully",
         ),
@@ -120,5 +136,3 @@ class RecipeCrudCubit extends Cubit<RecipeCrudState> {
     emit(RecipeCrudState.initial(null));
   }
 }
-
-

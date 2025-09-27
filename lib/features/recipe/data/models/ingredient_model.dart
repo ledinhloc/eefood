@@ -16,7 +16,7 @@ class IngredientModel {
 
   factory IngredientModel.fromJson(Map<String, dynamic> json) {
     return IngredientModel(
-      id: json['id'] as int,
+      id: json['id'] as int?,
       name: json['name'],
       description: json['description'],
       image: json['image'],

@@ -189,9 +189,18 @@ class _IngredientBottomSheetState extends State<IngredientBottomSheet> {
               ElevatedButton(
                 onPressed: () {
                   if (_nameController.text.isNotEmpty) {
-                    final IngredientModel ingredient =
-                        _selectedIngredient ??
-                        IngredientModel(name: _nameController.text);
+                    if (_selectedIngredient == null) {
+                      // Nếu không có ingredient được chọn, hiển thị lỗi
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text(
+                            'Please select an ingredient from the list',
+                          ),
+                        ),
+                      );
+                      return;
+                    }
+                    final IngredientModel ingredient = _selectedIngredient!;
                     widget.onSaveIngredient(
                       RecipeIngredientModel(
                         ingredient: ingredient,
