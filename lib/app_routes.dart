@@ -1,3 +1,4 @@
+import 'package:eefood/core/widgets/error_page.dart';
 import 'package:eefood/core/widgets/media_view_page.dart';
 import 'package:eefood/features/auth/presentation/bloc/on_boarding_bloc/on_boarding_cubit.dart';
 import 'package:eefood/features/auth/presentation/screens/forgot_password_page.dart';
@@ -11,6 +12,7 @@ import 'package:eefood/features/auth/presentation/screens/welcome_page.dart';
 import 'package:eefood/features/profile/presentation/screens/edit_profile_page.dart';
 import 'package:eefood/features/profile/presentation/screens/food_preferences_page.dart';
 import 'package:eefood/features/profile/presentation/screens/language_page.dart';
+import 'package:eefood/features/recipe/data/models/recipe_model.dart';
 import 'package:eefood/features/recipe/presentation/screens/recipe_crud_page.dart';
 import 'package:eefood/main.dart';
 import 'package:eefood/main_screen.dart';
@@ -35,6 +37,7 @@ class AppRoutes {
   static const forgotPassword = '/forgotPassword';
   static const resetPassword = '/resetPassword';
   static const onBoardingFlow = '/onBoardingFlow';
+  static const errorPage = '/errorPage';
 
   /* feat profile*/
   static const editProfile = '/editProfile';
@@ -44,7 +47,6 @@ class AppRoutes {
 
   /* feat recipe */
   static const recipeCrudPage = '/recipeCrudPage';
-
 
   // Danh sách các widget cho BottomNavigationBar trong main page
   static List<Widget> widgetOptions = <Widget>[
@@ -83,20 +85,32 @@ class AppRoutes {
       return ResetPasswordPage(email: args['email'], otpCode: args['otpCode']);
     },
     onBoardingFlow: (context) {
-      final args = ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>?;
+      final args =
+          ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>?;
       return BlocProvider(
         create: (_) => OnBoardingCubit(),
         child: OnBoardingFlowPage(),
       );
     },
     mediaView: (context) {
-      final args = ModalRoute.of(context)!.settings.arguments as Map<String, dynamic>;
+      final args =
+          ModalRoute.of(context)!.settings.arguments as Map<String, dynamic>;
       return MediaViewPage(
         isVideo: args['isVideo'],
         isLocal: args['isLocal'] ?? false,
         url: args['url'],
       );
     },
-    recipeCrudPage: (context) => RecipeCreatePage(),
+    recipeCrudPage: (context) {
+      final args =
+          ModalRoute.of(context)!.settings.arguments as Map<String, dynamic>;
+      final recipe = args?['initialRecipe'] as RecipeModel?;
+      final isCreate = args?['isCreate'] as bool? ?? true;
+      return RecipeCreatePage(
+        isCreate: isCreate,
+        initialRecipe: recipe,
+      );
+    },
+    errorPage: (context) => ErrorPage(),
   };
 }

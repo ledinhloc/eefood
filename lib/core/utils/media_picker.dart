@@ -1,18 +1,28 @@
 import 'dart:io';
-
-import 'package:file_picker/file_picker.dart';
+import 'package:device_info_plus/device_info_plus.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:permission_handler/permission_handler.dart';
 
 /* chon Image, Video, File trong may*/
 class MediaPicker{
   static Future<bool> _checkPermission(Permission permission) async{
-    var status = await permission.status;
-    if(status.isDenied){
-      status = await permission.request();
+    // Android 13 trở lên
+    if(Platform.isAndroid && (await _getSdkInt()) >=33) {
+      var status = await permission.status;
+      if(status.isDenied){
+        status = await permission.request();
+      }
+      return status.isGranted;
     }
-
-    return status.isGranted;
+    else {
+      // Android 12 trở xuống
+      var status = await Permission.storage.status;
+      if (status.isDenied) {
+        status = await Permission.storage.request();
+      }
+      return status.isGranted;
+    }
+    
   }
 
   static Future<File?> pickImage() async{
@@ -27,6 +37,11 @@ class MediaPicker{
 
     final picked = await ImagePicker().pickVideo(source: ImageSource.gallery);
     return picked != null ? File(picked.path) : null;
+  }
+
+  static Future<int> _getSdkInt() async {
+    final sdkInt = await DeviceInfoPlugin().androidInfo.then((info) => info.version.sdkInt);
+    return sdkInt;
   }
 
   // static Future<File?> pickFile() async {

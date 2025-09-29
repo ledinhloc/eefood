@@ -65,11 +65,13 @@ class _IngredientsSectionState extends State<IngredientsSection> {
   }
 
   void _reorderIngredients(int oldIndex, int newIndex) {
-    context.read<RecipeCrudCubit>().reorderIngredients(oldIndex, newIndex);
+    final cubit = context.read<RecipeCrudCubit>();
+    cubit.reorderIngredients(oldIndex, newIndex);
   }
 
   void _removeIngredient(int index) {
-    context.read<RecipeCrudCubit>().removeIngredient(index);
+    final cubit = context.read<RecipeCrudCubit>();
+    cubit.removeIngredient(index);
   }
 
   @override

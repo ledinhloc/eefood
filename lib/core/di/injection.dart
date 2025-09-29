@@ -28,21 +28,21 @@ Future<void> setupDependencies() async {
 
   // Register Repository
   getIt.registerLazySingleton<AuthRepository>(
-        () => AuthRepositoryImpl(
+    () => AuthRepositoryImpl(
       dio: getIt<DioClient>().dio,
       sharedPreferences: getIt<SharedPreferences>(),
     ),
   );
 
   getIt.registerLazySingleton<ProfileRepository>(
-      () => ProfileRepositoryImpl(
-        dio: getIt<DioClient>().dio,
-        sharedPreferences: getIt<SharedPreferences>()
-      )
+    () => ProfileRepositoryImpl(
+      dio: getIt<DioClient>().dio,
+      sharedPreferences: getIt<SharedPreferences>(),
+    ),
   );
 
   getIt.registerLazySingleton<RecipeRepository>(
-    () => RecipeRepositoryImpl(dio: getIt<DioClient>().dio)
+    () => RecipeRepositoryImpl(dio: getIt<DioClient>().dio),
   );
 
   getIt.registerLazySingleton(() => FileUploader(dio: getIt<DioClient>().dio));
@@ -59,23 +59,24 @@ Future<void> setupDependencies() async {
   getIt.registerLazySingleton(() => ResetPassword(getIt<AuthRepository>()));
 
   //use case profile
-  getIt.registerLazySingleton(()=> UpdateProfile(getIt<ProfileRepository>()));
+  getIt.registerLazySingleton(() => UpdateProfile(getIt<ProfileRepository>()));
 
   // OnBoarding Cubit (singleton)
   getIt.registerLazySingleton<OnBoardingCubit>(() => OnBoardingCubit());
 
-  //region 
-  getIt.registerLazySingleton(()=> Province(getIt<RecipeRepository>()));
-  getIt.registerLazySingleton(()=> Ward(getIt<RecipeRepository>()));
+  //region
+  getIt.registerLazySingleton(() => Province(getIt<RecipeRepository>()));
 
   // ingredients
   getIt.registerLazySingleton(() => Ingredients(getIt<RecipeRepository>()));
   // categories
   getIt.registerLazySingleton(() => Categories(getIt<RecipeRepository>()));
-  // create recipe
-  getIt.registerLazySingleton(() => CreateRecipe(getIt<RecipeRepository>()));
-
+  // recipe crud cubit
   getIt.registerFactoryParam<RecipeCrudCubit, RecipeModel?, void>(
     (initialRecipe, _) => RecipeCrudCubit(initialRecipe),
   );
+  //recipe
+  getIt.registerLazySingleton(() => CreateRecipe(getIt<RecipeRepository>()));
+  getIt.registerLazySingleton(() => UpdateRecipe(getIt<RecipeRepository>()));
+  getIt.registerLazySingleton(() => GetMyRecipe(getIt<RecipeRepository>()));
 }

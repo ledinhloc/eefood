@@ -277,55 +277,7 @@ class _CustomDropdownSearchState<T> extends State<CustomDropdownSearch<T>> {
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
             );
           }
-          return SingleChildScrollView(
-            scrollDirection: Axis.horizontal,
-            child: Row(
-              children: [
-                Padding(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 8,
-                    vertical: 6,
-                  ),
-                  child: Wrap(
-                    spacing: 6,
-                    runSpacing: 6,
-                    children: _selectedItems.map((c) {
-                      final img = _buildLeadingIcon(c);
-                      return Chip(
-                        label: ConstrainedBox(
-                          constraints: const BoxConstraints(maxWidth: 160),
-                          child: Text(
-                            widget.itemAsString != null
-                                ? widget.itemAsString!(c)
-                                : c.toString(),
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                        ),
-                        avatar: img != null
-                            ? CircleAvatar(
-                                backgroundImage: NetworkImage(
-                                  (() {
-                                    try {
-                                      final dynamic dyn = c;
-                                      return dyn.image ?? dyn.imageUrl ?? '';
-                                    } catch (_) {
-                                      return '';
-                                    }
-                                  })(),
-                                ),
-                              )
-                            : null,
-                        onDeleted: () {
-                          _toggleSelection(c);
-                        },
-                        deleteIcon: const Icon(Icons.close, size: 16),
-                      );
-                    }).toList(),
-                  ),
-                ),
-              ],
-            ),
-          );
+          return SizedBox(width: 10,height: 10);
         } else {
           final s = _itemToSingleLineString(selectedItem);
           return Padding(

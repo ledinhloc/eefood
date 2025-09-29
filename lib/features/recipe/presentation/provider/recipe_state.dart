@@ -11,6 +11,7 @@ class RecipeCrudState {
 
   final bool isLoading;
   final String? message;
+  
 
   RecipeCrudState({
     required this.recipe,

@@ -3,6 +3,7 @@ import 'dart:math';
 import 'package:dio/dio.dart';
 import 'package:eefood/app_routes.dart';
 import 'package:eefood/core/constants/app_keys.dart';
+import 'package:eefood/core/widgets/loading_overlay.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -21,9 +22,36 @@ class DioClient {
     print(baseUrl);
     dio.options = BaseOptions(
       baseUrl: baseUrl,
-      connectTimeout: const Duration(seconds: 10), // Timeout kết nối
-      receiveTimeout: const Duration(seconds: 10), // Timeout nhận dữ liệu
+      connectTimeout: const Duration(seconds: 5), // Timeout kết nối
+      receiveTimeout: const Duration(seconds: 3), // Timeout nhận dữ liệu
       contentType: 'application/json; charset=UTF-8', // Default content type
+    );
+
+    // Xử lý loading khi fetch api và lỗi sẽ direct error page
+    dio.interceptors.add(
+      InterceptorsWrapper(
+        onRequest: (options, handler) async {
+          final context = navigatorKey.currentContext;
+          if (context != null) {
+            LoadingOverlay().show();
+          }
+          return handler.next(options);
+        },
+        onResponse: (response, handler) async {
+          LoadingOverlay().hide();
+          return handler.next(response);
+        },
+        onError: (DioException e, handler) async {
+          LoadingOverlay().hide();
+
+          final context = navigatorKey.currentContext;
+          if (context != null && e.type != DioExceptionType.cancel) {
+            navigatorKey.currentState?.pushNamed(AppRoutes.errorPage);
+          }
+
+          return handler.next(e);
+        },
+      ),
     );
 
     // Thêm interceptor để xử lý token và refresh token

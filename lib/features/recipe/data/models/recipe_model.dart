@@ -6,6 +6,7 @@ import 'package:eefood/features/recipe/domain/entities/recipe.dart';
 import 'package:eefood/features/recipe/domain/entities/recipe_ingredient.dart';
 
 class RecipeModel {
+  int? id;
   String title;
   String? description;
   String? imageUrl;
@@ -18,6 +19,7 @@ class RecipeModel {
   List<RecipeIngredientModel>? ingredients;
   List<RecipeStepModel>? steps;
   RecipeModel({
+    this.id,
     required this.title,
     this.description,
     this.region,
@@ -33,6 +35,7 @@ class RecipeModel {
 
   factory RecipeModel.fromJson(Map<String, dynamic> json) {
     return RecipeModel(
+      id: json['id'] !=null ? json['id'] as int : 0,
       title: json['title'],
       description: json['description'],
       imageUrl: json['imageUrl'],
@@ -41,14 +44,21 @@ class RecipeModel {
       region: json['region'],
       cookTime: json['cookTime'],
       prepTime: json['prepTime'],
-      categoryIds: json['categoryIds'] != null
-          ? List<int>.from(json['categoryIds'])
-          : null,
+      categoryIds: (json['categories'] as List<dynamic>?)
+          ?.map((e) => e['id'] as int)
+          .toList(),
       ingredients: json['ingredients'] != null
-          ? List<RecipeIngredientModel>.from(json['ingredients'])
+          ? (json['ingredients'] as List)
+                .map(
+                  (e) =>
+                      RecipeIngredientModel.fromJson(e as Map<String, dynamic>),
+                )
+                .toList()
           : null,
       steps: json['steps'] != null
-          ? List<RecipeStepModel>.from(json['steps'])
+          ? (json['steps'] as List)
+                .map((e) => RecipeStepModel.fromJson(e as Map<String, dynamic>))
+                .toList()
           : null,
     );
   }
@@ -70,6 +80,7 @@ class RecipeModel {
   }
 
   Recipe toEntity() => Recipe(
+    id: id,
     title: title,
     description: description,
     imageUrl: imageUrl,
@@ -92,6 +103,7 @@ class RecipeModel {
   }
 
   RecipeModel copyWith({
+    int? id,
     String? title,
     String? description,
     String? imageUrl,
@@ -105,6 +117,7 @@ class RecipeModel {
     List<RecipeStepModel>? steps,
   }) {
     return RecipeModel(
+      id: id ?? this.id,
       title: title ?? this.title,
       description: description ?? this.description,
       imageUrl: imageUrl ?? this.imageUrl,
