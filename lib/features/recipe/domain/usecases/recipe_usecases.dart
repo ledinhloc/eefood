@@ -47,6 +47,13 @@ class UpdateRecipe {
   Future<Result<RecipeModel>> call(int id, RecipeModel recipe) => repository.updateRecipe(id,recipe);
 }
 
+class DeleteRecipe {
+  final RecipeRepository repository;
+  DeleteRecipe(this.repository);
+
+  Future<Result<String>> call(int id) => repository.deleteRecipe(id);
+}
+
 class GetMyRecipe {
   final RecipeRepository repository;
   GetMyRecipe(this.repository);

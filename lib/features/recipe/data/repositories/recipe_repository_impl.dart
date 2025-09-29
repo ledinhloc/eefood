@@ -166,10 +166,6 @@ class RecipeRepositoryImpl implements RecipeRepository {
 
   @override
   Future<Result<RecipeModel>> updateRecipe(int id, RecipeModel request) async {
-    print("=== UPDATE RECIPE DEBUG ===");
-    print("Recipe ID: $id");
-    print("Payload: ${request.toJson()}");
-
     try {
       final response = await dio.put(
         '/v1/recipes/$id',
@@ -177,12 +173,44 @@ class RecipeRepositoryImpl implements RecipeRepository {
         options: Options(contentType: 'application/json'),
       );
 
-      final recipeRes = RecipeModel.fromJson(response.data['data']);
-      print(recipeRes.toJson());
-      return Result.success(recipeRes);
+      final Map<String, dynamic> responseData = response.data;
+
+      // Kiểm tra cấu trúc response và đảm bảo lấy đúng dữ liệu
+      if (responseData.containsKey('data')) {
+        final recipeRes = RecipeModel.fromJson(responseData['data']);
+
+        if (recipeRes.ingredients?.length != request.ingredients?.length) {
+          recipeRes.ingredients = request.ingredients;
+        }
+      
+        return Result.success(recipeRes);
+      } else {
+        throw Exception('Invalid response format: missing data field');
+      }
     } catch (err) {
       debugPrint('Update recipe error: $err');
       throw Exception('Update recipe failed: $err');
+    }
+  }
+
+  @override
+  Future<Result<String>> deleteRecipe(int id) async {
+    try {
+      final response = await dio.delete(
+        '/v1/recipes/$id',
+        options: Options(contentType: 'application/json'),
+      );
+
+      final Map<String, dynamic> data = response.data;
+      final String message = data['message']?.toString() ?? "Unknown response";
+
+      if (data['status'] == 200) {
+        return Result.success(message);
+      }
+      return Result.failure(message);
+    } catch (err) {
+      debugPrint('Delete recipe error: $err');
+      throw Exception('Delete recipe failed: $err');
     }
   }
 }

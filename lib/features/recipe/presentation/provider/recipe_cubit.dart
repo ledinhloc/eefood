@@ -11,11 +11,11 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 class RecipeCrudCubit extends Cubit<RecipeCrudState> {
   final CreateRecipe _createRecipe = getIt<CreateRecipe>();
   final UpdateRecipe _updateRecipe = getIt<UpdateRecipe>();
+  final DeleteRecipe _deleteRecipe = getIt<DeleteRecipe>();
   RecipeCrudCubit(RecipeModel? initialRecipe)
     : super(RecipeCrudState.initial(initialRecipe));
 
   void init(RecipeModel? initial) {
-    
     if (initial != null) {
       emit(
         state.copyWith(
@@ -47,7 +47,11 @@ class RecipeCrudCubit extends Cubit<RecipeCrudState> {
   void removeIngredient(int index) {
     final newIngredients = List<RecipeIngredientModel>.from(state.ingredients)
       ..removeAt(index);
-    emit(state.copyWith(ingredients: newIngredients));
+    final updatedRecipe = state.recipe.copyWith(ingredients: newIngredients);
+    emit(state.copyWith(ingredients: newIngredients, recipe: updatedRecipe));
+    print('🗑️ Ingredient removed at index $index');
+    print('📊 Total ingredients after removal: ${newIngredients.length}');
+    print('🔍 Recipe ingredients count: ${updatedRecipe.ingredients?.length}');
   }
 
   void reorderIngredients(int oldIndex, int newIndex) {
@@ -75,7 +79,8 @@ class RecipeCrudCubit extends Cubit<RecipeCrudState> {
     for (int i = 0; i < newSteps.length; i++) {
       newSteps[i] = newSteps[i].copyWith(stepNumber: i + 1);
     }
-    emit(state.copyWith(steps: newSteps));
+    final updatedRecipe = state.recipe.copyWith(steps: newSteps);
+    emit(state.copyWith(steps: newSteps, recipe: updatedRecipe));
   }
 
   void reorderSteps(int oldIndex, int newIndex) {
@@ -136,7 +141,8 @@ class RecipeCrudCubit extends Cubit<RecipeCrudState> {
 
   void updateExistingRecipe(int id) async {
     emit(state.copyWith(isLoading: true));
-    print('Emit new state: recipe id=${state.recipe.id}');  
+
+    // Tạo recipe mới từ state hiện tại
     final updatedRecipe = state.recipe.copyWith(
       title: state.recipe.title,
       description: state.recipe.description,
@@ -146,20 +152,39 @@ class RecipeCrudCubit extends Cubit<RecipeCrudState> {
       imageUrl: state.recipe.imageUrl,
       videoUrl: state.recipe.videoUrl,
       region: state.recipe.region,
-      ingredients: state.ingredients,
+      ingredients: state.ingredients, // Sử dụng ingredients từ state
       steps: state.steps,
       categoryIds: state.categoryIds,
     );
 
+    print('=== UPDATING RECIPE ===');
+    print('Local ingredients count: ${state.ingredients.length}');
+    print('Recipe to update: ${updatedRecipe.toJson()}');
+
     final result = await _updateRecipe(id, updatedRecipe);
 
     if (result.isSuccess && result.data != null) {
+      final serverRecipe = result.data!;
+
+      // QUAN TRỌNG: Đảm bảo dữ liệu từ server khớp với local state
+      // Nếu server trả về ingredients không khớp, sử dụng local ingredients
+      if (serverRecipe.ingredients?.length != state.ingredients.length) {
+        print(
+          '⚠️ Server returned wrong ingredients count. Using local ingredients.',
+        );
+        serverRecipe.ingredients = state.ingredients;
+      }
+
       emit(
         state.copyWith(
-          recipe: result.data!,
+          recipe: serverRecipe,
           isLoading: false,
           message: "Recipe updated successfully",
         ),
+      );
+
+      print(
+        '✅ Update successful. Final ingredients count: ${serverRecipe.ingredients?.length}',
       );
     } else {
       emit(
@@ -172,7 +197,25 @@ class RecipeCrudCubit extends Cubit<RecipeCrudState> {
     }
   }
 
-  void deleteRecipe() {
-    emit(RecipeCrudState.initial(null));
+  Future<void> deleteRecipe(int id) async {
+    emit(state.copyWith(isLoading: true));
+
+    final result = await _deleteRecipe(id);
+
+    if (result.isSuccess) {
+      emit(
+        RecipeCrudState.initial(
+          null,
+        ).copyWith(isLoading: false, message: result.data),
+      );
+    } else {
+      emit(
+        state.copyWith(
+          isLoading: false,
+          message:
+              "Failed to delete recipe: ${result.error ?? "Unknown error"}",
+        ),
+      );
+    }
   }
 }

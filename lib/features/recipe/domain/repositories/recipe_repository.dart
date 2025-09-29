@@ -10,6 +10,7 @@ abstract class RecipeRepository {
   Future<List<IngredientModel>> getAllIngredient(String? name, int page, int limit);
   Future<List<CategoryModel>> getAllCategories(String? name, int page, int limitt);
   Future<Result<RecipeModel>> createRecipe(RecipeModel recipe);
+  Future<Result<String>> deleteRecipe(int id);
   Future<Result<List<RecipeModel>>> getMyRecipe(String? title,
     String? description,
     String? region,

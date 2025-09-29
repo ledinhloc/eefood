@@ -22,7 +22,7 @@ class DioClient {
     print(baseUrl);
     dio.options = BaseOptions(
       baseUrl: baseUrl,
-      connectTimeout: const Duration(seconds: 5), // Timeout kết nối
+      connectTimeout: const Duration(seconds: 7), // Timeout kết nối
       receiveTimeout: const Duration(seconds: 3), // Timeout nhận dữ liệu
       contentType: 'application/json; charset=UTF-8', // Default content type
     );
@@ -43,12 +43,10 @@ class DioClient {
         },
         onError: (DioException e, handler) async {
           LoadingOverlay().hide();
-
-          final context = navigatorKey.currentContext;
-          if (context != null && e.type != DioExceptionType.cancel) {
-            navigatorKey.currentState?.pushNamed(AppRoutes.errorPage);
-          }
-
+          // final context = navigatorKey.currentContext;
+          // if (context != null && e.type != DioExceptionType.cancel) {
+          //   navigatorKey.currentState?.pushNamed(AppRoutes.errorPage);
+          // }
           return handler.next(e);
         },
       ),

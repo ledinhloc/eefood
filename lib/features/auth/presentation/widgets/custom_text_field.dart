@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 
-/// Reusable text field widget (general purpose).
-/// - If [isPassword] is true, show password visibility toggle.
-/// - If [suffixIcon] provided and not a password field, show it (with optional onTap).
-/// - If [enableClear] is true, show a clear (X) button when text is not empty.
+/// Custom reusable TextField with:
+/// - Password toggle
+/// - Clear button
+/// - Suffix icon
+/// - onFocusLost callback
+/// - Focus-aware error handling (error text disappears on focus)
 class CustomTextField extends StatefulWidget {
   final TextEditingController? controller;
   final String? labelText;
@@ -15,10 +17,7 @@ class CustomTextField extends StatefulWidget {
   final TextInputType? keyboardType;
   final FormFieldValidator<String>? validator;
   final ValueChanged<String>? onChanged;
-
-  /// callback khi textfield mất focus
   final ValueChanged<String>? onFocusLost;
-
   final FocusNode? focusNode;
   final TextInputAction? textInputAction;
   final double borderRadius;
@@ -41,7 +40,7 @@ class CustomTextField extends StatefulWidget {
     this.keyboardType,
     this.validator,
     this.onChanged,
-    this.onFocusLost, // thêm
+    this.onFocusLost,
     this.focusNode,
     this.textInputAction,
     this.borderRadius = 8.0,
@@ -64,11 +63,13 @@ class _CustomTextFieldState extends State<CustomTextField> {
   bool _showClear = false;
   bool _controllerFromOutside = false;
   bool _focusFromOutside = false;
+  bool _hasFocus = false;
 
   @override
   void initState() {
     super.initState();
     _obscure = widget.isPassword;
+
     _controllerFromOutside = widget.controller != null;
     _controller = widget.controller ?? TextEditingController();
     _showClear = _controller.text.isNotEmpty;
@@ -81,15 +82,15 @@ class _CustomTextFieldState extends State<CustomTextField> {
 
   void _onTextChanged() {
     final hasText = _controller.text.isNotEmpty;
-    if (_showClear != hasText) {
-      setState(() => _showClear = hasText);
-    }
+    if (_showClear != hasText) setState(() => _showClear = hasText);
     widget.onChanged?.call(_controller.text);
   }
 
   void _onFocusChanged() {
+    setState(() {
+      _hasFocus = _focusNode.hasFocus;
+    });
     if (!_focusNode.hasFocus) {
-      // khi mất focus thì gọi callback
       widget.onFocusLost?.call(_controller.text);
     }
   }
@@ -107,10 +108,8 @@ class _CustomTextFieldState extends State<CustomTextField> {
 
   @override
   Widget build(BuildContext context) {
-    final Color enabledColor =
-        widget.enabledBorderColor ?? Colors.grey.shade300;
-    final Color focusedColor =
-        widget.focusedBorderColor ?? Colors.grey.shade400;
+    final enabledColor = widget.enabledBorderColor ?? Colors.grey.shade300;
+    final focusedColor = widget.focusedBorderColor ?? Colors.green.shade400;
 
     Widget? suffix;
     if (widget.isPassword) {
@@ -139,7 +138,7 @@ class _CustomTextFieldState extends State<CustomTextField> {
       obscureText: _obscure,
       keyboardType: widget.keyboardType,
       maxLines: widget.maxLines,
-      validator: widget.validator,
+      validator: _hasFocus ? (_) => null : widget.validator,
       decoration: InputDecoration(
         labelText: widget.labelText,
         hintText: widget.hintText,
@@ -153,6 +152,14 @@ class _CustomTextFieldState extends State<CustomTextField> {
           borderSide: BorderSide(color: enabledColor, width: 1.0),
         ),
         focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(widget.borderRadius),
+          borderSide: BorderSide(color: focusedColor, width: 2.0),
+        ),
+        errorBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(widget.borderRadius),
+          borderSide: const BorderSide(color: Colors.red, width: 1.0),
+        ),
+        focusedErrorBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(widget.borderRadius),
           borderSide: BorderSide(color: focusedColor, width: 2.0),
         ),
