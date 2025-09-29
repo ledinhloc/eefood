@@ -10,29 +10,27 @@ class Province {
   final RecipeRepository repository;
   Province(this.repository);
 
-  Future<List<ProvinceModel>> call({String? keyword, int limit=1, int page=5}) => repository.getProvinces(keyword: keyword, limit: limit,page: page);
-}
-
-class Ward {
-  final RecipeRepository repository;
-  Ward(this.repository);
-
-  Future<List<WardModel>> call(String provinceCode, {String? keyword, int limit = 5, int page = 1}) 
-    => repository.getWard(provinceCode, keyword: keyword, limit: limit, page: page);
+  Future<List<ProvinceModel>> call({
+    String? keyword,
+    int limit = 1,
+    int page = 5,
+  }) => repository.getProvinces(keyword: keyword, limit: limit, page: page);
 }
 
 class Ingredients {
   final RecipeRepository repository;
   Ingredients(this.repository);
 
-  Future<List<IngredientModel>> call(String? name, int page, int limit) => repository.getAllIngredient(name!,page,limit);
+  Future<List<IngredientModel>> call(String? name, int page, int limit) =>
+      repository.getAllIngredient(name!, page, limit);
 }
 
-class Categories{
+class Categories {
   final RecipeRepository repository;
   Categories(this.repository);
 
-  Future<List<CategoryModel>> call(String? name, int page, int limit) => repository.gettAllCategories(name!,page,limit);
+  Future<List<CategoryModel>> call(String? name, int page, int limit) =>
+      repository.getAllCategories(name!, page, limit);
 }
 
 class CreateRecipe {
@@ -40,4 +38,38 @@ class CreateRecipe {
   CreateRecipe(this.repository);
 
   Future<Result<RecipeModel>> call(RecipeModel recipe) => repository.createRecipe(recipe);
+}
+
+class UpdateRecipe {
+  final RecipeRepository repository;
+  UpdateRecipe(this.repository);
+
+  Future<Result<RecipeModel>> call(int id, RecipeModel recipe) => repository.updateRecipe(id,recipe);
+}
+
+class GetMyRecipe {
+  final RecipeRepository repository;
+  GetMyRecipe(this.repository);
+
+  Future<Result<List<RecipeModel>>> call(
+    String? title,
+    String? description,
+    String? region,
+    String? difficulty,
+    int? categoryId,
+    int page,
+    int size,
+    String sortBy,
+    String direction,
+  ) => repository.getMyRecipe(
+    title,
+    description,
+    region,
+    difficulty,
+    categoryId,
+    page = 1,
+    size = 5,
+    sortBy = 'createdAt',
+    direction = 'DESC',
+  );
 }

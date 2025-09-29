@@ -1,3 +1,4 @@
+// --- Replace your current CustomDropdownSearch with this updated implementation ---
 import 'dart:math';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -113,35 +114,59 @@ class _CustomDropdownSearchState<T> extends State<CustomDropdownSearch<T>> {
   void initState() {
     super.initState();
     if (widget.items != null) {
-      // Local: load full list at start (keep original behavior)
       _allItems = widget.items!(null, null);
     }
 
-    // init selected items for multi-select
+  
     if (widget.multiSelection) {
       _selectedItems = widget.selectedItems != null
           ? List<T>.from(widget.selectedItems!)
           : <T>[];
+    }
+
+    
+    if (widget.onFind != null && _allItems.isEmpty) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        debugPrint('[CustomDropdownSearch] initial load onFind page=1');
+        _loadMoreItems(reset: true, filter: _searchController.text);
+      });
+    }
+
+    
+    if (widget.selectedItems != null && widget.selectedItems!.isNotEmpty) {
+      for (final s in widget.selectedItems!) {
+        if (!_containsItem(_allItems, s)) _allItems.add(s);
+      }
     }
   }
 
   @override
   void didUpdateWidget(covariant CustomDropdownSearch<T> oldWidget) {
     super.didUpdateWidget(oldWidget);
-    // keep selected items in sync if parent updates them
+    
     if (widget.multiSelection) {
-      if (!listEquals(widget.selectedItems ?? [], oldWidget.selectedItems ?? [])) {
-        _selectedItems =
-            widget.selectedItems != null ? List<T>.from(widget.selectedItems!) : <T>[];
+      if (!listEquals(
+        widget.selectedItems ?? [],
+        oldWidget.selectedItems ?? [],
+      )) {
+        _selectedItems = widget.selectedItems != null
+            ? List<T>.from(widget.selectedItems!)
+            : <T>[];
+        
+        if (widget.selectedItems != null) {
+          for (final s in widget.selectedItems!) {
+            if (!_containsItem(_allItems, s)) {
+              setState(() => _allItems.add(s));
+            }
+          }
+        }
       }
-    } else {
-      // nothing special for single select
-    }
+    } 
   }
 
   @override
   void dispose() {
-    _searchController.dispose();
+    
     super.dispose();
   }
 
@@ -158,19 +183,26 @@ class _CustomDropdownSearchState<T> extends State<CustomDropdownSearch<T>> {
     });
 
     try {
+      debugPrint(
+        '[CustomDropdownSearch] calling onFind page=$_page filter=$filter',
+      );
       final newItems = await widget.onFind!(
-        filter?.isEmpty ?? true ? null : filter,
+        (filter?.isEmpty ?? true) ? null : filter,
         _page,
         10,
       );
 
       setState(() {
-        _allItems.addAll(newItems);
+        
+        for (final ni in newItems) {
+          if (!_containsItem(_allItems, ni)) _allItems.add(ni);
+        }
         _isLoading = false;
         _hasMore = newItems.length == 10;
         _page++;
       });
     } catch (e) {
+      debugPrint('[CustomDropdownSearch] onFind error: $e');
       setState(() => _isLoading = false);
     }
   }
@@ -184,7 +216,7 @@ class _CustomDropdownSearchState<T> extends State<CustomDropdownSearch<T>> {
     }
   }
 
-  // toggle selection for multi-select and notify parent
+  
   void _toggleSelection(T item) {
     setState(() {
       final idx = _selectedItems.indexWhere((e) => _equals(e, item));
@@ -201,7 +233,7 @@ class _CustomDropdownSearchState<T> extends State<CustomDropdownSearch<T>> {
     if (item == null) return null;
     try {
       final dynamic dyn = item;
-      final String? imageUrl = dyn.image ?? dyn.imageUrl;
+      final String? imageUrl = dyn.image ?? dyn.imageUrl ?? dyn.iconUrl;
       if (imageUrl != null && imageUrl.isNotEmpty) {
         return ClipRRect(
           borderRadius: BorderRadius.circular(4),
@@ -210,8 +242,7 @@ class _CustomDropdownSearchState<T> extends State<CustomDropdownSearch<T>> {
             width: 36,
             height: 36,
             fit: BoxFit.cover,
-            errorBuilder: (_, __, ___) =>
-                const Icon(Icons.image_not_supported),
+            errorBuilder: (_, __, ___) => const Icon(Icons.image_not_supported),
           ),
         );
       }
@@ -229,7 +260,12 @@ class _CustomDropdownSearchState<T> extends State<CustomDropdownSearch<T>> {
       // single-select uses selectedItem; multi-select uses dropdownBuilder to show chips
       selectedItem: widget.multiSelection ? null : widget.selectedItem,
       // Ensure the displayed selected string is a single line (no newlines)
-      itemAsString: (item) => _itemToSingleLineString(item),
+      itemAsString: (item) {
+        if (widget.itemAsString != null) {
+          return widget.itemAsString!(item);
+        }
+        return _itemToSingleLineString(item);
+      },
       compareFn: widget.compareFn ?? (a, b) => a == b,
       // single-select onChanged goes through as before; multi-select manages via onChangedMulti
       onChanged: widget.multiSelection ? null : widget.onChanged,
@@ -239,60 +275,15 @@ class _CustomDropdownSearchState<T> extends State<CustomDropdownSearch<T>> {
           if (_selectedItems.isEmpty) {
             return Padding(
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
-              child: Text(
-                widget.label,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: TextStyle(color: Colors.grey.shade600),
-              ),
             );
           }
-          return Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
-            child: Wrap(
-              spacing: 6,
-              runSpacing: 6,
-              children: _selectedItems.map((c) {
-                final img = _buildLeadingIcon(c);
-                return Chip(
-                  label: ConstrainedBox(
-                    constraints: const BoxConstraints(maxWidth: 160),
-                    child: Text(
-                      widget.itemAsString != null ? widget.itemAsString!(c) : c.toString(),
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                  ),
-                  avatar: img != null
-                      ? CircleAvatar(
-                          backgroundImage: NetworkImage(
-                            // safe: convert to string via itemAsString? but we have image via _buildLeadingIcon logic
-                            // get image url dynamically
-                            ( () {
-                              try {
-                                final dynamic dyn = c;
-                                return dyn.image ?? dyn.imageUrl ?? '';
-                              } catch (_) {
-                                return '';
-                              }
-                            })(),
-                          ),
-                        )
-                      : null,
-                  onDeleted: () {
-                    _toggleSelection(c);
-                  },
-                  deleteIcon: const Icon(Icons.close, size: 16),
-                );
-              }).toList(),
-            ),
-          );
+          return SizedBox(width: 10,height: 10);
         } else {
           final s = _itemToSingleLineString(selectedItem);
           return Padding(
             padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 5),
             child: Text(
               s,
-              maxLines: 1,
               overflow: TextOverflow.ellipsis,
               softWrap: false,
               style: const TextStyle(fontSize: 16),
@@ -417,13 +408,6 @@ class _CustomDropdownSearchState<T> extends State<CustomDropdownSearch<T>> {
           showSearchBox: false,
           constraints: const BoxConstraints(maxHeight: 420),
           containerBuilder: (ctx, popupWidget) {
-            // ensure initial remote load
-            if (widget.onFind != null && _allItems.isEmpty && !_isLoading) {
-              WidgetsBinding.instance.addPostFrameCallback((_) {
-                _loadMoreItems(reset: true, filter: _searchController.text);
-              });
-            }
-
             final availableMaxHeight = 360.0;
             final visibleCount = _allItems.isEmpty ? 3 : _allItems.length;
             final height = computeHeightForItems(
@@ -464,7 +448,9 @@ class _CustomDropdownSearchState<T> extends State<CustomDropdownSearch<T>> {
                             onNotification: (scrollNotification) {
                               if (scrollNotification is ScrollEndNotification &&
                                   scrollNotification.metrics.pixels ==
-                                      scrollNotification.metrics.maxScrollExtent &&
+                                      scrollNotification
+                                          .metrics
+                                          .maxScrollExtent &&
                                   _hasMore &&
                                   !_isLoading &&
                                   widget.onFind != null) {
@@ -490,13 +476,6 @@ class _CustomDropdownSearchState<T> extends State<CustomDropdownSearch<T>> {
         return PopupProps.modalBottomSheet(
           showSearchBox: false,
           containerBuilder: (ctx, popupWidget) {
-            // ensure remote initial load
-            if (widget.onFind != null && _allItems.isEmpty && !_isLoading) {
-              WidgetsBinding.instance.addPostFrameCallback((_) {
-                _loadMoreItems(reset: true, filter: _searchController.text);
-              });
-            }
-
             final screenW = MediaQuery.of(ctx).size.width;
             final screenH = MediaQuery.of(ctx).size.height;
             final maxW = min(600.0, screenW * 0.95);
@@ -545,7 +524,9 @@ class _CustomDropdownSearchState<T> extends State<CustomDropdownSearch<T>> {
                                   if (scrollNotification
                                           is ScrollEndNotification &&
                                       scrollNotification.metrics.pixels ==
-                                          scrollNotification.metrics.maxScrollExtent &&
+                                          scrollNotification
+                                              .metrics
+                                              .maxScrollExtent &&
                                       _hasMore &&
                                       !_isLoading &&
                                       widget.onFind != null) {
@@ -573,12 +554,6 @@ class _CustomDropdownSearchState<T> extends State<CustomDropdownSearch<T>> {
         return PopupProps.bottomSheet(
           showSearchBox: false,
           containerBuilder: (ctx, popupWidget) {
-            if (widget.onFind != null && _allItems.isEmpty && !_isLoading) {
-              WidgetsBinding.instance.addPostFrameCallback((_) {
-                _loadMoreItems(reset: true, filter: _searchController.text);
-              });
-            }
-
             final height = MediaQuery.of(ctx).size.height * 0.6;
 
             return Container(
@@ -689,10 +664,10 @@ class _CustomDropdownSearchState<T> extends State<CustomDropdownSearch<T>> {
         }
 
         final item = _allItems[index];
-        final titleText = (widget.itemAsString != null
-                ? widget.itemAsString!(item)
-                : item.toString())
-            .replaceAll('\n', ' ');
+        final dynamic dyn = item;
+        final String titleText = widget.itemAsString != null
+            ? widget.itemAsString!(item)
+            : (dyn?.name ?? item.toString() ?? dyn?.description);
 
         final leading = _buildLeadingIcon(item);
 
@@ -745,8 +720,12 @@ class _CustomDropdownSearchState<T> extends State<CustomDropdownSearch<T>> {
               softWrap: false,
             ),
             onTap: () {
-              widget.onChanged?.call(item);
-              Navigator.pop(context);
+              if (widget.multiSelection) {
+                _toggleSelection(item);
+              } else {
+                widget.onChanged?.call(item);
+                Navigator.pop(context);
+              }
             },
           ),
         );

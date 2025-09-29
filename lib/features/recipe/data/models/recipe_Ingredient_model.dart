@@ -1,4 +1,3 @@
-
 import 'dart:ffi';
 
 import 'package:eefood/features/recipe/data/models/ingredient_model.dart';
@@ -12,19 +11,18 @@ class RecipeIngredientModel {
 
   final IngredientModel? ingredient;
 
-  RecipeIngredientModel({
-    this.id,
-    this.quantity,
-    this.unit,
-    this.ingredient
-  });
+  RecipeIngredientModel({this.id, this.quantity, this.unit, this.ingredient});
 
   factory RecipeIngredientModel.fromJson(Map<String, dynamic> json) {
     return RecipeIngredientModel(
       id: json['id'],
-      quantity: json['quantity'],
+      quantity: json['quantity'] != null
+          ? (json['quantity'] as num).toDouble()
+          : null,
       unit: json['unit'],
-      ingredient: json['ingredient']
+      ingredient: json['ingredient'] != null
+          ? IngredientModel.fromJson(json['ingredient'] as Map<String, dynamic>)
+          : null,
     );
   }
 
@@ -33,7 +31,7 @@ class RecipeIngredientModel {
       'id': id,
       'quantity': quantity,
       'unit': unit,
-      'ingredient': ingredient?.toJson()
+      'ingredientId': ingredient?.id,
     };
   }
 
@@ -41,21 +39,20 @@ class RecipeIngredientModel {
     id: id!,
     quantity: quantity,
     unit: unit,
-    ingredient: ingredient!.toEntity()
+    ingredient: ingredient!.toEntity(),
   );
 
   RecipeIngredientModel copyWith({
     int? id,
     double? quantity,
     String? unit,
-    IngredientModel? ingredient
+    IngredientModel? ingredient,
   }) {
     return RecipeIngredientModel(
       id: id ?? this.id,
       quantity: quantity ?? this.quantity,
       unit: unit ?? this.unit,
-      ingredient: ingredient ?? this.ingredient
+      ingredient: ingredient ?? this.ingredient,
     );
   }
-
 }

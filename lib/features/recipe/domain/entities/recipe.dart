@@ -7,7 +7,7 @@ import 'package:eefood/features/recipe/domain/entities/recipe_ingredient.dart';
 enum Difficulty { EASY, MEDIUM, HARD }
 
 class Recipe {
-  final int id;
+  final int? id;
   final String title;
   final String? description;
   final String? region;
@@ -16,11 +16,11 @@ class Recipe {
   final Difficulty? difficulty;
   final int? cookTime; // in minutes
   final int? prepTime; // in minutes
-  final List<CategoryModel>? categories;
+  final List<int>? categoryIds;
   final List<RecipeIngredientModel>? ingredients;
   final List<RecipeStepModel>? steps;
   const Recipe({
-    required this.id,
+    this.id,
     required this.title,
     this.description,
     this.region,
@@ -29,7 +29,7 @@ class Recipe {
     this.difficulty,
     this.prepTime,
     this.cookTime,
-    this.categories,
+    this.categoryIds,
     this.steps,
     this.ingredients,
   });

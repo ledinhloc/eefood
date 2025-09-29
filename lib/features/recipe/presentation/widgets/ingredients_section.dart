@@ -14,19 +14,27 @@ class IngredientsSection extends StatefulWidget {
 
 class _IngredientsSectionState extends State<IngredientsSection> {
   void _addIngredient() {
+    final cubit = context.read<RecipeCrudCubit>();
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
-      builder: (context) => Padding(
-        padding: EdgeInsets.only(
-          bottom: MediaQuery.of(context).viewInsets.bottom,
-        ),
-        child: IngredientBottomSheet(
-          onSaveIngredient: (ingredient, {int? index}) {
-            context.read<RecipeCrudCubit>().addIngredient(ingredient);
-          },
-        ),
-      ),
+      builder: (_) {
+        return BlocProvider.value(
+          value: cubit,
+          child: Padding(
+            padding: EdgeInsets.only(
+              bottom: MediaQuery.of(context).viewInsets.bottom,
+            ),
+            child: IngredientBottomSheet(
+              onSaveIngredient: (ingredient, {int? index}) {
+                if (index == null) {
+                  context.read<RecipeCrudCubit>().addIngredient(ingredient);
+                }
+              },
+            ),
+          ),
+        );
+      },
     );
   }
 
@@ -36,27 +44,34 @@ class _IngredientsSectionState extends State<IngredientsSection> {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
-      builder: (context) => IngredientBottomSheet(
-        editingIngredient: ingredient,
-        editingIndex: index,
-        onSaveIngredient: (updatedIngredient, {int? index}) {
-          if (index != null) {
-            context.read<RecipeCrudCubit>().updateIngredients(
-              index,
-              updatedIngredient,
-            );
-          }
-        },
-      ),
+      builder: (context) {
+        return BlocProvider.value(
+          value: cubit,
+          child: IngredientBottomSheet(
+            editingIngredient: ingredient,
+            editingIndex: index,
+            onSaveIngredient: (updatedIngredient, {int? index}) {
+              if (index != null) {
+                context.read<RecipeCrudCubit>().updateIngredients(
+                  index,
+                  updatedIngredient,
+                );
+              }
+            },
+          ),
+        );
+      },
     );
   }
 
   void _reorderIngredients(int oldIndex, int newIndex) {
-    context.read<RecipeCrudCubit>().reorderIngredients(oldIndex, newIndex);
+    final cubit = context.read<RecipeCrudCubit>();
+    cubit.reorderIngredients(oldIndex, newIndex);
   }
 
   void _removeIngredient(int index) {
-    context.read<RecipeCrudCubit>().removeIngredient(index);
+    final cubit = context.read<RecipeCrudCubit>();
+    cubit.removeIngredient(index);
   }
 
   @override
@@ -107,6 +122,7 @@ class _IngredientsSectionState extends State<IngredientsSection> {
                     leading: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
+                        const Icon(Icons.drag_handle, color: Colors.grey),
                         if (ingredient.ingredient?.image != null &&
                             ingredient.ingredient!.image!.isNotEmpty)
                           ClipRRect(
@@ -130,13 +146,11 @@ class _IngredientsSectionState extends State<IngredientsSection> {
                             color: Colors.orange,
                           ),
                         const SizedBox(width: 6),
-                        const Icon(Icons.drag_handle, color: Colors.grey),
+                  
                       ],
                     ),
                     title: Text(
                       displayText.trim(),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
                     ),
                     trailing: IconButton(
                       icon: const Icon(Icons.delete, color: Colors.red),

@@ -10,8 +10,23 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 
 class RecipeCrudCubit extends Cubit<RecipeCrudState> {
   final CreateRecipe _createRecipe = getIt<CreateRecipe>();
+  final UpdateRecipe _updateRecipe = getIt<UpdateRecipe>();
   RecipeCrudCubit(RecipeModel? initialRecipe)
     : super(RecipeCrudState.initial(initialRecipe));
+
+  void init(RecipeModel? initial) {
+    
+    if (initial != null) {
+      emit(
+        state.copyWith(
+          recipe: initial,
+          categoryIds: initial.categoryIds ?? [],
+          ingredients: initial.ingredients ?? [],
+          steps: initial.steps ?? [],
+        ),
+      );
+    }
+  }
 
   void updateRecipe(RecipeModel updatedRecipe) {
     emit(state.copyWith(recipe: updatedRecipe));
@@ -74,38 +89,36 @@ class RecipeCrudCubit extends Cubit<RecipeCrudState> {
     emit(state.copyWith(steps: newSteps));
   }
 
-  void addCategory(CategoryModel category) {
-    if (!state.categories.any((c) => c.id == category.id)) {
-      final newCategories = List<CategoryModel>.from(state.categories)
-        ..add(category);
-      emit(state.copyWith(categories: newCategories));
-    }
+  void setCategories(List<int> categoryIds) {
+    emit(state.copyWith(categoryIds: List<int>.from(categoryIds)));
   }
 
-  void updateCategory(int index, CategoryModel updated) {
-    final newCategories = List<CategoryModel>.from(state.categories);
-    newCategories[index] = updated;
-    emit(state.copyWith(categories: newCategories));
+  void updateCategory(int index, int updatedId) {
+    final newCategories = List<int>.from(state.categoryIds);
+    newCategories[index] = updatedId;
+    emit(state.copyWith(categoryIds: newCategories));
   }
 
-  void removeCategory(int index) {
-    final newCategories = List<CategoryModel>.from(state.categories)
-      ..removeAt(index);
-    emit(state.copyWith(categories: newCategories));
+  void removeCategory(int categoryId) {
+    final newCategories = List<int>.from(state.categoryIds)..remove(categoryId);
+    emit(state.copyWith(categoryIds: newCategories));
   }
 
   void saveRecipe() async {
     final savedRecipe = state.recipe.copyWith(
       ingredients: state.ingredients,
       steps: state.steps,
-      categories: state.categories,
+      categoryIds: state.categoryIds,
     );
+
+    print('=== FINAL JSON TO SEND ===');
+    print(savedRecipe.toJson());
     final result = await _createRecipe(savedRecipe);
 
     if (result.isSuccess && result.data != null) {
       emit(
         state.copyWith(
-          recipe: result.data!, 
+          recipe: result.data!,
           isLoading: false,
           message: "Recipe created successfully",
         ),
@@ -121,9 +134,45 @@ class RecipeCrudCubit extends Cubit<RecipeCrudState> {
     }
   }
 
+  void updateExistingRecipe(int id) async {
+    emit(state.copyWith(isLoading: true));
+    print('Emit new state: recipe id=${state.recipe.id}');  
+    final updatedRecipe = state.recipe.copyWith(
+      title: state.recipe.title,
+      description: state.recipe.description,
+      cookTime: state.recipe.cookTime,
+      prepTime: state.recipe.prepTime,
+      difficulty: state.recipe.difficulty,
+      imageUrl: state.recipe.imageUrl,
+      videoUrl: state.recipe.videoUrl,
+      region: state.recipe.region,
+      ingredients: state.ingredients,
+      steps: state.steps,
+      categoryIds: state.categoryIds,
+    );
+
+    final result = await _updateRecipe(id, updatedRecipe);
+
+    if (result.isSuccess && result.data != null) {
+      emit(
+        state.copyWith(
+          recipe: result.data!,
+          isLoading: false,
+          message: "Recipe updated successfully",
+        ),
+      );
+    } else {
+      emit(
+        state.copyWith(
+          isLoading: false,
+          message:
+              "Failed to update recipe: ${result.error ?? "Unknown error"}",
+        ),
+      );
+    }
+  }
+
   void deleteRecipe() {
     emit(RecipeCrudState.initial(null));
   }
 }
-
-

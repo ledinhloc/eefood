@@ -6,7 +6,7 @@ import 'package:eefood/features/recipe/domain/entities/recipe.dart';
 import 'package:eefood/features/recipe/domain/entities/recipe_ingredient.dart';
 
 class RecipeModel {
-  int id;
+  int? id;
   String title;
   String? description;
   String? imageUrl;
@@ -15,11 +15,11 @@ class RecipeModel {
   String? region;
   int? cookTime; // in minutes
   int? prepTime; // in minutes
-  List<CategoryModel>? categories;
+  List<int>? categoryIds;
   List<RecipeIngredientModel>? ingredients;
   List<RecipeStepModel>? steps;
   RecipeModel({
-    required this.id,
+    this.id,
     required this.title,
     this.description,
     this.region,
@@ -28,14 +28,14 @@ class RecipeModel {
     this.difficulty,
     this.prepTime,
     this.cookTime,
-    this.categories,
+    this.categoryIds,
     this.steps,
     this.ingredients,
   });
 
   factory RecipeModel.fromJson(Map<String, dynamic> json) {
     return RecipeModel(
-      id: json['id'],
+      id: json['id'] !=null ? json['id'] as int : 0,
       title: json['title'],
       description: json['description'],
       imageUrl: json['imageUrl'],
@@ -44,21 +44,27 @@ class RecipeModel {
       region: json['region'],
       cookTime: json['cookTime'],
       prepTime: json['prepTime'],
-      categories: json['categoryIds'] != null
-          ? List<CategoryModel>.from(json['categoryIds'])
-          : null,
+      categoryIds: (json['categories'] as List<dynamic>?)
+          ?.map((e) => e['id'] as int)
+          .toList(),
       ingredients: json['ingredients'] != null
-          ? List<RecipeIngredientModel>.from(json['ingredients'])
+          ? (json['ingredients'] as List)
+                .map(
+                  (e) =>
+                      RecipeIngredientModel.fromJson(e as Map<String, dynamic>),
+                )
+                .toList()
           : null,
       steps: json['steps'] != null
-          ? List<RecipeStepModel>.from(json['steps'])
+          ? (json['steps'] as List)
+                .map((e) => RecipeStepModel.fromJson(e as Map<String, dynamic>))
+                .toList()
           : null,
     );
   }
 
   Map<String, dynamic> toJson() {
     return {
-      'id': id,
       'title': title,
       'description': description,
       'imageUrl': imageUrl,
@@ -67,9 +73,9 @@ class RecipeModel {
       'region': region,
       'cookTime': cookTime,
       'prepTime': prepTime,
-      'categoryIds': categories,
-      'ingredients': ingredients,
-      'steps': steps,
+      'categoryIds': categoryIds,
+      'ingredients': ingredients?.map((ing) => ing.toJson()).toList(),
+      'steps': steps?.map((step) => step.toJson()).toList(),
     };
   }
 
@@ -83,7 +89,7 @@ class RecipeModel {
     region: region,
     cookTime: cookTime,
     prepTime: prepTime,
-    categories: categories,
+    categoryIds: categoryIds,
     ingredients: ingredients,
     steps: steps,
   );
@@ -106,7 +112,7 @@ class RecipeModel {
     String? region,
     int? cookTime,
     int? prepTime,
-    List<CategoryModel>? categories,
+    List<int>? categoryIds,
     List<RecipeIngredientModel>? ingredients,
     List<RecipeStepModel>? steps,
   }) {
@@ -120,7 +126,7 @@ class RecipeModel {
       region: region ?? this.region,
       cookTime: cookTime ?? this.cookTime,
       prepTime: prepTime ?? this.prepTime,
-      categories: categories ?? this.categories,
+      categoryIds: categoryIds ?? this.categoryIds,
       ingredients: ingredients ?? this.ingredients,
       steps: steps ?? this.steps,
     );

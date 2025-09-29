@@ -6,6 +6,7 @@ import 'package:eefood/features/recipe/data/models/recipe_model.dart';
 import 'package:eefood/features/recipe/data/models/region_model.dart';
 import 'package:eefood/features/recipe/domain/entities/recipe.dart';
 import 'package:eefood/features/recipe/domain/repositories/recipe_repository.dart';
+import 'package:flutter/foundation.dart';
 
 class RecipeRepositoryImpl implements RecipeRepository {
   final Dio dio;
@@ -42,50 +43,15 @@ class RecipeRepositoryImpl implements RecipeRepository {
   }
 
   @override
-  Future<List<WardModel>> getWard(
-    String provinceCode, {
-    String? keyword,
-    int limit = 5,
-    int page = 1,
-  }) async {
-    try {
-      final response = await dio.get(
-        'https://tinhthanhpho.com/api/v1/new-provinces/$provinceCode/wards',
-        queryParameters: {
-          if (keyword != null && keyword.isNotEmpty) 'keyword': keyword,
-          'limit': limit,
-          'page': page,
-        },
-      );
-
-      final data = response.data;
-      final list = (data is Map && data['data'] is List)
-          ? data['data'] as List
-          : (data is List ? data : []);
-      return (list as List)
-          .map(
-            (e) => WardModel.fromJson(
-              e as Map<String, dynamic>,
-              provinceCode: provinceCode,
-            ),
-          )
-          .toList();
-    } catch (err) {
-      print(err);
-      throw Exception('Get ward failed: $err');
-    }
-  }
-
-  @override
-  Future<List<IngredientModel>> getAllIngredient(String? name, int page, int limit) async {
+  Future<List<IngredientModel>> getAllIngredient(
+    String? name,
+    int page,
+    int limit,
+  ) async {
     try {
       final response = await dio.get(
         '/v1/ingredients',
-        queryParameters: {
-          'name': name,
-          'page': page,
-          'limit': limit,
-        },
+        queryParameters: {'name': name, 'page': page, 'limit': limit},
       );
 
       final data = response.data;
@@ -106,49 +72,117 @@ class RecipeRepositoryImpl implements RecipeRepository {
   }
 
   @override
-  Future<Result<RecipeModel>> createRecipe(RecipeModel request) async{
-    try{
+  Future<Result<RecipeModel>> createRecipe(RecipeModel request) async {
+    print(request.toJson());
+    try {
       final response = await dio.post(
-        '/v1/recipes/',
+        '/v1/recipes',
         data: request.toJson(),
-        options: Options(contentType: 'application/json'));
+        options: Options(contentType: 'application/json'),
+      );
 
       final recipeRes = RecipeModel.fromJson(response.data['data']);
+      print(recipeRes);
       return Result.success(recipeRes);
-    }
-    catch(err) {
+    } catch (err) {
       print(err);
       throw Exception('Create recipe failed: $err');
     }
   }
 
   @override
-  Future<List<CategoryModel>> gettAllCategories(String? name, int page, int limit) async {
-    try{
+  Future<List<CategoryModel>> getAllCategories(
+    String? name,
+    int page,
+    int limit,
+  ) async {
+    try {
       final response = await dio.get(
         '/v1/categories',
-        queryParameters: {
-          'name': name,
-          'page': page,
-          'limit': limit,
-        },
+        queryParameters: {'name': name, 'page': page, 'limit': limit},
+        options: Options(contentType: 'application/json'),
       );
 
       final data = response.data;
       if (data != null && data['data'] != null) {
         final content = data['data']['content'] as List<dynamic>;
         return content
-            .map(
-              (json) => CategoryModel.fromJson(json as Map<String, dynamic>),
-            )
+            .map((json) => CategoryModel.fromJson(json as Map<String, dynamic>))
             .toList();
       }
 
       return List.empty();
-    }
-    catch(err) {
+    } catch (err) {
       print(err);
       throw Exception('Get categories failed: $err');
+    }
+  }
+
+  @override
+  Future<Result<List<RecipeModel>>> getMyRecipe(
+    String? title,
+    String? description,
+    String? region,
+    String? difficulty,
+    int? categoryId,
+    int page,
+    int size,
+    String sortBy,
+    String direction,
+  ) async {
+    try {
+      final response = await dio.get(
+        '/v1/recipes/my',
+        queryParameters: {
+          if (title != null && title.isNotEmpty) 'title': title,
+          if (description != null && description.isNotEmpty)
+            'description': description,
+          if (region != null && region.isNotEmpty) 'region': region,
+          if (difficulty != null && difficulty.isNotEmpty)
+            'difficulty': difficulty,
+          if (categoryId != null) 'categoryId': categoryId,
+          'page': page,
+          'size': size,
+          'sortBy': sortBy,
+          'direction': direction,
+        },
+        options: Options(contentType: 'application/json'),
+      );
+      final data = response.data;
+      if (data != null && data['data'] != null) {
+        // API trả về Page<RecipeResponse> trong data
+        final content = data['data']['content'] as List<dynamic>;
+        final listRecipe = content
+            .map((json) => RecipeModel.fromJson(json as Map<String, dynamic>))
+            .toList();
+        return Result.success(listRecipe);
+      }
+      return Result.success(List.empty());
+    } catch (err) {
+      debugPrint('Get my recipes error: $err');
+      throw Exception('Get my recipes failed: $err');
+    }
+  }
+
+  @override
+  Future<Result<RecipeModel>> updateRecipe(int id, RecipeModel request) async {
+    print("=== UPDATE RECIPE DEBUG ===");
+    print("Recipe ID: $id");
+    print("Payload: ${request.toJson()}");
+
+    try {
+      final response = await dio.put(
+        '/v1/recipes/$id',
+        data: request.toJson(),
+        options: Options(contentType: 'application/json'),
+      );
+
+      final recipeRes = RecipeModel.fromJson(response.data['data']);
+      print(recipeRes.toJson());
+      return Result.success(recipeRes);
+    } catch (err) {
+      debugPrint('Update recipe error: $err');
+      throw Exception('Update recipe failed: $err');
     }
   }
 }

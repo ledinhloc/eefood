@@ -10,24 +10,23 @@ class CustomTextField extends StatefulWidget {
   final String? hintText;
   final bool isPassword;
   final Widget? prefixIcon;
-
-  /// Custom suffix icon (used when isPassword == false).
   final Widget? suffixIcon;
-
-  /// Callback when custom suffix icon tapped.
   final VoidCallback? onSuffixTap;
-
   final TextInputType? keyboardType;
   final FormFieldValidator<String>? validator;
   final ValueChanged<String>? onChanged;
+
+  /// callback khi textfield mất focus
+  final ValueChanged<String>? onFocusLost;
+
+  final FocusNode? focusNode;
+  final TextInputAction? textInputAction;
   final double borderRadius;
   final Color? enabledBorderColor;
   final Color? focusedBorderColor;
   final Color? fillColor;
   final bool filled;
   final int? maxLines;
-
-  /// If true, show a small clear button (X) when there's text.
   final bool enableClear;
 
   const CustomTextField({
@@ -42,6 +41,9 @@ class CustomTextField extends StatefulWidget {
     this.keyboardType,
     this.validator,
     this.onChanged,
+    this.onFocusLost, // thêm
+    this.focusNode,
+    this.textInputAction,
     this.borderRadius = 8.0,
     this.enabledBorderColor,
     this.focusedBorderColor,
@@ -57,9 +59,11 @@ class CustomTextField extends StatefulWidget {
 
 class _CustomTextFieldState extends State<CustomTextField> {
   late TextEditingController _controller;
+  late FocusNode _focusNode;
   late bool _obscure;
   bool _showClear = false;
   bool _controllerFromOutside = false;
+  bool _focusFromOutside = false;
 
   @override
   void initState() {
@@ -69,26 +73,10 @@ class _CustomTextFieldState extends State<CustomTextField> {
     _controller = widget.controller ?? TextEditingController();
     _showClear = _controller.text.isNotEmpty;
     _controller.addListener(_onTextChanged);
-  }
 
-  @override
-  void didUpdateWidget(covariant CustomTextField oldWidget) {
-    super.didUpdateWidget(oldWidget);
-    // If user passes a new controller from outside, switch listener
-    if (oldWidget.controller != widget.controller) {
-      if (!_controllerFromOutside) {
-        // dispose our internal controller if we created it previously
-        _controller.removeListener(_onTextChanged);
-        if (oldWidget.controller == null) {
-          // safe to dispose previous internal controller
-          _controller.dispose();
-        }
-      }
-      _controllerFromOutside = widget.controller != null;
-      _controller = widget.controller ?? TextEditingController();
-      _controller.addListener(_onTextChanged);
-      _showClear = _controller.text.isNotEmpty;
-    }
+    _focusFromOutside = widget.focusNode != null;
+    _focusNode = widget.focusNode ?? FocusNode();
+    _focusNode.addListener(_onFocusChanged);
   }
 
   void _onTextChanged() {
@@ -96,68 +84,62 @@ class _CustomTextFieldState extends State<CustomTextField> {
     if (_showClear != hasText) {
       setState(() => _showClear = hasText);
     }
-    // bubble up change
-    if (widget.onChanged != null) widget.onChanged!(_controller.text);
+    widget.onChanged?.call(_controller.text);
+  }
+
+  void _onFocusChanged() {
+    if (!_focusNode.hasFocus) {
+      // khi mất focus thì gọi callback
+      widget.onFocusLost?.call(_controller.text);
+    }
   }
 
   @override
   void dispose() {
     _controller.removeListener(_onTextChanged);
-    if (!_controllerFromOutside) {
-      _controller.dispose();
-    }
+    if (!_controllerFromOutside) _controller.dispose();
+
+    _focusNode.removeListener(_onFocusChanged);
+    if (!_focusFromOutside) _focusNode.dispose();
+
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    final Color enabledColor = widget.enabledBorderColor ?? Colors.grey.shade300;
-    final Color focusedColor = widget.focusedBorderColor ?? Colors.grey.shade400;
+    final Color enabledColor =
+        widget.enabledBorderColor ?? Colors.grey.shade300;
+    final Color focusedColor =
+        widget.focusedBorderColor ?? Colors.grey.shade400;
 
-    // Build suffix: priority
-    // 1) if isPassword -> password toggle
-    // 2) else if enableClear && has text -> clear button
-    // 3) else if suffixIcon provided -> custom suffix (wrapped with GestureDetector if onSuffixTap provided)
-    // 4) else -> null
     Widget? suffix;
     if (widget.isPassword) {
       suffix = IconButton(
         icon: Icon(_obscure ? Icons.visibility_off : Icons.visibility),
         onPressed: () => setState(() => _obscure = !_obscure),
-        tooltip: _obscure ? 'Show password' : 'Hide password',
       );
     } else if (widget.enableClear && _showClear) {
       suffix = IconButton(
         icon: const Icon(Icons.clear),
         onPressed: () {
           _controller.clear();
-          // ensure onChanged called (listener will do that)
-          // but sometimes we might want to explicitly call setState to update UI
           setState(() => _showClear = false);
         },
-        tooltip: 'Clear',
       );
     } else if (widget.suffixIcon != null) {
-      if (widget.onSuffixTap != null) {
-        suffix = GestureDetector(
-          onTap: widget.onSuffixTap,
-          child: widget.suffixIcon,
-        );
-      } else {
-        suffix = widget.suffixIcon;
-      }
-    } else {
-      suffix = null;
+      suffix = widget.onSuffixTap != null
+          ? GestureDetector(onTap: widget.onSuffixTap, child: widget.suffixIcon)
+          : widget.suffixIcon;
     }
 
     return TextFormField(
       controller: _controller,
+      focusNode: _focusNode,
+      textInputAction: widget.textInputAction,
       obscureText: _obscure,
       keyboardType: widget.keyboardType,
       maxLines: widget.maxLines,
       validator: widget.validator,
-      // onChanged handled via controller listener -> but still allow direct onChanged too
-      // so we don't set onChanged here to avoid double-calls; listener calls widget.onChanged.
       decoration: InputDecoration(
         labelText: widget.labelText,
         hintText: widget.hintText,
@@ -176,7 +158,10 @@ class _CustomTextFieldState extends State<CustomTextField> {
         ),
         filled: widget.filled,
         fillColor: widget.fillColor,
-        contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
+        contentPadding: const EdgeInsets.symmetric(
+          horizontal: 12,
+          vertical: 14,
+        ),
       ),
     );
   }

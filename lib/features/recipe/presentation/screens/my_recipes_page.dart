@@ -1,22 +1,17 @@
-import 'package:eefood/app_routes.dart';
-import 'package:eefood/features/recipe/data/models/recipe_model.dart';
-import 'package:eefood/features/recipe/presentation/widgets/recipe_grid_card.dart';
+import 'package:eefood/features/recipe/presentation/widgets/recipe_tab.dart';
 import 'package:flutter/material.dart';
+import 'package:eefood/app_routes.dart';
+import 'package:eefood/core/di/injection.dart';
+import 'package:eefood/features/recipe/domain/usecases/recipe_usecases.dart';
+
 class MyRecipesPage extends StatelessWidget {
-  const MyRecipesPage({super.key});
+  MyRecipesPage({super.key});
+  final GetMyRecipe _getMyRecipe = getIt<GetMyRecipe>();
 
   @override
   Widget build(BuildContext context) {
-    // Dữ liệu demo cho mỗi tab
-    final List<List<RecipeModel>> recipeTabs = [
-      <RecipeModel>[], // Draft
-      <RecipeModel>[], // Published
-    ];
-
-    final List<String> tabTitles = [
-      "Draft",
-      "Published",
-    ];
+    print('Building MyRecipesPage');
+    final tabTitles = ["Draft", "Published"];
 
     return DefaultTabController(
       length: tabTitles.length,
@@ -25,33 +20,33 @@ class MyRecipesPage extends StatelessWidget {
           backgroundColor: Colors.transparent,
           title: const Text("My Recipes"),
           actions: [
-            IconButton(
-              icon: const Icon(Icons.search),
-              onPressed: () {},
-            ),
-            IconButton(
-              icon: const Icon(Icons.more_vert),
-              onPressed: () {},
-            ),
+            IconButton(icon: const Icon(Icons.search), onPressed: () {}),
+            IconButton(icon: const Icon(Icons.more_vert), onPressed: () {}),
           ],
           bottom: TabBar(
             indicatorColor: Colors.red,
             labelColor: Colors.red,
             unselectedLabelColor: Colors.grey,
-            tabs: tabTitles.map((title) => Tab(text: title)).toList(),
+            tabs: tabTitles.map((t) => Tab(text: t)).toList(),
           ),
         ),
         body: TabBarView(
-          children: recipeTabs
-              .map((recipes) => RecipeGridCard(recipes: recipes))
-              .toList(),
+          children: [
+            RecipeTab(getMyRecipe: _getMyRecipe, status: "DRAFT"),
+            RecipeTab(getMyRecipe: _getMyRecipe, status: "PUBLISHED"),
+          ],
         ),
         floatingActionButton: FloatingActionButton(
+          shape: const CircleBorder(),
           onPressed: () {
-            Navigator.pushNamed(context, AppRoutes.recipeCrudPage);
+            Navigator.pushNamed(
+              context,
+              AppRoutes.recipeCrudPage,
+              arguments: {"isCreate": true, "initialRecipe": null},
+            );
           },
           backgroundColor: Colors.red,
-          child: const Icon(Icons.add),
+          child: const Icon(Icons.add, color: Colors.white),
         ),
       ),
     );

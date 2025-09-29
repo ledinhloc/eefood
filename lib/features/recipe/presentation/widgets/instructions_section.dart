@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'dart:math';
+import 'package:eefood/core/di/injection.dart';
 import 'package:eefood/features/recipe/presentation/provider/recipe_cubit.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -7,8 +8,6 @@ import 'instruction_bottom_sheet.dart';
 import 'package:eefood/features/recipe/data/models/recipe_step_model.dart';
 
 class InstructionsSection extends StatefulWidget {
-
-
   const InstructionsSection({Key? key}) : super(key: key);
 
   @override
@@ -18,21 +17,26 @@ class InstructionsSection extends StatefulWidget {
 class _InstructionsSectionState extends State<InstructionsSection> {
   static const double _itemHeight = 140.0; // chiều cao ước lượng 1 item
   static const double _maxListHeight = 420.0; // chiều cao tối đa của list
-
   void _addInstruction() {
+    final cubit = context.read<RecipeCrudCubit>();
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
-      builder: (context) => Padding(
-        padding: EdgeInsets.only(
-          bottom: MediaQuery.of(context).viewInsets.bottom,
-        ),
-        child: InstructionBottomSheet(
-          onSaveInstruction: (instruction, {int? index}) {
-            context.read<RecipeCrudCubit>().addStep(instruction);
-          },
-        ),
-      ),
+      builder: (context) {
+        return BlocProvider.value(
+          value: cubit,
+          child: Padding(
+            padding: EdgeInsets.only(
+              bottom: MediaQuery.of(context).viewInsets.bottom,
+            ),
+            child: InstructionBottomSheet(
+              onSaveInstruction: (instruction, {int? index}) {
+                cubit.addStep(instruction);
+              },
+            ),
+          ),
+        );
+      },
     );
   }
 
@@ -42,24 +46,29 @@ class _InstructionsSectionState extends State<InstructionsSection> {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
-      builder: (context) => InstructionBottomSheet(
-        editingInstruction: instruction,
-        editingIndex: index,
-        onSaveInstruction: (updatedInstruction, {int? index}) {
-          if (index != null) {
-            cubit.updateStep(index, updatedInstruction);
-          }
-        },
+      builder: (context) => BlocProvider.value(
+        value: cubit,
+        child: InstructionBottomSheet(
+          editingInstruction: instruction,
+          editingIndex: index,
+          onSaveInstruction: (updatedInstruction, {int? index}) {
+            if (index != null) {
+              cubit.updateStep(index, updatedInstruction);
+            }
+          },
+        ),
       ),
     );
   }
 
   void _removeInstruction(int index) {
-    context.read<RecipeCrudCubit>().removeStep(index);
+    final cubit = context.read<RecipeCrudCubit>();
+    cubit.removeStep(index);
   }
 
   void _reorderInstructions(int oldIndex, int newIndex) {
-    context.read<RecipeCrudCubit>().reorderSteps(oldIndex, newIndex);
+    final cubit = context.read<RecipeCrudCubit>();
+    cubit.reorderSteps(oldIndex, newIndex);
   }
 
   Widget _buildInstructionCard(RecipeStepModel step, int index) {
@@ -173,7 +182,6 @@ class _InstructionsSectionState extends State<InstructionsSection> {
 
   @override
   Widget build(BuildContext context) {
-
     final state = context.watch<RecipeCrudCubit>().state;
     final instructions = state.steps;
     final double listHeight = min(
@@ -216,8 +224,11 @@ class _InstructionsSectionState extends State<InstructionsSection> {
         Center(
           child: ElevatedButton.icon(
             onPressed: _addInstruction,
-            icon: const Icon(Icons.add, color: Colors.white,),
-            label: const Text('Add Instruction',style: TextStyle(color: Colors.white)),
+            icon: const Icon(Icons.add, color: Colors.white),
+            label: const Text(
+              'Add Instruction',
+              style: TextStyle(color: Colors.white),
+            ),
           ),
         ),
       ],
