@@ -55,7 +55,6 @@ class _BasicInfoSectionState extends State<BasicInfoSection> {
       });
     });
 
-    //_loadAllCategories();
   }
 
   @override

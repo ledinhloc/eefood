@@ -81,11 +81,12 @@ class CustomDropdownSearch<T> extends StatefulWidget {
 
 class _CustomDropdownSearchState<T> extends State<CustomDropdownSearch<T>> {
   final TextEditingController _searchController = TextEditingController();
-
+  final FocusNode _focusNode = FocusNode();
   List<T> _allItems = [];
   int _page = 1;
   bool _isLoading = false;
   bool _hasMore = true;
+  bool _hasFocus = false;
 
   // for multi-select
   List<T> _selectedItems = [];
@@ -113,18 +114,23 @@ class _CustomDropdownSearchState<T> extends State<CustomDropdownSearch<T>> {
   @override
   void initState() {
     super.initState();
+
+    _focusNode.addListener(() {
+      setState(() {
+        _hasFocus = _focusNode.hasFocus;
+      });
+    });
+
     if (widget.items != null) {
       _allItems = widget.items!(null, null);
     }
 
-  
     if (widget.multiSelection) {
       _selectedItems = widget.selectedItems != null
           ? List<T>.from(widget.selectedItems!)
           : <T>[];
     }
 
-    
     if (widget.onFind != null && _allItems.isEmpty) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         debugPrint('[CustomDropdownSearch] initial load onFind page=1');
@@ -132,7 +138,6 @@ class _CustomDropdownSearchState<T> extends State<CustomDropdownSearch<T>> {
       });
     }
 
-    
     if (widget.selectedItems != null && widget.selectedItems!.isNotEmpty) {
       for (final s in widget.selectedItems!) {
         if (!_containsItem(_allItems, s)) _allItems.add(s);
@@ -143,7 +148,7 @@ class _CustomDropdownSearchState<T> extends State<CustomDropdownSearch<T>> {
   @override
   void didUpdateWidget(covariant CustomDropdownSearch<T> oldWidget) {
     super.didUpdateWidget(oldWidget);
-    
+
     if (widget.multiSelection) {
       if (!listEquals(
         widget.selectedItems ?? [],
@@ -152,7 +157,7 @@ class _CustomDropdownSearchState<T> extends State<CustomDropdownSearch<T>> {
         _selectedItems = widget.selectedItems != null
             ? List<T>.from(widget.selectedItems!)
             : <T>[];
-        
+
         if (widget.selectedItems != null) {
           for (final s in widget.selectedItems!) {
             if (!_containsItem(_allItems, s)) {
@@ -161,12 +166,12 @@ class _CustomDropdownSearchState<T> extends State<CustomDropdownSearch<T>> {
           }
         }
       }
-    } 
+    }
   }
 
   @override
   void dispose() {
-    
+    _focusNode.dispose();
     super.dispose();
   }
 
@@ -193,7 +198,6 @@ class _CustomDropdownSearchState<T> extends State<CustomDropdownSearch<T>> {
       );
 
       setState(() {
-        
         for (final ni in newItems) {
           if (!_containsItem(_allItems, ni)) _allItems.add(ni);
         }
@@ -216,7 +220,6 @@ class _CustomDropdownSearchState<T> extends State<CustomDropdownSearch<T>> {
     }
   }
 
-  
   void _toggleSelection(T item) {
     setState(() {
       final idx = _selectedItems.indexWhere((e) => _equals(e, item));
@@ -277,7 +280,7 @@ class _CustomDropdownSearchState<T> extends State<CustomDropdownSearch<T>> {
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
             );
           }
-          return SizedBox(width: 10,height: 10);
+          return SizedBox(width: 10, height: 10);
         } else {
           final s = _itemToSingleLineString(selectedItem);
           return Padding(
@@ -306,7 +309,15 @@ class _CustomDropdownSearchState<T> extends State<CustomDropdownSearch<T>> {
           ),
           focusedBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(10),
-            borderSide: BorderSide(color: Colors.grey.shade600),
+            borderSide: BorderSide(color: Colors.green.shade400),
+          ),
+          errorBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(10),
+            borderSide: const BorderSide(color: Colors.red, width: 1.5),
+          ),
+          focusedErrorBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(10),
+            borderSide: BorderSide(color: Colors.green.shade400),
           ),
           contentPadding: const EdgeInsets.symmetric(
             horizontal: 12,

@@ -7,6 +7,7 @@ import 'package:eefood/features/recipe/data/repositories/recipe_repository_impl.
 import 'package:eefood/features/recipe/domain/repositories/recipe_repository.dart';
 import 'package:eefood/features/recipe/domain/usecases/recipe_usecases.dart';
 import 'package:eefood/features/recipe/presentation/provider/recipe_cubit.dart';
+import 'package:eefood/features/recipe/presentation/provider/recipe_refresh_cubit.dart';
 import 'package:get_it/get_it.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -75,8 +76,11 @@ Future<void> setupDependencies() async {
   getIt.registerFactoryParam<RecipeCrudCubit, RecipeModel?, void>(
     (initialRecipe, _) => RecipeCrudCubit(initialRecipe),
   );
+  // recipe refresh cubit
+  getIt.registerLazySingleton<RecipeRefreshCubit>(() => RecipeRefreshCubit());
   //recipe
   getIt.registerLazySingleton(() => CreateRecipe(getIt<RecipeRepository>()));
   getIt.registerLazySingleton(() => UpdateRecipe(getIt<RecipeRepository>()));
   getIt.registerLazySingleton(() => GetMyRecipe(getIt<RecipeRepository>()));
+  getIt.registerLazySingleton(() => DeleteRecipe(getIt<RecipeRepository>()));
 }

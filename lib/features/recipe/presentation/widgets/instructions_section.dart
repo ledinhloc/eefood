@@ -1,11 +1,12 @@
 import 'dart:io';
-import 'dart:math';
 import 'package:eefood/core/di/injection.dart';
+import 'package:eefood/core/widgets/full_screen_video_dialog.dart';
 import 'package:eefood/features/recipe/presentation/provider/recipe_cubit.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'instruction_bottom_sheet.dart';
 import 'package:eefood/features/recipe/data/models/recipe_step_model.dart';
+import 'package:video_player/video_player.dart';
 
 class InstructionsSection extends StatefulWidget {
   const InstructionsSection({Key? key}) : super(key: key);
@@ -15,28 +16,24 @@ class InstructionsSection extends StatefulWidget {
 }
 
 class _InstructionsSectionState extends State<InstructionsSection> {
-  static const double _itemHeight = 140.0; // chiều cao ước lượng 1 item
-  static const double _maxListHeight = 420.0; // chiều cao tối đa của list
   void _addInstruction() {
     final cubit = context.read<RecipeCrudCubit>();
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
-      builder: (context) {
-        return BlocProvider.value(
-          value: cubit,
-          child: Padding(
-            padding: EdgeInsets.only(
-              bottom: MediaQuery.of(context).viewInsets.bottom,
-            ),
-            child: InstructionBottomSheet(
-              onSaveInstruction: (instruction, {int? index}) {
-                cubit.addStep(instruction);
-              },
-            ),
+      builder: (context) => BlocProvider.value(
+        value: cubit,
+        child: Padding(
+          padding: EdgeInsets.only(
+            bottom: MediaQuery.of(context).viewInsets.bottom,
           ),
-        );
-      },
+          child: InstructionBottomSheet(
+            onSaveInstruction: (instruction, {int? index}) {
+              cubit.addStep(instruction);
+            },
+          ),
+        ),
+      ),
     );
   }
 
@@ -68,109 +65,191 @@ class _InstructionsSectionState extends State<InstructionsSection> {
 
   void _reorderInstructions(int oldIndex, int newIndex) {
     final cubit = context.read<RecipeCrudCubit>();
+    if (cubit.state.steps.length <= 1) {
+      return;
+    }
     cubit.reorderSteps(oldIndex, newIndex);
   }
 
+  void _openImageFullScreen(String imagePath) {
+    showDialog(
+      context: context,
+      builder: (context) => Dialog(
+        backgroundColor: Colors.black,
+        insetPadding: EdgeInsets.zero,
+        child: Stack(
+          children: [
+            Center(
+              child: InteractiveViewer(
+                child: Image.file(File(imagePath), fit: BoxFit.contain),
+              ),
+            ),
+            Positioned(
+              top: 40,
+              right: 20,
+              child: IconButton(
+                icon: const Icon(Icons.close, color: Colors.white, size: 30),
+                onPressed: () => Navigator.of(context).pop(),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _openVideoFullScreen(String videoPath) {
+    showDialog(
+      context: context,
+      builder: (context) => FullScreenVideoDialog(videoPath: videoPath),
+    );
+  }
+
   Widget _buildInstructionCard(RecipeStepModel step, int index) {
-    return InkWell(
-      onTap: () =>
-          _editInstruction(index), // nhấn vào card sẽ mở bottom sheet edit
+    final cubit = context.read<RecipeCrudCubit>();
+
+    // Key mới dựa trên ID + hash media để rebuild tự động khi media thay đổi
+    final cardKey = ValueKey(step.id ?? index);
+
+    return Padding(
+      key: cardKey,
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
       child: Card(
-        key: ValueKey(step.id ?? 'instruction_$index'),
-        margin: const EdgeInsets.only(bottom: 0),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(12),
+          side: const BorderSide(color: Colors.grey, width: 0.5),
+        ),
+        elevation: 4,
         color: Colors.white,
         child: Padding(
           padding: const EdgeInsets.all(16.0),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              // --- Step Header ---
               Row(
                 children: [
                   Text(
                     'Step ${step.stepNumber}',
-                    style: const TextStyle(fontWeight: FontWeight.bold),
+                    style: const TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 16,
+                    ),
                   ),
                   const Spacer(),
                   IconButton(
-                    icon: const Icon(Icons.delete, color: Colors.red),
+                    icon: const Icon(Icons.edit, color: Colors.black),
+                    onPressed: () => _editInstruction(index),
+                  ),
+                  IconButton(
+                    icon: const Icon(Icons.delete_outline, color: Colors.black),
                     onPressed: () => _removeInstruction(index),
                   ),
                 ],
               ),
+              const Divider(color: Colors.grey, height: 20),
+
+              // --- Instruction Text ---
+              Text(
+                step.instruction ?? '',
+                style: const TextStyle(fontSize: 14),
+              ),
               const SizedBox(height: 8),
-              Text(step.instruction ?? ''),
-              Text('Time: ${step.stepTime}'),
+              Text(
+                'Time: ${step.stepTime}',
+                style: const TextStyle(color: Colors.grey, fontSize: 12),
+              ),
+
+              // --- Image Section ---
               if (step.imageUrl != null) ...[
                 const SizedBox(height: 12),
-                Stack(
-                  children: [
-                    Container(
-                      width: 100,
-                      height: 100,
-                      decoration: BoxDecoration(
+                GestureDetector(
+                  onTap: () => _openImageFullScreen(step.imageUrl!),
+                  child: Stack(
+                    children: [
+                      ClipRRect(
                         borderRadius: BorderRadius.circular(8),
-                        image: DecorationImage(
-                          image: FileImage(File(step.imageUrl!)),
+                        child: Image.file(
+                          File(step.imageUrl!),
+                          width: double.infinity,
+                          height: 180,
                           fit: BoxFit.cover,
                         ),
                       ),
-                    ),
-                    Positioned(
-                      top: 0,
-                      right: 0,
-                      child: IconButton(
-                        icon: const Icon(
-                          Icons.close,
-                          size: 16,
-                          color: Colors.white,
+                      Positioned(
+                        top: 8,
+                        right: 8,
+                        child: Container(
+                          decoration: BoxDecoration(
+                            color: Colors.black54,
+                            shape: BoxShape.circle,
+                          ),
+                          child: IconButton(
+                            icon: const Icon(
+                              Icons.close,
+                              size: 20,
+                              color: Colors.white,
+                            ),
+                            onPressed: () {
+                              cubit.updateStep(
+                                index,
+                                step.copyWith(imageUrl: null),
+                              );
+                            },
+                          ),
                         ),
-                        onPressed: () {
-                          final cubit = context.read<RecipeCrudCubit>();
-                          cubit.updateStep(
-                            index,
-                            step.copyWith(imageUrl: null),
-                          );
-                        },
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
               ],
+
+              // --- Video Section ---
               if (step.videoUrl != null) ...[
                 const SizedBox(height: 12),
-                Stack(
-                  children: [
-                    Container(
-                      width: double.infinity,
-                      height: 150,
-                      decoration: BoxDecoration(
+                GestureDetector(
+                  onTap: () => _openVideoFullScreen(step.videoUrl!),
+                  child: Stack(
+                    children: [
+                      ClipRRect(
                         borderRadius: BorderRadius.circular(8),
-                        image: DecorationImage(
-                          image: FileImage(File(step.videoUrl!)),
-                          fit: BoxFit.cover,
+                        child: Container(
+                          width: double.infinity,
+                          height: 180,
+                          color: Colors.black,
+                          child: step.imageUrl != null
+                              ? Image.file(
+                                  File(step.imageUrl!),
+                                  fit: BoxFit.cover,
+                                )
+                              : null,
                         ),
                       ),
-                      child: const Icon(
-                        Icons.play_circle_fill,
-                        size: 50,
-                        color: Colors.white70,
+                      const Positioned(
+                        top: 0,
+                        left: 0,
+                        right: 0,
+                        bottom: 0,
+                        child: Center(
+                          child: Icon(
+                            Icons.play_circle_fill,
+                            size: 60,
+                            color: Colors.white70,
+                          ),
+                        ),
                       ),
-                    ),
-                    Positioned(
-                      top: 0,
-                      right: 0,
-                      child: IconButton(
-                        icon: const Icon(Icons.close, color: Colors.white),
-                        onPressed: () {
-                          final cubit = context.read<RecipeCrudCubit>();
-                          cubit.updateStep(
-                            index,
-                            step.copyWith(videoUrl: null),
-                          );
-                        },
+                      Positioned(
+                        top: 8,
+                        right: 8,
+                        child: Container(
+                          decoration: BoxDecoration(
+                            color: Colors.black54,
+                            shape: BoxShape.circle,
+                          ),
+                        ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
               ],
             ],
@@ -184,54 +263,53 @@ class _InstructionsSectionState extends State<InstructionsSection> {
   Widget build(BuildContext context) {
     final state = context.watch<RecipeCrudCubit>().state;
     final instructions = state.steps;
-    final double listHeight = min(
-      instructions.length * _itemHeight,
-      _maxListHeight,
-    );
 
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        const Text(
-          'Instructions',
-          style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-        ),
-        const SizedBox(height: 16),
-        if (instructions.isEmpty)
-          const Center(
-            child: Text(
-              'No instructions added yet',
-              style: TextStyle(color: Colors.grey),
+    return SingleChildScrollView(
+      physics: const ClampingScrollPhysics(),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text(
+            'Instructions',
+            style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+          ),
+          const SizedBox(height: 16),
+          if (instructions.isEmpty)
+            const Center(
+              child: Text(
+                'No instructions added yet',
+                style: TextStyle(color: Colors.grey),
+              ),
+            )
+          else
+            ConstrainedBox(
+              constraints: BoxConstraints(
+                maxHeight: MediaQuery.of(context).size.height * 0.8,
+              ),
+              child: ReorderableListView.builder(
+                shrinkWrap: true,
+                physics: const ClampingScrollPhysics(),
+                onReorder: _reorderInstructions,
+                itemCount: instructions.length,
+                itemBuilder: (context, index) {
+                  final step = instructions[index];
+                  return _buildInstructionCard(step, index);
+                },
+              ),
             ),
-          )
-        else
-          SizedBox(
-            height: listHeight,
-            child: ReorderableListView(
-              buildDefaultDragHandles: true,
-              onReorder: _reorderInstructions,
-              children: List.generate(instructions.length, (index) {
-                final instruction = instructions[index];
-                return SizedBox(
-                  key: ValueKey(instruction.id ?? 'instruction_$index'),
-                  width: double.infinity,
-                  child: _buildInstructionCard(instruction, index),
-                );
-              }),
+          const SizedBox(height: 16),
+          Center(
+            child: ElevatedButton.icon(
+              onPressed: _addInstruction,
+              icon: const Icon(Icons.add, color: Colors.white),
+              label: const Text(
+                'Add Instruction',
+                style: TextStyle(color: Colors.white),
+              ),
             ),
           ),
-        const SizedBox(height: 16),
-        Center(
-          child: ElevatedButton.icon(
-            onPressed: _addInstruction,
-            icon: const Icon(Icons.add, color: Colors.white),
-            label: const Text(
-              'Add Instruction',
-              style: TextStyle(color: Colors.white),
-            ),
-          ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 }

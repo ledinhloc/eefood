@@ -1,4 +1,3 @@
-import 'package:eefood/features/recipe/data/models/category_model.dart';
 import 'package:eefood/features/recipe/data/models/recipe_Ingredient_model.dart';
 import 'package:eefood/features/recipe/data/models/recipe_model.dart';
 import 'package:eefood/features/recipe/data/models/recipe_step_model.dart';
@@ -51,3 +50,33 @@ class RecipeCrudState {
     );
   }
 }
+
+class RecipeListState {
+  final List<RecipeModel> draftRecipes;
+  final List<RecipeModel> publishedRecipes;
+  final bool isLoading;
+  final String? error;
+
+  RecipeListState({
+    this.draftRecipes = const [],
+    this.publishedRecipes = const [],
+    this.isLoading = false,
+    this.error,
+  });
+
+  RecipeListState copyWith({
+    List<RecipeModel>? draftRecipes,
+    List<RecipeModel>? publishedRecipes,
+    bool? isLoading,
+    String? error,
+  }) {
+    return RecipeListState(
+      draftRecipes: draftRecipes ?? this.draftRecipes,
+      publishedRecipes: publishedRecipes ?? this.publishedRecipes,
+      isLoading: isLoading ?? this.isLoading,
+      error: error ?? this.error,
+    );
+  }
+}
+
+
