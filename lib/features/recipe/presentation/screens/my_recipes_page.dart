@@ -42,7 +42,7 @@ class MyRecipesPage extends StatelessWidget {
             Navigator.pushNamed(
               context,
               AppRoutes.recipeCrudPage,
-              arguments: {"isCreate": true},
+              arguments: {"isCreate": true, "initialRecipe": null},
             );
           },
           backgroundColor: Colors.red,
