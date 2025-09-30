@@ -1,5 +1,10 @@
 import 'dart:io';
+import 'package:eefood/core/di/injection.dart';
+import 'package:eefood/core/utils/file_upload.dart';
+import 'package:eefood/core/utils/media_picker.dart';
+import 'package:eefood/features/recipe/presentation/provider/recipe_cubit.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:eefood/features/recipe/data/models/recipe_step_model.dart';
 
@@ -22,9 +27,11 @@ class InstructionBottomSheet extends StatefulWidget {
 class _InstructionBottomSheetState extends State<InstructionBottomSheet> {
   final TextEditingController _textController = TextEditingController();
   final TextEditingController _stepTimeController = TextEditingController();
-  final ImagePicker _picker = ImagePicker();
+  final _fileUpload = getIt<FileUploader>();
   File? _image;
   File? _video;
+  String? urlImage;
+  String? urlVideo;
 
   @override
   void initState() {
@@ -45,22 +52,28 @@ class _InstructionBottomSheetState extends State<InstructionBottomSheet> {
   }
 
   Future<void> _pickImage() async {
-    final XFile? pickedFile = await _picker.pickImage(
-      source: ImageSource.gallery,
-    );
-    if (pickedFile != null) {
-      setState(() {
-        _image = File(pickedFile.path);
-      });
+    final File? image = await MediaPicker.pickImage();
+    if (image != null) {
+      final url = await _fileUpload.uploadFile(image);
+      if (url.isNotEmpty) {
+        setState(() {
+          urlImage = url;
+          _image = image;
+        });
+      }
     }
   }
 
   Future<void> _pickVideo() async {
-    final XFile? video = await _picker.pickVideo(source: ImageSource.gallery);
+    final File? video = await MediaPicker.pickVideo();
     if (video != null) {
-      setState(() {
-        _video = File(video.path);
-      });
+      final url = await _fileUpload.uploadFile(video);
+      if (url.isNotEmpty) {
+        setState(() {
+          urlVideo = url;
+          _video = video;
+        });
+      }
     }
   }
 
@@ -238,10 +251,10 @@ class _InstructionBottomSheetState extends State<InstructionBottomSheet> {
                   if (_textController.text.isNotEmpty) {
                     widget.onSaveInstruction(
                       RecipeStepModel(
-                        stepNumber: 0,
+                        stepNumber: widget.editingInstruction!.stepNumber,
                         instruction: _textController.text,
-                        imageUrl: _image?.path,
-                        videoUrl: _video?.path,
+                        imageUrl: urlImage,
+                        videoUrl: urlVideo,
                         stepTime: int.tryParse(_stepTimeController.text),
                       ),
                     );

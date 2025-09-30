@@ -136,12 +136,8 @@ class _RecipeTabState extends State<RecipeTab>
             key: ValueKey(recipe.id),
             onRefresh: () => _pagingController.refresh(),
           ), // Thêm key dựa trên id để avoid rebuild duplicate UI
-          firstPageProgressIndicatorBuilder: (_) => const Center(
-            child: SpinKitCircle(color: Colors.orange, size: 50.0),
-          ),
-          newPageProgressIndicatorBuilder: (_) => const Center(
-            child: SpinKitCircle(color: Colors.orange, size: 50.0),
-          ),
+          firstPageProgressIndicatorBuilder: (_) => const SizedBox.shrink(),
+          newPageProgressIndicatorBuilder: (_) => const SizedBox.shrink(),
           noItemsFoundIndicatorBuilder: (_) =>
               const Center(child: Text("No recipes found")),
           firstPageErrorIndicatorBuilder: (context) => Center(
