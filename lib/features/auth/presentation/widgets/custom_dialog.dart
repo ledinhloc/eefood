@@ -1,22 +1,34 @@
-import 'package:eefood/features/auth/presentation/widgets/auth_button.dart';
 import 'package:flutter/material.dart';
 import 'package:lottie/lottie.dart';
 
-class CustomDialog extends StatelessWidget {
-  final String title;
-  final String description;
-  final String buttonText;
+class DialogButton {
+  final String text;
   final VoidCallback onPressed;
+  final Color? textColor;
+  final Color? backgroundColor;
+
+  DialogButton({
+    required this.text,
+    required this.onPressed,
+    this.textColor,
+    this.backgroundColor,
+  });
+}
+
+class CustomDialog extends StatelessWidget {
+  final String? title;
+  final String? description;
   final String? imageAsset;
   final String? imageLottie;
-  CustomDialog({
-    super.key, 
-    required this.title, 
-    required this.description,
-    required this.buttonText,
-    required this.onPressed,
+  final List<DialogButton> buttons; // Danh sách nút
+
+  const CustomDialog({
+    super.key,
+    this.title,
+    this.description,
     this.imageAsset,
-    this.imageLottie
+    this.imageLottie,
+    required this.buttons,
   });
 
   @override
@@ -29,7 +41,8 @@ class CustomDialog extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            if(imageAsset != null)
+            // Hiển thị hình ảnh hoặc Lottie nếu có
+            if (imageAsset != null)
               Image.asset(
                 imageAsset!,
                 height: 120,
@@ -37,40 +50,58 @@ class CustomDialog extends StatelessWidget {
             else if (imageLottie != null)
               Lottie.asset(
                 imageLottie!,
-                height: 120
+                height: 120,
               ),
+            
             const SizedBox(height: 20),
 
-            Text(
-              title,
-              textAlign: TextAlign.center,
-              style: const TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.bold,
-                color: Colors.blue,
+            // Title
+            if (title != null)
+              Text(
+                title!,
+                textAlign: TextAlign.center,
+                style: const TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.blue,
+                ),
               ),
-            ),
 
-            const SizedBox(height: 10),
+            if (title != null) const SizedBox(height: 10),
 
-            Text(
-              description,
-              textAlign: TextAlign.center,
-              style: const TextStyle(fontSize: 14, color: Colors.black54),
-            ),
-
-            const SizedBox(height: 20),
-
-            SizedBox(
-              width: double.infinity,
-              child: AuthButton(
-                text: buttonText,
-                onPressed: () {
-                  onPressed();
-                },
-                textColor: Colors.white,
+            // Description
+            if (description != null)
+              Text(
+                description!,
+                textAlign: TextAlign.center,
+                style: const TextStyle(fontSize: 14, color: Colors.black54),
               ),
-            )
+
+            if (description != null) const SizedBox(height: 20),
+
+            // Buttons
+            Column(
+              children: buttons.map((btn) {
+                return Padding(
+                  padding: const EdgeInsets.only(top: 8.0),
+                  child: SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton(
+                      onPressed: btn.onPressed,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: btn.backgroundColor ?? Colors.blue,
+                      ),
+                      child: Text(
+                        btn.text,
+                        style: TextStyle(
+                          color: btn.textColor ?? Colors.white,
+                        ),
+                      ),
+                    ),
+                  ),
+                );
+              }).toList(),
+            ),
           ],
         ),
       ),

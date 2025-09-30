@@ -1,12 +1,10 @@
 import 'dart:io';
-import 'package:eefood/core/di/injection.dart';
-import 'package:eefood/core/widgets/full_screen_video_dialog.dart';
+import 'package:eefood/app_routes.dart';
 import 'package:eefood/features/recipe/presentation/provider/recipe_cubit.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'instruction_bottom_sheet.dart';
 import 'package:eefood/features/recipe/data/models/recipe_step_model.dart';
-import 'package:video_player/video_player.dart';
 
 class InstructionsSection extends StatefulWidget {
   const InstructionsSection({Key? key}) : super(key: key);
@@ -72,37 +70,17 @@ class _InstructionsSectionState extends State<InstructionsSection> {
   }
 
   void _openImageFullScreen(String imagePath) {
-    showDialog(
-      context: context,
-      builder: (context) => Dialog(
-        backgroundColor: Colors.black,
-        insetPadding: EdgeInsets.zero,
-        child: Stack(
-          children: [
-            Center(
-              child: InteractiveViewer(
-                child: Image.file(File(imagePath), fit: BoxFit.contain),
-              ),
-            ),
-            Positioned(
-              top: 40,
-              right: 20,
-              child: IconButton(
-                icon: const Icon(Icons.close, color: Colors.white, size: 30),
-                onPressed: () => Navigator.of(context).pop(),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
+    Navigator.pushNamed(context, AppRoutes.mediaView, arguments: {
+      'isVideo': false,
+      'url': imagePath
+    });
   }
 
   void _openVideoFullScreen(String videoPath) {
-    showDialog(
-      context: context,
-      builder: (context) => FullScreenVideoDialog(videoPath: videoPath),
-    );
+    Navigator.pushNamed(context, AppRoutes.mediaView, arguments: {
+      'isVideo': true,
+      'url': videoPath
+    });
   }
 
   Widget _buildInstructionCard(RecipeStepModel step, int index) {
