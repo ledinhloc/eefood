@@ -1,3 +1,4 @@
+import 'package:eefood/app_routes.dart';
 import 'package:eefood/core/di/injection.dart';
 import 'package:eefood/core/widgets/snack_bar.dart';
 import 'package:eefood/features/auth/data/models/result_model.dart';
@@ -41,23 +42,31 @@ class _ResetPasswordPageState extends State<ResetPasswordPage> {
   }
 
   void _fetchApiRestPassword() async {
-    Result<bool> isReset = await _resetPassword(widget.email, widget.otpCode, confirmPassController.text);
-    (isReset.isSuccess && isReset.data == true) ?
-      showDialog(
-        context: context,
-        barrierDismissible: false,
-        builder: (context) => CustomDialog(
-          title: "Success",
-          description: "Your password has been updated",
-          buttonText: "Go to Home",
-          imageLottie: "assets/lotties/success_animation.json",
-          onPressed: () {
-            Navigator.pop(context);
-            Navigator.pushReplacementNamed(context, '/login');
-          },
-        ),
-      )
-    : showCustomSnackBar(context, isReset.error!, isError: true);
+    Result<bool> isReset = await _resetPassword(
+      widget.email,
+      widget.otpCode,
+      confirmPassController.text,
+    );
+    (isReset.isSuccess && isReset.data == true)
+        ? showDialog(
+            context: context,
+            barrierDismissible: false,
+            builder: (context) => CustomDialog(
+              title: "Success",
+              description: "Your password has been updated",
+              imageLottie: "assets/lotties/success_animation.json",
+              buttons: [
+                DialogButton(
+                  text: 'Go to home',
+                  onPressed: () {
+                    Navigator.pop(context);
+                    Navigator.pushReplacementNamed(context, AppRoutes.login);
+                  },
+                ),
+              ],
+            ),
+          )
+        : showCustomSnackBar(context, isReset.error!, isError: true);
   }
 
   @override
