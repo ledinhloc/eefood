@@ -251,7 +251,7 @@ class _InstructionBottomSheetState extends State<InstructionBottomSheet> {
                   if (_textController.text.isNotEmpty) {
                     widget.onSaveInstruction(
                       RecipeStepModel(
-                        stepNumber: 0,
+                        stepNumber: widget.editingInstruction!.stepNumber,
                         instruction: _textController.text,
                         imageUrl: urlImage,
                         videoUrl: urlVideo,
