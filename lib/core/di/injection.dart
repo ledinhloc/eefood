@@ -15,6 +15,8 @@ import '../../features/auth/data/repositories/auth_repository_impl.dart';
 import '../../features/auth/domain/repositories/auth_repository.dart';
 import '../../features/auth/domain/usecases/auth_usecases.dart';
 import '../../features/profile/data/repo/profile_repository_imp.dart';
+import '../../features/recipe/data/repositories/shopping_repository_impl.dart';
+import '../../features/recipe/domain/repositories/shopping_repository.dart';
 import '../network/dio_client.dart';
 
 final GetIt getIt = GetIt.instance;
@@ -83,4 +85,7 @@ Future<void> setupDependencies() async {
   getIt.registerLazySingleton(() => UpdateRecipe(getIt<RecipeRepository>()));
   getIt.registerLazySingleton(() => GetMyRecipe(getIt<RecipeRepository>()));
   getIt.registerLazySingleton(() => DeleteRecipe(getIt<RecipeRepository>()));
+
+  //shopping
+  getIt.registerLazySingleton<ShoppingRepository>(() => ShoppingRepositoryImpl(dio: getIt<DioClient>().dio ));
 }

@@ -40,14 +40,14 @@ class AuthRepositoryImpl implements AuthRepository {
   @override
   Future<void> logout() async {
     try {
-      final refreshToken = sharedPreferences.getString(AppKeys.refreshToken);
-      if (refreshToken != null) {
-        await dio.post(
-          '/v1/auth/logout',
-          data: {'refreshToken': refreshToken},
-          options: Options(contentType: 'application/json', extra: {'requireAuth': false}),
-        );
-      }
+      // final refreshToken = sharedPreferences.getString(AppKeys.refreshToken);
+      // if (refreshToken != null) {
+      //   await dio.post(
+      //     '/v1/auth/logout',
+      //     data: {'refreshToken': refreshToken},
+      //     options: Options(contentType: 'application/json', extra: {'requireAuth': false}),
+      //   );
+      // }
       await _clearUser();
     }
     catch (e) {
