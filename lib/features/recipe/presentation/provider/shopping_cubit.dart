@@ -1,7 +1,5 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../core/di/injection.dart';
-import '../../data/models/shopping_item_model.dart';
-import '../../data/models/shopping_ingredient_model.dart';
 import '../../domain/repositories/shopping_repository.dart';
 import 'shopping_state.dart';
 
@@ -12,20 +10,32 @@ class ShoppingCubit extends Cubit<ShoppingState> {
 
   Future<void> loadByRecipe() async {
     emit(state.copyWith(isLoading: true, error: null));
-    try{
+    try {
       final recipes = await repository.getByRecipe();
-      emit(state.copyWith(isLoading: false, recipes: recipes, viewMode: ShoppingViewMode.byRecipe));
-    }catch (e){
+      emit(
+        state.copyWith(
+          isLoading: false,
+          recipes: recipes,
+          viewMode: ShoppingViewMode.byRecipe,
+        ),
+      );
+    } catch (e) {
       emit(state.copyWith(isLoading: false, error: e.toString()));
     }
   }
 
   Future<void> loadByIngredient() async {
     emit(state.copyWith(isLoading: true, error: null));
-    try{
+    try {
       final ingredients = await repository.getByIngredient();
-      emit(state.copyWith(isLoading: false, ingredients: ingredients, viewMode: ShoppingViewMode.byIngredient));
-    }catch (e){
+      emit(
+        state.copyWith(
+          isLoading: false,
+          ingredients: ingredients,
+          viewMode: ShoppingViewMode.byIngredient,
+        ),
+      );
+    } catch (e) {
       emit(state.copyWith(isLoading: false, error: e.toString()));
     }
   }
@@ -35,27 +45,36 @@ class ShoppingCubit extends Cubit<ShoppingState> {
     try {
       final recipes = await repository.getByRecipe();
       final ingredients = await repository.getByIngredient();
-      emit(state.copyWith(isLoading: false, recipes: recipes, ingredients: ingredients));
+      emit(
+        state.copyWith(
+          isLoading: false,
+          recipes: recipes,
+          ingredients: ingredients,
+        ),
+      );
     } catch (e) {
       emit(state.copyWith(isLoading: false, error: e.toString()));
     }
   }
 
   void toggleView() {
-    final next = state.viewMode == ShoppingViewMode.byRecipe ? ShoppingViewMode.byIngredient : ShoppingViewMode.byRecipe;
+    final next = state.viewMode == ShoppingViewMode.byRecipe
+        ? ShoppingViewMode.byIngredient
+        : ShoppingViewMode.byRecipe;
     emit(state.copyWith(viewMode: next));
   }
 
   Future<void> togglePurchased(int ingredientId, bool purchased) async {
+    final updated = state.ingredients.map((ing) {
+      if (ing.ingredientId == ingredientId) {
+        return ing.copyWith(purchased: purchased);
+      }
+      return ing;
+    }).toList();
+    emit(state.copyWith(ingredients: updated));
+
     try {
       await repository.togglePurchased(ingredientId, purchased);
-      final updated = state.ingredients.map((ing) {
-        if (ing.ingredientId == ingredientId || ing.id == ingredientId) {
-          return ing.copyWith(purchased: purchased);
-        }
-        return ing;
-      }).toList();
-      emit(state.copyWith(ingredients: updated));
     } catch (e) {
       emit(state.copyWith(error: e.toString()));
     }

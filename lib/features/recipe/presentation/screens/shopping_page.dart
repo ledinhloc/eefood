@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../core/widgets/custom_bottom_sheet.dart';
+import '../../../../core/widgets/snack_bar.dart';
 import '../../data/models/shopping_item_model.dart';
 import '../provider/shopping_cubit.dart';
 import '../provider/shopping_state.dart';
@@ -94,7 +95,20 @@ class ShoppingView extends StatelessWidget {
         itemCount: recipes.length,
         itemBuilder: (context, index) {
           final item = recipes[index];
-          return RecipeCard(item: item);
+          return Dismissible(
+            key: ValueKey(item.id),
+            direction: DismissDirection.endToStart,
+            background: Container(
+              color: Colors.red,
+              alignment: Alignment.centerRight,
+              padding: const EdgeInsets.symmetric(horizontal: 20),
+              child: const Icon(Icons.delete, color: Colors.white),
+            ),
+            onDismissed: (_) {
+              context.read<ShoppingCubit>().removeItem(item.id ?? 0);
+            },
+            child: RecipeCard(item: item),
+          );
         },
       ),
     );
@@ -106,18 +120,35 @@ class ShoppingView extends StatelessWidget {
     }
     return RefreshIndicator(
       onRefresh: () => context.read<ShoppingCubit>().load(),
-      child: ListView.builder(
-        itemCount: ingredients.length,
-        itemBuilder: (context, index) {
-          final ing = ingredients[index];
-          return IngredientTile(
-            ingredient: ing,
-            onToggle: (val) => context.read<ShoppingCubit>().togglePurchased(
-              ing.ingredientId ?? ing.id ?? 0,
-              val ?? false,
-            ),
-          );
-        },
+      child: Padding(
+        padding: const EdgeInsets.all(12.0),
+        child: ListView.builder(
+          itemCount: ingredients.length,
+          itemBuilder: (context, index) {
+            final ing = ingredients[index];
+            return Dismissible(
+              key: ValueKey(ing.ingredientId ?? index),
+              direction: DismissDirection.endToStart,
+              background: Container(
+                color: Colors.red,
+                alignment: Alignment.centerRight,
+                padding: const EdgeInsets.symmetric(horizontal: 20),
+                child: const Icon(Icons.delete, color: Colors.white),
+              ),
+              onDismissed: (_) {
+                // context.read<ShoppingCubit>().removeIngredient(ing.ingredientId ?? 0);
+                showCustomSnackBar(context, 'Deleted success ', isError: false);
+              },
+              child: IngredientTile(
+                ingredient: ing,
+                onToggle: (val) => context.read<ShoppingCubit>().togglePurchased(
+                  ing.ingredientId ?? 0,
+                  val ?? false,
+                ),
+              ),
+            );
+          },
+        ),
       ),
     );
   }

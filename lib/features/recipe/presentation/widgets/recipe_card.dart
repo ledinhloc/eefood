@@ -1,5 +1,8 @@
+import 'package:eefood/features/recipe/presentation/provider/shopping_cubit.dart';
 import 'package:eefood/features/recipe/presentation/widgets/ingredient_tile.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import '../../../../core/widgets/custom_bottom_sheet.dart';
 import '../../data/models/shopping_item_model.dart';
 
 class RecipeCard extends StatelessWidget {
@@ -27,16 +30,34 @@ class RecipeCard extends StatelessWidget {
                     fontSize: 16,
                   ),
                 ),
-                PopupMenuButton<String>(
-                  onSelected: (value) {},
-                  itemBuilder: (context) => [
-                    const PopupMenuItem(value: 'remove', child: Text('remove')),
-                    const PopupMenuItem(
-                      value: 'edit',
-                      child: Text('edit serving'),
+                IconButton(onPressed: () {
+                  showCustomBottomSheet(context, [
+                    BottomSheetOption(
+                      icon: Icons.edit_note_rounded,
+                      title: "Sửa",
+                      onTap: () {
+                        context.read<ShoppingCubit>().loadByRecipe();
+                      },
                     ),
-                  ],
-                ),
+                    BottomSheetOption(
+                      icon: Icons.delete_forever,
+                      title: "Xóa",
+                      onTap: () {
+                        context.read<ShoppingCubit>().removeItem(item.id ?? 0);
+                      },
+                    ),
+                  ]);
+                }, icon: Icon(Icons.more_vert_sharp))
+                // PopupMenuButton<String>(
+                //   onSelected: (value) {},
+                //   itemBuilder: (context) => [
+                //     const PopupMenuItem(value: 'remove', child: Text('remove')),
+                //     const PopupMenuItem(
+                //       value: 'edit',
+                //       child: Text('edit serving'),
+                //     ),
+                //   ],
+                // ),
               ],
             ),
             const SizedBox(height: 8),
@@ -47,7 +68,13 @@ class RecipeCard extends StatelessWidget {
               itemCount: item.ingredients.length ?? 0,
               itemBuilder: (context, index) {
                 final ing = item.ingredients[index];
-                return IngredientTile(ingredient: ing, dense: true);
+                return IngredientTile(
+                    ingredient: ing,
+                    dense: true,
+                    onToggle: (val) {
+                      context.read<ShoppingCubit>().togglePurchased(ing.ingredientId ?? 0, val ?? false);
+                    },
+                );
               },
             ),
           ],
