@@ -7,5 +7,5 @@ abstract class ShoppingRepository {
   Future<void> addRecipe(int recipeId, {int servings = 1});
   Future<void> removeItem(int itemId);
   Future<void> updateServings(int itemId, int servings);
-  Future<void> togglePurchased(int ingredientId, bool purchased);
+  Future<void> togglePurchased(List<int> ingredientIds, bool purchased);
 }

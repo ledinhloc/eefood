@@ -48,16 +48,6 @@ class RecipeCard extends StatelessWidget {
                     ),
                   ]);
                 }, icon: Icon(Icons.more_vert_sharp))
-                // PopupMenuButton<String>(
-                //   onSelected: (value) {},
-                //   itemBuilder: (context) => [
-                //     const PopupMenuItem(value: 'remove', child: Text('remove')),
-                //     const PopupMenuItem(
-                //       value: 'edit',
-                //       child: Text('edit serving'),
-                //     ),
-                //   ],
-                // ),
               ],
             ),
             const SizedBox(height: 8),
@@ -72,7 +62,7 @@ class RecipeCard extends StatelessWidget {
                     ingredient: ing,
                     dense: true,
                     onToggle: (val) {
-                      context.read<ShoppingCubit>().togglePurchased(ing.ingredientId ?? 0, val ?? false);
+                      context.read<ShoppingCubit>().togglePurchased(ing, val ?? false);
                     },
                 );
               },

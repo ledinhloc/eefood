@@ -37,7 +37,7 @@ class ShoppingRepositoryImpl implements ShoppingRepository {
   }
 
   @override
-  Future<void> togglePurchased(int ingredientId, bool purchased) async {
-    await dio.put('/v1/shopping/ingredient/$ingredientId/purchased', queryParameters: {'purchased': purchased});
+  Future<void> togglePurchased(List<int> ingredientIds, bool purchased) async {
+    await dio.put('/v1/shopping/ingredient/purchased', queryParameters: {'ingredientIds': ingredientIds, 'purchased': purchased});
   }
 }

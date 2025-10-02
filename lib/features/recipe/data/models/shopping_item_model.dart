@@ -34,4 +34,20 @@ class ShoppingItemModel {
     'servings': servings,
     'ingredients': ingredients.map((e) => e.toJson()).toList(),
   };
+
+  ShoppingItemModel copyWith({
+    int? id,
+    int? recipeId,
+    String? recipeTitle,
+    int? servings,
+    List<ShoppingIngredientModel>? ingredients,
+  }) {
+    return ShoppingItemModel(
+      id: id ?? this.id,
+      recipeId: recipeId ?? this.recipeId,
+      recipeTitle: recipeTitle ?? this.recipeTitle,
+      servings: servings ?? this.servings,
+      ingredients: ingredients ?? this.ingredients,
+    );
+  }
 }

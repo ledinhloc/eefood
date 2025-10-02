@@ -29,6 +29,7 @@ class ShoppingView extends StatelessWidget {
           'Shopping List',
           style: TextStyle(fontWeight: FontWeight.bold),
         ),
+        automaticallyImplyLeading: false,
         actions: [
           BlocBuilder<ShoppingCubit, ShoppingState>(
             builder: (context, state){
@@ -126,25 +127,11 @@ class ShoppingView extends StatelessWidget {
           itemCount: ingredients.length,
           itemBuilder: (context, index) {
             final ing = ingredients[index];
-            return Dismissible(
-              key: ValueKey(ing.ingredientId ?? index),
-              direction: DismissDirection.endToStart,
-              background: Container(
-                color: Colors.red,
-                alignment: Alignment.centerRight,
-                padding: const EdgeInsets.symmetric(horizontal: 20),
-                child: const Icon(Icons.delete, color: Colors.white),
-              ),
-              onDismissed: (_) {
-                // context.read<ShoppingCubit>().removeIngredient(ing.ingredientId ?? 0);
-                showCustomSnackBar(context, 'Deleted success ', isError: false);
-              },
-              child: IngredientTile(
-                ingredient: ing,
-                onToggle: (val) => context.read<ShoppingCubit>().togglePurchased(
-                  ing.ingredientId ?? 0,
-                  val ?? false,
-                ),
+            return IngredientTile(
+              ingredient: ing,
+              onToggle: (val) => context.read<ShoppingCubit>().togglePurchased(
+                ing,
+                val ?? false,
               ),
             );
           },
