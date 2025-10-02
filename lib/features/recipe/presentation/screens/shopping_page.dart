@@ -42,17 +42,17 @@ class ShoppingView extends StatelessWidget {
                 onPressed: () {
                   showCustomBottomSheet(context, [
                     BottomSheetOption(
-                      icon: Icons.list,
+                      icon: Icon(Icons.list),
                       title: "Xem theo công thức",
                       onTap: () {
-                        context.read<ShoppingCubit>().loadByRecipe();
+                        context.read<ShoppingCubit>().toggleView();
                       },
                     ),
                     BottomSheetOption(
-                      icon: Icons.shopping_cart,
+                      icon: Icon(Icons.shopping_cart),
                       title: "Xem theo nguyên liệu",
                       onTap: () {
-                        context.read<ShoppingCubit>().loadByIngredient();
+                        context.read<ShoppingCubit>().toggleView();
                       },
                     ),
                   ]);
@@ -63,19 +63,28 @@ class ShoppingView extends StatelessWidget {
         ],
       ),
       body: SafeArea(
-        child: BlocBuilder<ShoppingCubit, ShoppingState>(
-          builder: (context, state) {
-            // if (state.isLoading) {
-            //   return const Center(child: CircularProgressIndicator());
-            // }
-            if (state.error != null) {
-              return Center(child: Text('Error: ${state.error}'));
+        child: BlocListener<ShoppingCubit, ShoppingState>(
+          listenWhen: (prev, curr) => curr.error !=null , /* khi khac null*/
+          listener: (context, state){
+            if(state.error != null){
+              // showCustomSnackBar(context, state.error!, isError: true);
+              showCustomSnackBar(context, 'Mất kết nối vui lòng thử lại!', isError: true);
             }
-            final isByRecipe = state.viewMode == ShoppingViewMode.byRecipe;
-            return isByRecipe
-                ? _buildRecipeList(state.recipes, context)
-                : _buildIngredientList(state.ingredients, context);
           },
+          child: BlocBuilder<ShoppingCubit, ShoppingState>(
+            builder: (context, state) {
+              // if (state.isLoading) {
+              //   return const Center(child: CircularProgressIndicator());
+              // }
+              // if (state.error != null) {
+              //   return Center(child: Text('Error: ${state.error}'));
+              // }
+              final isByRecipe = state.viewMode == ShoppingViewMode.byRecipe;
+              return isByRecipe
+                  ? _buildRecipeList(state.recipes, context)
+                  : _buildIngredientList(state.ingredients, context);
+            },
+          ),
         ),
       ),
     );
@@ -87,7 +96,7 @@ class ShoppingView extends StatelessWidget {
   ) {
     if (recipes.isEmpty) {
       return const Center(
-        child: Text('Không có công thức nào trong shopping list'),
+        child: Text('Hãy thêm món ăn'),
       );
     }
     return RefreshIndicator(

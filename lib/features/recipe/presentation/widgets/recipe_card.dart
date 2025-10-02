@@ -1,3 +1,4 @@
+import 'package:eefood/core/widgets/snack_bar.dart';
 import 'package:eefood/features/recipe/presentation/provider/shopping_cubit.dart';
 import 'package:eefood/features/recipe/presentation/widgets/ingredient_tile.dart';
 import 'package:flutter/material.dart';
@@ -33,15 +34,22 @@ class RecipeCard extends StatelessWidget {
                 IconButton(onPressed: () {
                   showCustomBottomSheet(context, [
                     BottomSheetOption(
-                      icon: Icons.edit_note_rounded,
+                      icon: Icon(Icons.arrow_right_alt),
+                      title: "Xem món ăn",
+                      onTap: () {
+                        showCustomSnackBar(context, 'Xem mon ăn ${item.recipeTitle}');
+                      },
+                    ),
+                    BottomSheetOption(
+                      icon: Icon(Icons.edit_note_rounded),
                       title: "Sửa",
                       onTap: () {
                         context.read<ShoppingCubit>().loadByRecipe();
                       },
                     ),
                     BottomSheetOption(
-                      icon: Icons.delete_forever,
-                      title: "Xóa",
+                      icon: Icon(Icons.delete_forever),
+                      title: "Xóa khỏi danh sách",
                       onTap: () {
                         context.read<ShoppingCubit>().removeItem(item.id ?? 0);
                       },
