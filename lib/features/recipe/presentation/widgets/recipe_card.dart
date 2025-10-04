@@ -42,9 +42,12 @@ class RecipeCard extends StatelessWidget {
                     ),
                     BottomSheetOption(
                       icon: Icon(Icons.edit_note_rounded),
-                      title: "Sửa",
-                      onTap: () {
-                        context.read<ShoppingCubit>().loadByRecipe();
+                      title: "Cập nhật khẩu phần",
+                      onTap: () async {
+                        final newServing = await _showDialogUpdateServing(context, item);
+                        if(newServing != null){
+                          context.read<ShoppingCubit>().updateServings(item.id!, newServing);
+                        }
                       },
                     ),
                     BottomSheetOption(
@@ -79,5 +82,40 @@ class RecipeCard extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  Future<int?> _showDialogUpdateServing(BuildContext context, ShoppingItemModel recipe) async{
+    final newServing = await showDialog<int>(context: context, builder: (context){
+      final controller = TextEditingController(
+        text: recipe.servings?.toString() ?? "1",
+      );
+
+      return AlertDialog(
+        title: const Text("Cập nhật khẩu phần"),
+        content: TextField(
+          controller: controller,
+          keyboardType: TextInputType.number,
+          decoration: const InputDecoration(
+            labelText: "Số khẩu phần",
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text("Hủy"),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              final value = int.tryParse(controller.text);
+              if (value != null && value > 0) {
+                Navigator.pop(context, value);
+              }
+            },
+            child: const Text("Lưu"),
+          ),
+        ],
+      );
+    });
+    return newServing;
   }
 }

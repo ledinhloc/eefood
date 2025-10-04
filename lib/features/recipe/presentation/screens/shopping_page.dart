@@ -67,8 +67,8 @@ class ShoppingView extends StatelessWidget {
           listenWhen: (prev, curr) => curr.error !=null , /* khi khac null*/
           listener: (context, state){
             if(state.error != null){
-              // showCustomSnackBar(context, state.error!, isError: true);
-              showCustomSnackBar(context, 'Mất kết nối vui lòng thử lại!', isError: true);
+              showCustomSnackBar(context, state.error!, isError: true);
+              // showCustomSnackBar(context, 'Mất kết nối vui lòng thử lại!', isError: true);
             }
           },
           child: BlocBuilder<ShoppingCubit, ShoppingState>(
