@@ -14,7 +14,7 @@ void showCustomBottomSheet(
 
 /// Model đại diện cho một lựa chọn trong BottomSheet
 class BottomSheetOption {
-  final IconData icon;
+  final Widget icon;
   final String title;
   final VoidCallback onTap;
 
@@ -54,7 +54,7 @@ class CustomBottomSheet extends StatelessWidget {
             ),
             ...options.map(
               (opt) => ListTile(
-                leading: Icon(opt.icon, color: Colors.black),
+                leading: opt.icon,
                 title: Text(opt.title, style: const TextStyle(fontSize: 16, color: Colors.black)),
                 onTap: () {
                   Navigator.pop(context);

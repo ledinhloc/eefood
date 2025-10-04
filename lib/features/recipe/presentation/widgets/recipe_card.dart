@@ -1,3 +1,4 @@
+import 'package:eefood/core/widgets/snack_bar.dart';
 import 'package:eefood/features/recipe/presentation/provider/shopping_cubit.dart';
 import 'package:eefood/features/recipe/presentation/widgets/ingredient_tile.dart';
 import 'package:flutter/material.dart';
@@ -33,15 +34,25 @@ class RecipeCard extends StatelessWidget {
                 IconButton(onPressed: () {
                   showCustomBottomSheet(context, [
                     BottomSheetOption(
-                      icon: Icons.edit_note_rounded,
-                      title: "Sửa",
+                      icon: Icon(Icons.arrow_right_alt),
+                      title: "Xem món ăn",
                       onTap: () {
-                        context.read<ShoppingCubit>().loadByRecipe();
+                        showCustomSnackBar(context, 'Xem mon ăn ${item.recipeTitle}');
                       },
                     ),
                     BottomSheetOption(
-                      icon: Icons.delete_forever,
-                      title: "Xóa",
+                      icon: Icon(Icons.edit_note_rounded),
+                      title: "Cập nhật khẩu phần",
+                      onTap: () async {
+                        final newServing = await _showDialogUpdateServing(context, item);
+                        if(newServing != null){
+                          context.read<ShoppingCubit>().updateServings(item.id!, newServing);
+                        }
+                      },
+                    ),
+                    BottomSheetOption(
+                      icon: Icon(Icons.delete_forever),
+                      title: "Xóa khỏi danh sách",
                       onTap: () {
                         context.read<ShoppingCubit>().removeItem(item.id ?? 0);
                       },
@@ -71,5 +82,40 @@ class RecipeCard extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  Future<int?> _showDialogUpdateServing(BuildContext context, ShoppingItemModel recipe) async{
+    final newServing = await showDialog<int>(context: context, builder: (context){
+      final controller = TextEditingController(
+        text: recipe.servings?.toString() ?? "1",
+      );
+
+      return AlertDialog(
+        title: const Text("Cập nhật khẩu phần"),
+        content: TextField(
+          controller: controller,
+          keyboardType: TextInputType.number,
+          decoration: const InputDecoration(
+            labelText: "Số khẩu phần",
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text("Hủy"),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              final value = int.tryParse(controller.text);
+              if (value != null && value > 0) {
+                Navigator.pop(context, value);
+              }
+            },
+            child: const Text("Lưu"),
+          ),
+        ],
+      );
+    });
+    return newServing;
   }
 }
