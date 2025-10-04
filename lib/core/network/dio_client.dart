@@ -28,29 +28,29 @@ class DioClient {
     );
 
     // Xử lý loading khi fetch api và lỗi sẽ direct error page
-    dio.interceptors.add(
-      InterceptorsWrapper(
-        onRequest: (options, handler) async {
-          final context = navigatorKey.currentContext;
-          if (context != null) {
-            LoadingOverlay().show();
-          }
-          return handler.next(options);
-        },
-        onResponse: (response, handler) async {
-          LoadingOverlay().hide();
-          return handler.next(response);
-        },
-        onError: (DioException e, handler) async {
-          LoadingOverlay().hide();
-          // final context = navigatorKey.currentContext;
-          // if (context != null && e.type != DioExceptionType.cancel) {
-          //   navigatorKey.currentState?.pushNamed(AppRoutes.errorPage);
-          // }
-          return handler.next(e);
-        },
-      ),
-    );
+    // dio.interceptors.add(
+    //   InterceptorsWrapper(
+    //     onRequest: (options, handler) async {
+    //       final context = navigatorKey.currentContext;
+    //       if (context != null) {
+    //         LoadingOverlay().show();
+    //       }
+    //       return handler.next(options);
+    //     },
+    //     onResponse: (response, handler) async {
+    //       LoadingOverlay().hide();
+    //       return handler.next(response);
+    //     },
+    //     onError: (DioException e, handler) async {
+    //       LoadingOverlay().hide();
+    //       // final context = navigatorKey.currentContext;
+    //       // if (context != null && e.type != DioExceptionType.cancel) {
+    //       //   navigatorKey.currentState?.pushNamed(AppRoutes.errorPage);
+    //       // }
+    //       return handler.next(e);
+    //     },
+    //   ),
+    // );
 
     // Thêm interceptor để xử lý token và refresh token
     dio.interceptors.add(InterceptorsWrapper(

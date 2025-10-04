@@ -23,7 +23,7 @@ import 'features/profile/presentation/screens/profile_page.dart';
 import 'features/recipe/presentation/screens/home_page.dart';
 import 'features/recipe/presentation/screens/my_recipes_page.dart';
 import 'features/recipe/presentation/screens/search_page.dart';
-import 'features/recipe/presentation/screens/shopping_list_page.dart';
+import 'features/recipe/presentation/screens/shopping_page.dart';
 
 class AppRoutes {
   static const myApp = '/myapp';
@@ -53,7 +53,7 @@ class AppRoutes {
     HomePage(),
     SearchPage(),
     MyRecipesPage(),
-    ShoppingListPage(),
+    ShoppingPage(),
     ProfilePage(),
   ];
 
