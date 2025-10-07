@@ -9,6 +9,7 @@ import 'package:eefood/features/auth/presentation/screens/reset_password_page.da
 import 'package:eefood/features/auth/presentation/screens/splash_page.dart';
 import 'package:eefood/features/auth/presentation/screens/verify_otp_page.dart';
 import 'package:eefood/features/auth/presentation/screens/welcome_page.dart';
+import 'package:eefood/features/post/presentation/screens/feed_screen.dart';
 import 'package:eefood/features/profile/presentation/screens/edit_profile_page.dart';
 import 'package:eefood/features/profile/presentation/screens/food_preferences_page.dart';
 import 'package:eefood/features/profile/presentation/screens/language_page.dart';
@@ -50,7 +51,7 @@ class AppRoutes {
 
   // Danh sách các widget cho BottomNavigationBar trong main page
   static List<Widget> widgetOptions = <Widget>[
-    HomePage(),
+    FeedScreen(),
     SearchPage(),
     MyRecipesPage(),
     ShoppingPage(),
