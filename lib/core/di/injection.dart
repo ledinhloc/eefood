@@ -1,5 +1,7 @@
 import 'package:eefood/core/utils/file_upload.dart';
 import 'package:eefood/features/auth/presentation/bloc/on_boarding_bloc/on_boarding_cubit.dart';
+import 'package:eefood/features/post/data/repositories/post_repository_impl.dart';
+import 'package:eefood/features/post/domain/repositories/post_repository.dart';
 import 'package:eefood/features/profile/domain/repositories/profile_repository.dart';
 import 'package:eefood/features/profile/domain/usecases/profile_usecase.dart';
 import 'package:eefood/features/recipe/data/models/recipe_model.dart';
@@ -88,4 +90,7 @@ Future<void> setupDependencies() async {
 
   //shopping
   getIt.registerLazySingleton<ShoppingRepository>(() => ShoppingRepositoryImpl(dio: getIt<DioClient>().dio ));
+
+  //post
+  getIt.registerLazySingleton<PostRepository>(() => PostRepositoryImpl(dio: getIt<DioClient>().dio ));
 }
