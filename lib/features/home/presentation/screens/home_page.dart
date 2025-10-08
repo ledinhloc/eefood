@@ -1,7 +1,7 @@
 import 'package:eefood/features/recipe/presentation/widgets/ingredient_tile.dart';
 import 'package:flutter/material.dart';
 
-import '../../data/models/shopping_ingredient_model.dart';
+import '../../../recipe/data/models/shopping_ingredient_model.dart';
 
 class HomePage extends StatelessWidget {
   const HomePage({super.key});

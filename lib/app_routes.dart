@@ -21,7 +21,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'features/auth/domain/entities/user.dart';
 import 'features/profile/presentation/screens/profile_page.dart';
-import 'features/recipe/presentation/screens/home_page.dart';
 import 'features/recipe/presentation/screens/my_recipes_page.dart';
 import 'features/recipe/presentation/screens/search_page.dart';
 import 'features/recipe/presentation/screens/shopping_page.dart';
