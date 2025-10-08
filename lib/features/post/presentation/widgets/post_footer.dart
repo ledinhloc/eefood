@@ -19,85 +19,50 @@ class _PostFooterState extends State<PostFooter> {
     if (type == null) return '👍🏻';
     final match = ReactionPopup.reactions.firstWhere(
           (r) => r.type == type,
-      orElse: () => const ReactionOption(
-        type: ReactionType.like,
-        emoji: '👍',
-        color: Colors.orange,
-      ),
+      orElse: () => const ReactionOption(type: ReactionType.like, emoji: '👍', color: Colors.orange),
     );
     return match.emoji;
   }
 
   @override
   Widget build(BuildContext context) {
-    return Stack( // ✅ Dùng Stack để popup nổi lên trên các phần khác
-      clipBehavior: Clip.none,
+    return Column(
       children: [
-        Column(
-          children: [
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 8),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceAround,
-                children: [
-                  GestureDetector(
-                    onLongPressStart: (_) {
-                      // ✅ Thay vì onLongPress (thời gian mặc định ~1s),
-                      // ta dùng onLongPressStart và set timer để hiển thị nhanh hơn
-                      Future.delayed(const Duration(milliseconds: 500), () {
-                        if (mounted) {
-                          setState(() => _showReactions = true);
-                        }
-                      });
-                    },
-                    onLongPressEnd: (_) {
-                      // Nếu người dùng nhả sớm thì không hiển thị popup
-                      if (mounted && _showReactions) {
-                        setState(() => _showReactions = false);
-                      }
-                    },
-                    onTap: () {
-                      setState(() {
-                        _selectedReaction = _selectedReaction == null
-                            ? ReactionType.like
-                            : null;
-                      });
-                    },
-                    child: FooterButton(
-                      icon: _getReactionEmoji(_selectedReaction),
-                      label: '',
-                    ),
-                  ),
-                  const FooterButton(icon: '💬', label: 'Comment'),
-                  const FooterButton(icon: '🔗', label: 'Share'),
-                ],
-              ),
-            ),
-          ],
+        AnimatedSwitcher(
+          duration: const Duration(milliseconds: 200),
+          child: _showReactions
+              ? ReactionPopup(
+            key: const ValueKey('popup'),
+            onSelect: (reaction) {
+              setState(() {
+                _selectedReaction = reaction;
+                _showReactions = false;
+              });
+            },
+          )
+              : const SizedBox.shrink(),
         ),
-
-        // ✅ Hiển thị popup nổi lên trên nút like
-        if (_showReactions)
-          Positioned(
-            bottom: 33,
-            left: 0,
-            child: AnimatedSwitcher(
-              duration: const Duration(milliseconds: 200),
-              transitionBuilder: (child, animation) => ScaleTransition(
-                scale: animation,
-                child: child,
-              ),
-              child: ReactionPopup(
-                key: const ValueKey('popup'),
-                onSelect: (reaction) {
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 8),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceAround,
+            children: [
+              GestureDetector(
+                onLongPress: () => setState(() => _showReactions = true),
+                onTap: () {
                   setState(() {
-                    _selectedReaction = reaction;
-                    _showReactions = false;
+                    _selectedReaction = _selectedReaction == null
+                        ? ReactionType.like
+                        : null;
                   });
                 },
+                child: FooterButton(icon: _getReactionEmoji(_selectedReaction), label: '',),
               ),
-            ),
+              const FooterButton(icon: '💬', label: 'Comment'),
+              const FooterButton(icon: '🔗', label: 'Share'),
+            ],
           ),
+        ),
       ],
     );
   }

@@ -15,8 +15,6 @@ class FooterButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isDisabled = onPressed == null;
-
     return InkWell(
       onTap: onPressed,
       borderRadius: BorderRadius.circular(8),
@@ -30,7 +28,7 @@ class FooterButton extends StatelessWidget {
               icon,
               style: TextStyle(
                 fontSize: 20,
-                color: isDisabled ? Colors.grey : kPrimaryColor,
+                color: kPrimaryColor,
               ),
             ),
             if (label.isNotEmpty) const SizedBox(width: 6),
@@ -38,7 +36,7 @@ class FooterButton extends StatelessWidget {
               Text(
                 label,
                 style: TextStyle(
-                  color: isDisabled ? Colors.grey : kPrimaryColor,
+                  color: kPrimaryColor,
                   fontWeight: FontWeight.w500,
                 ),
               ),
