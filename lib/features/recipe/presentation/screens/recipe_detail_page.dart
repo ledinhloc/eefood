@@ -21,7 +21,8 @@ class RecipeDetailPage extends StatelessWidget {
               return const Center(child: CircularProgressIndicator());
             }
             if (state.error != null) {
-              return Center(child: Text('Lỗi: ${state.error}'));
+              // return Center(child: Text('Lỗi: ${state.error}'));
+              return const Center(child: Text('Không có dữ liệu'));
             }
             final recipe = state.recipe;
             if (recipe == null) {
