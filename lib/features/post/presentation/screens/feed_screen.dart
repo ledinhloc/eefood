@@ -1,8 +1,8 @@
+import 'package:eefood/features/recipe/presentation/screens/recipe_detail_page.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../provider/post_list_cubit.dart';
 import '../widgets/post_card.dart';
-import 'post_detail_screen.dart';
 
 class FeedScreen extends StatelessWidget {
   const FeedScreen({super.key});
@@ -74,7 +74,7 @@ class _FeedViewState extends State<FeedView> {
                   onTap: () => Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (_) => PostDetailScreen(postId: post.id),
+                      builder: (_) => RecipeDetailPage(recipeId: post.recipeId!),
                     ),
                   ),
                 );
