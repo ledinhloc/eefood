@@ -1,6 +1,7 @@
 import 'package:eefood/features/post/presentation/widgets/reaction_popup.dart';
 import 'package:flutter/material.dart';
 import '../../data/models/post_model.dart';
+import '../../data/models/reaction_type.dart';
 import 'post_header.dart';
 import 'post_content.dart';
 import 'post_footer.dart';

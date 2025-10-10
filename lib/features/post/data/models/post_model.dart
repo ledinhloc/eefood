@@ -1,3 +1,5 @@
+import 'package:eefood/features/post/data/models/reaction_type.dart';
+
 import 'comment_model.dart';
 
 class PostModel{
@@ -14,7 +16,7 @@ class PostModel{
   final DateTime updatedAt;
   final int totalFavorites;
   final int totalShares;
-  final Map<String, int> reactionCounts;
+  final Map<ReactionType, int> reactionCounts;
   final List<CommentModel> comments;
 
   PostModel({
@@ -36,6 +38,16 @@ class PostModel{
   });
 
   factory PostModel.fromJson(Map<String, dynamic> json) {
+    final rawReactions = Map<String, dynamic>.from(json['reactionCounts'] ?? {});
+    final mappedReactions = <ReactionType, int>{};
+
+    for (final entry in rawReactions.entries) {
+      final type = ReactionTypeX.fromString(entry.key);
+      if (type != null && entry.value is int) {
+        mappedReactions[type] = entry.value;
+      }
+    }
+
     return PostModel(
       id: json['id'],
       userId: json['userId'],
@@ -50,7 +62,7 @@ class PostModel{
       updatedAt: DateTime.parse(json['updatedAt']),
       totalFavorites: json['totalFavorites'] ?? 0,
       totalShares: json['totalShares'] ?? 0,
-      reactionCounts: Map<String, int>.from(json['reactionCounts'] ?? {}),
+      reactionCounts: mappedReactions,
       comments: (json['comments'] as List<dynamic>?)
           ?.map((c) => CommentModel.fromJson(c))
           .toList() ??

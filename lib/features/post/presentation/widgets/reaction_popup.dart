@@ -1,31 +1,11 @@
 import 'package:flutter/material.dart';
 
-enum ReactionType { like, love, wow, sad, angry }
-
-class ReactionOption {
-  final ReactionType type;
-  final String emoji;
-  final Color color;
-
-  const ReactionOption({
-    required this.type,
-    required this.emoji,
-    required this.color,
-  });
-}
+import '../../data/models/reaction_type.dart';
 
 class ReactionPopup extends StatelessWidget {
   final void Function(ReactionType reaction) onSelect;
 
   const ReactionPopup({super.key, required this.onSelect});
-
-  static const List<ReactionOption> reactions = [
-    ReactionOption(type: ReactionType.like, emoji: '👍', color: Color(0xFFFF6B35)),
-    ReactionOption(type: ReactionType.love, emoji: '❤️', color: Color(0xFFF7931E)),
-    ReactionOption(type: ReactionType.wow, emoji: '😮', color: Color(0xFFFFC107)),
-    ReactionOption(type: ReactionType.sad, emoji: '😢', color: Color(0xFF4CAF50)),
-    ReactionOption(type: ReactionType.angry, emoji: '😡', color: Colors.redAccent),
-  ];
 
   @override
   Widget build(BuildContext context) {

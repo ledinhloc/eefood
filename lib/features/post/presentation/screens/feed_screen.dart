@@ -1,9 +1,9 @@
 import 'package:eefood/features/recipe/presentation/screens/recipe_detail_page.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import '../../data/models/reaction_type.dart';
 import '../provider/post_list_cubit.dart';
 import '../widgets/post_card.dart';
-import '../widgets/post_footer.dart';
 import '../widgets/reaction_popup.dart';
 
 class FeedScreen extends StatelessWidget {

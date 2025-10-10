@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../data/models/post_model.dart';
+import '../../data/models/reaction_type.dart';
 import 'reaction_popup.dart';
 import 'footer_button.dart';
 
@@ -21,10 +22,10 @@ class _PostFooterState extends State<PostFooter> {
 
   String _getReactionEmoji(ReactionType? type) {
     if (type == null) return '👍🏻';
-    final match = ReactionPopup.reactions.firstWhere(
+    final match = reactions.firstWhere(
           (r) => r.type == type,
       orElse: () => const ReactionOption(
-        type: ReactionType.like,
+        type: ReactionType.LIKE,
         emoji: '👍',
         color: Colors.orange,
       ),
@@ -52,7 +53,7 @@ class _PostFooterState extends State<PostFooter> {
             onTap: () {
               setState(() {
                 _selectedReaction =
-                _selectedReaction == null ? ReactionType.like : null;
+                _selectedReaction == null ? ReactionType.LIKE : null;
               });
             },
             child: FooterButton(
