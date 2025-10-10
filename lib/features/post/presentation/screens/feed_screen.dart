@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../provider/post_list_cubit.dart';
 import '../widgets/post_card.dart';
+import '../widgets/post_footer.dart';
 
 class FeedScreen extends StatelessWidget {
   const FeedScreen({super.key});
@@ -25,11 +26,18 @@ class FeedView extends StatefulWidget {
 
 class _FeedViewState extends State<FeedView> {
   final _scrollController = ScrollController();
+  OverlayEntry? _activeReactionPopup;
+
+  void hideReactionPopup() {
+    _activeReactionPopup?.remove();
+    _activeReactionPopup = null;
+  }
 
   @override
   void initState() {
     super.initState();
     _scrollController.addListener(() {
+      PostFooter.closeAllPopups();
       if (_scrollController.position.pixels >=
           _scrollController.position.maxScrollExtent - 200) {
         context.read<PostListCubit>().fetchPosts(loadMore: true);
