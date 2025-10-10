@@ -49,6 +49,7 @@ class MyRecipesPage extends StatelessWidget {
             ],
           ),
           floatingActionButton: FloatingActionButton(
+            heroTag: "create_recipe",
             shape: const CircleBorder(),
             onPressed: () {
               Navigator.pushNamed(
