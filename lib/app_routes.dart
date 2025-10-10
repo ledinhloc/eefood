@@ -9,6 +9,9 @@ import 'package:eefood/features/auth/presentation/screens/reset_password_page.da
 import 'package:eefood/features/auth/presentation/screens/splash_page.dart';
 import 'package:eefood/features/auth/presentation/screens/verify_otp_page.dart';
 import 'package:eefood/features/auth/presentation/screens/welcome_page.dart';
+import 'package:eefood/features/noti/presentation/provider/notification_cubit.dart';
+import 'package:eefood/features/noti/presentation/screens/notification_screen.dart';
+import 'package:eefood/features/noti/presentation/screens/ntofication_settings_screen.dart';
 import 'package:eefood/features/post/presentation/screens/feed_screen.dart';
 import 'package:eefood/features/profile/presentation/screens/edit_profile_page.dart';
 import 'package:eefood/features/profile/presentation/screens/food_preferences_page.dart';
@@ -21,7 +24,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'features/auth/domain/entities/user.dart';
 import 'features/profile/presentation/screens/profile_page.dart';
-import 'features/recipe/presentation/screens/home_page.dart';
 import 'features/recipe/presentation/screens/my_recipes_page.dart';
 import 'features/recipe/presentation/screens/search_page.dart';
 import 'features/recipe/presentation/screens/shopping_page.dart';
@@ -48,6 +50,10 @@ class AppRoutes {
 
   /* feat recipe */
   static const recipeCrudPage = '/recipeCrudPage';
+
+  /*feat notification*/
+  static const notificationSettingScreen = '/notificationSettingsScreen';
+  static const notificationScreen = '/notificationScreen';
 
   // Danh sách các widget cho BottomNavigationBar trong main page
   static List<Widget> widgetOptions = <Widget>[
@@ -107,11 +113,10 @@ class AppRoutes {
           ModalRoute.of(context)!.settings.arguments as Map<String, dynamic>;
       final recipe = args?['initialRecipe'] as RecipeModel?;
       final isCreate = args?['isCreate'] as bool? ?? true;
-      return RecipeCreatePage(
-        isCreate: isCreate,
-        initialRecipe: recipe,
-      );
+      return RecipeCreatePage(isCreate: isCreate, initialRecipe: recipe);
     },
     errorPage: (context) => ErrorPage(),
+    notificationScreen: (context) => NotificationScreen(),
+    notificationSettingScreen: (context) => const NotificationSettingsScreen(),
   };
 }

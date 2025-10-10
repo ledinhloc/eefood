@@ -36,4 +36,23 @@ class TimeParser {
       return '$mins min';
     }
   }
+
+  static String formatTime(DateTime dateTime) {
+    final now = DateTime.now();
+    final diff = now.difference(dateTime);
+
+    // Hàm nhỏ để format giờ phút thủ công
+    String formatHourMinute(DateTime dt) {
+      String twoDigits(int n) => n.toString().padLeft(2, '0');
+      return '${twoDigits(dt.hour)}:${twoDigits(dt.minute)}';
+    }
+
+    if (diff.inDays == 0) {
+      return 'Today • ${formatHourMinute(dateTime)}';
+    } else if (diff.inDays == 1) {
+      return 'Yesterday • ${formatHourMinute(dateTime)}';
+    } else {
+      return '${diff.inDays} days ago • ${formatHourMinute(dateTime)}';
+    }
+  }
 }
