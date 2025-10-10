@@ -5,8 +5,6 @@ class IngredientModel {
   final String name;
   final String? description;
   final String? image;
-
-
   IngredientModel({
     this.id,
     required this.name,

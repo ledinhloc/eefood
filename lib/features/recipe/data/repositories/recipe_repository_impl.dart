@@ -8,10 +8,32 @@ import 'package:eefood/features/recipe/domain/entities/recipe.dart';
 import 'package:eefood/features/recipe/domain/repositories/recipe_repository.dart';
 import 'package:flutter/foundation.dart';
 
+import '../models/recipe_detail_model.dart';
+
 class RecipeRepositoryImpl implements RecipeRepository {
   final Dio dio;
 
   RecipeRepositoryImpl({required this.dio});
+  @override
+  Future<RecipeDetailModel> fetchRecipeDetail(int recipeId) async {
+    try {
+      final response = await dio.get(
+        '/v1/recipes/detail/$recipeId',
+        options: Options(contentType: 'application/json'),
+      );
+
+      final Map<String, dynamic> responseData = response.data;
+
+      if (responseData.containsKey('data')) {
+        final recipeRes = RecipeDetailModel.fromJson(responseData['data']);
+        return recipeRes;
+      } else {
+        throw Exception('Invalid response format: missing data field');
+      }
+    } catch (err) {
+      throw Exception('Get recipe failed: $err');
+    }
+  }
 
   @override
   Future<List<ProvinceModel>> getProvinces({
@@ -211,6 +233,27 @@ class RecipeRepositoryImpl implements RecipeRepository {
     } catch (err) {
       debugPrint('Delete recipe error: $err');
       throw Exception('Delete recipe failed: $err');
+    }
+  }
+
+  @override
+  Future<RecipeModel> getRecipeById(int recipeId) async {
+    try {
+      final response = await dio.get(
+        '/v1/recipes/$recipeId',
+        options: Options(contentType: 'application/json'),
+      );
+
+      final Map<String, dynamic> responseData = response.data;
+
+      if (responseData.containsKey('data')) {
+        final recipeRes = RecipeModel.fromJson(responseData['data']);
+        return recipeRes;
+      } else {
+        throw Exception('Invalid response format: missing data field');
+      }
+    } catch (err) {
+      throw Exception('Get recipe failed: $err');
     }
   }
 }
