@@ -15,6 +15,7 @@ class PostListCubit extends Cubit<PostListState> {
     emit(state.copyWith(isLoading: true));
     final nextPage = loadMore ? state.currentPage + 1 : 1;
     final posts = await repository.getAllPosts(nextPage, 10);
+    print('next page la : $nextPage');
 
     emit(PostListState(
       posts: loadMore ? [...state.posts, ...posts] : posts,

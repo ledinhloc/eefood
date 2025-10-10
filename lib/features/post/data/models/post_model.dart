@@ -3,6 +3,9 @@ import 'comment_model.dart';
 class PostModel{
   final int id;
   final int userId;
+  final String username;
+  final String email;
+  final String avatarUrl;
   final int? recipeId;
   final String title;
   final String content;
@@ -17,6 +20,9 @@ class PostModel{
   PostModel({
     required this.id,
     required this.userId,
+    required this.username,
+    required this.email,
+    required this.avatarUrl,
     this.recipeId,
     required this.title,
     required this.content,
@@ -34,6 +40,9 @@ class PostModel{
       id: json['id'],
       userId: json['userId'],
       recipeId: json['recipeId'],
+      username: json['username'],
+      email: json['email'],
+      avatarUrl: json['avatarUrl'],
       title: json['title'] ?? '',
       content: json['content'] ?? '',
       imageUrl: json['imageUrl'] ?? '',
