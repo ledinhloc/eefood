@@ -5,13 +5,8 @@ import 'footer_button.dart';
 
 class PostFooter extends StatefulWidget {
   final PostModel post;
-  static final List<_PostFooterState> _activeFooters = [];
-  static void closeAllPopups() {
-    for (final footer in List<_PostFooterState>.from(_activeFooters)) {
-      footer._removePopup();
-    }
-  }
-  const PostFooter({super.key, required this.post});
+  final void Function(Offset offset, Function(ReactionType) onSelect)? onShowReactions;
+  const PostFooter({super.key, required this.post, this.onShowReactions});
 
   @override
   State<PostFooter> createState() => _PostFooterState();
@@ -19,13 +14,9 @@ class PostFooter extends StatefulWidget {
 
 class _PostFooterState extends State<PostFooter> {
   ReactionType? _selectedReaction;
-  OverlayEntry? _overlayEntry;
-
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
-    PostFooter._activeFooters.add(this);
   }
 
   String _getReactionEmoji(ReactionType? type) {
@@ -40,51 +31,8 @@ class _PostFooterState extends State<PostFooter> {
     );
     return match.emoji;
   }
-
-  // ✅ Hiển thị popup (với vùng click ra ngoài)
-  void _showReactionsPopup(BuildContext context, Offset offset) {
-    _removePopup(); // xóa popup cũ nếu có
-
-    final overlay = Overlay.of(context);
-    if (overlay == null) return;
-
-    _overlayEntry = OverlayEntry(
-      builder: (context) => GestureDetector(
-        behavior: HitTestBehavior.translucent,
-        onTap: _removePopup, // 👈 nhấn ra ngoài để tắt popup
-        onPanStart: (_) => _removePopup(), // 👈 khi người dùng kéo
-        child: Stack(
-          children: [
-            Positioned(
-              left: offset.dx - 40,
-              top: offset.dy - 80,
-              child: Material(
-                color: Colors.transparent,
-                child: ReactionPopup(
-                  onSelect: (reaction) {
-                    setState(() => _selectedReaction = reaction);
-                    _removePopup();
-                  },
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-
-    overlay.insert(_overlayEntry!);
-  }
-
-  void _removePopup() {
-    _overlayEntry?.remove();
-    _overlayEntry = null;
-  }
-
   @override
   void dispose() {
-    PostFooter._activeFooters.remove(this);
-    _removePopup();
     super.dispose();
   }
 
@@ -97,8 +45,9 @@ class _PostFooterState extends State<PostFooter> {
         children: [
           GestureDetector(
             onLongPressStart: (details) {
-              final position = details.globalPosition;
-              _showReactionsPopup(context, position);
+              widget.onShowReactions?.call(details.globalPosition, (reaction) {
+                setState(() => _selectedReaction = reaction);
+              });
             },
             onTap: () {
               setState(() {
