@@ -1,116 +1,180 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-
-import '../../domain/repositories/recipe_repository.dart';
 import '../provider/recipe_detail_cubit.dart';
-
+import '../widgets/instructions_tab.dart';
+import '../widgets/steps_tab.dart';
 class RecipeDetailPage extends StatelessWidget {
   final int recipeId;
-
   const RecipeDetailPage({super.key, required this.recipeId});
 
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
       create: (_) => RecipeDetailCubit()..loadRecipe(recipeId),
-      child: Scaffold(
-        appBar: AppBar(title: const Text('Chi tiết món ăn')),
-        body: BlocBuilder<RecipeDetailCubit, RecipeDetailState>(
-          builder: (context, state) {
-            if (state.isLoading) {
-              return const Center(child: CircularProgressIndicator());
-            }
-            if (state.error != null) {
-              return Center(child: Text('Lỗi: ${state.error}'));
-            }
-            final recipe = state.recipe;
-            if (recipe == null) {
-              return const Center(child: Text('Không có dữ liệu'));
-            }
+      child: BlocBuilder<RecipeDetailCubit, RecipeDetailState>(
+        builder: (context, state) {
+          if (state.isLoading) {
+            return const Scaffold(
+              body: Center(child: CircularProgressIndicator()),
+            );
+          }
 
-            return SingleChildScrollView(
-              padding: const EdgeInsets.all(12),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // Thông tin user
-                  Row(
-                    children: [
-                      CircleAvatar(
-                        backgroundImage: recipe.avatarUrl != null
-                            ? NetworkImage(recipe.avatarUrl!)
-                            : null,
-                        radius: 20,
-                        child: recipe.avatarUrl == null
-                            ? const Icon(Icons.person)
-                            : null,
-                      ),
-                      const SizedBox(width: 8),
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
+          if (state.error != null || state.recipe == null) {
+            return Scaffold(
+              body: Center(child: Text(state.error ?? 'Không có dữ liệu')),
+            );
+          }
+
+          final recipe = state.recipe!;
+          final totalTime =
+              (recipe.prepTime ?? 0) + (recipe.cookTime ?? 0);
+
+          return Scaffold(
+            body: DefaultTabController(
+              length: 2,
+              child: NestedScrollView(
+                headerSliverBuilder: (context, _) => [
+                  SliverAppBar(
+                    expandedHeight: 300,
+                    pinned: true,
+                    backgroundColor: Colors.white,
+                    leading: IconButton(
+                      icon: const Icon(Icons.arrow_back_ios_new,
+                          color: Colors.black87),
+                      onPressed: () => Navigator.pop(context),
+                    ),
+                    flexibleSpace: FlexibleSpaceBar(
+                      background: Stack(
+                        fit: StackFit.expand,
                         children: [
-                          Text(recipe.username,
-                              style: const TextStyle(
-                                  fontWeight: FontWeight.bold)),
-                          Text(recipe.email,
-                              style: const TextStyle(
-                                  color: Colors.grey, fontSize: 12)),
+                          Image.network(
+                            recipe.imageUrl ?? '',
+                            fit: BoxFit.cover,
+                            errorBuilder: (_, __, ___) => Container(
+                              color: Colors.grey.shade200,
+                              child: const Icon(Icons.image_not_supported),
+                            ),
+                          ),
+                          Container(
+                            decoration: const BoxDecoration(
+                              gradient: LinearGradient(
+                                begin: Alignment.bottomCenter,
+                                end: Alignment.topCenter,
+                                colors: [Colors.black54, Colors.transparent],
+                              ),
+                            ),
+                          ),
                         ],
                       ),
-                    ],
-                  ),
-                  const SizedBox(height: 12),
-
-                  // Ảnh món ăn
-                  if (recipe.imageUrl != null)
-                    ClipRRect(
-                      borderRadius: BorderRadius.circular(12),
-                      child: Image.network(recipe.imageUrl!, fit: BoxFit.cover),
-                    ),
-
-                  const SizedBox(height: 12),
-                  Text(recipe.title,
-                      style: const TextStyle(
-                          fontSize: 20, fontWeight: FontWeight.bold)),
-                  if (recipe.description != null)
-                    Padding(
-                      padding: const EdgeInsets.only(top: 6),
-                      child: Text(recipe.description!),
-                    ),
-
-                  const SizedBox(height: 16),
-                  Text("🧂 Nguyên liệu",
-                      style: const TextStyle(
-                          fontSize: 18, fontWeight: FontWeight.bold)),
-                  ...?recipe.ingredients?.map(
-                        (ing) => ListTile(
-                      title: Text(ing.ingredient?.name ?? ''),
-                      subtitle:
-                      Text("${ing.quantity ?? ''} ${ing.unit ?? ''}"),
-                    ),
-                  ),
-
-                  const SizedBox(height: 16),
-                  Text("👨‍🍳 Các bước thực hiện",
-                      style: const TextStyle(
-                          fontSize: 18, fontWeight: FontWeight.bold)),
-                  ...?recipe.steps?.map(
-                        (step) => ListTile(
-                      leading: CircleAvatar(
-                        radius: 14,
-                        backgroundColor: Colors.orange.shade100,
-                        child: Text("${step.stepNumber}",
-                            style: const TextStyle(color: Colors.black)),
-                      ),
-                      title: Text(step.instruction ?? ''),
                     ),
                   ),
                 ],
+                body: SingleChildScrollView(
+                  padding: const EdgeInsets.all(16),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // Source + title
+                      Center(
+                        child: Column(
+                          children: [
+                            const SizedBox(height: 4),
+                            Text(
+                              recipe.title,
+                              style: const TextStyle(
+                                  fontSize: 22, fontWeight: FontWeight.bold),
+                              textAlign: TextAlign.center,
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+                      // Info summary
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                        children: [
+                          _infoBlock("${recipe.ingredients?.length ?? 0}",
+                              "Ingredients"),
+                          _infoBlock("${totalTime}m", "Total Time"),
+                        ],
+                      ),
+
+                      const SizedBox(height: 16),
+
+                      Text(recipe.description ?? '',
+                          style: const TextStyle(fontSize: 15)),
+
+                      const SizedBox(height: 12),
+
+                      Row(
+                        children: [
+                          const Icon(Icons.schedule, size: 20),
+                          const SizedBox(width: 4),
+                          Text("Prep: ${recipe.prepTime ?? 0} min"),
+                          const SizedBox(width: 10),
+                          Text("Cook: ${recipe.cookTime ?? 0} min"),
+                        ],
+                      ),
+
+                      const SizedBox(height: 16),
+                      const Divider(thickness: 1.2),
+                      const SizedBox(height: 12),
+
+                      const TabBar(
+                        labelColor: Colors.orange,
+                        unselectedLabelColor: Colors.grey,
+                        indicatorColor: Colors.orange,
+                        tabs: [
+                          Tab(text: "Ingredients"),
+                          Tab(text: "Instructions"),
+                        ],
+                      ),
+
+                      SizedBox(
+                        height: 600,
+                        child: TabBarView(
+                          children: [
+                            InstructionsTab(recipe: recipe),
+                            StepsTab(recipe: recipe),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
               ),
-            );
-          },
-        ),
+            ),
+          );
+        },
       ),
+    );
+  }
+
+  Widget _iconText(IconData icon, String text) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+      decoration: BoxDecoration(
+        color: Colors.grey.shade100,
+        borderRadius: BorderRadius.circular(20),
+      ),
+      child: Row(
+        children: [
+          Icon(icon, size: 18, color: Colors.black54),
+          const SizedBox(width: 4),
+          Text(text),
+        ],
+      ),
+    );
+  }
+
+  Widget _infoBlock(String value, String label) {
+    return Column(
+      children: [
+        Text(value,
+            style: const TextStyle(
+                fontWeight: FontWeight.bold, fontSize: 17, color: Colors.orange)),
+        Text(label, style: const TextStyle(color: Colors.black54)),
+      ],
     );
   }
 }

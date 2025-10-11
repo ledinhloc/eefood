@@ -1,5 +1,7 @@
+import 'package:eefood/features/post/presentation/widgets/reaction_popup.dart';
 import 'package:flutter/material.dart';
 import '../../data/models/post_model.dart';
+import '../../data/models/reaction_type.dart';
 import 'post_header.dart';
 import 'post_content.dart';
 import 'post_footer.dart';
@@ -15,7 +17,8 @@ const kNeutralGray = Color(0xFFE0E0E0);
 class PostCard extends StatelessWidget {
   final PostModel post;
   final VoidCallback? onTap;
-  const PostCard({super.key, required this.post, this.onTap});
+  final void Function(Offset offset, Function(ReactionType) onSelect)? onShowReactions;
+  const PostCard({super.key, required this.post, this.onTap, this.onShowReactions});
 
   @override
   Widget build(BuildContext context) {
@@ -49,7 +52,7 @@ class PostCard extends StatelessWidget {
           ),
           PostContent(post: post),
           const Divider(height: 1, color: kNeutralGray),
-          PostFooter(post: post),
+          PostFooter(post: post, onShowReactions: onShowReactions),
         ],
       ),
     );
