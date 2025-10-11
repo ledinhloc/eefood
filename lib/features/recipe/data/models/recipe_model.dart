@@ -40,7 +40,7 @@ class RecipeModel {
       description: json['description'],
       imageUrl: json['imageUrl'],
       videoUrl: json['videoUrl'],
-      difficulty: _difficultyFromString(json['difficulty']),
+      difficulty: difficultyFromString(json['difficulty']),
       region: json['region'],
       cookTime: json['cookTime'],
       prepTime: json['prepTime'],
@@ -94,7 +94,7 @@ class RecipeModel {
     steps: steps,
   );
 
-  static Difficulty? _difficultyFromString(String? value) {
+  static Difficulty? difficultyFromString(String? value) {
     if (value == null) return null;
     return Difficulty.values.firstWhere(
       (e) => e.name.toUpperCase() == value.toUpperCase(),

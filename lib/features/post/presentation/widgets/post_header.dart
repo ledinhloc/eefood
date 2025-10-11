@@ -10,15 +10,16 @@ class PostHeader extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ListTile(
-      leading: const UserAvatar(
-        username: 'loc',
+      contentPadding: EdgeInsets.zero,
+      horizontalTitleGap: 6,
+      leading: UserAvatar(
+        username: post.username,
         isLocal: false,
-        url:
-        'https://jbagy.me/wp-content/uploads/2025/03/hinh-anh-cute-avatar-vo-tri-3.jpg',
+        url: post.avatarUrl,
       ),
-      title: const Text(
-        'Emily Jane',
-        style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
+      title: Text(
+        post.username,
+        style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
       ),
       subtitle: Text(
         '3h ago',
