@@ -20,7 +20,8 @@ class NotificationItem extends StatelessWidget {
       child: Container(
         width: double.infinity,
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-        decoration: const BoxDecoration(
+        decoration: BoxDecoration(
+          color: isRead ? Colors.white : Colors.blue.shade50,
           border: Border(
             bottom: BorderSide(color: Color(0xFFEAEAEA), width: 1),
           ),
@@ -91,25 +92,6 @@ class NotificationItem extends StatelessWidget {
                           ),
                         ),
                       ),
-                      if (!isRead)
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 6,
-                            vertical: 2,
-                          ),
-                          decoration: BoxDecoration(
-                            color: Colors.red.shade400,
-                            borderRadius: BorderRadius.circular(4),
-                          ),
-                          child: const Text(
-                            'NEW',
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontSize: 10,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                        ),
                     ],
                   ),
 
