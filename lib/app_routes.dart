@@ -18,6 +18,7 @@ import 'package:eefood/features/profile/presentation/screens/food_preferences_pa
 import 'package:eefood/features/profile/presentation/screens/language_page.dart';
 import 'package:eefood/features/recipe/data/models/recipe_model.dart';
 import 'package:eefood/features/recipe/presentation/screens/recipe_crud_page.dart';
+import 'package:eefood/features/recipe/presentation/screens/recipe_detail_page.dart';
 import 'package:eefood/main.dart';
 import 'package:eefood/main_screen.dart';
 import 'package:flutter/material.dart';
@@ -50,6 +51,7 @@ class AppRoutes {
 
   /* feat recipe */
   static const recipeCrudPage = '/recipeCrudPage';
+  static const recipeDetail = '/recipeDetail';
 
   /*feat notification*/
   static const notificationSettingScreen = '/notificationSettingsScreen';
@@ -118,5 +120,11 @@ class AppRoutes {
     errorPage: (context) => ErrorPage(),
     notificationScreen: (context) => NotificationScreen(),
     notificationSettingScreen: (context) => const NotificationSettingsScreen(),
+    recipeDetail: (context) {
+      final args =
+          ModalRoute.of(context)!.settings.arguments as Map<String, dynamic>;
+      final recipeId = args['recipeId'] as int;
+      return RecipeDetailPage(recipeId: recipeId);
+    },
   };
 }

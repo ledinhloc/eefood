@@ -54,7 +54,7 @@ class PostModel{
       recipeId: json['recipeId'],
       username: json['username'],
       email: json['email'],
-      avatarUrl: json['avatarUrl'],
+      avatarUrl: json['avatarUrl'] ?? '',
       title: json['title'] ?? '',
       content: json['content'] ?? '',
       imageUrl: json['imageUrl'] ?? '',

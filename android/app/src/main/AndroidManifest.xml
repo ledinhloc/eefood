@@ -12,6 +12,9 @@
     <!-- Camera -->
     <uses-permission android:name="android.permission.CAMERA" />
 
+    <!-- Push Notification -->
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+
     <application
         android:label="eefood"
         android:name="${applicationName}"

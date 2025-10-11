@@ -130,7 +130,7 @@ class _FeedViewState extends State<FeedView> {
                     );
                   },
                   child: badges.Badge(
-                    position: badges.BadgePosition.topEnd(top: -4, end: -4),
+                    position: badges.BadgePosition.topEnd(top: -8, end: -4),
                     showBadge: state.unreadCount > 0, // ẩn/hiện badge
                     badgeStyle: const badges.BadgeStyle(badgeColor: Colors.red),
                     badgeContent: Text(

@@ -4,6 +4,7 @@ import 'package:eefood/core/constants/app_keys.dart';
 import 'package:eefood/core/di/injection.dart';
 import 'package:eefood/features/noti/data/models/notification_model.dart';
 import 'package:eefood/features/noti/domain/repositories/notification_repository.dart';
+import 'package:eefood/features/noti/domain/usecases/notification_service.dart';
 import 'package:eefood/features/noti/presentation/provider/notification_state.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -133,13 +134,14 @@ class NotificationCubit extends Cubit<NotificationState> {
   }
 
   void initWebSocket() {
+    if (_stompClient?.connected == true) return;
     final token = prefs.getString(AppKeys.accessToken) ?? '';
     _stompClient = StompClient(
       config: StompConfig.sockJS(
-        url: '$baseUrl',
+        url: '$baseUrl?token=$token',
         stompConnectHeaders: {'Authorization': 'Bearer $token'},
         webSocketConnectHeaders: {'Authorization': 'Bearer $token'},
-        onConnect: _onWebSocketConnected,
+        onConnect:_onWebSocketConnected,
         onWebSocketError: (err) => print('❌ WS error: $err'),
         onStompError: (frame) => print('❌ STOMP error: ${frame.body}'),
         onDisconnect: (frame) => print('🔌 Disconnected'),
@@ -149,6 +151,7 @@ class NotificationCubit extends Cubit<NotificationState> {
   }
 
   void _onWebSocketConnected(StompFrame frame) {
+    print('✅ [WebSocket] Connected');
     _stompClient?.subscribe(
       destination: '/user/queue/notifications',
       callback: (StompFrame frame) {
@@ -156,6 +159,15 @@ class NotificationCubit extends Cubit<NotificationState> {
           final json = NotificationModel.fromJson(
             Map<String, dynamic>.from(jsonDecode(frame.body!)),
           );
+
+          NotificationService.showNotification(
+            title: json.title ?? 'Thông báo mới',
+            body: json.body ?? '',
+            type: json.type,
+            avatarUrl: json.avatarUrl,
+            path: json.path,
+          );
+
           emit(
             state.copyWith(
               notifications: [json, ...state.notifications],
