@@ -185,6 +185,7 @@ class ProfilePage extends StatelessWidget {
               ],
             ),
             floatingActionButton: FloatingActionButton(
+              heroTag: 'fab_profile',
               onPressed: () {},
               backgroundColor: Colors.orange,
               child: const Icon(Icons.notifications),

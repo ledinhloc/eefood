@@ -53,7 +53,8 @@ dependencies:
   dropdown_search: ^6.0.2 # dropdown (selectbox)
   device_info_plus: ^10.1.0 # info device
   infinite_scroll_pagination: ^4.1.0 # scroll lazy loading
-
+  badges: ^3.1.2 #badge notification
+  stomp_dart_client: ^1.0.3 #websocket
 dev_dependencies:
   flutter_test:
     sdk: flutter

@@ -1,5 +1,8 @@
 import 'package:eefood/core/utils/file_upload.dart';
 import 'package:eefood/features/auth/presentation/bloc/on_boarding_bloc/on_boarding_cubit.dart';
+import 'package:eefood/features/noti/data/repositories/notification_repository_impl.dart';
+import 'package:eefood/features/noti/domain/repositories/notification_repository.dart';
+import 'package:eefood/features/noti/presentation/provider/notification_cubit.dart';
 import 'package:eefood/features/post/data/repositories/post_repository_impl.dart';
 import 'package:eefood/features/post/domain/repositories/post_repository.dart';
 import 'package:eefood/features/profile/domain/repositories/profile_repository.dart';
@@ -82,6 +85,10 @@ Future<void> setupDependencies() async {
   );
   // recipe refresh cubit
   getIt.registerLazySingleton<RecipeRefreshCubit>(() => RecipeRefreshCubit());
+
+  //notification cubit
+  getIt.registerLazySingleton<NotificationCubit>(() => NotificationCubit());
+
   //recipe
   getIt.registerLazySingleton(() => CreateRecipe(getIt<RecipeRepository>()));
   getIt.registerLazySingleton(() => UpdateRecipe(getIt<RecipeRepository>()));
@@ -93,4 +100,7 @@ Future<void> setupDependencies() async {
 
   //post
   getIt.registerLazySingleton<PostRepository>(() => PostRepositoryImpl(dio: getIt<DioClient>().dio ));
+
+  // notification
+  getIt.registerLazySingleton<NotificationRepository>(() => NotificationRepositoryImpl(dio: getIt<DioClient>().dio ));
 }
