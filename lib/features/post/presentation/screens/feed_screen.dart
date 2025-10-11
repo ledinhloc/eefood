@@ -9,8 +9,10 @@ import 'package:eefood/features/recipe/presentation/screens/recipe_detail_page.d
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import '../../data/models/reaction_type.dart';
 import '../provider/post_list_cubit.dart';
 import '../widgets/post_card.dart';
+import '../widgets/reaction_popup.dart';
 import 'package:badges/badges.dart' as badges;
 
 
@@ -39,6 +41,46 @@ class FeedView extends StatefulWidget {
 
 class _FeedViewState extends State<FeedView> {
   final _scrollController = ScrollController();
+  OverlayEntry? _activePopup;
+
+  void hideReactionPopup() {
+    _activePopup?.remove();
+    _activePopup = null;
+  }
+
+  void showReactionPopup(BuildContext context, Offset position, Function(ReactionType) onSelect) {
+    hideReactionPopup(); // chỉ 1 popup
+
+    final overlay = Overlay.of(context);
+    if (overlay == null) return;
+
+    _activePopup = OverlayEntry(
+      builder: (context) => GestureDetector(
+        behavior: HitTestBehavior.translucent,
+        onTap: hideReactionPopup,
+        onPanStart: (_) => hideReactionPopup(),
+        child: Stack(
+          children: [
+            Positioned(
+              left: position.dx - 40,
+              top: position.dy - 80,
+              child: Material(
+                color: Colors.transparent,
+                child: ReactionPopup(
+                  onSelect: (reaction) {
+                    onSelect(reaction);
+                    hideReactionPopup();
+                  },
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+
+    overlay.insert(_activePopup!);
+  }
 
 
   @override
@@ -52,6 +94,13 @@ class _FeedViewState extends State<FeedView> {
         context.read<PostListCubit>().fetchPosts(loadMore: true);
       }
     });
+  }
+
+  @override
+  void dispose() {
+    hideReactionPopup();
+    _scrollController.dispose();
+    super.dispose();
   }
 
   @override
@@ -129,6 +178,8 @@ class _FeedViewState extends State<FeedView> {
                       builder: (_) => RecipeDetailPage(recipeId: post.recipeId!),
                     ),
                   ),
+                  onShowReactions:(offset, callback) =>
+                      showReactionPopup(context, offset, callback),
                 );
               },
             ),
