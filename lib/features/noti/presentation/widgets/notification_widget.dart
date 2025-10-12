@@ -57,12 +57,18 @@ class NotificationItem extends StatelessWidget {
                     width: 20,
                     height: 20,
                     decoration: BoxDecoration(
-                      color: NotificationType.getColor(notification.type),
+                      color: NotificationType.getColor(
+                        notification.type,
+                        body: notification.body,
+                      ),
                       shape: BoxShape.circle,
                       border: Border.all(color: Colors.white, width: 2),
                     ),
                     child: Icon(
-                      NotificationType.getIcon(notification.type),
+                      NotificationType.getIcon(
+                        notification.type,
+                        body: notification.body,
+                      ),
                       color: Colors.white,
                       size: 12,
                     ),

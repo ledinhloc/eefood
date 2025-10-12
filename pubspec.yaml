@@ -55,6 +55,7 @@ dependencies:
   infinite_scroll_pagination: ^4.1.0 # scroll lazy loading
   badges: ^3.1.2 #badge notification
   stomp_dart_client: ^1.0.3 #websocket
+  awesome_notifications: ^0.10.1 #localnotification
 dev_dependencies:
   flutter_test:
     sdk: flutter

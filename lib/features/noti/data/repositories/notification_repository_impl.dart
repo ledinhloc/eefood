@@ -1,5 +1,6 @@
 import 'package:dio/dio.dart';
 import 'package:eefood/features/noti/data/models/notification_model.dart';
+import 'package:eefood/features/noti/data/models/notification_settings_model.dart';
 import 'package:eefood/features/noti/domain/repositories/notification_repository.dart';
 
 class NotificationRepositoryImpl extends NotificationRepository {
@@ -65,5 +66,26 @@ class NotificationRepositoryImpl extends NotificationRepository {
       '/v1/notifications/delete-all',
       options: Options(headers: {'Content-Type': 'application/json'}),
     );
+  }
+
+  @override
+  Future<List<NotificationSettingsModel>> getNotificationSettings() async {
+    final response = await dio.get(
+      '/v1/notifications/settings',
+      options: Options(headers: {'Content-Type': 'application/json'}),
+    );
+    final data = response.data['data'] as List<dynamic>;
+    return data.map((e) => NotificationSettingsModel.fromJson(e)).toList();
+  }
+
+  @override
+  Future<List<NotificationSettingsModel>> updatedNotificationSettings(Map<String, bool> settings) async {
+    final response = await dio.put(
+      '/v1/notifications/settings/update',
+      data: settings,
+      options: Options(headers: {'Content-Type': 'application/json'}),
+    );
+    final data = response.data['data'] as List<dynamic>;
+    return data.map((e) => NotificationSettingsModel.fromJson(e)).toList();
   }
 }

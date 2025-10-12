@@ -1,6 +1,7 @@
-
 import 'package:eefood/app_routes.dart';
 import 'package:eefood/core/di/injection.dart';
+import 'package:eefood/core/utils/greeting_helper.dart';
+import 'package:eefood/features/auth/domain/usecases/auth_usecases.dart';
 import 'package:eefood/features/noti/presentation/provider/notification_cubit.dart';
 import 'package:eefood/features/noti/presentation/provider/notification_state.dart';
 import 'package:eefood/features/noti/presentation/screens/notification_screen.dart';
@@ -14,7 +15,6 @@ import '../provider/post_list_cubit.dart';
 import '../widgets/post_card.dart';
 import '../widgets/reaction_popup.dart';
 import 'package:badges/badges.dart' as badges;
-
 
 class FeedScreen extends StatelessWidget {
   const FeedScreen({super.key});
@@ -41,6 +41,7 @@ class FeedView extends StatefulWidget {
 
 class _FeedViewState extends State<FeedView> {
   final _scrollController = ScrollController();
+  final GetCurrentUser _getCurrentUser = getIt<GetCurrentUser>();
   OverlayEntry? _activePopup;
 
   void hideReactionPopup() {
@@ -48,7 +49,11 @@ class _FeedViewState extends State<FeedView> {
     _activePopup = null;
   }
 
-  void showReactionPopup(BuildContext context, Offset position, Function(ReactionType) onSelect) {
+  void showReactionPopup(
+    BuildContext context,
+    Offset position,
+    Function(ReactionType) onSelect,
+  ) {
     hideReactionPopup(); // chỉ 1 popup
 
     final overlay = Overlay.of(context);
@@ -82,7 +87,6 @@ class _FeedViewState extends State<FeedView> {
     overlay.insert(_activePopup!);
   }
 
-
   @override
   void initState() {
     super.initState();
@@ -105,87 +109,120 @@ class _FeedViewState extends State<FeedView> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Food Feed 🍽️'),
-        automaticallyImplyLeading: false,
-        actions: [
-          Padding(
-            padding: const EdgeInsets.only(right: 16.0),
-            child: BlocBuilder<NotificationCubit, NotificationState>(
-              builder: (context, state) {
-                return GestureDetector(
-                  onTap: () {
-                    final cubit = context.read<NotificationCubit>();
-                    // Mở trang thông báo
-                    print('➡️ Feed pushing cubit hash=${state.hashCode}');
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (_) => BlocProvider.value(
-                          value: cubit,
-                          child:  NotificationScreen(),
+    return FutureBuilder(
+      future: _getCurrentUser(),
+      builder: (context, snapshot) {
+        final user = snapshot.data;
+        final userName = user?.username ?? 'bạn';
+        final greeting = GreetingHelper.getGreeting(userName: userName);
+
+        return Scaffold(
+          appBar: AppBar(
+            automaticallyImplyLeading: false,
+            backgroundColor: Colors.transparent,
+            title: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                
+                const Text(
+                  'Food Feed 🍽️',
+                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.w600),
+                ),
+                Text(
+                  greeting,
+                  style: const TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w400,
+                  ),
+                ),
+              ],
+            ),
+            actions: [
+              Padding(
+                padding: const EdgeInsets.only(right: 16.0),
+                child: BlocBuilder<NotificationCubit, NotificationState>(
+                  builder: (context, state) {
+                    return GestureDetector(
+                      onTap: () {
+                        final cubit = context.read<NotificationCubit>();
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => BlocProvider.value(
+                              value: cubit,
+                              child: const NotificationScreen(),
+                            ),
+                          ),
+                        );
+                      },
+                      child: badges.Badge(
+                        position: badges.BadgePosition.topEnd(top: -8, end: -4),
+                        showBadge: state.unreadCount > 0,
+                        badgeStyle: const badges.BadgeStyle(
+                          badgeColor: Colors.red,
+                        ),
+                        badgeContent: Text(
+                          '${state.unreadCount}',
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 10,
+                          ),
+                        ),
+                        child: const Icon(
+                          Icons.notifications_none_rounded,
+                          size: 28,
                         ),
                       ),
                     );
                   },
-                  child: badges.Badge(
-                    position: badges.BadgePosition.topEnd(top: -4, end: -4),
-                    showBadge: state.unreadCount > 0, // ẩn/hiện badge
-                    badgeStyle: const badges.BadgeStyle(badgeColor: Colors.red),
-                    badgeContent: Text(
-                      '${state.unreadCount}',
-                      style: TextStyle(color: Colors.white, fontSize: 10),
-                    ),
-                    child: const Icon(Icons.notifications_none_rounded, size: 28),
-                  ),
-                );
-              },
-            ),
+                ),
+              ),
+            ],
           ),
-        ],
-        backgroundColor: Colors.transparent,
-      ),
-      body: BlocBuilder<PostListCubit, PostListState>(
-        builder: (context, state) {
-          if (state.isLoading && state.posts.isEmpty) {
-            return const Center(child: CircularProgressIndicator());
-          }
+          body: BlocBuilder<PostListCubit, PostListState>(
+            builder: (context, state) {
+              if (state.isLoading && state.posts.isEmpty) {
+                return const Center(child: CircularProgressIndicator());
+              }
 
-          if (state.posts.isEmpty) {
-            return const Center(child: Text('Không có bài viết nào.'));
-          }
+              if (state.posts.isEmpty) {
+                return const Center(child: Text('Không có bài viết nào.'));
+              }
 
-          return RefreshIndicator(
-            onRefresh: () async => context.read<PostListCubit>().fetchPosts(),
-            child: ListView.builder(
-              controller: _scrollController,
-              itemCount: state.posts.length + (state.isLoading ? 1 : 0),
-              itemBuilder: (context, index) {
-                if (index == state.posts.length) {
-                  return const Padding(
-                    padding: EdgeInsets.all(16),
-                    child: Center(child: CircularProgressIndicator()),
-                  );
-                }
+              return RefreshIndicator(
+                onRefresh: () async =>
+                    context.read<PostListCubit>().fetchPosts(),
+                child: ListView.builder(
+                  controller: _scrollController,
+                  itemCount: state.posts.length + (state.isLoading ? 1 : 0),
+                  itemBuilder: (context, index) {
+                    if (index == state.posts.length) {
+                      return const Padding(
+                        padding: EdgeInsets.all(16),
+                        child: Center(child: CircularProgressIndicator()),
+                      );
+                    }
 
-                final post = state.posts[index];
-                return PostCard(
-                  post: post,
-                  onTap: () => Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (_) => RecipeDetailPage(recipeId: post.recipeId!),
-                    ),
-                  ),
-                  onShowReactions:(offset, callback) =>
-                      showReactionPopup(context, offset, callback),
-                );
-              },
-            ),
-          );
-        },
-      ),
+                    final post = state.posts[index];
+                    return PostCard(
+                      post: post,
+                      onTap: () => Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) =>
+                              RecipeDetailPage(recipeId: post.recipeId!),
+                        ),
+                      ),
+                      onShowReactions: (offset, callback) =>
+                          showReactionPopup(context, offset, callback),
+                    );
+                  },
+                ),
+              );
+            },
+          ),
+        );
+      },
     );
   }
 }

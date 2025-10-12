@@ -1,5 +1,6 @@
 import 'package:eefood/app_routes.dart';
 import 'package:eefood/core/di/injection.dart';
+import 'package:eefood/core/utils/deep_link_handler.dart';
 import 'package:eefood/core/widgets/overlay_menu.dart';
 import 'package:eefood/features/noti/presentation/provider/notification_cubit.dart';
 import 'package:eefood/features/noti/presentation/provider/notification_state.dart';
@@ -145,8 +146,7 @@ class _NotificationScreenState extends State<NotificationScreen> {
                 }
 
                 return RefreshIndicator(
-                  onRefresh: () async =>
-                      cubit.fetchNotifications(),
+                  onRefresh: () async => cubit.fetchNotifications(),
                   child: ListView.separated(
                     controller: _scrollController,
                     itemCount:
@@ -174,13 +174,24 @@ class _NotificationScreenState extends State<NotificationScreen> {
                           child: const Icon(Icons.delete, color: Colors.white),
                         ),
                         onDismissed: (_) {
-                          cubit.deleteNotification(noti.id);
+                          if(noti.id != null) {
+                            cubit.deleteNotification(noti.id!);
+                          }
+                          
                         },
                         child: NotificationItem(
                           notification: noti,
-                          onTap: noti.isRead == true
-                              ? null
-                              : () => cubit.markAsRead(noti.id),
+                          onTap: () {
+                            if (noti.isRead == false) {
+                              if(noti.id != null) {
+                                cubit.markAsRead(noti.id!);
+                              }
+                              
+                            }
+                            if (noti.path != null) {
+                              DeepLinkHandler.handleDeepLink(noti.path!);
+                            }
+                          },
                         ),
                       );
                     },

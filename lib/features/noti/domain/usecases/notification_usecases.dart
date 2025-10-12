@@ -1,14 +1,13 @@
 import 'package:eefood/features/noti/data/models/notification_model.dart';
+import 'package:eefood/features/noti/data/models/notification_settings_model.dart';
 import 'package:eefood/features/noti/domain/repositories/notification_repository.dart';
 
 class GetAllNotifications {
   final NotificationRepository repository;
   GetAllNotifications(this.repository);
 
-  Future<List<NotificationModel>> call({
-    int page = 1,
-    int limit = 5,
-  }) => repository.getAllNotifications(page, limit);
+  Future<List<NotificationModel>> call({int page = 1, int limit = 5}) =>
+      repository.getAllNotifications(page, limit);
 }
 
 class GetUnreadCount {
@@ -44,4 +43,20 @@ class DeleteAllNotifications {
   DeleteAllNotifications(this.repository);
 
   Future<void> call() => repository.deleteAllNotifications();
+}
+
+class GetNotificationSettings {
+  final NotificationRepository repository;
+  GetNotificationSettings(this.repository);
+
+  Future<List<NotificationSettingsModel>> call() =>
+      repository.getNotificationSettings();
+}
+
+class UpdateNotificationSettings {
+  final NotificationRepository repository;
+  UpdateNotificationSettings(this.repository);
+
+  Future<List<NotificationSettingsModel>> call(Map<String, bool> settings) =>
+      repository.updatedNotificationSettings(settings);
 }

@@ -1,5 +1,5 @@
 class NotificationModel {
-  final int id;
+  final int? id;
   final String? title;
   final String? body;
   final String? path;
@@ -12,7 +12,7 @@ class NotificationModel {
   final DateTime? createdAt;
 
   NotificationModel({
-    required this.id,
+    this.id,
     this.title,
     this.body,
     this.path,

@@ -14,7 +14,7 @@ class FooterButton extends StatelessWidget {
   });
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context) {  
     return InkWell(
       onTap: onPressed,
       borderRadius: BorderRadius.circular(8),
@@ -27,7 +27,7 @@ class FooterButton extends StatelessWidget {
             Text(
               icon,
               style: TextStyle(
-                fontSize: 20,
+                fontSize: 15,
                 color: kPrimaryColor,
               ),
             ),

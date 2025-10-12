@@ -21,7 +21,7 @@ class DioClient {
     final baseUrl = const String.fromEnvironment('BASE_URL', defaultValue: 'http://192.168.1.16:8222/api');
     print(baseUrl);
     dio.options = BaseOptions(
-      baseUrl: baseUrl,
+      baseUrl: '$baseUrl/api',
       connectTimeout: const Duration(seconds: 7), // Timeout kết nối
       receiveTimeout: const Duration(seconds: 5), // Timeout nhận dữ liệu
       contentType: 'application/json; charset=UTF-8', // Default content type
