@@ -13,7 +13,7 @@ class PostFooter extends StatefulWidget {
   State<PostFooter> createState() => _PostFooterState();
 }
 
-class _PostFooterState extends State<PostFooter> {
+class _PostFooterState extends State<PostFooter> with SingleTickerProviderStateMixin{
   ReactionType? _selectedReaction;
   @override
   void initState() {
