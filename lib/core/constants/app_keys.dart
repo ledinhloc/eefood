@@ -8,6 +8,6 @@ class AppKeys{
   static const accessToken = 'accessToken';
   static const refreshToken = 'refreshToken';
   static const user = 'user';
-  static const baseUrl = 'http://192.168.1.25:8222/ws';
+  static const baseUrl = String.fromEnvironment('BASE_URL', defaultValue: 'http://192.168.1.16:8222');
   //
 }

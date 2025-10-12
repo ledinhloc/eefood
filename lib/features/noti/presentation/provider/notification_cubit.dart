@@ -138,7 +138,7 @@ class NotificationCubit extends Cubit<NotificationState> {
     final token = prefs.getString(AppKeys.accessToken) ?? '';
     _stompClient = StompClient(
       config: StompConfig.sockJS(
-        url: '$baseUrl?token=$token',
+        url: '$baseUrl/ws?token=$token',
         stompConnectHeaders: {'Authorization': 'Bearer $token'},
         webSocketConnectHeaders: {'Authorization': 'Bearer $token'},
         onConnect:_onWebSocketConnected,
