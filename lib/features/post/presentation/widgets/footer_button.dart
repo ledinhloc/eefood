@@ -2,14 +2,16 @@ import 'package:flutter/material.dart';
 import 'package:eefood/features/post/presentation/widgets/post_card.dart';
 
 class FooterButton extends StatelessWidget {
-  final String icon;
+  final IconData icon;
   final String label;
+  final Color? color;
   final VoidCallback? onPressed;
 
   const FooterButton({
     super.key,
     required this.icon,
     required this.label,
+    this.color,
     this.onPressed,
   });
 
@@ -24,13 +26,7 @@ class FooterButton extends StatelessWidget {
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Text(
-              icon,
-              style: TextStyle(
-                fontSize: 15,
-                color: kPrimaryColor,
-              ),
-            ),
+            Icon(icon, color: color ?? Colors.grey,),
             if (label.isNotEmpty) const SizedBox(width: 6),
             if (label.isNotEmpty)
               Text(

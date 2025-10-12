@@ -76,18 +76,10 @@ class _ReactionPopupState extends State<ReactionPopup>
                 curve: Curves.easeOutBack,
                 child: Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 6),
-                  child: Text(
-                    reaction.emoji,
-                    style: TextStyle(
-                      fontSize: 20,
-                      shadows: [
-                        Shadow(
-                          blurRadius: 4,
-                          color: reaction.color.withOpacity(0.5),
-                          offset: const Offset(1, 1),
-                        ),
-                      ],
-                    ),
+                  child: Icon(
+                    reaction.icon,
+                    size: 28,
+                    color: reaction.color,
                   ),
                 ),
               ),

@@ -22,17 +22,13 @@ class _PostFooterState extends State<PostFooter> with SingleTickerProviderStateM
     super.initState();
   }
 
-  String _getReactionEmoji(ReactionType? type) {
-    if (type == null) return '👍🏻';
+  IconData _getReactionIcon(ReactionType? type){
+    if(type ==  null) return Icons.thumb_up_alt_outlined;
     final match = reactions.firstWhere(
-          (r) => r.type == type,
-      orElse: () => const ReactionOption(
-        type: ReactionType.LIKE,
-        emoji: '👍',
-        color: Colors.orange,
-      ),
+        (r) => r.type == type,
+      orElse: () => reactions.first,
     );
-    return match.emoji;
+    return match.icon;
   }
   @override
   void dispose() {
@@ -75,12 +71,12 @@ class _PostFooterState extends State<PostFooter> with SingleTickerProviderStateM
               );
             },
             child: FooterButton(
-              icon: _getReactionEmoji(_selectedReaction),
+              icon: _getReactionIcon(_selectedReaction),
               label: '',
             ),
           ),
-          const FooterButton(icon: '💬', label: 'Comment'),
-          const FooterButton(icon: '🔗', label: 'Share'),
+          const FooterButton(icon: Icons.mode_comment_outlined, label: 'Comment'),
+          const FooterButton(icon: Icons.share_outlined, label: 'Share'),
         ],
       ),
     );

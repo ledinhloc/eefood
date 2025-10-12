@@ -60,7 +60,7 @@ class PostContent extends StatelessWidget {
                 (r) => r.type == entry.key,
             orElse: () => ReactionOption(
               type: entry.key,
-              emoji: '❓',
+              icon: Icons.arrow_left_sharp,
               color: Colors.grey,
             ),
           );
@@ -69,7 +69,8 @@ class PostContent extends StatelessWidget {
             padding: const EdgeInsets.only(right: 8),
             child: Row(
               children: [
-                Text(reaction.emoji, style: const TextStyle(fontSize: 18)),
+                // Text(reaction.icon, style: const TextStyle(fontSize: 18)),
+                Icon(reaction.icon, color: reaction.color, size: 18,),
                 const SizedBox(width: 4),
                 Text(
                   entry.value.toString(),

@@ -10,25 +10,46 @@ enum ReactionType {
   ANGRY
 }
 
-List<ReactionOption> reactions = [
-  ReactionOption(type: ReactionType.LIKE, emoji: '👍', color: Color(0xFFFF6B35)),
-  ReactionOption(type: ReactionType.LOVE, emoji: '❤️', color: Color(0xFFF7931E)),
-  ReactionOption(type: ReactionType.WOW, emoji: '😮', color: Color(0xFFFFC107)),
-  ReactionOption(type: ReactionType.SAD, emoji: '😢', color: Color(0xFF4CAF50)),
-  ReactionOption(type: ReactionType.ANGRY, emoji: '😡', color: Colors.redAccent),
-];
-
 class ReactionOption {
   final ReactionType type;
-  final String emoji;
+  final IconData icon;
   final Color color;
 
   const ReactionOption({
     required this.type,
-    required this.emoji,
+    required this.icon,
     required this.color,
   });
 }
+
+List<ReactionOption> reactions = [
+  ReactionOption(
+    type: ReactionType.LIKE,
+    icon: Icons.thumb_up_alt_rounded,
+    color: const Color(0xFFFF6B35),
+  ),
+  ReactionOption(
+    type: ReactionType.LOVE,
+    icon: Icons.favorite_rounded,
+    color: const Color(0xFFF44336),
+  ),
+  ReactionOption(
+    type: ReactionType.WOW,
+    icon: Icons.emoji_emotions_rounded,
+    color: const Color(0xFFFFC107),
+  ),
+  ReactionOption(
+    type: ReactionType.SAD,
+    icon: Icons.sentiment_dissatisfied_rounded,
+    color: const Color(0xFF4CAF50),
+  ),
+  ReactionOption(
+    type: ReactionType.ANGRY,
+    icon: Icons.mood_bad_rounded,
+    color: Colors.redAccent,
+  ),
+];
+
 
 extension ReactionTypeX on ReactionType {
   String get key => name.toUpperCase(); // ví dụ: "LIKE"
