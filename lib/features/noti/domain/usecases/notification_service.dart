@@ -19,6 +19,7 @@ class NotificationService {
           defaultColor: const Color(0xFF4CAF50),
           ledColor: const Color(0xFF4CAF50),
           playSound: true,
+          soundSource: 'resource://raw/eefood_sound',
         ),
         NotificationChannel(
           channelKey: 'system_channel',

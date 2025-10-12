@@ -3,6 +3,7 @@ import 'package:eefood/features/auth/presentation/bloc/on_boarding_bloc/on_board
 import 'package:eefood/features/noti/data/repositories/notification_repository_impl.dart';
 import 'package:eefood/features/noti/domain/repositories/notification_repository.dart';
 import 'package:eefood/features/noti/presentation/provider/notification_cubit.dart';
+import 'package:eefood/features/noti/presentation/provider/notification_settings_cubit.dart';
 import 'package:eefood/features/post/data/repositories/post_repository_impl.dart';
 import 'package:eefood/features/post/domain/repositories/post_repository.dart';
 import 'package:eefood/features/profile/domain/repositories/profile_repository.dart';
@@ -88,6 +89,7 @@ Future<void> setupDependencies() async {
 
   //notification cubit
   getIt.registerLazySingleton<NotificationCubit>(() => NotificationCubit());
+  getIt.registerLazySingleton<NotificationSettingsCubit>(() => NotificationSettingsCubit());
 
   //recipe
   getIt.registerLazySingleton(() => CreateRecipe(getIt<RecipeRepository>()));

@@ -15,4 +15,18 @@ class NotificationSettingsModel {
       enabled: json['enabled'] ?? true,
     );
   }
+
+  Map<String, dynamic> toJson() => {
+        'id': id,
+        'type': type,
+        'enabled': enabled,
+      };
+
+  NotificationSettingsModel copyWith({bool? enabled}) {
+    return NotificationSettingsModel(
+      id: id,
+      type: type,
+      enabled: enabled ?? this.enabled,
+    );
+  }
 }

@@ -142,16 +142,16 @@ class NotificationCubit extends Cubit<NotificationState> {
         stompConnectHeaders: {'Authorization': 'Bearer $token'},
         webSocketConnectHeaders: {'Authorization': 'Bearer $token'},
         onConnect:_onWebSocketConnected,
-        onWebSocketError: (err) => print('❌ WS error: $err'),
-        onStompError: (frame) => print('❌ STOMP error: ${frame.body}'),
-        onDisconnect: (frame) => print('🔌 Disconnected'),
+        onWebSocketError: (err) => print('WS error: $err'),
+        onStompError: (frame) => print('STOMP error: ${frame.body}'),
+        onDisconnect: (frame) => print('Disconnected'),
       ),
     );
     _stompClient!.activate();
   }
 
   void _onWebSocketConnected(StompFrame frame) {
-    print('✅ [WebSocket] Connected');
+    print('[WebSocket] Connected');
     _stompClient?.subscribe(
       destination: '/user/queue/notifications',
       callback: (StompFrame frame) {
@@ -181,7 +181,7 @@ class NotificationCubit extends Cubit<NotificationState> {
 
   @override
   Future<void> close() {
-    print('🔒 NotificationCubit closed: $hashCode');
+    print('NotificationCubit closed: $hashCode');
     _stompClient?.deactivate();
     return super.close();
   }
