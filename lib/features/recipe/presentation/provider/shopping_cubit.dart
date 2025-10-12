@@ -5,9 +5,9 @@ import '../../domain/repositories/shopping_repository.dart';
 import 'shopping_state.dart';
 
 class ShoppingCubit extends Cubit<ShoppingState> {
-  final ShoppingRepository repository = getIt<ShoppingRepository>();
+  final ShoppingRepository repository;
 
-  ShoppingCubit() : super(const ShoppingState());
+  ShoppingCubit({ required this.repository}) : super(const ShoppingState());
 
   Future<void> loadByRecipe() async {
     emit(state.copyWith(isLoading: true, error: null));
