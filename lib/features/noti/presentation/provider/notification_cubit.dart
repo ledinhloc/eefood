@@ -15,7 +15,6 @@ import 'package:stomp_dart_client/stomp_config.dart';
 class NotificationCubit extends Cubit<NotificationState> {
   final NotificationRepository repository = getIt<NotificationRepository>();
   final SharedPreferences prefs = getIt<SharedPreferences>();
-  final String baseUrl = AppKeys.baseUrl;
   StompClient? _stompClient;
 
   NotificationCubit()
@@ -138,7 +137,7 @@ class NotificationCubit extends Cubit<NotificationState> {
     final token = prefs.getString(AppKeys.accessToken) ?? '';
     _stompClient = StompClient(
       config: StompConfig.sockJS(
-        url: '$baseUrl/ws?token=$token',
+        url: '${AppKeys.baseUrl}/ws?token=$token',
         stompConnectHeaders: {'Authorization': 'Bearer $token'},
         webSocketConnectHeaders: {'Authorization': 'Bearer $token'},
         onConnect:_onWebSocketConnected,
