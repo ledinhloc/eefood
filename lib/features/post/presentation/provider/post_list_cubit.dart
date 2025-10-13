@@ -1,3 +1,5 @@
+import 'package:eefood/features/post/data/models/reaction_type.dart';
+import 'package:eefood/features/post/domain/repositories/post_reaction_repository.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../core/di/injection.dart';
 import '../../data/models/post_model.dart';
@@ -5,16 +7,52 @@ import '../../data/repositories/post_repository_impl.dart';
 import '../../domain/repositories/post_repository.dart';
 
 class PostListCubit extends Cubit<PostListState> {
-  final PostRepository repository = getIt<PostRepository>();
+  final PostRepository postRepo = getIt<PostRepository>();
+  final PostReactionRepository reactionRepo = getIt<PostReactionRepository>();
+
   PostListCubit()
       : super(PostListState(posts: [], isLoading: false, hasMore: true, currentPage: 1));
+
+  Future<void> reactToPost(int postId, ReactionType reactionType) async {
+    try{
+      //luu reaction
+      await reactionRepo.reactToPost(postId, reactionType);
+      //
+      final updatePost = await postRepo.getPostById(postId);
+      //cap nhat post trong danh sach hien tai
+      final updatedPosts = state.posts.map((p){
+        if(p.id == postId) return updatePost;
+        return p;
+      }).toList();
+      emit(state.copyWith(posts: updatedPosts));
+    }catch(e){
+      print('Error when reaching to post: ');
+    }
+  }
+
+  Future<void> removeReaction(int postId) async {
+    try{
+      //luu reaction
+      await reactionRepo.removeReaction(postId);
+      //
+      final updatePost = await postRepo.getPostById(postId);
+      //cap nhat post trong danh sach hien tai
+      final updatedPosts = state.posts.map((p){
+        if(p.id == postId) return updatePost;
+        return p;
+      }).toList();
+      emit(state.copyWith(posts: updatedPosts));
+    }catch(e){
+      print('Error when reaching to post: ');
+    }
+  }
 
   Future<void> fetchPosts({bool loadMore = false}) async {
     if (state.isLoading || (!state.hasMore && loadMore)) return;
 
     emit(state.copyWith(isLoading: true));
     final nextPage = loadMore ? state.currentPage + 1 : 1;
-    final posts = await repository.getAllPosts(nextPage, 10);
+    final posts = await postRepo.getAllPosts(nextPage, 10);
     print('next page la : $nextPage');
 
     emit(PostListState(

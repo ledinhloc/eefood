@@ -4,7 +4,9 @@ import 'package:eefood/features/noti/data/repositories/notification_repository_i
 import 'package:eefood/features/noti/domain/repositories/notification_repository.dart';
 import 'package:eefood/features/noti/presentation/provider/notification_cubit.dart';
 import 'package:eefood/features/noti/presentation/provider/notification_settings_cubit.dart';
+import 'package:eefood/features/post/data/repositories/post_reaction_repository_impl.dart';
 import 'package:eefood/features/post/data/repositories/post_repository_impl.dart';
+import 'package:eefood/features/post/domain/repositories/post_reaction_repository.dart';
 import 'package:eefood/features/post/domain/repositories/post_repository.dart';
 import 'package:eefood/features/profile/domain/repositories/profile_repository.dart';
 import 'package:eefood/features/profile/domain/usecases/profile_usecase.dart';
@@ -23,6 +25,7 @@ import '../../features/auth/domain/usecases/auth_usecases.dart';
 import '../../features/profile/data/repo/profile_repository_imp.dart';
 import '../../features/recipe/data/repositories/shopping_repository_impl.dart';
 import '../../features/recipe/domain/repositories/shopping_repository.dart';
+import '../../features/recipe/presentation/provider/shopping_cubit.dart';
 import '../network/dio_client.dart';
 
 final GetIt getIt = GetIt.instance;
@@ -99,9 +102,11 @@ Future<void> setupDependencies() async {
 
   //shopping
   getIt.registerLazySingleton<ShoppingRepository>(() => ShoppingRepositoryImpl(dio: getIt<DioClient>().dio ));
+  getIt.registerLazySingleton(() => ShoppingCubit(repository: getIt<ShoppingRepository>()));
 
   //post
   getIt.registerLazySingleton<PostRepository>(() => PostRepositoryImpl(dio: getIt<DioClient>().dio ));
+  getIt.registerLazySingleton<PostReactionRepository>(() => PostReactionRepositoryImpl(dio: getIt<DioClient>().dio ));
 
   // notification
   getIt.registerLazySingleton<NotificationRepository>(() => NotificationRepositoryImpl(dio: getIt<DioClient>().dio ));

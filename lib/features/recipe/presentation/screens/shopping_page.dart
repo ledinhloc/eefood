@@ -1,3 +1,4 @@
+import 'package:eefood/core/di/injection.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../core/widgets/custom_bottom_sheet.dart';
@@ -13,7 +14,7 @@ class ShoppingPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
-      create: (_) => ShoppingCubit()..load(),
+      create: (_) => getIt<ShoppingCubit>()..load(),
       child: const ShoppingView(),
     );
   }

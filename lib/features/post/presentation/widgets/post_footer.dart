@@ -1,4 +1,6 @@
+import 'package:eefood/features/post/presentation/provider/post_list_cubit.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../data/models/post_model.dart';
 import '../../data/models/reaction_type.dart';
 import 'reaction_popup.dart';
@@ -37,6 +39,23 @@ class _PostFooterState extends State<PostFooter> with SingleTickerProviderStateM
     super.dispose();
   }
 
+  void _handleReact(ReactionType? newReaction) async{
+    final cubit = context.read<PostListCubit>();
+
+    if(_selectedReaction == newReaction || newReaction == null){
+      //neu chon lai cung loai
+      await cubit.removeReaction(widget.post.id);
+      setState(() {
+        _selectedReaction = null;
+      });
+    }else{
+      await cubit.reactToPost(widget.post.id, newReaction);
+      setState(() {
+        _selectedReaction = newReaction;
+      });
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Padding(
@@ -47,14 +66,13 @@ class _PostFooterState extends State<PostFooter> with SingleTickerProviderStateM
           GestureDetector(
             onLongPressStart: (details) {
               widget.onShowReactions?.call(details.globalPosition, (reaction) {
-                setState(() => _selectedReaction = reaction);
+                _handleReact(reaction);
               });
             },
             onTap: () {
-              setState(() {
-                _selectedReaction =
-                _selectedReaction == null ? ReactionType.LIKE : null;
-              });
+              _handleReact(
+                _selectedReaction == null ? ReactionType.LIKE : null
+              );
             },
             child: FooterButton(
               icon: _getReactionEmoji(_selectedReaction),
