@@ -195,22 +195,41 @@ class RecipeDetailPage extends StatelessWidget {
     );
   }
 
-  void _showRecipeOption(BuildContext context, int recipeId){
-    showCustomBottomSheet(
-        context,
-      [
-        BottomSheetOption(
-            icon: const Icon(Icons.add_shopping_cart_rounded, color: Colors.orange,),
-            title: 'Thêm vào danh sách mua sắm',
-            onTap: () async {
-              try{
-                getIt<ShoppingCubit>().addRecipe(recipeId);
-                showCustomSnackBar(context, 'Đã thêm vào danh sách mua sắm!');
-              }catch(e){
-                showCustomSnackBar(context, 'Lỗi khi thêm', isError: true);
-              }
-        })
-      ]
-    );
+  void _showRecipeOption(BuildContext context, int recipeId, {bool isAuthor = false}) {
+    final opts = <BottomSheetOption>[
+      BottomSheetOption(
+        icon: const Icon(Icons.add_shopping_cart_rounded, color: Colors.orange),
+        title: 'Thêm vào danh sách mua sắm',
+        onTap: () => getIt<ShoppingCubit>().addRecipe(recipeId),
+      ),
+      BottomSheetOption(
+        icon: const Icon(Icons.bookmark_border),
+        title: 'Lưu công thức',
+        onTap: () => {},
+      ),
+      BottomSheetOption(
+        icon: const Icon(Icons.share_outlined),
+        title: 'Chia sẻ',
+        onTap: () => {},
+      ),
+      BottomSheetOption(
+        icon: const Icon(Icons.search),
+        title: 'Tìm món tương tự',
+        onTap: () {},
+      ),
+      BottomSheetOption(
+        icon: const Icon(Icons.report_gmailerrorred),
+        title: 'Báo cáo',
+        onTap: () {},
+      ),
+    ];
+    if (isAuthor) {
+      opts.addAll([
+        BottomSheetOption(icon: const Icon(Icons.edit), title: 'Chỉnh sửa', onTap: () {}),
+        BottomSheetOption(icon: const Icon(Icons.delete_forever), title: 'Xóa', onTap: () {},)
+      ]);
+    }
+    showCustomBottomSheet(context, opts);
   }
+
 }
