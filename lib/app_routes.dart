@@ -12,6 +12,8 @@ import 'package:eefood/features/auth/presentation/screens/welcome_page.dart';
 import 'package:eefood/features/noti/presentation/provider/notification_cubit.dart';
 import 'package:eefood/features/noti/presentation/screens/notification_screen.dart';
 import 'package:eefood/features/noti/presentation/screens/ntofication_settings_screen.dart';
+import 'package:eefood/features/post/presentation/screens/collection_detail_page.dart';
+import 'package:eefood/features/post/presentation/screens/collection_list_page.dart';
 import 'package:eefood/features/post/presentation/screens/feed_screen.dart';
 import 'package:eefood/features/profile/presentation/screens/edit_profile_page.dart';
 import 'package:eefood/features/profile/presentation/screens/food_preferences_page.dart';
@@ -57,10 +59,14 @@ class AppRoutes {
   static const notificationSettingScreen = '/notificationSettingsScreen';
   static const notificationScreen = '/notificationScreen';
 
+  /* feat post */
+  static const collectionList = '/collectionList';
+  static const collectionDetail = '/collectionDetail';
+
   // Danh sách các widget cho BottomNavigationBar trong main page
   static List<Widget> widgetOptions = <Widget>[
     FeedScreen(),
-    SearchPage(),
+    CollectionListPage(),
     MyRecipesPage(),
     ShoppingPage(),
     ProfilePage(),
@@ -126,5 +132,12 @@ class AppRoutes {
       final recipeId = args['recipeId'] as int;
       return RecipeDetailPage(recipeId: recipeId);
     },
+    //post,
+    collectionList: (context) => CollectionListPage(),
+    collectionDetail: (context) {
+      final args =
+      ModalRoute.of(context)!.settings.arguments as Map<String, dynamic>;
+      return CollectionDetailPage(collectionId: args['collectionId']);
+    }
   };
 }
