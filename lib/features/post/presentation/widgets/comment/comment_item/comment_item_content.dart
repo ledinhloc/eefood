@@ -43,7 +43,7 @@ class CommentItemContent extends StatelessWidget {
           const SizedBox(height: 4),
           shouldShowExpanded
               ? _buildExpanded()
-              : _buildCollapsed(onExpand),
+              : _buildCollapsed(context, onExpand),
           if (shouldShowExpanded) ...[
             const SizedBox(height: 4),
             CommentItemActions(
@@ -81,41 +81,62 @@ class CommentItemContent extends StatelessWidget {
     );
   }
 
-  Widget _buildCollapsed(VoidCallback onExpand) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          comment.content.length > 100
-              ? '${comment.content.substring(0, 100)}...'
-              : comment.content,
-          style: const TextStyle(fontSize: 14),
-          maxLines: 2,
-          overflow: TextOverflow.ellipsis,
-        ),
-        const SizedBox(height: 4),
-        Row(
-          children: [
-            Text(
-              TimeParser.formatCommentTime(comment.createdAt),
-              style: TextStyle(
-                fontSize: 12,
-                color: Colors.grey.shade600,
-                fontWeight: FontWeight.w500,
+  Widget _buildCollapsed(BuildContext context, VoidCallback onExpand) {
+    return GestureDetector(
+      onTap: onExpand,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            comment.content.length > 100
+                ? '${comment.content.substring(0, 100)}...'
+                : comment.content,
+            style: const TextStyle(fontSize: 14),
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
+          ),
+          const SizedBox(height: 6),
+          Row(
+            children: [
+              Text(
+                TimeParser.formatCommentTime(comment.createdAt),
+                style: TextStyle(
+                  fontSize: 12,
+                  color: Colors.grey.shade600,
+                  fontWeight: FontWeight.w500,
+                ),
               ),
-            ),
-            const SizedBox(width: 16),
-            Text(
-              "Thích",
-              style: TextStyle(
-                fontSize: 12,
-                color: Colors.grey.shade600,
-                fontWeight: FontWeight.w500,
+              const SizedBox(width: 16),
+              GestureDetector(
+                onTapDown: (_) => FocusManager.instance.primaryFocus?.unfocus(),
+                onTap: () => showReactionPopup(context),
+                child: Text(
+                  "Thích",
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: Colors.grey.shade600,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
               ),
-            ),
-          ],
-        ),
-      ],
+              if (depth < 3) ...[
+                const SizedBox(width: 16),
+                GestureDetector(
+                  onTap: () => cubit.setReplyingTo(comment),
+                  child: Text(
+                    "Trả lời",
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: Colors.grey.shade600,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                ),
+              ],
+            ],
+          ),
+        ],
+      ),
     );
   }
 }

@@ -22,7 +22,6 @@ void main() async {
   );
   await di.setupDependencies();
 
-  di.getIt<NotificationCubit>();
   runApp(const MyApp());
 }
 
@@ -37,6 +36,10 @@ class _MyAppState extends State<MyApp> {
   @override
   void initState() {
     super.initState();
+
+    Future.microtask(() {
+      di.getIt<NotificationCubit>(); 
+    });
   }
 
   @override

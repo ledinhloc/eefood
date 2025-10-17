@@ -157,6 +157,10 @@ class _CommentInputState extends State<CommentInput> {
                 ? 'Viết phản hồi...'
                 : 'Viết bình luận...',
             border: InputBorder.none,
+            focusedBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(24),
+              borderSide: BorderSide.none,
+            ),
             isDense: true,
           ),
           maxLines: 1,
@@ -253,6 +257,7 @@ class _CommentInputState extends State<CommentInput> {
 
   @override
   void dispose() {
+    _focusNode.unfocus();
     _controller.dispose();
     _focusNode.dispose();
     super.dispose();
