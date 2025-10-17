@@ -4,10 +4,12 @@ import 'package:eefood/features/noti/data/repositories/notification_repository_i
 import 'package:eefood/features/noti/domain/repositories/notification_repository.dart';
 import 'package:eefood/features/noti/presentation/provider/notification_cubit.dart';
 import 'package:eefood/features/noti/presentation/provider/notification_settings_cubit.dart';
+import 'package:eefood/features/post/domain/repositories/comment_repository.dart';
 import 'package:eefood/features/post/data/repositories/comment_repository_impl.dart';
+import 'package:eefood/features/post/data/repositories/collection_repository_impl.dart';
 import 'package:eefood/features/post/data/repositories/post_reaction_repository_impl.dart';
 import 'package:eefood/features/post/data/repositories/post_repository_impl.dart';
-import 'package:eefood/features/post/domain/repositories/comment_repository.dart';
+import 'package:eefood/features/post/domain/repositories/collection_repository.dart';
 import 'package:eefood/features/post/domain/repositories/post_reaction_repository.dart';
 import 'package:eefood/features/post/domain/repositories/post_repository.dart';
 import 'package:eefood/features/post/presentation/provider/comment_list_cubit.dart';
@@ -113,7 +115,8 @@ Future<void> setupDependencies() async {
   //post
   getIt.registerLazySingleton<PostRepository>(() => PostRepositoryImpl(dio: getIt<DioClient>().dio ));
   getIt.registerLazySingleton<PostReactionRepository>(() => PostReactionRepositoryImpl(dio: getIt<DioClient>().dio ));
-  getIt.registerLazySingleton<CommentRepository>(() => CommentRepositoryImpl(dio: getIt<DioClient>().dio ));
+  getIt.registerLazySingleton<CollectionRepository>(() => CollectionRepositoryImpl(dio: getIt<DioClient>().dio ));
+getIt.registerLazySingleton<CommentRepository>(() => CommentRepositoryImpl(dio: getIt<DioClient>().dio ));
 
   // notification
   getIt.registerLazySingleton<NotificationRepository>(() => NotificationRepositoryImpl(dio: getIt<DioClient>().dio ));

@@ -26,8 +26,8 @@ class _MainScreenState extends State<MainScreen> {
       bottomNavigationBar: BottomNavigationBar(
           items: const <BottomNavigationBarItem>[
             BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Posts'),
-            BottomNavigationBarItem(icon: Icon(Icons.search), label: 'Search'),
-            BottomNavigationBarItem(icon: Icon(Icons.bookmark), label: 'MyRecipes'),
+            BottomNavigationBarItem(icon: Icon(Icons.bookmark_border), label: 'Saved'),
+            BottomNavigationBarItem(icon: Icon(Icons.menu_book_outlined), label: 'MyRecipes'),
             BottomNavigationBarItem(icon: Icon(Icons.shopping_cart), label: 'Shopping List'),
             BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Profile'),
           ],
