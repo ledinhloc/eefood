@@ -4,10 +4,17 @@ import '../provider/collection_cubit.dart';
 import '../provider/collection_state.dart';
 import '../../../post/data/models/post_simple_model.dart';
 import '../../../../../features/post/presentation/widgets/post_summary_card.dart';
-import 'collection_detail_page.dart'; // đổi tên file widget
+import 'collection_detail_page.dart';
 
-class CollectionListPage extends StatelessWidget {
+class CollectionListPage extends StatefulWidget {
   const CollectionListPage({super.key});
+
+  @override
+  State<CollectionListPage> createState() => _CollectionListPageState();
+}
+
+class _CollectionListPageState extends State<CollectionListPage> {
+  String searchQuery = '';
 
   @override
   Widget build(BuildContext context) {
@@ -27,12 +34,17 @@ class CollectionListPage extends StatelessWidget {
 
               final collections = state.collections;
 
-              // Tổng hợp tất cả các bài post từ các collection
+              // Tổng hợp tất cả bài post
               final List<PostSimpleModel> allRecipes = collections
                   .expand((c) => c.posts ?? [])
                   .cast<PostSimpleModel>()
                   .toList()
                 ..sort((a, b) => b.createdAt.compareTo(a.createdAt));
+              // Lọc danh sách theo từ khóa nhập
+              final filteredRecipes = allRecipes.where((recipe) {
+                final query = searchQuery.toLowerCase();
+                return recipe.title.toLowerCase().contains(query);
+              }).toList();
 
               return RefreshIndicator(
                 onRefresh: () async {
@@ -48,7 +60,7 @@ class CollectionListPage extends StatelessWidget {
                       TextField(
                         decoration: InputDecoration(
                           prefixIcon: const Icon(Icons.search),
-                          hintText: 'Tìm kiếm',
+                          hintText: 'Tìm kiếm món ăn...',
                           filled: true,
                           fillColor: Colors.white,
                           contentPadding:
@@ -58,6 +70,11 @@ class CollectionListPage extends StatelessWidget {
                             borderSide: BorderSide.none,
                           ),
                         ),
+                        onChanged: (value) {
+                          setState(() {
+                            searchQuery = value;
+                          });
+                        },
                       ),
                       const SizedBox(height: 12),
 
@@ -69,8 +86,8 @@ class CollectionListPage extends StatelessWidget {
                               style: TextStyle(
                                   fontSize: 18, fontWeight: FontWeight.bold)),
                           Text('See all',
-                              style:
-                              TextStyle(color: Colors.grey, fontSize: 14)),
+                              style: TextStyle(
+                                  color: Colors.grey, fontSize: 14)),
                         ],
                       ),
                       const SizedBox(height: 12),
@@ -84,16 +101,16 @@ class CollectionListPage extends StatelessWidget {
                           const SizedBox(width: 10),
                           itemBuilder: (context, index) {
                             final collection = collections[index];
-                           return GestureDetector(
+                            return GestureDetector(
                               onTap: () {
                                 final cubit = context.read<CollectionCubit>();
-
                                 Navigator.push(
                                   context,
                                   MaterialPageRoute(
                                     builder: (_) => BlocProvider.value(
                                       value: cubit,
-                                      child: CollectionDetailPage(collectionId: collection.id),
+                                      child: CollectionDetailPage(
+                                          collectionId: collection.id),
                                     ),
                                   ),
                                 );
@@ -108,7 +125,6 @@ class CollectionListPage extends StatelessWidget {
                                 child: Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
-                                    // Hiển thị ảnh cover nếu có
                                     if (collection.coverImageUrl != null &&
                                         collection.coverImageUrl!.isNotEmpty)
                                       Image.network(
@@ -161,7 +177,7 @@ class CollectionListPage extends StatelessWidget {
                       ),
                       const SizedBox(height: 24),
 
-                      // Section Posts (tất cả)
+                      // Section Posts (tất cả hoặc lọc)
                       const Text('Gần đây',
                           style: TextStyle(
                               fontSize: 18, fontWeight: FontWeight.bold)),
@@ -177,9 +193,9 @@ class CollectionListPage extends StatelessWidget {
                           crossAxisSpacing: 10,
                           mainAxisSpacing: 10,
                         ),
-                        itemCount: allRecipes.length,
+                        itemCount: filteredRecipes.length,
                         itemBuilder: (context, index) {
-                          final recipe = allRecipes[index];
+                          final recipe = filteredRecipes[index];
                           return PostSummaryCard(recipe: recipe);
                         },
                       ),
