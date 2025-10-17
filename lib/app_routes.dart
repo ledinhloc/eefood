@@ -12,6 +12,8 @@ import 'package:eefood/features/auth/presentation/screens/welcome_page.dart';
 import 'package:eefood/features/noti/presentation/provider/notification_cubit.dart';
 import 'package:eefood/features/noti/presentation/screens/notification_screen.dart';
 import 'package:eefood/features/noti/presentation/screens/ntofication_settings_screen.dart';
+import 'package:eefood/features/post/presentation/screens/collection_detail_page.dart';
+import 'package:eefood/features/post/presentation/screens/collection_list_page.dart';
 import 'package:eefood/features/post/presentation/screens/feed_screen.dart';
 import 'package:eefood/features/profile/presentation/screens/edit_profile_page.dart';
 import 'package:eefood/features/profile/presentation/screens/food_preferences_page.dart';
@@ -24,6 +26,7 @@ import 'package:eefood/main_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'features/auth/domain/entities/user.dart';
+import 'features/post/presentation/provider/collection_cubit.dart';
 import 'features/profile/presentation/screens/profile_page.dart';
 import 'features/recipe/presentation/screens/my_recipes_page.dart';
 import 'features/recipe/presentation/screens/search_page.dart';
@@ -57,10 +60,14 @@ class AppRoutes {
   static const notificationSettingScreen = '/notificationSettingsScreen';
   static const notificationScreen = '/notificationScreen';
 
+  /* feat post */
+  static const collectionList = '/collectionList';
+  static const collectionDetail = '/collectionDetail';
+
   // Danh sách các widget cho BottomNavigationBar trong main page
   static List<Widget> widgetOptions = <Widget>[
     FeedScreen(),
-    SearchPage(),
+    CollectionListPage(),
     MyRecipesPage(),
     ShoppingPage(),
     ProfilePage(),
@@ -126,5 +133,17 @@ class AppRoutes {
       final recipeId = args['recipeId'] as int;
       return RecipeDetailPage(recipeId: recipeId);
     },
+    //post,
+    collectionList: (context) => CollectionListPage(),
+    collectionDetail: (context) {
+      final args =
+      ModalRoute.of(context)!.settings.arguments as Map<String, dynamic>;
+      final collectionCubit = args['collectionCubit'] as CollectionCubit;
+      final collectionId = args['collectionId'] as int;
+      return BlocProvider.value(
+        value: collectionCubit,
+        child: CollectionDetailPage(collectionId: collectionId),
+      );
+    }
   };
 }
