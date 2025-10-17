@@ -26,6 +26,7 @@ import 'package:eefood/main_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'features/auth/domain/entities/user.dart';
+import 'features/post/presentation/provider/collection_cubit.dart';
 import 'features/profile/presentation/screens/profile_page.dart';
 import 'features/recipe/presentation/screens/my_recipes_page.dart';
 import 'features/recipe/presentation/screens/search_page.dart';
@@ -137,7 +138,12 @@ class AppRoutes {
     collectionDetail: (context) {
       final args =
       ModalRoute.of(context)!.settings.arguments as Map<String, dynamic>;
-      return CollectionDetailPage(collectionId: args['collectionId']);
+      final collectionCubit = args['collectionCubit'] as CollectionCubit;
+      final collectionId = args['collectionId'] as int;
+      return BlocProvider.value(
+        value: collectionCubit,
+        child: CollectionDetailPage(collectionId: collectionId),
+      );
     }
   };
 }
