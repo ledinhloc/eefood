@@ -6,7 +6,7 @@ class GetAllNotifications {
   final NotificationRepository repository;
   GetAllNotifications(this.repository);
 
-  Future<List<NotificationModel>> call({int page = 1, int limit = 5}) =>
+  Future<List<NotificationModel>> call({int page = 1, int limit = 10}) =>
       repository.getAllNotifications(page, limit);
 }
 

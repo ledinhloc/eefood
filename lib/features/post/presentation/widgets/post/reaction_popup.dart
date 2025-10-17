@@ -1,5 +1,5 @@
+import 'package:eefood/features/post/data/models/reaction_type.dart';
 import 'package:flutter/material.dart';
-import '../../data/models/reaction_type.dart';
 
 class ReactionPopup extends StatefulWidget {
   final void Function(ReactionType reaction) onSelect;

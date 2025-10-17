@@ -1,21 +1,25 @@
+import 'package:eefood/core/di/injection.dart';
+import 'package:eefood/features/post/presentation/provider/comment_list_cubit.dart';
 import 'package:eefood/features/post/presentation/provider/post_list_cubit.dart';
+import 'package:eefood/features/post/presentation/widgets/comment/comment_sheet.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import '../../data/models/post_model.dart';
-import '../../data/models/reaction_type.dart';
-import 'reaction_popup.dart';
+import '../../../data/models/post_model.dart';
+import '../../../data/models/reaction_type.dart';
 import 'footer_button.dart';
 
 class PostFooter extends StatefulWidget {
   final PostModel post;
-  final void Function(Offset offset, Function(ReactionType) onSelect)? onShowReactions;
+  final void Function(Offset offset, Function(ReactionType) onSelect)?
+  onShowReactions;
   const PostFooter({super.key, required this.post, this.onShowReactions});
 
   @override
   State<PostFooter> createState() => _PostFooterState();
 }
 
-class _PostFooterState extends State<PostFooter> with SingleTickerProviderStateMixin{
+class _PostFooterState extends State<PostFooter>
+    with SingleTickerProviderStateMixin {
   ReactionType? _selectedReaction;
   @override
   void initState() {
@@ -25,7 +29,7 @@ class _PostFooterState extends State<PostFooter> with SingleTickerProviderStateM
   String _getReactionEmoji(ReactionType? type) {
     if (type == null) return '👍🏻';
     final match = reactions.firstWhere(
-          (r) => r.type == type,
+      (r) => r.type == type,
       orElse: () => const ReactionOption(
         type: ReactionType.LIKE,
         emoji: '👍',
@@ -34,26 +38,41 @@ class _PostFooterState extends State<PostFooter> with SingleTickerProviderStateM
     );
     return match.emoji;
   }
+
   @override
   void dispose() {
     super.dispose();
   }
 
-  void _handleReact(ReactionType? newReaction) async{
+  void _handleReact(ReactionType? newReaction) async {
     final cubit = context.read<PostListCubit>();
 
-    if(_selectedReaction == newReaction || newReaction == null){
+    if (_selectedReaction == newReaction || newReaction == null) {
       //neu chon lai cung loai
       await cubit.removeReaction(widget.post.id);
       setState(() {
         _selectedReaction = null;
       });
-    }else{
+    } else {
       await cubit.reactToPost(widget.post.id, newReaction);
       setState(() {
         _selectedReaction = newReaction;
       });
     }
+  }
+
+  void _openCommentSheet() {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) {
+        return BlocProvider(
+          create: (_) => getIt<CommentListCubit>()..fetchComments(widget.post.id),
+          child: CommentBottomSheet(postId: widget.post.id),
+        );
+      },
+    );
   }
 
   @override
@@ -71,7 +90,7 @@ class _PostFooterState extends State<PostFooter> with SingleTickerProviderStateM
             },
             onTap: () {
               _handleReact(
-                _selectedReaction == null ? ReactionType.LIKE : null
+                _selectedReaction == null ? ReactionType.LIKE : null,
               );
             },
             child: FooterButton(
@@ -79,7 +98,11 @@ class _PostFooterState extends State<PostFooter> with SingleTickerProviderStateM
               label: '',
             ),
           ),
-          const FooterButton(icon: '💬', label: 'Comment'),
+          FooterButton(
+            icon: '💬',
+            label: 'Comment',
+            onPressed: _openCommentSheet,
+          ),
           const FooterButton(icon: '🔗', label: 'Share'),
         ],
       ),

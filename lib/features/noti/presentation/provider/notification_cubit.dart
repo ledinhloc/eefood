@@ -38,7 +38,7 @@ class NotificationCubit extends Cubit<NotificationState> {
     final nextPage = loadMore ? state.currentPage + 1 : 1;
     print('➡️ fetchNotifications nextPage=$nextPage, loadMore=$loadMore');
     try {
-      final notifications = await repository.getAllNotifications(nextPage, 5);
+      final notifications = await repository.getAllNotifications(nextPage, 10);
       print('➡️ fetched ${notifications.length} notifications');
       emit(
         state.copyWith(

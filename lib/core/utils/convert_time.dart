@@ -55,4 +55,12 @@ class TimeParser {
       return '${diff.inDays} days ago • ${formatHourMinute(dateTime)}';
     }
   }
+
+  static String formatCommentTime(DateTime? dt) {
+    final diff = DateTime.now().difference(dt!);
+    if (diff.inMinutes < 1) return 'Vừa xong';
+    if (diff.inHours < 1) return '${diff.inMinutes} phút';
+    if (diff.inDays < 1) return '${diff.inHours} giờ';
+    return '${diff.inDays} ngày';
+  }
 }

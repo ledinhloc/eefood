@@ -5,6 +5,7 @@ import 'package:eefood/features/auth/domain/usecases/auth_usecases.dart';
 import 'package:eefood/features/noti/presentation/provider/notification_cubit.dart';
 import 'package:eefood/features/noti/presentation/provider/notification_state.dart';
 import 'package:eefood/features/noti/presentation/screens/notification_screen.dart';
+import 'package:eefood/features/post/presentation/widgets/post/reaction_popup.dart';
 
 import 'package:eefood/features/recipe/presentation/screens/recipe_detail_page.dart';
 
@@ -12,8 +13,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../data/models/reaction_type.dart';
 import '../provider/post_list_cubit.dart';
-import '../widgets/post_card.dart';
-import '../widgets/reaction_popup.dart';
+import '../widgets/post/post_card.dart';
+
 import 'package:badges/badges.dart' as badges;
 
 class FeedScreen extends StatelessWidget {
