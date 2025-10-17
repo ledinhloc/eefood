@@ -56,6 +56,7 @@ dependencies:
   badges: ^3.1.2 #badge notification
   stomp_dart_client: ^1.0.3 #websocket
   awesome_notifications: ^0.10.1 #localnotification
+  emoji_picker_flutter: ^4.3.0 #emoji picker
 dev_dependencies:
   flutter_test:
     sdk: flutter

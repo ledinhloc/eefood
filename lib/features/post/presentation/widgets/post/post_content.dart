@@ -1,8 +1,8 @@
 import 'package:eefood/features/post/data/models/reaction_type.dart';
-import 'package:eefood/features/post/presentation/widgets/post_card.dart';
+import 'package:eefood/features/post/presentation/widgets/post/post_card.dart';
 import 'package:flutter/material.dart';
 
-import '../../data/models/post_model.dart';
+import '../../../data/models/post_model.dart';
 
 class PostContent extends StatelessWidget {
   final PostModel post;

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import '../../../recipe/presentation/screens/recipe_detail_page.dart';
-import '../../data/models/post_simple_model.dart';
-import '../../../../core/widgets/user_avatar.dart';
+import '../../../../recipe/presentation/screens/recipe_detail_page.dart';
+import '../../../data/models/post_simple_model.dart';
+import '../../../../../core/widgets/user_avatar.dart';
 
 class PostSummaryCard extends StatelessWidget {
   final PostSimpleModel recipe;

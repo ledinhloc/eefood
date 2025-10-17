@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import '../../../../core/widgets/user_avatar.dart';
-import '../../data/models/post_model.dart';
-import '../../../../core/widgets/custom_bottom_sheet.dart'; // import file custom
+import '../../../../../core/widgets/user_avatar.dart';
+import '../../../data/models/post_model.dart';
+import '../../../../../core/widgets/custom_bottom_sheet.dart'; // import file custom
 
 class PostHeader extends StatelessWidget {
   final PostModel post;

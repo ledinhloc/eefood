@@ -3,7 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../recipe/presentation/screens/recipe_detail_page.dart';
 import '../provider/collection_cubit.dart';
 import '../provider/collection_state.dart';
-import '../../../post/presentation/widgets/post_summary_card.dart';
+import '../widgets/post/post_summary_card.dart';
 
 class CollectionDetailPage extends StatelessWidget {
   final int collectionId;

@@ -60,7 +60,7 @@ class NotificationService {
         title: title,
         body: body,
         largeIcon: avatarUrl?.isNotEmpty == true ? avatarUrl : null,
-        notificationLayout: NotificationLayout.BigPicture,
+        notificationLayout: NotificationLayout.Default,
         payload: {'path': path ?? ''},
       ),
     );

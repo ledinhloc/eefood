@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:eefood/features/post/presentation/widgets/post_card.dart';
+import 'package:eefood/features/post/presentation/widgets/post/post_card.dart';
 
 class FooterButton extends StatelessWidget {
   final String icon;

@@ -3,7 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../provider/collection_cubit.dart';
 import '../provider/collection_state.dart';
 import '../../../post/data/models/post_simple_model.dart';
-import '../../../../../features/post/presentation/widgets/post_summary_card.dart';
+import '../widgets/post/post_summary_card.dart';
 import 'collection_detail_page.dart';
 
 class CollectionListPage extends StatefulWidget {
