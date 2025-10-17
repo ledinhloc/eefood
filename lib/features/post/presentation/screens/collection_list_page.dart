@@ -173,7 +173,7 @@ class CollectionListPage extends StatelessWidget {
                         gridDelegate:
                         const SliverGridDelegateWithFixedCrossAxisCount(
                           crossAxisCount: 2,
-                          mainAxisExtent: 220,
+                          childAspectRatio: 0.9,
                           crossAxisSpacing: 10,
                           mainAxisSpacing: 10,
                         ),
