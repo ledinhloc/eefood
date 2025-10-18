@@ -3,8 +3,8 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../provider/collection_cubit.dart';
 import '../provider/collection_state.dart';
 import '../../../post/data/models/post_simple_model.dart';
+import '../widgets/post/collection_list_widget.dart';
 import '../widgets/post/post_summary_card.dart';
-import 'collection_detail_page.dart';
 
 class CollectionListPage extends StatefulWidget {
   const CollectionListPage({super.key});
@@ -15,6 +15,7 @@ class CollectionListPage extends StatefulWidget {
 
 class _CollectionListPageState extends State<CollectionListPage> {
   String searchQuery = '';
+  bool isExpanded = false;
 
   @override
   Widget build(BuildContext context) {
@@ -31,7 +32,6 @@ class _CollectionListPageState extends State<CollectionListPage> {
               if (state.status == CollectionStatus.failure) {
                 return Center(child: Text(state.error ?? "Error"));
               }
-
               final collections = state.collections;
 
               // Tổng hợp tất cả bài post
@@ -40,10 +40,12 @@ class _CollectionListPageState extends State<CollectionListPage> {
                   .cast<PostSimpleModel>()
                   .toList()
                 ..sort((a, b) => b.createdAt.compareTo(a.createdAt));
+
               // Lọc danh sách theo từ khóa nhập
               final filteredRecipes = allRecipes.where((recipe) {
-                final query = searchQuery.toLowerCase();
-                return recipe.title.toLowerCase().contains(query);
+                final query = removeDiacritics(searchQuery.toLowerCase());
+                final title = removeDiacritics(recipe.title.toLowerCase());
+                return title.contains(query);
               }).toList();
 
               return RefreshIndicator(
@@ -56,7 +58,7 @@ class _CollectionListPageState extends State<CollectionListPage> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      // Thanh tìm kiếm
+                      // 🔹 Thanh tìm kiếm
                       TextField(
                         decoration: InputDecoration(
                           prefixIcon: const Icon(Icons.search),
@@ -71,118 +73,55 @@ class _CollectionListPageState extends State<CollectionListPage> {
                           ),
                         ),
                         onChanged: (value) {
-                          setState(() {
-                            searchQuery = value;
-                          });
+                          setState(() => searchQuery = value);
                         },
                       ),
                       const SizedBox(height: 12),
 
-                      // Section Collection
+                      //  Header "Bộ sưu tập" + nút mở rộng
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: const [
-                          Text('Bộ sưu tập',
-                              style: TextStyle(
-                                  fontSize: 18, fontWeight: FontWeight.bold)),
-                          Text('Mở rộng',
-                              style: TextStyle(
-                                  color: Colors.grey, fontSize: 14)),
+                        children: [
+                          const Text(
+                            'Bộ sưu tập',
+                            style: TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          GestureDetector(
+                            onTap: () {
+                              setState(() => isExpanded = !isExpanded);
+                            },
+                            child: Text(
+                              isExpanded ? 'Thu gọn' : 'Mở rộng',
+                              style: const TextStyle(
+                                color: Colors.grey,
+                                fontSize: 14,
+                              ),
+                            ),
+                          ),
                         ],
                       ),
                       const SizedBox(height: 12),
 
-                      SizedBox(
-                        height: 140,
-                        child: ListView.separated(
-                          scrollDirection: Axis.horizontal,
-                          itemCount: collections.length,
-                          separatorBuilder: (_, __) =>
-                          const SizedBox(width: 10),
-                          itemBuilder: (context, index) {
-                            final collection = collections[index];
-                            return GestureDetector(
-                              onTap: () {
-                                final cubit = context.read<CollectionCubit>();
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (_) => BlocProvider.value(
-                                      value: cubit,
-                                      child: CollectionDetailPage(
-                                          collectionId: collection.id),
-                                    ),
-                                  ),
-                                );
-                              },
-                              child: Container(
-                                width: 120,
-                                decoration: BoxDecoration(
-                                  color: Colors.white,
-                                  borderRadius: BorderRadius.circular(16),
-                                ),
-                                clipBehavior: Clip.antiAlias,
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    if (collection.coverImageUrl != null &&
-                                        collection.coverImageUrl!.isNotEmpty)
-                                      Image.network(
-                                        collection.coverImageUrl!,
-                                        fit: BoxFit.cover,
-                                        height: 80,
-                                        width: double.infinity,
-                                        errorBuilder: (_, __, ___) =>
-                                            Container(
-                                              height: 80,
-                                              color: Colors.grey[300],
-                                              child: const Icon(Icons.image),
-                                            ),
-                                      )
-                                    else
-                                      Container(
-                                        height: 80,
-                                        color: Colors.grey[300],
-                                        child: const Center(
-                                            child: Icon(Icons.image)),
-                                      ),
-                                    Padding(
-                                      padding: const EdgeInsets.all(8.0),
-                                      child: Column(
-                                        crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                        children: [
-                                          Text(
-                                            collection.name,
-                                            overflow: TextOverflow.ellipsis,
-                                            style: const TextStyle(
-                                                fontWeight: FontWeight.bold),
-                                          ),
-                                          const SizedBox(height: 4),
-                                          Text(
-                                            "${collection.posts?.length ?? 0} posts",
-                                            style: const TextStyle(
-                                                color: Colors.grey,
-                                                fontSize: 12),
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            );
-                          },
-                        ),
+                      // Widget danh sách bộ sưu tập
+                      CollectionListWidget(
+                        collections: collections,
+                        isExpanded: isExpanded,
                       ),
+
                       const SizedBox(height: 24),
 
-                      // Section Posts (tất cả hoặc lọc)
-                      const Text('Gần đây',
-                          style: TextStyle(
-                              fontSize: 18, fontWeight: FontWeight.bold)),
+                      //  Section bài viết
+                      const Text(
+                        'Gần đây',
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
                       const SizedBox(height: 12),
-
                       GridView.builder(
                         physics: const NeverScrollableScrollPhysics(),
                         shrinkWrap: true,
@@ -190,8 +129,8 @@ class _CollectionListPageState extends State<CollectionListPage> {
                         const SliverGridDelegateWithFixedCrossAxisCount(
                           crossAxisCount: 2,
                           childAspectRatio: 0.9,
-                          crossAxisSpacing: 10,
-                          mainAxisSpacing: 10,
+                          crossAxisSpacing: 5,
+                          mainAxisSpacing: 3,
                         ),
                         itemCount: filteredRecipes.length,
                         itemBuilder: (context, index) {
@@ -208,5 +147,20 @@ class _CollectionListPageState extends State<CollectionListPage> {
         ),
       ),
     );
+  }
+
+  // Hàm loại bỏ dấu tiếng Việt
+  String removeDiacritics(String input) {
+    const withDiacritics =
+        'àáạảãâầấậẩẫăằắặẳẵèéẹẻẽêềếệểễìíịỉĩòóọỏõôồốộổỗơờớợởỡùúụủũưừứựửữỳýỵỷỹđ'
+        'ÀÁẠẢÃÂẦẤẬẨẪĂẰẮẶẲẴÈÉẸẺẼÊỀẾỆỂỄÌÍỊỈĨÒÓỌỎÕÔỒỐỘỔỖƠỜỚỢỞỠÙÚỤỦŨƯỪỨỰỬỮỲÝỴỶỸĐ';
+    const withoutDiacritics =
+        'aaaaaaaaaaaaaaaaaeeeeeeeeeeeiiiiiooooooooooooooooouuuuuuuuuuuyyyyyd'
+        'AAAAAAAAAAAAAAAAAEEEEEEEEEEEIIIII OOOOOOOOOOOOOOOOOOUUUUUUUUUUUYYYYYD';
+
+    for (int i = 0; i < withDiacritics.length; i++) {
+      input = input.replaceAll(withDiacritics[i], withoutDiacritics[i]);
+    }
+    return input;
   }
 }
