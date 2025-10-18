@@ -85,7 +85,7 @@ class _CollectionListPageState extends State<CollectionListPage> {
                           Text('Bộ sưu tập',
                               style: TextStyle(
                                   fontSize: 18, fontWeight: FontWeight.bold)),
-                          Text('See all',
+                          Text('Mở rộng',
                               style: TextStyle(
                                   color: Colors.grey, fontSize: 14)),
                         ],

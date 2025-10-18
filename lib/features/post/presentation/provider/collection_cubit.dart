@@ -33,4 +33,11 @@ class CollectionCubit extends Cubit<CollectionState> {
       emit(state.copyWith(status: CollectionStatus.failure, error: e.toString()));
     }
   }
+
+  Future<void> selectCollectionDetail(int id) async {
+    final collection = state.collections.firstWhere(
+        (c) => c.id == id
+    );
+    emit(state.copyWith(selectedCollection: collection, ));
+  }
 }
