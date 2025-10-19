@@ -1,12 +1,12 @@
 
-import 'package:eefood/features/post/data/models/post_simple_model.dart';
+import 'package:eefood/features/post/data/models/post_collection_model.dart';
 
 class CollectionModel {
   final int id;
   final String name;
   final String? coverImageUrl;
   final DateTime? createdAt;
-  final List<PostSimpleModel>? posts;
+  final List<PostCollectionModel>? posts;
 
   CollectionModel({
     required this.id,
@@ -26,7 +26,7 @@ class CollectionModel {
           : null,
       posts: json['posts'] != null
           ? (json['posts'] as List)
-          .map((e) => PostSimpleModel.fromJson(e))
+          .map((e) => PostCollectionModel.fromJson(e))
           .toList()
           : [],
     );
