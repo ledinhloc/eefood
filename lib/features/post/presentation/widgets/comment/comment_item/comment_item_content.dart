@@ -1,3 +1,6 @@
+import 'package:eefood/core/utils/reaction_helper.dart';
+import 'package:eefood/features/post/data/models/reaction_type.dart';
+import 'package:eefood/features/post/presentation/widgets/comment/comment_item/comment_reaction_summary.dart';
 import 'package:flutter/material.dart';
 import 'package:eefood/core/utils/convert_time.dart';
 import 'package:eefood/features/post/data/models/comment_model.dart';
@@ -44,16 +47,8 @@ class CommentItemContent extends StatelessWidget {
           shouldShowExpanded
               ? _buildExpanded()
               : _buildCollapsed(context, onExpand),
-          if (shouldShowExpanded) ...[
-            const SizedBox(height: 4),
-            CommentItemActions(
-              comment: comment,
-              depth: depth,
-              actionButtonKey: actionButtonKey,
-              cubit: cubit,
-              showReactionPopup: showReactionPopup,
-            ),
-          ],
+          const SizedBox(height: 4),
+          _buildActions(context),
         ],
       ),
     );
@@ -84,59 +79,69 @@ class CommentItemContent extends StatelessWidget {
   Widget _buildCollapsed(BuildContext context, VoidCallback onExpand) {
     return GestureDetector(
       onTap: onExpand,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            comment.content.length > 100
-                ? '${comment.content.substring(0, 100)}...'
-                : comment.content,
-            style: const TextStyle(fontSize: 14),
-            maxLines: 2,
-            overflow: TextOverflow.ellipsis,
+      child: Text(
+        comment.content.length > 100
+            ? '${comment.content.substring(0, 100)}...'
+            : comment.content,
+        style: const TextStyle(fontSize: 14),
+        maxLines: 2,
+        overflow: TextOverflow.ellipsis,
+      ),
+    );
+  }
+
+  /// Luôn hiển thị Like + Reply
+  Widget _buildActions(BuildContext context) {
+    final hasCurrentReaction = comment.currentUserReaction != null;
+    final currentUserReaction = comment.currentUserReaction;
+
+    return Row(
+      children: [
+        Text(
+          TimeParser.formatCommentTime(comment.createdAt),
+          style: TextStyle(
+            fontSize: 12,
+            color: Colors.grey.shade600,
+            fontWeight: FontWeight.w500,
           ),
-          const SizedBox(height: 6),
-          Row(
+        ),
+        const SizedBox(width: 16),
+        GestureDetector(
+          key: actionButtonKey,
+          onTapDown: (_) => FocusManager.instance.primaryFocus?.unfocus(),
+          onTap: () => showReactionPopup(context),
+          child: Row(
             children: [
               Text(
-                TimeParser.formatCommentTime(comment.createdAt),
+                hasCurrentReaction
+                    ? ReactionHelper.label(currentUserReaction!)
+                    : "Thích",
                 style: TextStyle(
                   fontSize: 12,
-                  color: Colors.grey.shade600,
+                  color: hasCurrentReaction
+                      ? ReactionHelper.color(currentUserReaction!)
+                      : Colors.grey.shade600,
                   fontWeight: FontWeight.w500,
                 ),
               ),
-              const SizedBox(width: 16),
-              GestureDetector(
-                onTapDown: (_) => FocusManager.instance.primaryFocus?.unfocus(),
-                onTap: () => showReactionPopup(context),
-                child: Text(
-                  "Thích",
-                  style: TextStyle(
-                    fontSize: 12,
-                    color: Colors.grey.shade600,
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
-              ),
-              if (depth < 3) ...[
-                const SizedBox(width: 16),
-                GestureDetector(
-                  onTap: () => cubit.setReplyingTo(comment),
-                  child: Text(
-                    "Trả lời",
-                    style: TextStyle(
-                      fontSize: 12,
-                      color: Colors.grey.shade600,
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
-                ),
-              ],
             ],
           ),
+        ),
+        if (depth < 3) ...[
+          const SizedBox(width: 16),
+          GestureDetector(
+            onTap: () => cubit.setReplyingTo(comment),
+            child: Text(
+              "Trả lời",
+              style: TextStyle(
+                fontSize: 12,
+                color: Colors.grey.shade600,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ),
         ],
-      ),
+      ],
     );
   }
 }
