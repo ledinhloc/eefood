@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import '../../../../../core/widgets/custom_bottom_sheet.dart';
 import '../../../data/models/collection_model.dart';
 import '../../provider/collection_cubit.dart';
 import '../../screens/collection_detail_page.dart';
@@ -30,7 +31,9 @@ class CollectionListWidget extends StatelessWidget {
           separatorBuilder: (_, __) => const SizedBox(width: 5),
           itemBuilder: (context, index) {
             final collection = collections[index];
-            return _CollectionItem(collection: collection);
+            return _CollectionItem(
+                key: ValueKey(collection.id),
+                collection: collection);
           },
         ),
       );
@@ -49,7 +52,7 @@ class CollectionListWidget extends StatelessWidget {
       itemCount: collections.length,
       itemBuilder: (context, index) {
         final collection = collections[index];
-        return _CollectionItem(collection: collection);
+        return _CollectionItem(collection: collection, key:  ValueKey(collection.id),);
       },
     );
   }
@@ -57,7 +60,7 @@ class CollectionListWidget extends StatelessWidget {
 
 class _CollectionItem extends StatelessWidget {
   final CollectionModel collection;
-  const _CollectionItem({required this.collection});
+  const _CollectionItem({required this.collection, required ValueKey<int> key});
 
   @override
   Widget build(BuildContext context) {
@@ -76,37 +79,65 @@ class _CollectionItem extends StatelessWidget {
         );
       },
       child: Container(
-        width: 140, // tăng nhẹ để dễ bố trí chữ
+        width: 140,
         decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.circular(12),
         ),
         clipBehavior: Clip.antiAlias,
         child: Column(
-          mainAxisSize: MainAxisSize.min, // Cho phép co giãn chiều cao
+          mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Ảnh bìa
-            if (collection.coverImageUrl != null &&
-                collection.coverImageUrl!.isNotEmpty)
-              Image.network(
-                collection.coverImageUrl!,
-                fit: BoxFit.cover,
-                height: 80,
-                width: double.infinity,
-                errorBuilder: (_, __, ___) => Container(
-                  height: 80,
-                  color: Colors.grey[300],
-                  child: const Icon(Icons.image),
-                ),
-              )
-            else
-              Container(
-                height: 80,
-                color: Colors.grey[300],
-                child: const Center(child: Icon(Icons.image)),
-              ),
+            Stack(
+              children: [
+                // Ảnh bìa
+                if (collection.coverImageUrl != null &&
+                    collection.coverImageUrl!.isNotEmpty)
+                  Image.network(
+                    collection.coverImageUrl!,
+                    fit: BoxFit.cover,
+                    height: 80,
+                    width: double.infinity,
+                    errorBuilder: (_, __, ___) => Container(
+                      height: 80,
+                      color: Colors.grey[300],
+                      child: const Icon(Icons.image),
+                    ),
+                  )
+                else
+                  Container(
+                    height: 80,
+                    color: Colors.grey[300],
+                    child: const Center(child: Icon(Icons.image)),
+                  ),
 
+                // Dấu 3 chấm ở góc trên phải
+                Positioned(
+                  top: 0,
+                  right: 0,
+                  child: IconButton(
+                    icon: const Icon(Icons.more_vert, color: Colors.white),
+                    onPressed: () {
+                      showCustomBottomSheet(context, [
+                        BottomSheetOption(
+                          icon: const Icon(Icons.edit, color: Colors.blue),
+                          title: 'Đổi tên bộ sưu tập',
+                          onTap: () => _showRenameDialog(context, cubit),
+                        ),
+                        BottomSheetOption(
+                          icon: const Icon(Icons.delete, color: Colors.red),
+                          title: 'Xóa bộ sưu tập',
+                          onTap: () async {
+                            await cubit.deleteCollection(collection.id);
+                          },
+                        ),
+                      ]);
+                    },
+                  ),
+                ),
+              ],
+            ),
             // Nội dung
             Padding(
               padding: const EdgeInsets.all(8.0),
@@ -116,8 +147,7 @@ class _CollectionItem extends StatelessWidget {
                   Text(
                     collection.name,
                     maxLines: 2,
-                    softWrap: true,
-                    overflow: TextOverflow.ellipsis, // cắt nhẹ nếu quá dài
+                    overflow: TextOverflow.ellipsis,
                     style: const TextStyle(
                       fontWeight: FontWeight.bold,
                       fontSize: 14,
@@ -136,6 +166,33 @@ class _CollectionItem extends StatelessWidget {
             ),
           ],
         ),
+      ),
+    );
+  }
+
+  void _showRenameDialog(BuildContext context, CollectionCubit cubit) {
+    final controller = TextEditingController(text: collection.name);
+    showDialog(
+      context: context,
+      builder: (_) => AlertDialog(
+        title: const Text('Sửa tên bộ sưu tập'),
+        content: TextField(
+          controller: controller,
+          decoration: const InputDecoration(hintText: 'Nhập tên mới'),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Hủy'),
+          ),
+          ElevatedButton(
+            onPressed: () async {
+              Navigator.pop(context);
+              await cubit.updateCollection(collection.id, name: controller.text);
+            },
+            child: const Text('Lưu'),
+          ),
+        ],
       ),
     );
   }

@@ -45,6 +45,7 @@ class CollectionCubit extends Cubit<CollectionState> {
     emit(state.copyWith(status: CollectionStatus.loading));
     try {
       final newCollection = await repository.createCollection(name);
+      // await fetchCollectionsByUser();
       final updatedCollections = [...state.collections, newCollection];
       emit(state.copyWith(
         status: CollectionStatus.success,
@@ -59,12 +60,13 @@ class CollectionCubit extends Cubit<CollectionState> {
     emit(state.copyWith(status: CollectionStatus.loading));
     try {
       final updatedCollection = await repository.updateCollection(id, name: name, coverImageUrl: coverImageUrl);
-      final updatedCollections = state.collections.map((c) => c.id == id ? updatedCollection : c).toList();
-      emit(state.copyWith(
-        status: CollectionStatus.success,
-        collections: updatedCollections,
-        selectedCollection: state.selectedCollection?.id == id ? updatedCollection : state.selectedCollection,
-      ));
+      await fetchCollectionsByUser();
+      // final updatedCollections = state.collections.map((c) => c.id == id ? updatedCollection : c).toList();
+      // emit(state.copyWith(
+      //   status: CollectionStatus.success,
+      //   collections: updatedCollections,
+      //   selectedCollection: state.selectedCollection?.id == id ? updatedCollection : state.selectedCollection,
+      // ));
     } catch (e) {
       emit(state.copyWith(status: CollectionStatus.failure, error: e.toString()));
     }
@@ -74,12 +76,13 @@ class CollectionCubit extends Cubit<CollectionState> {
     emit(state.copyWith(status: CollectionStatus.loading));
     try {
       await repository.deleteCollection(id);
-      final updatedCollections = state.collections.where((c) => c.id != id).toList();
-      emit(state.copyWith(
-        status: CollectionStatus.success,
-        collections: updatedCollections,
-        selectedCollection: state.selectedCollection?.id == id ? null : state.selectedCollection,
-      ));
+      await fetchCollectionsByUser();
+      // final updatedCollections = state.collections.where((c) => c.id != id).toList();
+      // emit(state.copyWith(
+      //   status: CollectionStatus.success,
+      //   collections: updatedCollections,
+      //   selectedCollection: state.selectedCollection?.id == id ? null : state.selectedCollection,
+      // ));
     } catch (e) {
       emit(state.copyWith(status: CollectionStatus.failure, error: e.toString()));
     }
@@ -88,7 +91,8 @@ class CollectionCubit extends Cubit<CollectionState> {
   Future<void> addPostToCollection(int collectionId, int postId) async {
     try {
       await repository.addPostToCollection(collectionId, postId);
-      await fetchCollectionDetail(collectionId);
+      // await fetchCollectionDetail(collectionId);
+      await fetchCollectionsByUser();
     } catch (e) {
       emit(state.copyWith(status: CollectionStatus.failure, error: e.toString()));
     }
@@ -97,7 +101,8 @@ class CollectionCubit extends Cubit<CollectionState> {
   Future<void> removePostFromCollection(int collectionId, int postId) async {
     try {
       await repository.removePostFromCollection(collectionId, postId);
-      await fetchCollectionDetail(collectionId);
+      await fetchCollectionsByUser();
+      // await fetchCollectionDetail(collectionId);
     } catch (e) {
       emit(state.copyWith(status: CollectionStatus.failure, error: e.toString()));
     }

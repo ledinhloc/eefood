@@ -1,15 +1,25 @@
+import 'package:eefood/features/post/data/models/post_collection_model.dart';
 import 'package:flutter/material.dart';
 import '../../../../recipe/presentation/screens/recipe_detail_page.dart';
-import '../../../data/models/post_simple_model.dart';
 import '../../../../../core/widgets/user_avatar.dart';
 
-class PostSummaryCard extends StatelessWidget {
-  final PostSimpleModel recipe;
+import 'package:eefood/core/widgets/custom_bottom_sheet.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import '../../provider/collection_cubit.dart';
 
-  const PostSummaryCard({super.key, required this.recipe});
+class PostSummaryCard extends StatelessWidget {
+  final PostCollectionModel recipe;
+  final int? currentCollectionId;
+
+  const PostSummaryCard({
+    super.key,
+    required this.recipe,
+     this.currentCollectionId,
+  });
 
   @override
   Widget build(BuildContext context) {
+    final cubit = context.read<CollectionCubit>();
     return InkWell(
       borderRadius: BorderRadius.circular(16),
       onTap: () {
@@ -33,75 +43,96 @@ class PostSummaryCard extends StatelessWidget {
           ],
         ),
         clipBehavior: Clip.antiAlias,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          mainAxisSize: MainAxisSize.min,
+        child: Stack(
           children: [
-            // Ảnh bài post
-            AspectRatio(
-              aspectRatio: 1.5,
-              child: recipe.imageUrl != null && recipe.imageUrl!.isNotEmpty
-                  ? Image.network(
-                recipe.imageUrl!,
-                fit: BoxFit.cover,
-                width: double.infinity,
-                errorBuilder: (_, __, ___) => Container(
-                  color: Colors.grey[300],
-                  child: const Icon(Icons.broken_image, size: 40),
-                ),
-              )
-                  : Container(
-                color: Colors.grey[300],
-                child: const Center(child: Icon(Icons.image, size: 40)),
-              ),
-            ),
-
-            // Phần nội dung (title + avatar)
-            Padding(
-              padding: const EdgeInsets.symmetric(
-                horizontal: 10.0,
-                vertical: 6.0,
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // Tiêu đề món ăn
-                  Text(
-                    recipe.title,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(
-                      fontWeight: FontWeight.bold,
-                      fontSize: 15,
-                    ),
-                  ),
-
-                  const SizedBox(height: 4),
-
-                  // Avatar + tên người đăng
-                  Row(
-                    children: [
-                      UserAvatar(
-                        username: "Loc Dinh Le",
-                        url:
-                        'https://jbagy.me/wp-content/uploads/2025/03/hinh-anh-cute-avatar-vo-tri-3.jpg',
-                        radius: 16, // ⬅️ Phóng to avatar
-                      ),
-                      const SizedBox(width: 8),
-                      Expanded(
-                        child: Text(
-                          "Loc Dinh Le",
-                          style: const TextStyle(
-                            fontSize: 13,
-                            fontWeight: FontWeight.w500,
-                            color: Colors.black87,
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                AspectRatio(
+                  aspectRatio: 1.5,
+                  child: recipe.imageUrl != null && recipe.imageUrl!.isNotEmpty
+                      ? Image.network(
+                          recipe.imageUrl!,
+                          fit: BoxFit.cover,
+                          width: double.infinity,
+                        )
+                      : Container(
+                          color: Colors.grey[300],
+                          child: const Center(
+                            child: Icon(Icons.image, size: 40),
                           ),
-                          overflow: TextOverflow.ellipsis,
                         ),
+                ),
+                Padding(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 10,
+                    vertical: 6,
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        recipe.title,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: const TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 15,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Row(
+                        children: [
+                          UserAvatar(
+                            username: recipe.username,
+                            url: recipe.avatarUrl,
+                            radius: 16, // ⬅️ Phóng to avatar
+                          ),
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: Text(
+                              recipe.username,
+                              style: const TextStyle(fontSize: 13),
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                        ],
                       ),
                     ],
                   ),
-                ],
+                ),
+              ],
+            ),
+
+            // Nút 3 chấm
+            Positioned(
+              top: 4,
+              right: 4,
+              child: IconButton(
+                icon: const Icon(Icons.more_vert, color: Colors.white),
+                onPressed: () {
+                  showCustomBottomSheet(context, [
+                    BottomSheetOption(
+                      icon: const Icon(Icons.bookmark_add, color: Colors.blue),
+                      title: 'Lưu vào bộ sưu tập khác',
+                      onTap: () {
+                        _showAddToCollectionDialog(context, recipe.postId);
+                      },
+                    ),
+                    if (currentCollectionId != null)
+                      BottomSheetOption(
+                        icon: const Icon(Icons.remove_circle, color: Colors.red),
+                        title: 'Xóa khỏi bộ sưu tập này',
+                        onTap: () async {
+                          await cubit.removePostFromCollection(
+                            currentCollectionId!,
+                            recipe.postId,
+                          );
+                        },
+                      ),
+                  ]);
+                },
               ),
             ),
           ],
@@ -109,4 +140,26 @@ class PostSummaryCard extends StatelessWidget {
       ),
     );
   }
+
+  void _showAddToCollectionDialog(BuildContext context, int postId) {
+    final cubit = context.read<CollectionCubit>();
+    final collections = cubit.state.collections;
+
+    showDialog(
+      context: context,
+      builder: (_) => SimpleDialog(
+        title: const Text('Chọn bộ sưu tập'),
+        children: collections.map((col) {
+          return SimpleDialogOption(
+            onPressed: () async {
+              Navigator.pop(context);
+              await cubit.addPostToCollection(col.id, postId);
+            },
+            child: Text(col.name),
+          );
+        }).toList(),
+      ),
+    );
+  }
+
 }

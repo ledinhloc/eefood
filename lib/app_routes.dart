@@ -67,7 +67,10 @@ class AppRoutes {
   // Danh sách các widget cho BottomNavigationBar trong main page
   static List<Widget> widgetOptions = <Widget>[
     FeedScreen(),
-    CollectionListPage(),
+    BlocProvider(
+      create: (_) => CollectionCubit()..fetchCollectionsByUser(),
+      child: CollectionListPage(),
+    ),
     MyRecipesPage(),
     ShoppingPage(),
     ProfilePage(),
@@ -134,7 +137,10 @@ class AppRoutes {
       return RecipeDetailPage(recipeId: recipeId);
     },
     //post,
-    collectionList: (context) => CollectionListPage(),
+    collectionList: (context) => BlocProvider(
+      create: (_) => CollectionCubit()..fetchCollectionsByUser(),
+      child: const CollectionListPage(),
+    ),
     collectionDetail: (context) {
       final args =
       ModalRoute.of(context)!.settings.arguments as Map<String, dynamic>;

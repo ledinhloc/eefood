@@ -5,14 +5,14 @@ class CollectionModel {
   final int id;
   final String name;
   final String? coverImageUrl;
-  final DateTime? createdAt;
+  final DateTime? updatedAt;
   final List<PostCollectionModel>? posts;
 
   CollectionModel({
     required this.id,
     required this.name,
     this.coverImageUrl,
-    this.createdAt,
+    this.updatedAt,
     this.posts,
   });
 
@@ -21,8 +21,8 @@ class CollectionModel {
       id: json['id'],
       name: json['name'],
       coverImageUrl: json['coverImageUrl'],
-      createdAt: json['createdAt'] != null
-          ? DateTime.parse(json['createdAt'])
+      updatedAt: json['updatedAt'] != null
+          ? DateTime.parse(json['updatedAt'])
           : null,
       posts: json['posts'] != null
           ? (json['posts'] as List)

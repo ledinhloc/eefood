@@ -52,7 +52,7 @@ class _CollectionDetailPageState extends State<CollectionDetailPage> {
             itemCount: posts.length,
             itemBuilder: (context, index) {
               final post = posts[index];
-              return PostSummaryCard(recipe: post);
+              return PostSummaryCard(recipe: post, currentCollectionId: collection.id,);
             },
           ),
         );
