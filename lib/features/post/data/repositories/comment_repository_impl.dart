@@ -7,6 +7,14 @@ class CommentRepositoryImpl extends CommentRepository{
   CommentRepositoryImpl({required this.dio});
 
   @override
+  Future<CommentModel?> getCommentById(int commentId) async {
+    final response = await dio.get('/v1/comments/$commentId');
+    if(response.statusCode == 200 && response.data['data'] != null) {
+      return CommentModel.fromJson(response.data['data']);
+    }
+  }
+
+  @override
   Future<CommentModel?> addComment(CommentModel request, int postId) async {
     final response = await dio.post(
       '/v1/comments',

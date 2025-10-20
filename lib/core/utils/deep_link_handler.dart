@@ -15,7 +15,7 @@ class DeepLinkHandler {
       final id = pathSegments.length > 1 ? pathSegments[1] : null;
 
       switch (first) {
-        case 'recipes':
+        case 'posts':
           if (id != null) {
             navigatorKey.currentState?.pushNamed(
               AppRoutes.recipeDetail,
