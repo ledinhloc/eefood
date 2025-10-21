@@ -179,38 +179,37 @@ class _CommentItemState extends State<CommentItem> {
   }
 
   void showReactionPopup(BuildContext context, GlobalKey key) {
-  final renderObject = key.currentContext?.findRenderObject();
-  if (renderObject is! RenderBox) return;
+    final renderObject = key.currentContext?.findRenderObject();
+    if (renderObject is! RenderBox) return;
 
-  final renderBox = renderObject as RenderBox;
-  final offset = renderBox.localToGlobal(Offset.zero);
+    final renderBox = renderObject as RenderBox;
+    final offset = renderBox.localToGlobal(Offset.zero);
 
-  showDialog(
-    context: context,
-    barrierColor: Colors.transparent,
-    builder: (context) {
-      return Stack(
-        children: [
-          Positioned.fill(
-            child: GestureDetector(
-              onTap: () => Navigator.of(context).pop(),
-              child: Container(color: Colors.transparent),
+    showDialog(
+      context: context,
+      barrierColor: Colors.transparent,
+      builder: (context) {
+        return Stack(
+          children: [
+            Positioned.fill(
+              child: GestureDetector(
+                onTap: () => Navigator.of(context).pop(),
+                child: Container(color: Colors.transparent),
+              ),
             ),
-          ),
-          Positioned(
-            left: offset.dx - 30,
-            top: offset.dy - 80,
-            child: ReactionPopup(
-              onSelect: (reaction) {
-                Navigator.of(context).pop();
-                _handleReact(reaction);
-              },
+            Positioned(
+              left: offset.dx - 30,
+              top: offset.dy - 80,
+              child: ReactionPopup(
+                onSelect: (reaction) {
+                  Navigator.of(context).pop();
+                  _handleReact(reaction);
+                },
+              ),
             ),
-          ),
-        ],
-      );
-    },
-  );
-}
-
+          ],
+        );
+      },
+    );
+  }
 }

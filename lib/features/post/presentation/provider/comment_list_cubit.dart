@@ -3,6 +3,7 @@ import 'package:eefood/core/di/injection.dart';
 import 'package:eefood/core/utils/file_upload.dart';
 import 'package:eefood/features/auth/domain/usecases/auth_usecases.dart';
 import 'package:eefood/features/post/data/models/comment_model.dart';
+import 'package:eefood/features/post/data/models/comment_reaction_model.dart';
 import 'package:eefood/features/post/data/models/reaction_type.dart';
 import 'package:eefood/features/post/domain/repositories/comment_reaction_repository.dart';
 import 'package:eefood/features/post/domain/repositories/comment_repository.dart';

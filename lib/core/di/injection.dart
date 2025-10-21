@@ -15,6 +15,7 @@ import 'package:eefood/features/post/domain/repositories/collection_repository.d
 import 'package:eefood/features/post/domain/repositories/post_reaction_repository.dart';
 import 'package:eefood/features/post/domain/repositories/post_repository.dart';
 import 'package:eefood/features/post/presentation/provider/comment_list_cubit.dart';
+import 'package:eefood/features/post/presentation/provider/comment_reaction_cubit.dart';
 import 'package:eefood/features/profile/domain/repositories/profile_repository.dart';
 import 'package:eefood/features/profile/domain/usecases/profile_usecase.dart';
 import 'package:eefood/features/recipe/data/models/recipe_model.dart';
@@ -103,6 +104,7 @@ Future<void> setupDependencies() async {
 
   // post
   getIt.registerFactory<CommentListCubit>(() => CommentListCubit());
+  getIt.registerLazySingleton<CommentReactionCubit>(() => CommentReactionCubit());
 
   //recipe
   getIt.registerLazySingleton(() => CreateRecipe(getIt<RecipeRepository>()));

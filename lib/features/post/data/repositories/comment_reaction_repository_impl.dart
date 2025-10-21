@@ -9,6 +9,34 @@ class CommentReactionRepositoryImpl extends CommentReactionRepository {
   CommentReactionRepositoryImpl({required this.dio});
 
   @override
+  Future<List<CommentReactionModel>> getReactionAndUserByComment(
+    int commentId, {
+    int page = 1,
+    int limit = 10,
+  }) async {
+    print('Repository called: commentId=$commentId, page=$page, limit=$limit');
+    final response = await dio.get(
+      '/v1/comment-reactions/$commentId/list',
+      queryParameters: {'page': page, 'limit': limit},
+    );
+
+    print('Response raw: ${response.data}');
+
+    if (response.statusCode == 200) {
+      final data = response.data['data'];
+      final List<dynamic> content = (data != null && data['content'] is List)
+          ? data['content']
+          : [];
+
+      print('Parsed content length: ${content.length}');
+
+      return content.map((e) => CommentReactionModel.fromJson(e)).toList();
+    }
+
+    return [];
+  }
+
+  @override
   Future<CommentReactionModel?> reactToComment(
     int commentId,
     ReactionType type,

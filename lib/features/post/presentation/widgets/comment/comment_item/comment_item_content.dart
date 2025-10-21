@@ -1,6 +1,6 @@
 import 'package:eefood/core/utils/reaction_helper.dart';
 import 'package:eefood/features/post/data/models/reaction_type.dart';
-import 'package:eefood/features/post/presentation/widgets/comment/comment_item/comment_reaction_summary.dart';
+import 'package:eefood/features/post/presentation/widgets/comment/comment_reaction/comment_reaction_summary.dart';
 import 'package:flutter/material.dart';
 import 'package:eefood/core/utils/convert_time.dart';
 import 'package:eefood/features/post/data/models/comment_model.dart';
@@ -92,56 +92,12 @@ class CommentItemContent extends StatelessWidget {
 
   /// Luôn hiển thị Like + Reply
   Widget _buildActions(BuildContext context) {
-    final hasCurrentReaction = comment.currentUserReaction != null;
-    final currentUserReaction = comment.currentUserReaction;
-
-    return Row(
-      children: [
-        Text(
-          TimeParser.formatCommentTime(comment.createdAt),
-          style: TextStyle(
-            fontSize: 12,
-            color: Colors.grey.shade600,
-            fontWeight: FontWeight.w500,
-          ),
-        ),
-        const SizedBox(width: 16),
-        GestureDetector(
-          key: actionButtonKey,
-          onTapDown: (_) => FocusManager.instance.primaryFocus?.unfocus(),
-          onTap: () => showReactionPopup(context),
-          child: Row(
-            children: [
-              Text(
-                hasCurrentReaction
-                    ? ReactionHelper.label(currentUserReaction!)
-                    : "Thích",
-                style: TextStyle(
-                  fontSize: 12,
-                  color: hasCurrentReaction
-                      ? ReactionHelper.color(currentUserReaction!)
-                      : Colors.grey.shade600,
-                  fontWeight: FontWeight.w500,
-                ),
-              ),
-            ],
-          ),
-        ),
-        if (depth < 3) ...[
-          const SizedBox(width: 16),
-          GestureDetector(
-            onTap: () => cubit.setReplyingTo(comment),
-            child: Text(
-              "Trả lời",
-              style: TextStyle(
-                fontSize: 12,
-                color: Colors.grey.shade600,
-                fontWeight: FontWeight.w500,
-              ),
-            ),
-          ),
-        ],
-      ],
+    return CommentItemActions(
+      comment: comment,
+      depth: depth,
+      actionButtonKey: actionButtonKey,
+      cubit: cubit,
+      showReactionPopup: showReactionPopup,
     );
   }
 }
