@@ -40,7 +40,7 @@ class CommentItemReplies extends StatelessWidget {
               cubit.fetchRepliesComment(parent.id!);
             },
             child: Padding(
-              padding: const EdgeInsets.only(left: 24.0, top: 4),
+              padding: const EdgeInsets.only(left: 24, top: 4),
               child: Text(
                 "Xem ${parent.replyCount! - (parent.replies?.length ?? 0)} phản hồi khác...",
                 style: const TextStyle(
