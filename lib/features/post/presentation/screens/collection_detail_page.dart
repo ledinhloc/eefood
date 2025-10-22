@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../provider/collection_cubit.dart';
 import '../provider/collection_state.dart';
 import '../widgets/post/post_summary_card.dart';
+import '../../../../../core/widgets/custom_bottom_sheet.dart'; // nếu bạn đang dùng hàm showCustomBottomSheet
 
 class CollectionDetailPage extends StatefulWidget {
   final int collectionId;
@@ -13,20 +14,21 @@ class CollectionDetailPage extends StatefulWidget {
 }
 
 class _CollectionDetailPageState extends State<CollectionDetailPage> {
-
   @override
   void initState() {
     super.initState();
     context.read<CollectionCubit>().selectCollectionDetail(widget.collectionId);
   }
+
   @override
   Widget build(BuildContext context) {
+    final cubit = context.read<CollectionCubit>();
+
     return BlocBuilder<CollectionCubit, CollectionState>(
       builder: (context, state) {
         final collection = state.selectedCollection;
 
         if (collection == null) {
-          context.read<CollectionCubit>().selectCollectionDetail(widget.collectionId);
           return const Scaffold(
             body: Center(child: CircularProgressIndicator()),
           );
@@ -38,6 +40,40 @@ class _CollectionDetailPageState extends State<CollectionDetailPage> {
         return Scaffold(
           appBar: AppBar(
             title: Text(name.isNotEmpty ? name : ''),
+            actions: [
+              PopupMenuButton<String>(
+                icon: const Icon(Icons.more_vert),
+                onSelected: (value) async {
+                  if (value == 'rename') {
+                    _showRenameDialog(context, cubit, collection.name);
+                  } else if (value == 'delete') {
+                    _showDeleteConfirmation(context, cubit);
+                  }
+                },
+                itemBuilder: (context) => [
+                  const PopupMenuItem(
+                    value: 'rename',
+                    child: Row(
+                      children: [
+                        Icon(Icons.edit, color: Colors.blue),
+                        SizedBox(width: 8),
+                        Text('Đổi tên bộ sưu tập'),
+                      ],
+                    ),
+                  ),
+                  const PopupMenuItem(
+                    value: 'delete',
+                    child: Row(
+                      children: [
+                        Icon(Icons.delete, color: Colors.red),
+                        SizedBox(width: 8),
+                        Text('Xóa bộ sưu tập'),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ],
           ),
           body: posts.isEmpty
               ? const Center(child: Text('Chưa có bài post nào'))
@@ -52,11 +88,71 @@ class _CollectionDetailPageState extends State<CollectionDetailPage> {
             itemCount: posts.length,
             itemBuilder: (context, index) {
               final post = posts[index];
-              return PostSummaryCard(recipe: post, currentCollectionId: collection.id,);
+              return PostSummaryCard(
+                recipe: post,
+                currentCollectionId: collection.id,
+              );
             },
           ),
         );
       },
+    );
+  }
+
+  // 🔹 Đổi tên bộ sưu tập
+  void _showRenameDialog(BuildContext context, CollectionCubit cubit, String currentName) {
+    final controller = TextEditingController(text: currentName);
+
+    showDialog(
+      context: context,
+      builder: (_) => AlertDialog(
+        title: const Text('Đổi tên bộ sưu tập'),
+        content: TextField(
+          controller: controller,
+          decoration: const InputDecoration(hintText: 'Nhập tên mới'),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Hủy'),
+          ),
+          ElevatedButton(
+            onPressed: () async {
+              final newName = controller.text.trim();
+              if (newName.isEmpty) return;
+              Navigator.pop(context);
+              await cubit.updateCollection(widget.collectionId, name: newName);
+            },
+            child: const Text('Lưu'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // 🔹 Xóa bộ sưu tập (xác nhận trước)
+  void _showDeleteConfirmation(BuildContext context, CollectionCubit cubit) {
+    showDialog(
+      context: context,
+      builder: (_) => AlertDialog(
+        title: const Text('Xóa bộ sưu tập'),
+        content: const Text('Bạn có chắc muốn xóa bộ sưu tập này không?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Hủy'),
+          ),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+            onPressed: () async {
+              Navigator.pop(context); // đóng dialog
+              await cubit.deleteCollection(widget.collectionId);
+              if (context.mounted) Navigator.pop(context); // quay về trang trước
+            },
+            child: const Text('Xóa'),
+          ),
+        ],
+      ),
     );
   }
 }
