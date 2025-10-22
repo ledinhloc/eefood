@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import '../../../../core/di/injection.dart';
 import '../provider/collection_cubit.dart';
 import '../provider/collection_state.dart';
-import '../widgets/post/post_summary_card.dart';
+import '../widgets/collection/collection_more_button.dart';
+import '../widgets/collection/post_summary_card.dart';
 import '../../../../../core/widgets/custom_bottom_sheet.dart'; // nếu bạn đang dùng hàm showCustomBottomSheet
 
 class CollectionDetailPage extends StatefulWidget {
@@ -17,12 +19,12 @@ class _CollectionDetailPageState extends State<CollectionDetailPage> {
   @override
   void initState() {
     super.initState();
-    context.read<CollectionCubit>().selectCollectionDetail(widget.collectionId);
+    getIt<CollectionCubit>().selectCollectionDetail(widget.collectionId);
   }
 
   @override
   Widget build(BuildContext context) {
-    final cubit = context.read<CollectionCubit>();
+    final cubit = getIt<CollectionCubit>();
 
     return BlocBuilder<CollectionCubit, CollectionState>(
       builder: (context, state) {
@@ -41,37 +43,9 @@ class _CollectionDetailPageState extends State<CollectionDetailPage> {
           appBar: AppBar(
             title: Text(name.isNotEmpty ? name : ''),
             actions: [
-              PopupMenuButton<String>(
-                icon: const Icon(Icons.more_vert),
-                onSelected: (value) async {
-                  if (value == 'rename') {
-                    _showRenameDialog(context, cubit, collection.name);
-                  } else if (value == 'delete') {
-                    _showDeleteConfirmation(context, cubit);
-                  }
-                },
-                itemBuilder: (context) => [
-                  const PopupMenuItem(
-                    value: 'rename',
-                    child: Row(
-                      children: [
-                        Icon(Icons.edit, color: Colors.blue),
-                        SizedBox(width: 8),
-                        Text('Đổi tên bộ sưu tập'),
-                      ],
-                    ),
-                  ),
-                  const PopupMenuItem(
-                    value: 'delete',
-                    child: Row(
-                      children: [
-                        Icon(Icons.delete, color: Colors.red),
-                        SizedBox(width: 8),
-                        Text('Xóa bộ sưu tập'),
-                      ],
-                    ),
-                  ),
-                ],
+              CollectionMoreButton(
+                collection: collection,
+                iconColor: Colors.black,
               ),
             ],
           ),

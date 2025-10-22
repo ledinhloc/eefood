@@ -1,10 +1,11 @@
 import 'package:eefood/features/post/data/models/post_collection_model.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import '../../../../core/di/injection.dart';
 import '../provider/collection_cubit.dart';
 import '../provider/collection_state.dart';
-import '../widgets/post/collection_list_widget.dart';
-import '../widgets/post/post_summary_card.dart';
+import '../widgets/collection/collection_list_widget.dart';
+import '../widgets/collection/post_summary_card.dart';
 
 class CollectionListPage extends StatefulWidget {
   const CollectionListPage({super.key});
@@ -16,14 +17,17 @@ class CollectionListPage extends StatefulWidget {
 class _CollectionListPageState extends State<CollectionListPage> {
   String searchQuery = '';
   bool isExpanded = false;
-
+  final cubit = getIt<CollectionCubit>();
+  @override
+  void initState() {
+    super.initState();
+  }
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.grey[100],
       floatingActionButton: FloatingActionButton(
         onPressed: () {
-          final cubit = context.read<CollectionCubit>();
           _showCreateCollectionDialog(context, cubit);
         },
         backgroundColor: Colors.orange.shade400,
@@ -35,6 +39,7 @@ class _CollectionListPageState extends State<CollectionListPage> {
       ),
       body: SafeArea(
         child: BlocBuilder<CollectionCubit, CollectionState>(
+          bloc: cubit,
           builder: (context, state) {
             if (state.status == CollectionStatus.loading) {
               return const Center(child: CircularProgressIndicator());
@@ -61,9 +66,7 @@ class _CollectionListPageState extends State<CollectionListPage> {
 
             return RefreshIndicator(
               onRefresh: () async {
-                await context
-                    .read<CollectionCubit>()
-                    .fetchCollectionsByUser();
+                await cubit.fetchCollectionsByUser();
               },
               child: SingleChildScrollView(
                 physics: const AlwaysScrollableScrollPhysics(),

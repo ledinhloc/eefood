@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import '../../../../../core/di/injection.dart';
 import '../../../../../core/widgets/custom_bottom_sheet.dart';
 import '../../../data/models/collection_model.dart';
 import '../../provider/collection_cubit.dart';
 import '../../screens/collection_detail_page.dart';
+import 'collection_more_button.dart';
 
 class CollectionListWidget extends StatelessWidget {
   final List<CollectionModel> collections;
@@ -28,7 +30,7 @@ class CollectionListWidget extends StatelessWidget {
         child: ListView.separated(
           scrollDirection: Axis.horizontal,
           itemCount: collections.length,
-          separatorBuilder: (_, __) => const SizedBox(width: 5),
+          separatorBuilder: (_, __) => const SizedBox(width: 3),
           itemBuilder: (context, index) {
             final collection = collections[index];
             return _CollectionItem(
@@ -61,10 +63,9 @@ class CollectionListWidget extends StatelessWidget {
 class _CollectionItem extends StatelessWidget {
   final CollectionModel collection;
   const _CollectionItem({required this.collection, required ValueKey<int> key});
-
   @override
   Widget build(BuildContext context) {
-    final cubit = context.read<CollectionCubit>();
+    final cubit = getIt<CollectionCubit>();
 
     return GestureDetector(
       onTap: () {
@@ -116,25 +117,7 @@ class _CollectionItem extends StatelessWidget {
                 Positioned(
                   top: 0,
                   right: 0,
-                  child: IconButton(
-                    icon: const Icon(Icons.more_vert, color: Colors.white),
-                    onPressed: () {
-                      showCustomBottomSheet(context, [
-                        BottomSheetOption(
-                          icon: const Icon(Icons.edit, color: Colors.blue),
-                          title: 'Đổi tên bộ sưu tập',
-                          onTap: () => _showRenameDialog(context, cubit),
-                        ),
-                        BottomSheetOption(
-                          icon: const Icon(Icons.delete, color: Colors.red),
-                          title: 'Xóa bộ sưu tập',
-                          onTap: () async {
-                            await cubit.deleteCollection(collection.id);
-                          },
-                        ),
-                      ]);
-                    },
-                  ),
+                  child: CollectionMoreButton(collection: collection),
                 ),
               ],
             ),
@@ -188,7 +171,7 @@ class _CollectionItem extends StatelessWidget {
           ElevatedButton(
             onPressed: () async {
               Navigator.pop(context);
-              await cubit.updateCollection(collection.id, name: controller.text);
+              await getIt<CollectionCubit>().updateCollection(collection.id, name: controller.text);
             },
             child: const Text('Lưu'),
           ),
