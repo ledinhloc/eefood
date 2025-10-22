@@ -1,3 +1,6 @@
+import 'package:eefood/core/utils/reaction_helper.dart';
+import 'package:eefood/features/post/data/models/reaction_type.dart';
+import 'package:eefood/features/post/presentation/widgets/comment/comment_item/comment_reaction_summary.dart';
 import 'package:flutter/material.dart';
 import 'package:eefood/core/utils/convert_time.dart';
 import 'package:eefood/features/post/data/models/comment_model.dart';
@@ -21,6 +24,10 @@ class CommentItemActions extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final currentUserReaction = comment.currentUserReaction;
+    final hasCurrentReaction = currentUserReaction != null;
+    print('CurrentReact $hasCurrentReaction');
+
     return Row(
       children: [
         Text(
@@ -37,13 +44,21 @@ class CommentItemActions extends StatelessWidget {
           behavior: HitTestBehavior.opaque,
           onTapDown: (_) => FocusManager.instance.primaryFocus?.unfocus(),
           onTap: () => showReactionPopup(context),
-          child: Text(
-            "Thích",
-            style: TextStyle(
-              fontSize: 12,
-              color: Colors.grey.shade600,
-              fontWeight: FontWeight.w500,
-            ),
+          child: Row(
+            children: [
+              Text(
+                hasCurrentReaction
+                    ? ReactionHelper.label(currentUserReaction!)
+                    : "Thích",
+                style: TextStyle(
+                  fontSize: 12,
+                  color: hasCurrentReaction
+                      ? ReactionHelper.color(currentUserReaction!)
+                      : Colors.grey.shade600,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+            ],
           ),
         ),
         const SizedBox(width: 16),
@@ -57,6 +72,15 @@ class CommentItemActions extends StatelessWidget {
                 color: Colors.grey.shade600,
                 fontWeight: FontWeight.w500,
               ),
+            ),
+          ),
+        const SizedBox(width: 5),
+        if (comment.reactionCounts != null &&
+            comment.reactionCounts!.isNotEmpty)
+          Padding(
+            padding: const EdgeInsets.only(left: 8),
+            child: CommentReactionSummary(
+              reactionCounts: comment.reactionCounts!,
             ),
           ),
       ],

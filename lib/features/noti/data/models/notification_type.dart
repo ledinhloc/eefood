@@ -53,7 +53,7 @@ class NotificationType {
     final lower = body.toLowerCase();
 
     if (lower.contains('love') || lower.contains('tim') || lower.contains('❤️')) return 'LOVE';
-    if (lower.contains('ngạc nhiên')) return 'WOW';
+    if (lower.contains('ngạc nhiên') || lower.contains('wow'))  return 'WOW';
     if (lower.contains('sad') || lower.contains('buồn')) return 'SAD';
     if (lower.contains('angry') || lower.contains('phẫn nộ')) return 'ANGRY';
     if (lower.contains('like') || lower.contains('thích')) return 'LIKE';

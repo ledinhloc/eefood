@@ -11,7 +11,7 @@ enum ReactionType {
 }
 
 List<ReactionOption> reactions = [
-  ReactionOption(type: ReactionType.LIKE, emoji: '👍', color: Color(0xFFFF6B35)),
+  ReactionOption(type: ReactionType.LIKE, emoji: '👍', color: Color.fromARGB(255, 53, 93, 255)),
   ReactionOption(type: ReactionType.LOVE, emoji: '❤️', color: Color(0xFFF7931E)),
   ReactionOption(type: ReactionType.WOW, emoji: '😮', color: Color(0xFFFFC107)),
   ReactionOption(type: ReactionType.SAD, emoji: '😢', color: Color(0xFF4CAF50)),

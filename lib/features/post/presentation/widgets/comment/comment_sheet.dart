@@ -100,6 +100,9 @@ class _CommentBottomSheetState extends State<CommentBottomSheet> {
         }
 
         return ListView.builder(
+          key: ValueKey(
+            'comment_list_${state.comments.length}_${DateTime.now().millisecondsSinceEpoch}',
+          ),
           controller: _scrollController,
           shrinkWrap: true,
           physics: const AlwaysScrollableScrollPhysics(),
