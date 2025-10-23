@@ -21,7 +21,6 @@ class _CollectionDetailPageState extends State<CollectionDetailPage> {
     super.initState();
     getIt<CollectionCubit>().selectCollectionDetail(widget.collectionId);
   }
-
   @override
   Widget build(BuildContext context) {
     final cubit = getIt<CollectionCubit>();

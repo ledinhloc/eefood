@@ -8,6 +8,18 @@ class CollectionCubit extends Cubit<CollectionState> {
 
   CollectionCubit() : super(CollectionState());
 
+  Future<void> updatePostCollections(int postId, List<int> collectionIds) async {
+    emit(state.copyWith(status: CollectionStatus.loading));
+    try{
+      await repository.updatePostCollections(postId, collectionIds);
+      //refresh danh sach
+      await fetchCollectionsByUser();
+      // emit(state.copyWith(status: CollectionStatus.success));
+    }catch(e){
+      emit(state.copyWith(status: CollectionStatus.failure, error: e.toString()));
+    }
+  }
+
   Future<void> fetchCollectionsByUser() async {
     emit(state.copyWith(status: CollectionStatus.loading));
     try {

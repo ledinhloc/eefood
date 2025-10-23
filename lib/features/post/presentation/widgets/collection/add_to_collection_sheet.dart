@@ -13,10 +13,34 @@ class AddToCollectionSheet extends StatefulWidget {
 
 class _AddToCollectionSheetState extends State<AddToCollectionSheet> {
   final Set<int> selected = {};
+  final cubit = getIt<CollectionCubit>();
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+    _loadCollections();
+  }
+
+  Future<void> _loadCollections() async {
+    await cubit.fetchCollectionsByUser();
+
+    final collections = cubit.state.collections;
+
+    // Check những collection nào chứa post hiện tại
+    final existing = collections
+        .where((col) =>
+    col.posts?.any((post) => post.postId == widget.postId) ?? false)
+        .map((e) => e.id)
+        .toList();
+
+    setState(() {
+      selected.addAll(existing);
+    });
+  }
+
 
   @override
   Widget build(BuildContext context) {
-    final cubit = getIt<CollectionCubit>();
     final collections = cubit.state.collections;
 
     return Padding(
@@ -60,7 +84,7 @@ class _AddToCollectionSheetState extends State<AddToCollectionSheet> {
                         if (controller.text.isNotEmpty) {
                           await cubit.createCollection(controller.text);
                           Navigator.pop(context);
-                          setState(() {}); // refresh list
+                          await _loadCollections(); // refresh list
                         }
                       },
                       child: const Text('Tạo'),
@@ -156,10 +180,8 @@ class _AddToCollectionSheetState extends State<AddToCollectionSheet> {
                 padding: const EdgeInsets.symmetric(vertical: 14),
               ),
               onPressed: () async {
-                for (final id in selected) {
-                  await cubit.addPostToCollection(id, widget.postId);
-                }
-                Navigator.pop(context);
+                await cubit.updatePostCollections(widget.postId, selected.toList());
+                if (context.mounted) Navigator.pop(context);
               },
               child: const Text(
                 'Cập nhật',

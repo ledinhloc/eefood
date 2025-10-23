@@ -44,7 +44,7 @@ class PostHeader extends StatelessWidget {
               icon: const Icon(Icons.bookmark_add, color: Colors.blue),
               title: 'Lưu vào bộ sưu tập',
               onTap: () {
-                Navigator.pop(context);
+                // Navigator.pop(context);
                 showModalBottomSheet(
                   context: context,
                   isScrollControlled: true,

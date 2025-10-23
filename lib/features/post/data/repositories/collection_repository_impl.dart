@@ -9,6 +9,16 @@ class CollectionRepositoryImpl implements CollectionRepository {
   CollectionRepositoryImpl({required this.dio});
 
   @override
+  Future<void> updatePostCollections(int postId, List<int> collectionIds) async {
+    await dio.put(
+      '/v1/collections/posts',
+      data: {
+        'postId': postId,
+        'collectionIds': collectionIds,
+      },
+    );
+  }
+  @override
   Future<List<CollectionModel>> getCollectionsByUser() async {
     final res = await dio.get('/v1/collections/user');
     final data = res.data['data'] as List;

@@ -8,4 +8,5 @@ abstract class CollectionRepository {
   Future<void> deleteCollection(int id);
   Future<void> addPostToCollection(int collectionId, int postId);
   Future<void> removePostFromCollection(int collectionId, int postId);
+  Future<void> updatePostCollections(int postId, List<int> collectionIds);
 }
