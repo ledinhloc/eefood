@@ -28,6 +28,81 @@ class CommentListCubit extends Cubit<CommentListState> {
         ),
       );
 
+  // Update comment
+  Future<void> updateComment(int commentId, String body) async {
+    emit(state.copyWith(isLoading: true));
+    try {
+      final updated = await _repository.updateComment(commentId, body);
+      final updatedComments = _updateCommentInList(
+        state.comments,
+        commentId,
+        updated!,
+      );
+      emit(state.copyWith(comments: updatedComments, isLoading: false));
+    } catch (e) {
+      emit(
+        state.copyWith(isLoading: false, errorMessage: 'Lỗi khi cập nhật: $e'),
+      );
+    }
+  }
+
+  /// Delete comment
+  Future<void> deleteComment(int commentId) async {
+    emit(state.copyWith(isLoading: true));
+    try {
+      await _repository.deleteComment(commentId);
+      final updatedComments = _removeCommentFromList(state.comments, commentId);
+      emit(state.copyWith(comments: updatedComments, isLoading: false));
+    } catch (e) {
+      emit(state.copyWith(isLoading: false, errorMessage: 'Lỗi khi xóa: $e'));
+    }
+  }
+
+  List<CommentModel> _updateCommentInList(
+    List<CommentModel> comments,
+    int commentId,
+    CommentModel updatedComment,
+  ) {
+    return comments.map((comment) {
+      if (comment.id == commentId) {
+        return updatedComment.copyWith(
+          replies: comment.replies,
+          replyCount: comment.replyCount,
+        );
+      }
+      if (comment.replies != null && comment.replies!.isNotEmpty) {
+        return comment.copyWith(
+          replies: _updateCommentInList(
+            comment.replies!,
+            commentId,
+            updatedComment,
+          ),
+        );
+      }
+      return comment;
+    }).toList();
+  }
+
+  List<CommentModel> _removeCommentFromList(
+    List<CommentModel> comments,
+    int commentId,
+  ) {
+    return comments.where((comment) {
+      if (comment.id == commentId) {
+        return false; // Remove this comment
+      }
+      if (comment.replies != null && comment.replies!.isNotEmpty) {
+        // Update replies recursively
+        final updatedReplies = _removeCommentFromList(
+          comment.replies!,
+          commentId,
+        );
+        comment = comment.copyWith(replies: updatedReplies);
+      }
+      return true; // Keep this comment
+    }).toList();
+  }
+
   Future<List<CommentModel>> _loadCurrentUserReactions(
     List<CommentModel> comments,
   ) async {
@@ -50,7 +125,7 @@ class CommentListCubit extends Cubit<CommentListState> {
     );
   }
 
-  List<CommentModel> _updateCommentRecursively(
+  List<CommentModel> updateCommentRecursively(
     List<CommentModel> comments,
     int targetId,
     CommentModel Function(CommentModel) updateFn,
@@ -59,7 +134,7 @@ class CommentListCubit extends Cubit<CommentListState> {
       if (comment.id == targetId) return updateFn(comment);
       if (comment.replies?.isNotEmpty ?? false) {
         return comment.copyWith(
-          replies: _updateCommentRecursively(
+          replies: updateCommentRecursively(
             comment.replies!,
             targetId,
             updateFn,
@@ -74,7 +149,7 @@ class CommentListCubit extends Cubit<CommentListState> {
     try {
       await _reactRepo.removeReaction(commentId);
 
-      final updatedComments = _updateCommentRecursively(
+      final updatedComments = updateCommentRecursively(
         state.comments,
         commentId,
         (comment) {
@@ -105,7 +180,7 @@ class CommentListCubit extends Cubit<CommentListState> {
     try {
       await _reactRepo.reactToComment(commentId, type);
 
-      final updatedComments = _updateCommentRecursively(
+      final updatedComments = updateCommentRecursively(
         state.comments,
         commentId,
         (comment) {
@@ -212,7 +287,7 @@ class CommentListCubit extends Cubit<CommentListState> {
       );
       final withUserReactions = await _loadCurrentUserReactions(newReplies);
 
-      final updatedComments = _updateCommentRecursively(
+      final updatedComments = updateCommentRecursively(
         state.comments,
         parentId,
         (c) => c.copyWith(replies: withUserReactions),
@@ -223,7 +298,6 @@ class CommentListCubit extends Cubit<CommentListState> {
       emit(state.copyWith(isLoading: false, errorMessage: e.toString()));
     }
   }
-
 
   Future<void> submitComment({
     required int postId,

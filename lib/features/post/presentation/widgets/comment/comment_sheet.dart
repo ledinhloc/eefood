@@ -1,3 +1,4 @@
+import 'package:eefood/core/di/injection.dart';
 import 'package:eefood/features/post/data/models/comment_model.dart';
 import 'package:eefood/features/post/presentation/provider/comment_list_cubit.dart';
 import 'package:eefood/features/post/presentation/provider/comment_list_state.dart';
@@ -117,7 +118,16 @@ class _CommentBottomSheetState extends State<CommentBottomSheet> {
             }
             final comment = state.comments[index];
 
-            return CommentItem(comment: comment, depth: 1);
+            return CommentItem(
+              comment: comment,
+              depth: 1,
+              onEdit: (newContent) {
+                _cubit?.updateComment(comment.id!, newContent);
+              },
+              onDeleted: () {
+                _cubit?.deleteComment(comment.id!);
+              },
+            );
           },
         );
       },
