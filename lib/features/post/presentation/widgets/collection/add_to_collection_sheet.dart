@@ -22,7 +22,7 @@ class _AddToCollectionSheetState extends State<AddToCollectionSheet> {
   }
 
   Future<void> _loadCollections() async {
-    await cubit.fetchCollectionsByUser();
+    // await cubit.fetchCollectionsByUser();
 
     final collections = cubit.state.collections;
 
@@ -60,51 +60,92 @@ class _AddToCollectionSheetState extends State<AddToCollectionSheet> {
           ),
           const SizedBox(height: 12),
 
-          // Nút New Collection
+          // Nút "Tạo bộ sưu tập mới"
           InkWell(
+            borderRadius: BorderRadius.circular(12),
             onTap: () async {
               final controller = TextEditingController();
               await showDialog(
                 context: context,
                 builder: (_) => AlertDialog(
-                  title: const Text('Thêm bộ sưu tập'),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                  title: Row(
+                    children: const [
+                      Icon(Icons.collections_bookmark_rounded, color: Colors.orange),
+                      SizedBox(width: 8),
+                      Text(
+                        'Tạo bộ sưu tập',
+                        style: TextStyle(fontWeight: FontWeight.bold),
+                      ),
+                    ],
+                  ),
                   content: TextField(
                     controller: controller,
-                    decoration: const InputDecoration(
-                      hintText: 'Nhập tên',
+                    autofocus: true,
+                    decoration: InputDecoration(
+                      hintText: 'Nhập tên bộ sưu tập...',
+                      filled: true,
+                      fillColor: Colors.grey[100],
+                      contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: BorderSide.none,
+                      ),
                     ),
                   ),
+                  actionsPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                   actions: [
-                    TextButton(
+                    TextButton.icon(
+                      icon: const Icon(Icons.close, color: Colors.grey),
+                      label: const Text('Hủy', style: TextStyle(color: Colors.grey)),
                       onPressed: () => Navigator.pop(context),
-                      child: const Text('Hủy'),
                     ),
-                    ElevatedButton(
+                    ElevatedButton.icon(
+                      icon: const Icon(Icons.check, color: Colors.white),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.orange,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                      ),
+                      label: const Text('Tạo'),
                       onPressed: () async {
-                        if (controller.text.isNotEmpty) {
-                          await cubit.createCollection(controller.text);
+                        final name = controller.text.trim();
+                        if (name.isNotEmpty) {
+                          await cubit.createCollection(name);
                           Navigator.pop(context);
-                          await _loadCollections(); // refresh list
+                          // await _loadCollections(); // refresh list
                         }
                       },
-                      child: const Text('Tạo'),
                     ),
                   ],
                 ),
               );
             },
-            child: Row(
-              children: const [
-                Icon(Icons.add, color: Colors.orange),
-                SizedBox(width: 8),
-                Text(
-                  'Thêm',
-                  style: TextStyle(
-                    color: Colors.orange,
-                    fontWeight: FontWeight.w500,
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+              decoration: BoxDecoration(
+                color: Colors.orange.withOpacity(0.1),
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: Colors.orange.withOpacity(0.3)),
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: const [
+                  Icon(Icons.add_circle_outline, color: Colors.orange),
+                  SizedBox(width: 6),
+                  Text(
+                    'Bộ sưu tập mới',
+                    style: TextStyle(
+                      color: Colors.orange,
+                      fontWeight: FontWeight.w600,
+                    ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
           ),
 

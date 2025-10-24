@@ -22,6 +22,7 @@ class MyRecipesPage extends StatelessWidget {
         child: Scaffold(
           appBar: AppBar(
             backgroundColor: Colors.transparent,
+            automaticallyImplyLeading: false,
             title: const Text("My Recipes"),
             actions: [
               IconButton(icon: const Icon(Icons.search), onPressed: () {}),

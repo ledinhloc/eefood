@@ -41,29 +41,11 @@ class _CollectionListPageState extends State<CollectionListPage> {
         child: BlocBuilder<CollectionCubit, CollectionState>(
           bloc: cubit,
           builder: (context, state) {
-            if (state.status == CollectionStatus.loading) {
-              return const Center(child: CircularProgressIndicator());
-            }
-            // if (state.status == CollectionStatus.failure) {
-            //   return Center(child: Text(state.error ?? "Error"));
+            // if (state.status == CollectionStatus.loading) {
+            //   return const Center(child: CircularProgressIndicator());
             // }
-            final collections = state.collections;
-
-            // Tổng hợp tất cả bài post
-            final List<PostCollectionModel> allRecipes =
-                collections
-                    .expand((c) => c.posts ?? [])
-                    .cast<PostCollectionModel>()
-                    .toList()
-                  ..sort((a, b) => b.createdAt.compareTo(a.createdAt));
-
-            // Lọc danh sách theo từ khóa nhập
-            final filteredRecipes = allRecipes.where((recipe) {
-              final query = removeDiacritics(searchQuery.toLowerCase());
-              final title = removeDiacritics(recipe.title.toLowerCase());
-              return title.contains(query);
-            }).toList();
-
+            // 🔹 Gọi hàm xử lý danh sách bài viết (đã tách riêng)
+            final filteredRecipes = _getFilteredPosts(state.collections, searchQuery);
             return RefreshIndicator(
               onRefresh: () async {
                 await cubit.fetchCollectionsByUser();
@@ -175,6 +157,38 @@ class _CollectionListPageState extends State<CollectionListPage> {
     );
   }
 
+  List<PostCollectionModel> _getFilteredPosts(
+      List collections,
+      String searchQuery,
+      ) {
+    final allPosts = collections
+        .expand((c) => c.posts ?? [])
+        .cast<PostCollectionModel>()
+        .toList();
+
+    // 🔹 Loại bỏ trùng: giữ post có updatedAt mới nhất
+    final Map<int, PostCollectionModel> uniqueMap = {};
+    for (final post in allPosts) {
+      final existing = uniqueMap[post.postId];
+      if (existing == null ||
+          (post.createdAt != null &&
+              (existing.createdAt == null ||
+                  post.createdAt.isAfter(existing.createdAt)))) {
+        uniqueMap[post.postId] = post;
+      }
+    }
+
+    // 🔹 Chuyển lại thành list và sắp xếp theo thời gian tạo (mới nhất trước)
+    final uniquePosts = uniqueMap.values.toList()
+      ..sort((a, b) => b.createdAt.compareTo(a.createdAt));
+
+    // 🔹 Lọc theo từ khóa tìm kiếm (không phân biệt dấu)
+    final query = removeDiacritics(searchQuery.toLowerCase());
+    return uniquePosts.where((post) {
+      final title = removeDiacritics(post.title.toLowerCase());
+      return title.contains(query);
+    }).toList();
+  }
   void _showCreateCollectionDialog(
     BuildContext parentContext,
     CollectionCubit cubit,

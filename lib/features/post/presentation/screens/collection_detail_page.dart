@@ -16,16 +16,16 @@ class CollectionDetailPage extends StatefulWidget {
 }
 
 class _CollectionDetailPageState extends State<CollectionDetailPage> {
+  final cubit = getIt<CollectionCubit>();
   @override
   void initState() {
     super.initState();
-    getIt<CollectionCubit>().selectCollectionDetail(widget.collectionId);
+    cubit.selectCollectionDetail(widget.collectionId);
   }
   @override
   Widget build(BuildContext context) {
-    final cubit = getIt<CollectionCubit>();
-
     return BlocBuilder<CollectionCubit, CollectionState>(
+      bloc: cubit,
       builder: (context, state) {
         final collection = state.selectedCollection;
 

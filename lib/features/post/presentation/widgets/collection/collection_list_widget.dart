@@ -62,11 +62,10 @@ class CollectionListWidget extends StatelessWidget {
 
 class _CollectionItem extends StatelessWidget {
   final CollectionModel collection;
-  const _CollectionItem({required this.collection, required ValueKey<int> key});
+  final cubit = getIt<CollectionCubit>();
+  _CollectionItem({required this.collection, required ValueKey<int> key});
   @override
   Widget build(BuildContext context) {
-    final cubit = getIt<CollectionCubit>();
-
     return GestureDetector(
       onTap: () {
         Navigator.push(
@@ -171,7 +170,7 @@ class _CollectionItem extends StatelessWidget {
           ElevatedButton(
             onPressed: () async {
               Navigator.pop(context);
-              await getIt<CollectionCubit>().updateCollection(collection.id, name: controller.text);
+              await cubit.updateCollection(collection.id, name: controller.text);
             },
             child: const Text('Lưu'),
           ),
