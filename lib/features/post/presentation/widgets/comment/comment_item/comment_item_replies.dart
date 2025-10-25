@@ -24,15 +24,29 @@ class CommentItemReplies extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final replies = parent.replies ?? [];
-    final visibleReplies =
-        depth == 1 || showAllReplies ? replies : replies.take(2).toList();
+    final visibleReplies = depth == 1 || showAllReplies
+        ? replies
+        : replies.take(2).toList();
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         const SizedBox(height: 8),
         for (final reply in visibleReplies)
-          CommentItem(comment: reply, depth: depth + 1),
+          CommentItem(
+            onEdit: (newContent) {
+              if (reply.id != null) {
+                cubit.updateComment(reply.id!, newContent);
+              }
+            },
+            onDeleted: () {
+              if (reply.id != null) {
+                cubit.deleteComment(reply.id!);
+              }
+            },
+            comment: reply,
+            depth: depth + 1,
+          ),
         if (canShowMore && (!showAllReplies))
           GestureDetector(
             onTap: () {

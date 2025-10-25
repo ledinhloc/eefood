@@ -39,7 +39,7 @@ class ReactionHelper {
       orElse: () => const ReactionOption(
         type: ReactionType.LIKE,
         emoji: '👍',
-        color: Color(0xFFFF6B35),
+        color: Color.fromARGB(255, 53, 127, 255),
       ),
     );
     return match.color;

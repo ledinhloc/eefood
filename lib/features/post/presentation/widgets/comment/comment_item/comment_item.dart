@@ -1,26 +1,41 @@
+import 'package:eefood/core/di/injection.dart';
 import 'package:eefood/core/utils/reaction_helper.dart';
+import 'package:eefood/core/widgets/custom_bottom_sheet.dart';
+import 'package:eefood/core/widgets/snack_bar.dart';
+import 'package:eefood/features/auth/domain/usecases/auth_usecases.dart';
+import 'package:eefood/features/post/data/models/comment_model.dart';
 import 'package:eefood/features/post/data/models/reaction_type.dart';
+import 'package:eefood/features/post/presentation/provider/comment_list_cubit.dart';
 import 'package:eefood/features/post/presentation/provider/comment_list_state.dart';
 import 'package:eefood/features/post/presentation/widgets/comment/comment_item/reaction_animation.dart';
 import 'package:eefood/features/post/presentation/widgets/post/reaction_popup.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:eefood/features/post/data/models/comment_model.dart';
-import 'package:eefood/features/post/presentation/provider/comment_list_cubit.dart';
+
 import 'comment_item_content.dart';
 import 'comment_item_replies.dart';
 
 class CommentItem extends StatefulWidget {
   final CommentModel comment;
+  final VoidCallback? onDeleted;
+  final Function(String)? onEdit;
   final int depth;
 
-  const CommentItem({super.key, required this.comment, this.depth = 1});
+  const CommentItem({
+    super.key,
+    required this.comment,
+    this.onDeleted,
+    this.onEdit,
+    this.depth = 1,
+  });
 
   @override
   State<CommentItem> createState() => _CommentItemState();
 }
 
 class _CommentItemState extends State<CommentItem> {
+  final GetCurrentUser _getCurrentUser = getIt<GetCurrentUser>();
   bool _isExpanded = false;
   bool _showAllReplies = false;
   final GlobalKey _actionButtonKey = GlobalKey();
@@ -28,8 +43,7 @@ class _CommentItemState extends State<CommentItem> {
   bool get _shouldShowExpanded => widget.depth == 1 || _isExpanded;
   bool get _hasReplies => widget.comment.replies?.isNotEmpty == true;
   bool get _hasMoreReplies =>
-      widget.comment.replyCount != null &&
-      (widget.comment.replies?.length ?? 0) < widget.comment.replyCount!;
+      (widget.comment.replyCount ?? 0) > (widget.comment.replies?.length ?? 0);
   bool get _canShowMoreReplies => _hasMoreReplies && widget.depth < 3;
 
   void _toggleExpand() => setState(() => _isExpanded = !_isExpanded);
@@ -47,65 +61,139 @@ class _CommentItemState extends State<CommentItem> {
     );
 
     overlay.insert(entry);
-
-    Future.delayed(const Duration(milliseconds: 1200), () {
-      entry.remove();
-    });
+    Future.delayed(const Duration(milliseconds: 1200), entry.remove);
   }
 
-  void _handleReact(ReactionType? newReaction) async {
+  Future<void> _handleReact(ReactionType? newReaction) async {
     final cubit = context.read<CommentListCubit>();
-
-    final RenderBox? box =
+    final box =
         _actionButtonKey.currentContext?.findRenderObject() as RenderBox?;
-    final Offset position = box?.localToGlobal(Offset.zero) ?? Offset.zero;
+    final position = box?.localToGlobal(Offset.zero) ?? Offset.zero;
 
     final currentReaction = widget.comment.currentUserReaction;
-
-    // Nếu chọn lại reaction hiện tại -> xóa reaction
     if (newReaction == currentReaction) {
       await cubit.removeReaction(widget.comment.id!);
-    } else {
-      // Nếu chọn reaction khác -> hiện hiệu ứng và cập nhật reaction
-      if (newReaction != null) {
-        _showFlyingReaction(position, newReaction);
-      }
-      await cubit.reactToComment(widget.comment.id!, newReaction!);
+    } else if (newReaction != null) {
+      _showFlyingReaction(position, newReaction);
+      await cubit.reactToComment(widget.comment.id!, newReaction);
     }
   }
 
-  CommentModel? _findCommentInTree(List<CommentModel> list, int id) {
-    for (final c in list) {
-      if (c.id == id) return c;
-      if (c.replies != null && c.replies!.isNotEmpty) {
-        final found = _findCommentInTree(c.replies!, id);
+  CommentModel? _findCommentInState(
+    List<CommentModel> comments,
+    int commentId,
+  ) {
+    for (final comment in comments) {
+      if (comment.id == commentId) {
+        return comment;
+      }
+      if (comment.replies != null && comment.replies!.isNotEmpty) {
+        final found = _findCommentInState(comment.replies!, commentId);
         if (found != null) return found;
       }
     }
     return null;
   }
 
+  void _copyContent(String text) {
+    Clipboard.setData(ClipboardData(text: text));
+    showCustomSnackBar(context, "Sao chép thành công");
+  }
+
+  Future<String?> _showEditDialog(String initialText) {
+    final controller = TextEditingController(text: initialText);
+    return showDialog<String>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: const Text("Chỉnh sửa bình luận"),
+        content: TextField(
+          controller: controller,
+          maxLines: 5,
+          decoration: const InputDecoration(
+            hintText: "Nhập nội dung mới...",
+            border: OutlineInputBorder(),
+            focusedBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.all(Radius.circular(10)),
+              borderSide: BorderSide.none,
+            ),
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(dialogContext),
+            child: const Text("Hủy"),
+          ),
+          ElevatedButton(
+            onPressed: () =>
+                Navigator.pop(dialogContext, controller.text.trim()),
+            child: const Text("Lưu"),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showOptions() async {
+    final user = await _getCurrentUser();
+    print(user?.id);
+    print(widget.comment.userId);
+
+    final options = <BottomSheetOption>[
+      // Nếu comment thuộc về user hiện tại thì hiển thị các tùy chọn này
+      if (widget.comment.userId == user?.id) ...[
+        BottomSheetOption(
+          icon: const Icon(Icons.delete, color: Colors.red),
+          title: "Xóa bình luận",
+          onTap: () {
+            if (widget.onDeleted != null) {
+              widget.onDeleted!();
+            }
+          },
+        ),
+        if (widget.comment.images?.isEmpty == true &&
+            widget.comment.videos?.isEmpty == true)
+          BottomSheetOption(
+            icon: const Icon(Icons.edit, color: Colors.orange),
+            title: "Chỉnh sửa",
+            onTap: () async {
+              final newContent = await _showEditDialog(
+                widget.comment.content ?? '',
+              );
+              if (newContent?.isNotEmpty == true) {
+                widget.onEdit?.call(newContent!);
+              }
+            },
+          ),
+      ],
+
+      // Tùy chọn sao chép nội dung (luôn có)
+      BottomSheetOption(
+        icon: const Icon(Icons.copy, color: Colors.grey),
+        title: "Sao chép nội dung",
+        onTap: () => _copyContent(widget.comment.content ?? ""),
+      ),
+    ];
+
+    showCustomBottomSheet(context, options);
+  }
+
   @override
   Widget build(BuildContext context) {
-    print(
-      'Building CommentItem id: ${widget.comment.id}, reaction: ${widget.comment.currentUserReaction}',
-    );
     return BlocConsumer<CommentListCubit, CommentListState>(
-      listener: (context, state) {
-        print(
-          'BlocConsumer listener - replyingTo: ${state.replyingTo?.id}, replyKey: ${state.replyKey}',
-        );
-      },
+      listener: (context, state) {},
       builder: (context, state) {
         final cubit = context.read<CommentListCubit>();
-
-        final updatedComment =
-            _findCommentInTree(state.comments, widget.comment.id ?? -1) ??
+        final updated =
+            _findCommentInState(state.comments, widget.comment.id ?? -1) ??
             widget.comment;
+
+        if (updated == null) {
+          return const SizedBox.shrink();
+        }
 
         return Container(
           key: ValueKey(
-            'comment_${updatedComment.id}_${updatedComment.currentUserReaction ?? "none"}_${updatedComment.reactionCounts?.toString() ?? "no_counts"}',
+            'comment_${updated.id}_${updated.currentUserReaction ?? "none"}_${updated.reactionCounts ?? "no_counts"}',
           ),
           margin: EdgeInsets.only(
             left: (widget.depth - 1) * 16.0,
@@ -121,37 +209,35 @@ class _CommentItemState extends State<CommentItem> {
                 children: [
                   CircleAvatar(
                     radius: 16,
-                    backgroundImage:
-                        (updatedComment.avatarUrl != null &&
-                            updatedComment.avatarUrl!.isNotEmpty)
-                        ? NetworkImage(updatedComment.avatarUrl!)
+                    backgroundImage: (updated.avatarUrl?.isNotEmpty ?? false)
+                        ? NetworkImage(updated.avatarUrl!)
                         : null,
                   ),
                   const SizedBox(width: 8),
                   Expanded(
                     child: GestureDetector(
+                      onLongPress: _showOptions,
                       onTap: widget.depth > 1 && !_shouldShowExpanded
                           ? _toggleExpand
                           : null,
                       child: CommentItemContent(
-                        comment: updatedComment, // Sử dụng comment đã cập nhật
+                        comment: updated,
                         depth: widget.depth,
                         shouldShowExpanded: _shouldShowExpanded,
                         onExpand: _toggleExpand,
                         actionButtonKey: _actionButtonKey,
                         cubit: cubit,
-                        showReactionPopup: (ctx) =>
-                            showReactionPopup(ctx, _actionButtonKey),
+                        showReactionPopup: (ctx) => _showReactionPopup(ctx),
                       ),
                     ),
                   ),
                 ],
               ),
 
-              // Replies section
+              // Replies
               if (_shouldShowExpanded && _hasReplies)
                 CommentItemReplies(
-                  parent: updatedComment, // Sử dụng comment đã cập nhật
+                  parent: updated,
                   depth: widget.depth,
                   showAllReplies: _showAllReplies,
                   onShowAll: _showAll,
@@ -159,14 +245,14 @@ class _CommentItemState extends State<CommentItem> {
                   cubit: cubit,
                 ),
 
-              // Hiển thị "Xem thêm phản hồi" khi collapsed (chỉ depth > 1)
+              // Xem thêm phản hồi
               if (!_shouldShowExpanded && _hasReplies && widget.depth > 1)
                 GestureDetector(
                   onTap: _toggleExpand,
                   child: Padding(
                     padding: const EdgeInsets.only(left: 24, top: 4),
                     child: Text(
-                      "Xem thêm ${updatedComment.replyCount ?? updatedComment.replies?.length ?? 0} phản hồi",
+                      "Xem thêm ${updated.replyCount ?? updated.replies?.length ?? 0} phản hồi",
                       style: const TextStyle(fontSize: 13, color: Colors.blue),
                     ),
                   ),
@@ -178,22 +264,20 @@ class _CommentItemState extends State<CommentItem> {
     );
   }
 
-  void showReactionPopup(BuildContext context, GlobalKey key) {
-  final renderObject = key.currentContext?.findRenderObject();
-  if (renderObject is! RenderBox) return;
+  void _showReactionPopup(BuildContext context) {
+    final renderBox =
+        _actionButtonKey.currentContext?.findRenderObject() as RenderBox?;
+    if (renderBox == null) return;
+    final offset = renderBox.localToGlobal(Offset.zero);
 
-  final renderBox = renderObject as RenderBox;
-  final offset = renderBox.localToGlobal(Offset.zero);
-
-  showDialog(
-    context: context,
-    barrierColor: Colors.transparent,
-    builder: (context) {
-      return Stack(
+    showDialog(
+      context: context,
+      barrierColor: Colors.transparent,
+      builder: (_) => Stack(
         children: [
           Positioned.fill(
             child: GestureDetector(
-              onTap: () => Navigator.of(context).pop(),
+              onTap: () => Navigator.pop(context),
               child: Container(color: Colors.transparent),
             ),
           ),
@@ -202,15 +286,13 @@ class _CommentItemState extends State<CommentItem> {
             top: offset.dy - 80,
             child: ReactionPopup(
               onSelect: (reaction) {
-                Navigator.of(context).pop();
+                Navigator.pop(context);
                 _handleReact(reaction);
               },
             ),
           ),
         ],
-      );
-    },
-  );
-}
-
+      ),
+    );
+  }
 }

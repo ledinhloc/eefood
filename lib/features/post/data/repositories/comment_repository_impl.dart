@@ -2,16 +2,39 @@ import 'package:dio/dio.dart';
 import 'package:eefood/features/post/data/models/comment_model.dart';
 import 'package:eefood/features/post/domain/repositories/comment_repository.dart';
 
-class CommentRepositoryImpl extends CommentRepository{
+class CommentRepositoryImpl extends CommentRepository {
   final Dio dio;
   CommentRepositoryImpl({required this.dio});
 
   @override
-  Future<CommentModel?> getCommentById(int commentId) async {
-    final response = await dio.get('/v1/comments/$commentId');
-    if(response.statusCode == 200 && response.data['data'] != null) {
+  Future<CommentModel?> updateComment(int commentId, String body) async {
+    final response = await dio.put(
+      '/v1/comments/$commentId',
+      data: {'content': body},
+    );
+
+    print('Updated: ${response.data['data']}');
+
+    if (response.statusCode == 200 && response.data['data'] != null) {
       return CommentModel.fromJson(response.data['data']);
     }
+
+    return null;
+  }
+
+  @override
+  Future<void> deleteComment(int commentId) async {
+    final response = await dio.delete('/v1/comments/$commentId');
+    print(response.data['message']);
+  }
+
+  @override
+  Future<CommentModel?> getCommentById(int commentId) async {
+    final response = await dio.get('/v1/comments/$commentId');
+    if (response.statusCode == 200 && response.data['data'] != null) {
+      return CommentModel.fromJson(response.data['data']);
+    }
+    return null;
   }
 
   @override
@@ -24,22 +47,24 @@ class CommentRepositoryImpl extends CommentRepository{
         'postId': postId,
         'images': request.images,
         'videos': request.videos,
-      }
+      },
     );
 
-    if(response.statusCode == 200 && response.data['data'] != null){
+    if (response.statusCode == 200 && response.data['data'] != null) {
       return CommentModel.fromJson(response.data['data']);
     }
+    return null;
   }
 
   @override
-  Future<List<CommentModel>> getCommentsByPost(int postId, {int page = 1, int limit = 5}) async {
+  Future<List<CommentModel>> getCommentsByPost(
+    int postId, {
+    int page = 1,
+    int limit = 5,
+  }) async {
     final response = await dio.get(
       '/v1/comments/post/$postId',
-      queryParameters: {
-        'page': page,
-        'limit': limit,
-      }
+      queryParameters: {'page': page, 'limit': limit},
     );
     final List<dynamic> data = response.data['data']['content'] ?? [];
     print('Post: ' + data.toString());
@@ -47,17 +72,17 @@ class CommentRepositoryImpl extends CommentRepository{
   }
 
   @override
-  Future<List<CommentModel>> getRepliesByComment(int commentId, {int page = 1, int limit = 5}) async {
+  Future<List<CommentModel>> getRepliesByComment(
+    int commentId, {
+    int page = 1,
+    int limit = 5,
+  }) async {
     final response = await dio.get(
-        '/v1/comments/$commentId/replies',
-        queryParameters: {
-          'page': page,
-          'limit': limit, 
-        }
+      '/v1/comments/$commentId/replies',
+      queryParameters: {'page': page, 'limit': limit},
     );
     final List<dynamic> data = response.data['data']['content'] ?? [];
-    print('Reply: ' +data.toString());
+    print('Reply: ' + data.toString());
     return data.map((e) => CommentModel.fromJson(e)).toList();
   }
-
 }
