@@ -1,4 +1,3 @@
-import 'package:eefood/core/utils/reaction_helper.dart';
 import 'package:eefood/features/post/data/models/reaction_type.dart';
 
 class CommentModel {

@@ -3,13 +3,11 @@ import 'package:eefood/core/di/injection.dart';
 import 'package:eefood/core/utils/file_upload.dart';
 import 'package:eefood/features/auth/domain/usecases/auth_usecases.dart';
 import 'package:eefood/features/post/data/models/comment_model.dart';
-import 'package:eefood/features/post/data/models/comment_reaction_model.dart';
 import 'package:eefood/features/post/data/models/reaction_type.dart';
 import 'package:eefood/features/post/domain/repositories/comment_reaction_repository.dart';
 import 'package:eefood/features/post/domain/repositories/comment_repository.dart';
 import 'package:eefood/features/post/presentation/provider/comment_list_state.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter/foundation.dart';
 
 class CommentListCubit extends Cubit<CommentListState> {
   final CommentRepository _repository = getIt<CommentRepository>();
@@ -19,72 +17,91 @@ class CommentListCubit extends Cubit<CommentListState> {
   final GetCurrentUser _getCurrentUser = getIt<GetCurrentUser>();
   int? _currentPostId;
 
-  CommentListCubit()
-    : super(
-        CommentListState(
-          comments: [],
-          isLoading: false,
-          hasMore: true,
-          currentPage: 1,
-        ),
-      );
+  CommentListCubit() : super(CommentListStateExtensions.initial());
 
-  // Update comment
-  Future<void> updateComment(int commentId, String body) async {
+  CommentModel _mergeComments(
+    CommentModel oldComment,
+    CommentModel newComment,
+  ) {
+    return oldComment.copyWith(
+      id: newComment.id ?? oldComment.id,
+      userId: newComment.userId ?? oldComment.userId,
+      parentId: newComment.parentId ?? oldComment.parentId,
+      content: newComment.content,
+      createdAt: newComment.createdAt ?? oldComment.createdAt,
+      reactionCounts: newComment.reactionCounts ?? oldComment.reactionCounts,
+      images: newComment.images ?? oldComment.images,
+      videos: newComment.videos ?? oldComment.videos,
+      currentUserReaction:
+          newComment.currentUserReaction ?? oldComment.currentUserReaction,
+    );
+  }
+
+  Future<void> _executeWithLoading(
+    Future<void> Function() action, {
+    bool resetReplyingTo = false,
+  }) async {
     emit(state.copyWith(isLoading: true));
     try {
+      await action();
+      emit(state.copyWith(isLoading: false, resetReplyingTo: resetReplyingTo));
+    } catch (e) {
+      emit(
+        state.copyWith(
+          isLoading: false,
+          errorMessage: 'Lỗi: $e',
+          resetReplyingTo: resetReplyingTo,
+        ),
+      );
+    }
+  }
+
+  Future<void> updateComment(int commentId, String body) async {
+    await _executeWithLoading(() async {
       final updated = await _repository.updateComment(commentId, body);
-      final updatedComments = _updateCommentInList(
+      final updatedComments = _updateCommentInListRecursive(
         state.comments,
         commentId,
         updated!,
       );
-      emit(state.copyWith(comments: updatedComments, isLoading: false));
-    } catch (e) {
-      emit(
-        state.copyWith(isLoading: false, errorMessage: 'Lỗi khi cập nhật: $e'),
-      );
-    }
+      emit(state.copyWith(comments: updatedComments));
+    }, resetReplyingTo: true);
   }
 
-  /// Delete comment
   Future<void> deleteComment(int commentId) async {
-    emit(state.copyWith(isLoading: true));
-    try {
+    await _executeWithLoading(() async {
       await _repository.deleteComment(commentId);
-      final updatedComments = _removeCommentFromList(state.comments, commentId);
-      emit(state.copyWith(comments: updatedComments, isLoading: false));
-    } catch (e) {
-      emit(state.copyWith(isLoading: false, errorMessage: 'Lỗi khi xóa: $e'));
-    }
+      final updatedComments = _removeCommentFromListRecursive(
+        state.comments,
+        commentId,
+      );
+      emit(state.copyWith(comments: updatedComments));
+    });
   }
 
-  List<CommentModel> _updateCommentInList(
+  List<CommentModel> _updateCommentInListRecursive(
     List<CommentModel> comments,
     int commentId,
     CommentModel updatedComment,
   ) {
     return comments.map((comment) {
       if (comment.id == commentId) {
-        return updatedComment.copyWith(
-          replies: comment.replies,
-          replyCount: comment.replyCount,
-        );
+        return _mergeComments(comment, updatedComment);
       }
       if (comment.replies != null && comment.replies!.isNotEmpty) {
-        return comment.copyWith(
-          replies: _updateCommentInList(
-            comment.replies!,
-            commentId,
-            updatedComment,
-          ),
+        final updatedReplies = _updateCommentInListRecursive(
+          comment.replies!,
+          commentId,
+          updatedComment,
         );
+        // Luôn trả về comment với replies đã cập nhật
+        return comment.copyWith(replies: updatedReplies);
       }
       return comment;
     }).toList();
   }
 
-  List<CommentModel> _removeCommentFromList(
+  List<CommentModel> _removeCommentFromListRecursive(
     List<CommentModel> comments,
     int commentId,
   ) {
@@ -92,24 +109,16 @@ class CommentListCubit extends Cubit<CommentListState> {
 
     for (final comment in comments) {
       if (comment.id == commentId) {
-        // skip -> remove this comment
-        continue;
+        continue; // Bỏ qua comment cần xóa
       }
 
-      if (comment.replies != null && comment.replies!.isNotEmpty) {
-        final updatedReplies = _removeCommentFromList(
-          comment.replies!,
-          commentId,
-        );
-        // nếu replies thay đổi, tạo bản copy mới
-        if (!listEquals(updatedReplies, comment.replies)) {
-          result.add(comment.copyWith(replies: updatedReplies));
-        } else {
-          result.add(comment);
-        }
-      } else {
-        result.add(comment);
-      }
+      // Xử lý replies nếu có
+      final updatedReplies =
+          comment.replies != null && comment.replies!.isNotEmpty
+          ? _removeCommentFromListRecursive(comment.replies!, commentId)
+          : comment.replies;
+
+      result.add(comment.copyWith(replies: updatedReplies));
     }
 
     return result;
@@ -122,141 +131,128 @@ class CommentListCubit extends Cubit<CommentListState> {
     if (user == null) return comments;
 
     return Future.wait(
-      comments.map((c) async {
+      comments.map((comment) async {
         try {
-          final reactions = await _reactRepo.getReactionByComment(c.id!);
+          final reactions = await _reactRepo.getReactionByComment(comment.id!);
           final userReaction = reactions
               .where((r) => r.userId == user.id)
               .firstOrNull
               ?.reactionType;
-          return c.copyWith(currentUserReaction: userReaction);
+          return comment.copyWith(currentUserReaction: userReaction);
         } catch (_) {
-          return c;
+          return comment;
         }
       }),
     );
   }
 
-  List<CommentModel> updateCommentRecursively(
+  List<CommentModel> _updateCommentRecursively(
     List<CommentModel> comments,
     int targetId,
     CommentModel Function(CommentModel) updateFn,
   ) {
     return comments.map((comment) {
-      if (comment.id == targetId) return updateFn(comment);
-      if (comment.replies?.isNotEmpty ?? false) {
-        return comment.copyWith(
-          replies: updateCommentRecursively(
-            comment.replies!,
-            targetId,
-            updateFn,
-          ),
+      if (comment.id == targetId) {
+        return updateFn(comment);
+      }
+      if (comment.replies != null && comment.replies!.isNotEmpty) {
+        final updatedReplies = _updateCommentRecursively(
+          comment.replies!,
+          targetId,
+          updateFn,
         );
+        return comment.copyWith(replies: updatedReplies);
       }
       return comment;
     }).toList();
   }
 
-  Future<void> removeReaction(int commentId) async {
+  Future<void> _handleReactionUpdate(
+    int commentId,
+    Future<void> Function() reactionAction,
+    CommentModel Function(CommentModel) updateFn,
+  ) async {
     try {
-      await _reactRepo.removeReaction(commentId);
-
-      final updatedComments = updateCommentRecursively(
+      await reactionAction();
+      final updatedComments = _updateCommentRecursively(
         state.comments,
         commentId,
-        (comment) {
-          final currentType = comment.currentUserReaction;
-          if (currentType == null) return comment;
+        updateFn,
+      );
+      emit(state.copyWith(comments: updatedComments));
+    } catch (err) {
+      print('Error handling reaction: $err');
+    }
+  }
 
-          final updatedCounts = Map<ReactionType, int>.from(
-            comment.reactionCounts ?? {},
-          );
-          updatedCounts[currentType] = (updatedCounts[currentType] ?? 1) - 1;
-          if (updatedCounts[currentType]! <= 0)
-            updatedCounts.remove(currentType);
+  Future<void> removeReaction(int commentId) async {
+    await _handleReactionUpdate(
+      commentId,
+      () => _reactRepo.removeReaction(commentId),
+      (comment) {
+        final currentType = comment.currentUserReaction;
+        if (currentType == null) return comment;
 
+        final updatedCounts = Map<ReactionType, int>.from(
+          comment.reactionCounts ?? {},
+        );
+        updatedCounts[currentType] = (updatedCounts[currentType] ?? 1) - 1;
+        if (updatedCounts[currentType]! <= 0) updatedCounts.remove(currentType);
+
+        return comment.copyWith(
+          reactionCounts: updatedCounts,
+          currentUserReaction: null,
+        );
+      },
+    );
+  }
+
+  Future<void> reactToComment(int commentId, ReactionType type) async {
+    await _handleReactionUpdate(
+      commentId,
+      () => _reactRepo.reactToComment(commentId, type),
+      (comment) {
+        final updatedCounts = Map<ReactionType, int>.from(
+          comment.reactionCounts ?? {},
+        );
+        final currentType = comment.currentUserReaction;
+
+        if (currentType == type) {
+          // Toggle off
+          updatedCounts[type] = (updatedCounts[type] ?? 1) - 1;
+          if (updatedCounts[type]! <= 0) updatedCounts.remove(type);
           return comment.copyWith(
             reactionCounts: updatedCounts,
             currentUserReaction: null,
           );
-        },
-      );
+        }
 
-      emit(state.copyWith(comments: updatedComments));
-    } catch (err) {
-      print('Error remove reaction: $err');
-    }
-  }
+        if (currentType != null) {
+          updatedCounts[currentType] = (updatedCounts[currentType] ?? 1) - 1;
+          if (updatedCounts[currentType]! <= 0)
+            updatedCounts.remove(currentType);
+        }
 
-  Future<void> reactToComment(int commentId, ReactionType type) async {
-    try {
-      await _reactRepo.reactToComment(commentId, type);
-
-      final updatedComments = updateCommentRecursively(
-        state.comments,
-        commentId,
-        (comment) {
-          final updatedCounts = Map<ReactionType, int>.from(
-            comment.reactionCounts ?? {},
-          );
-          final currentType = comment.currentUserReaction;
-
-          if (currentType == type) {
-            // Toggle off
-            updatedCounts[type] = (updatedCounts[type] ?? 1) - 1;
-            if (updatedCounts[type]! <= 0) updatedCounts.remove(type);
-            return comment.copyWith(
-              reactionCounts: updatedCounts,
-              currentUserReaction: null,
-            );
-          }
-
-          if (currentType != null && currentType != type) {
-            updatedCounts[currentType] = (updatedCounts[currentType] ?? 1) - 1;
-            if (updatedCounts[currentType]! <= 0)
-              updatedCounts.remove(currentType);
-          }
-
-          updatedCounts[type] = (updatedCounts[type] ?? 0) + 1;
-          return comment.copyWith(
-            reactionCounts: updatedCounts,
-            currentUserReaction: type,
-          );
-        },
-      );
-
-      emit(state.copyWith(comments: updatedComments));
-    } catch (err) {
-      print('Error react to comment: $err');
-    }
+        updatedCounts[type] = (updatedCounts[type] ?? 0) + 1;
+        return comment.copyWith(
+          reactionCounts: updatedCounts,
+          currentUserReaction: type,
+        );
+      },
+    );
   }
 
   void resetForNewPost() {
-    emit(
-      CommentListState(
-        comments: [],
-        isLoading: false,
-        hasMore: true,
-        currentPage: 1,
-      ),
-    );
+    emit(CommentListStateExtensions.initial());
     _currentPostId = null;
   }
 
   Future<void> fetchComments(int postId, {bool loadMore = false}) async {
     if (state.isLoading || (!state.hasMore && loadMore)) return;
 
-    // Nếu là post khác, reset state
+    // Reset state if new post
     if (!loadMore && _currentPostId != postId) {
-      emit(
-        state.copyWith(
-          comments: [],
-          isLoading: true,
-          hasMore: true,
-          currentPage: 1,
-          replyingTo: null,
-        ),
-      );
+      emit(CommentListStateExtensions.initial().copyWith(isLoading: true));
     } else {
       emit(state.copyWith(isLoading: true, errorMessage: null));
     }
@@ -299,7 +295,7 @@ class CommentListCubit extends Cubit<CommentListState> {
       );
       final withUserReactions = await _loadCurrentUserReactions(newReplies);
 
-      final updatedComments = updateCommentRecursively(
+      final updatedComments = _updateCommentRecursively(
         state.comments,
         parentId,
         (c) => c.copyWith(replies: withUserReactions),
@@ -330,8 +326,11 @@ class CommentListCubit extends Cubit<CommentListState> {
       );
       await _repository.addComment(newComment, postId);
 
+      if (_currentPostId != null) {
+        await fetchComments(_currentPostId!);
+      }
+
       emit(state.copyWith(isSubmitting: false, resetReplyingTo: true));
-      await fetchComments(postId);
     } catch (e) {
       emit(
         state.copyWith(
@@ -352,19 +351,19 @@ class CommentListCubit extends Cubit<CommentListState> {
   }
 
   void cancelReply() {
-    if (!state.resetReplyingTo) emit(state.copyWith(resetReplyingTo: true));
+    if (!state.resetReplyingTo) {
+      emit(state.copyWith(resetReplyingTo: true));
+    }
   }
 
-  // Upload hình/video
   Future<List<String>> uploadMediaFiles(List<File> files) async {
-    final urls = <String>[];
-    for (final f in files) {
-      try {
-        urls.add(await _uploader.uploadFile(f));
-      } catch (e) {
-        throw Exception('Upload failed: $e');
-      }
-    }
+    final urls = await Future.wait(
+      files.map(
+        (file) => _uploader.uploadFile(file).catchError((e) {
+          throw Exception('Upload failed: $e');
+        }),
+      ),
+    );
     return urls;
   }
 }

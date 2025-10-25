@@ -17,24 +17,20 @@ class CommentBottomSheet extends StatefulWidget {
 
 class _CommentBottomSheetState extends State<CommentBottomSheet> {
   final _scrollController = ScrollController();
-  late CommentListCubit? _cubit;
 
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      context.read<CommentListCubit>().fetchComments(widget.postId);
+    });
     _scrollController.addListener(() => _onScroll(context));
-  }
-
-  @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-    _cubit = context.read<CommentListCubit>();
   }
 
   void _onScroll(BuildContext context) {
     if (_scrollController.position.pixels ==
         _scrollController.position.maxScrollExtent) {
-      _cubit?.fetchComments(widget.postId, loadMore: true);
+      context.read<CommentListCubit>().fetchComments(widget.postId, loadMore: true);
     }
   }
 
@@ -43,8 +39,8 @@ class _CommentBottomSheetState extends State<CommentBottomSheet> {
     super.didUpdateWidget(oldWidget);
     // Nếu postId thay đổi, fetch comments mới và reset state
     if (oldWidget.postId != widget.postId) {
-      _cubit?.resetForNewPost();
-      _cubit?.fetchComments(widget.postId);
+      context.read<CommentListCubit>().resetForNewPost();
+      context.read<CommentListCubit>().fetchComments(widget.postId);
     }
   }
 
@@ -79,6 +75,7 @@ class _CommentBottomSheetState extends State<CommentBottomSheet> {
   Widget _buildCommentList() {
     return BlocBuilder<CommentListCubit, CommentListState>(
       builder: (context, state) {
+        final cubit = context.read<CommentListCubit>();
         if (state.isLoading && state.comments.isEmpty) {
           return const Center(child: CircularProgressIndicator());
         }
@@ -90,9 +87,7 @@ class _CommentBottomSheetState extends State<CommentBottomSheet> {
               children: [
                 Text('Error: ${state.errorMessage}'),
                 ElevatedButton(
-                  onPressed: () => context
-                      .read<CommentListCubit>()
-                      .fetchComments(widget.postId),
+                  onPressed: () => cubit.fetchComments(widget.postId),
                   child: const Text('Thử lại'),
                 ),
               ],
@@ -122,10 +117,10 @@ class _CommentBottomSheetState extends State<CommentBottomSheet> {
               comment: comment,
               depth: 1,
               onEdit: (newContent) {
-                _cubit?.updateComment(comment.id!, newContent);
+                cubit.updateComment(comment.id!, newContent);
               },
               onDeleted: () {
-                _cubit?.deleteComment(comment.id!);
+                cubit.deleteComment(comment.id!);
               },
             );
           },
@@ -143,6 +138,7 @@ class _CommentBottomSheetState extends State<CommentBottomSheet> {
         );
       },
       builder: (context, state) {
+        final cubit = context.read<CommentListCubit>();
         return CommentInput(
           key: ValueKey(
             'comment_input_${state.replyingTo?.id}_${state.replyKey}_${state.isSubmitting}',
@@ -151,10 +147,10 @@ class _CommentBottomSheetState extends State<CommentBottomSheet> {
           replyingTo: state.replyingTo,
           onCancelReply: () {
             print('onCancelReply called');
-            _cubit?.cancelReply();
+            cubit.cancelReply();
           },
           onSubmit: (content, images, videos) {
-            _cubit?.submitComment(
+            cubit.submitComment(
               postId: widget.postId,
               content: content,
               parentId: state.replyingTo?.id,
@@ -181,8 +177,8 @@ class _CommentBottomSheetState extends State<CommentBottomSheet> {
           Expanded(
             child: RefreshIndicator(
               onRefresh: () async {
-                _cubit?.resetForNewPost();
-                return _cubit?.fetchComments(widget.postId);
+                context.read<CommentListCubit>().resetForNewPost();
+                return context.read<CommentListCubit>().fetchComments(widget.postId);
               },
               child: _buildCommentList(),
             ),

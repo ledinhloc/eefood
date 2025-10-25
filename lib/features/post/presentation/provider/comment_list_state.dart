@@ -46,3 +46,14 @@ class CommentListState {
     );
   }
 }
+
+extension CommentListStateExtensions on CommentListState {
+  static CommentListState initial() {
+    return CommentListState(
+      comments: [],
+      isLoading: false,
+      hasMore: true,
+      currentPage: 1,
+    );
+  }
+}

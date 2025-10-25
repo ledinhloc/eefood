@@ -33,7 +33,20 @@ class CommentItemReplies extends StatelessWidget {
       children: [
         const SizedBox(height: 8),
         for (final reply in visibleReplies)
-          CommentItem(comment: reply, depth: depth + 1),
+          CommentItem(
+            onEdit: (newContent) {
+              if (reply.id != null) {
+                cubit.updateComment(reply.id!, newContent);
+              }
+            },
+            onDeleted: () {
+              if (reply.id != null) {
+                cubit.deleteComment(reply.id!);
+              }
+            },
+            comment: reply,
+            depth: depth + 1,
+          ),
         if (canShowMore && (!showAllReplies))
           GestureDetector(
             onTap: () {

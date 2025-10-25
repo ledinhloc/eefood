@@ -13,11 +13,12 @@ class CommentRepositoryImpl extends CommentRepository {
       data: {'content': body},
     );
 
+    print('Updated: ${response.data['data']}');
+
     if (response.statusCode == 200 && response.data['data'] != null) {
       return CommentModel.fromJson(response.data['data']);
     }
 
-    print('Updated: ${response.data['data']}');
     return null;
   }
 

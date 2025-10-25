@@ -1,6 +1,8 @@
+import 'package:eefood/core/di/injection.dart';
 import 'package:eefood/core/utils/reaction_helper.dart';
 import 'package:eefood/core/widgets/custom_bottom_sheet.dart';
 import 'package:eefood/core/widgets/snack_bar.dart';
+import 'package:eefood/features/auth/domain/usecases/auth_usecases.dart';
 import 'package:eefood/features/post/data/models/comment_model.dart';
 import 'package:eefood/features/post/data/models/reaction_type.dart';
 import 'package:eefood/features/post/presentation/provider/comment_list_cubit.dart';
@@ -33,6 +35,7 @@ class CommentItem extends StatefulWidget {
 }
 
 class _CommentItemState extends State<CommentItem> {
+  final GetCurrentUser _getCurrentUser = getIt<GetCurrentUser>();
   bool _isExpanded = false;
   bool _showAllReplies = false;
   final GlobalKey _actionButtonKey = GlobalKey();
@@ -76,11 +79,18 @@ class _CommentItemState extends State<CommentItem> {
     }
   }
 
-  CommentModel? _findComment(List<CommentModel> list, int id) {
-    for (final c in list) {
-      if (c.id == id) return c;
-      final found = c.replies == null ? null : _findComment(c.replies!, id);
-      if (found != null) return found;
+  CommentModel? _findCommentInState(
+    List<CommentModel> comments,
+    int commentId,
+  ) {
+    for (final comment in comments) {
+      if (comment.id == commentId) {
+        return comment;
+      }
+      if (comment.replies != null && comment.replies!.isNotEmpty) {
+        final found = _findCommentInState(comment.replies!, commentId);
+        if (found != null) return found;
+      }
     }
     return null;
   }
@@ -105,7 +115,7 @@ class _CommentItemState extends State<CommentItem> {
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.all(Radius.circular(10)),
               borderSide: BorderSide.none,
-            )
+            ),
           ),
         ),
         actions: [
@@ -123,31 +133,40 @@ class _CommentItemState extends State<CommentItem> {
     );
   }
 
-  void _showOptions() {
+  void _showOptions() async {
+    final user = await _getCurrentUser();
+    print(user?.id);
+    print(widget.comment.userId);
+
     final options = <BottomSheetOption>[
-      if (widget.comment.images!.isEmpty && widget.comment.videos!.isEmpty)
+      // Nếu comment thuộc về user hiện tại thì hiển thị các tùy chọn này
+      if (widget.comment.userId == user?.id) ...[
         BottomSheetOption(
-          icon: const Icon(Icons.edit, color: Colors.orange),
-          title: "Chỉnh sửa",
-          onTap: () async {
-            final newContent = await _showEditDialog(
-              widget.comment.content ?? '',
-            );
-            if (!mounted) return;
-            if (newContent?.isNotEmpty == true) {
-              widget.onEdit?.call(newContent!);
+          icon: const Icon(Icons.delete, color: Colors.red),
+          title: "Xóa bình luận",
+          onTap: () {
+            if (widget.onDeleted != null) {
+              widget.onDeleted!();
             }
           },
         ),
-      BottomSheetOption(
-        icon: const Icon(Icons.delete, color: Colors.red),
-        title: "Xóa bình luận",
-        onTap: () {
-          if (widget.onDeleted != null) {
-            widget.onDeleted!();
-          }
-        },
-      ),
+        if (widget.comment.images?.isEmpty == true &&
+            widget.comment.videos?.isEmpty == true)
+          BottomSheetOption(
+            icon: const Icon(Icons.edit, color: Colors.orange),
+            title: "Chỉnh sửa",
+            onTap: () async {
+              final newContent = await _showEditDialog(
+                widget.comment.content ?? '',
+              );
+              if (newContent?.isNotEmpty == true) {
+                widget.onEdit?.call(newContent!);
+              }
+            },
+          ),
+      ],
+
+      // Tùy chọn sao chép nội dung (luôn có)
       BottomSheetOption(
         icon: const Icon(Icons.copy, color: Colors.grey),
         title: "Sao chép nội dung",
@@ -160,12 +179,17 @@ class _CommentItemState extends State<CommentItem> {
 
   @override
   Widget build(BuildContext context) {
-    return BlocBuilder<CommentListCubit, CommentListState>(
+    return BlocConsumer<CommentListCubit, CommentListState>(
+      listener: (context, state) {},
       builder: (context, state) {
         final cubit = context.read<CommentListCubit>();
         final updated =
-            _findComment(state.comments, widget.comment.id ?? -1) ??
+            _findCommentInState(state.comments, widget.comment.id ?? -1) ??
             widget.comment;
+
+        if (updated == null) {
+          return const SizedBox.shrink();
+        }
 
         return Container(
           key: ValueKey(
