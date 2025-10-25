@@ -9,6 +9,7 @@ import 'package:eefood/features/post/domain/repositories/comment_reaction_reposi
 import 'package:eefood/features/post/domain/repositories/comment_repository.dart';
 import 'package:eefood/features/post/presentation/provider/comment_list_state.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter/foundation.dart';
 
 class CommentListCubit extends Cubit<CommentListState> {
   final CommentRepository _repository = getIt<CommentRepository>();
@@ -87,20 +88,31 @@ class CommentListCubit extends Cubit<CommentListState> {
     List<CommentModel> comments,
     int commentId,
   ) {
-    return comments.where((comment) {
+    final result = <CommentModel>[];
+
+    for (final comment in comments) {
       if (comment.id == commentId) {
-        return false; // Remove this comment
+        // skip -> remove this comment
+        continue;
       }
+
       if (comment.replies != null && comment.replies!.isNotEmpty) {
-        // Update replies recursively
         final updatedReplies = _removeCommentFromList(
           comment.replies!,
           commentId,
         );
-        comment = comment.copyWith(replies: updatedReplies);
+        // nếu replies thay đổi, tạo bản copy mới
+        if (!listEquals(updatedReplies, comment.replies)) {
+          result.add(comment.copyWith(replies: updatedReplies));
+        } else {
+          result.add(comment);
+        }
+      } else {
+        result.add(comment);
       }
-      return true; // Keep this comment
-    }).toList();
+    }
+
+    return result;
   }
 
   Future<List<CommentModel>> _loadCurrentUserReactions(
