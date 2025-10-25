@@ -25,6 +25,7 @@ import 'package:eefood/main.dart';
 import 'package:eefood/main_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'core/di/injection.dart';
 import 'features/auth/domain/entities/user.dart';
 import 'features/post/presentation/provider/collection_cubit.dart';
 import 'features/profile/presentation/screens/profile_page.dart';
@@ -67,7 +68,10 @@ class AppRoutes {
   // Danh sách các widget cho BottomNavigationBar trong main page
   static List<Widget> widgetOptions = <Widget>[
     FeedScreen(),
-    CollectionListPage(),
+    BlocProvider(
+      create: (_) => getIt<CollectionCubit>(),
+      child: CollectionListPage(),
+    ),
     MyRecipesPage(),
     ShoppingPage(),
     ProfilePage(),
@@ -134,7 +138,7 @@ class AppRoutes {
       return RecipeDetailPage(recipeId: recipeId);
     },
     //post,
-    collectionList: (context) => CollectionListPage(),
+    collectionList: (context) => const CollectionListPage(),
     collectionDetail: (context) {
       final args =
       ModalRoute.of(context)!.settings.arguments as Map<String, dynamic>;

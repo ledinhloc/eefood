@@ -14,6 +14,7 @@ import 'package:eefood/features/post/data/repositories/post_repository_impl.dart
 import 'package:eefood/features/post/domain/repositories/collection_repository.dart';
 import 'package:eefood/features/post/domain/repositories/post_reaction_repository.dart';
 import 'package:eefood/features/post/domain/repositories/post_repository.dart';
+import 'package:eefood/features/post/presentation/provider/collection_cubit.dart';
 import 'package:eefood/features/post/presentation/provider/comment_list_cubit.dart';
 import 'package:eefood/features/post/presentation/provider/comment_reaction_cubit.dart';
 import 'package:eefood/features/profile/domain/repositories/profile_repository.dart';
@@ -125,4 +126,7 @@ Future<void> setupDependencies() async {
 
   // notification
   getIt.registerLazySingleton<NotificationRepository>(() => NotificationRepositoryImpl(dio: getIt<DioClient>().dio ));
+
+  //collection
+  getIt.registerLazySingleton<CollectionCubit>(() => CollectionCubit()..fetchCollectionsByUser());
 }
