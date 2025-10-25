@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import '../../../../../core/widgets/user_avatar.dart';
 import '../../../data/models/post_model.dart';
-import '../../../../../core/widgets/custom_bottom_sheet.dart'; // import file custom
+import '../../../../../core/widgets/custom_bottom_sheet.dart';
+import '../collection/add_to_collection_sheet.dart'; // import file custom
 
 class PostHeader extends StatelessWidget {
   final PostModel post;
@@ -40,11 +41,17 @@ class PostHeader extends StatelessWidget {
               },
             ),
             BottomSheetOption(
-              icon: const Icon(Icons.block_outlined, color: Colors.orange),
-              title: 'Ẩn các bài tương tự',
+              icon: const Icon(Icons.bookmark_add, color: Colors.blue),
+              title: 'Lưu vào bộ sưu tập',
               onTap: () {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Đã ẩn các bài tương tự')),
+                // Navigator.pop(context);
+                showModalBottomSheet(
+                  context: context,
+                  isScrollControlled: true,
+                  shape: const RoundedRectangleBorder(
+                    borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+                  ),
+                  builder: (_) => AddToCollectionSheet(postId: post.id),
                 );
               },
             ),
