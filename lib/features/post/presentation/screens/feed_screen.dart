@@ -17,6 +17,8 @@ import '../widgets/post/post_card.dart';
 
 import 'package:badges/badges.dart' as badges;
 
+import '../widgets/post/search_popup.dart';
+
 class FeedScreen extends StatelessWidget {
   const FeedScreen({super.key});
 
@@ -48,6 +50,18 @@ class _FeedViewState extends State<FeedView> {
   void hideReactionPopup() {
     _activePopup?.remove();
     _activePopup = null;
+  }
+
+  Future<void> _showSearchPopup(BuildContext context) async {
+    final filters = await showDialog<Map<String, dynamic>>(
+      context: context,
+      barrierDismissible: true,
+      builder: (context) => const SearchPopup(),
+    );
+
+    if (filters != null) {
+      getIt<PostListCubit>().fetchPosts();
+    }
   }
 
   void showReactionPopup(
@@ -139,6 +153,10 @@ class _FeedViewState extends State<FeedView> {
               ],
             ),
             actions: [
+              IconButton(
+                icon: const Icon(Icons.search_rounded),
+                onPressed: () => _showSearchPopup(context),
+              ),
               Padding(
                 padding: const EdgeInsets.only(right: 16.0),
                 child: BlocBuilder<NotificationCubit, NotificationState>(

@@ -11,7 +11,7 @@ class PostListCubit extends Cubit<PostListState> {
   final PostReactionRepository reactionRepo = getIt<PostReactionRepository>();
 
   PostListCubit()
-      : super(PostListState(posts: [], isLoading: false, hasMore: true, currentPage: 1));
+      : super(PostListState(posts: [], isLoading: false, hasMore: true, currentPage: 1, keyword: null, userId: null, region: null, difficulty: null));
 
   Future<void> reactToPost(int postId, ReactionType reactionType) async {
     try{
@@ -52,7 +52,14 @@ class PostListCubit extends Cubit<PostListState> {
 
     emit(state.copyWith(isLoading: true));
     final nextPage = loadMore ? state.currentPage + 1 : 1;
-    final posts = await postRepo.getAllPosts(nextPage, 10);
+    final posts = await postRepo.getAllPosts(
+        nextPage,
+        10,
+      keyword: state.keyword,
+      userId: state.userId,
+      region: state.region,
+      difficulty: state.difficulty,
+    );
     print('next page la : $nextPage');
 
     emit(PostListState(
@@ -69,12 +76,19 @@ class PostListState {
   final bool isLoading;
   final bool hasMore;
   final int currentPage;
-
+  final String? keyword;
+  final int? userId;
+  final String? region;
+  final String? difficulty;
   PostListState({
     required this.posts,
     required this.isLoading,
     required this.hasMore,
     required this.currentPage,
+     this.keyword,
+     this.userId,
+     this.region,
+     this.difficulty,
   });
 
   PostListState copyWith({
@@ -82,12 +96,20 @@ class PostListState {
     bool? isLoading,
     bool? hasMore,
     int? currentPage,
+    String? keyword,
+    int? userId,
+    String? region,
+    String? difficulty,
   }) {
     return PostListState(
       posts: posts ?? this.posts,
       isLoading: isLoading ?? this.isLoading,
       hasMore: hasMore ?? this.hasMore,
       currentPage: currentPage ?? this.currentPage,
+      keyword: keyword ?? this.keyword,
+      userId: userId ?? this.userId,
+      region: region ?? this.region,
+      difficulty: difficulty ?? this.difficulty,
     );
   }
 }

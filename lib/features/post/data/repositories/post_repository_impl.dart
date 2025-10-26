@@ -7,13 +7,23 @@ import '../models/post_model.dart';
 class PostRepositoryImpl extends PostRepository{
   final Dio dio;
   PostRepositoryImpl({required this.dio});
+
   @override
-  Future<List<PostModel>> getAllPosts(int page, int size) async{
+  Future<List<PostModel>> getAllPosts(int page, int size, {
+    String? keyword,
+    int? userId,
+    String? region,
+    String? difficulty,
+  }) async{
     final response = await dio.get(
       '/v1/posts',
       queryParameters: {
         'page': page,
         'size': size,
+        if (keyword != null) 'keyword': keyword,
+        if (userId != null) 'userId': userId,
+        if (region != null) 'region': region,
+        if (difficulty != null) 'difficulty': difficulty,
       }
     );
 
