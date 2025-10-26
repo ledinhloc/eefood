@@ -57,6 +57,10 @@ dependencies:
   stomp_dart_client: ^1.0.3 #websocket
   awesome_notifications: ^0.10.1 #localnotification
   emoji_picker_flutter: ^4.3.0 #emoji picker
+  share_plus: ^12.0.1 #share
+  url_launcher: ^6.2.6
+  font_awesome_flutter: ^10.6.0
+  app_links: ^6.4.1
 dev_dependencies:
   flutter_test:
     sdk: flutter

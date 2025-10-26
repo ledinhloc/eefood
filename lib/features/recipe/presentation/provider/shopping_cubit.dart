@@ -1,5 +1,4 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
-import '../../../../core/di/injection.dart';
 import '../../data/models/shopping_ingredient_model.dart';
 import '../../domain/repositories/shopping_repository.dart';
 import 'shopping_state.dart';
