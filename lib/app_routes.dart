@@ -9,7 +9,6 @@ import 'package:eefood/features/auth/presentation/screens/reset_password_page.da
 import 'package:eefood/features/auth/presentation/screens/splash_page.dart';
 import 'package:eefood/features/auth/presentation/screens/verify_otp_page.dart';
 import 'package:eefood/features/auth/presentation/screens/welcome_page.dart';
-import 'package:eefood/features/noti/presentation/provider/notification_cubit.dart';
 import 'package:eefood/features/noti/presentation/screens/notification_screen.dart';
 import 'package:eefood/features/noti/presentation/screens/ntofication_settings_screen.dart';
 import 'package:eefood/features/post/presentation/screens/collection_detail_page.dart';
@@ -21,7 +20,6 @@ import 'package:eefood/features/profile/presentation/screens/language_page.dart'
 import 'package:eefood/features/recipe/data/models/recipe_model.dart';
 import 'package:eefood/features/recipe/presentation/screens/recipe_crud_page.dart';
 import 'package:eefood/features/recipe/presentation/screens/recipe_detail_page.dart';
-import 'package:eefood/main.dart';
 import 'package:eefood/main_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -30,7 +28,6 @@ import 'features/auth/domain/entities/user.dart';
 import 'features/post/presentation/provider/collection_cubit.dart';
 import 'features/profile/presentation/screens/profile_page.dart';
 import 'features/recipe/presentation/screens/my_recipes_page.dart';
-import 'features/recipe/presentation/screens/search_page.dart';
 import 'features/recipe/presentation/screens/shopping_page.dart';
 
 class AppRoutes {
@@ -78,7 +75,6 @@ class AppRoutes {
   ];
 
   static final Map<String, WidgetBuilder> listRoute = {
-    myApp: (context) => const MyApp(),
     main: (context) => const MainScreen(),
     login: (context) => LoginPage(),
     welcome: (context) => const WelcomePage(),

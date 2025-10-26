@@ -5,6 +5,7 @@ import 'package:eefood/features/noti/domain/repositories/notification_repository
 import 'package:eefood/features/noti/presentation/provider/notification_cubit.dart';
 import 'package:eefood/features/noti/presentation/provider/notification_settings_cubit.dart';
 import 'package:eefood/features/post/data/repositories/comment_reaction_repository_impl.dart';
+import 'package:eefood/features/post/data/repositories/share_repository_impl.dart';
 import 'package:eefood/features/post/domain/repositories/comment_reaction_repository.dart';
 import 'package:eefood/features/post/domain/repositories/comment_repository.dart';
 import 'package:eefood/features/post/data/repositories/comment_repository_impl.dart';
@@ -14,6 +15,7 @@ import 'package:eefood/features/post/data/repositories/post_repository_impl.dart
 import 'package:eefood/features/post/domain/repositories/collection_repository.dart';
 import 'package:eefood/features/post/domain/repositories/post_reaction_repository.dart';
 import 'package:eefood/features/post/domain/repositories/post_repository.dart';
+import 'package:eefood/features/post/domain/repositories/share_repository.dart';
 import 'package:eefood/features/post/presentation/provider/collection_cubit.dart';
 import 'package:eefood/features/post/presentation/provider/comment_list_cubit.dart';
 import 'package:eefood/features/post/presentation/provider/comment_reaction_cubit.dart';
@@ -123,7 +125,7 @@ Future<void> setupDependencies() async {
   getIt.registerLazySingleton<CollectionRepository>(() => CollectionRepositoryImpl(dio: getIt<DioClient>().dio ));
   getIt.registerLazySingleton<CommentRepository>(() => CommentRepositoryImpl(dio: getIt<DioClient>().dio ));
   getIt.registerLazySingleton<CommentReactionRepository>(() => CommentReactionRepositoryImpl(dio: getIt<DioClient>().dio));
-
+  getIt.registerLazySingleton<ShareRepository>(() => ShareRepositoryImpl(dio: getIt<DioClient>().dio));
   // notification
   getIt.registerLazySingleton<NotificationRepository>(() => NotificationRepositoryImpl(dio: getIt<DioClient>().dio ));
 
