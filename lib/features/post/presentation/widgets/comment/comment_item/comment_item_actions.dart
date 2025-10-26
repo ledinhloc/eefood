@@ -1,10 +1,13 @@
+import 'package:eefood/core/di/injection.dart';
 import 'package:eefood/core/utils/reaction_helper.dart';
 import 'package:eefood/features/post/data/models/reaction_type.dart';
-import 'package:eefood/features/post/presentation/widgets/comment/comment_item/comment_reaction_summary.dart';
+import 'package:eefood/features/post/presentation/provider/comment_reaction_cubit.dart';
+import 'package:eefood/features/post/presentation/widgets/comment/comment_reaction/comment_reaction_summary.dart';
 import 'package:flutter/material.dart';
 import 'package:eefood/core/utils/convert_time.dart';
 import 'package:eefood/features/post/data/models/comment_model.dart';
 import 'package:eefood/features/post/presentation/provider/comment_list_cubit.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 
 class CommentItemActions extends StatelessWidget {
   final CommentModel comment;
@@ -27,7 +30,7 @@ class CommentItemActions extends StatelessWidget {
     final currentUserReaction = comment.currentUserReaction;
     final hasCurrentReaction = currentUserReaction != null;
     print('CurrentReact $hasCurrentReaction');
-
+    print('CommentItemActions => commentId=${comment.id}');
     return Row(
       children: [
         Text(
@@ -79,8 +82,13 @@ class CommentItemActions extends StatelessWidget {
             comment.reactionCounts!.isNotEmpty)
           Padding(
             padding: const EdgeInsets.only(left: 8),
-            child: CommentReactionSummary(
-              reactionCounts: comment.reactionCounts!,
+            child: BlocProvider(
+              create: (_) =>
+                  getIt<CommentReactionCubit>()..fetchReactions(comment.id!),
+              child: CommentReactionSummary(
+                commentId: comment.id!,
+                reactionCounts: comment.reactionCounts!,
+              ),
             ),
           ),
       ],

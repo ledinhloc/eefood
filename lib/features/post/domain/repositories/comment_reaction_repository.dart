@@ -5,4 +5,5 @@ abstract class CommentReactionRepository {
   Future<CommentReactionModel?> reactToComment(int commentId, ReactionType type);
   Future<void> removeReaction(int commentId);
   Future<List<CommentReactionModel>> getReactionByComment(int commentId);
+  Future<List<CommentReactionModel>> getReactionAndUserByComment(int commentId, {int page = 1, int limit = 10});
 }
