@@ -4,6 +4,7 @@ import 'package:eefood/features/recipe/presentation/provider/shopping_cubit.dart
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../core/widgets/custom_bottom_sheet.dart';
+import '../../../post/presentation/widgets/collection/add_to_collection_sheet.dart';
 import '../../domain/repositories/shopping_repository.dart';
 import '../provider/recipe_detail_cubit.dart';
 import '../widgets/instructions_tab.dart';
@@ -202,11 +203,21 @@ class RecipeDetailPage extends StatelessWidget {
         title: 'Thêm vào danh sách mua sắm',
         onTap: () => getIt<ShoppingCubit>().addRecipe(recipeId),
       ),
-      BottomSheetOption(
-        icon: const Icon(Icons.bookmark_border),
-        title: 'Lưu công thức',
-        onTap: () => {},
-      ),
+      // BottomSheetOption(
+      //   icon: const Icon(Icons.bookmark_add, color: Colors.blue),
+      //   title: 'Lưu vào bộ sưu tập',
+      //   onTap: () {
+      //     // Navigator.pop(context);
+      //     showModalBottomSheet(
+      //       context: context,
+      //       isScrollControlled: true,
+      //       shape: const RoundedRectangleBorder(
+      //         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      //       ),
+      //       builder: (_) => AddToCollectionSheet(postId: post.id),
+      //     );
+      //   },
+      // ),
       BottomSheetOption(
         icon: const Icon(Icons.share_outlined),
         title: 'Chia sẻ',

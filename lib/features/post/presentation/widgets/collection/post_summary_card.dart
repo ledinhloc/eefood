@@ -1,6 +1,7 @@
 import 'package:eefood/features/post/data/models/post_collection_model.dart';
 import 'package:flutter/material.dart';
 import '../../../../../core/di/injection.dart';
+import '../../../../recipe/presentation/provider/shopping_cubit.dart';
 import '../../../../recipe/presentation/screens/recipe_detail_page.dart';
 import '../../../../../core/widgets/user_avatar.dart';
 
@@ -115,6 +116,11 @@ class PostSummaryCard extends StatelessWidget {
                 icon: const Icon(Icons.more_vert, color: Colors.white),
                 onPressed: () {
                   showCustomBottomSheet(context, [
+                    BottomSheetOption(
+                      icon: const Icon(Icons.add_shopping_cart_rounded, color: Colors.orange),
+                      title: 'Thêm vào danh sách mua sắm',
+                      onTap: () => getIt<ShoppingCubit>().addRecipe(recipe.recipeId),
+                    ),
                     BottomSheetOption(
                       icon: const Icon(Icons.bookmark_add, color: Colors.blue),
                       title: 'Lưu vào bộ sưu tập khác',
