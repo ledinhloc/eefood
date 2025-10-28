@@ -129,15 +129,26 @@ class _SearchPopupState extends State<SearchPopup> {
                               spacing: 8,
                               runSpacing: 4,
                               children: recents.map((r) {
-                                return Chip(
-                                  label: Text(r),
-                                  onDeleted: () => getIt<PostListCubit>().deleteKeyword(r),
-                                  deleteIcon: const Icon(Icons.close, size: 16),
-                                  deleteIconColor: Colors.redAccent,
-                                  backgroundColor: Colors.grey.shade100,
+                                return GestureDetector(
+                                  onTap: () {
+                                    setState(() {
+                                      _keywordCtl.text = r;
+                                      _keywordCtl.selection = TextSelection.fromPosition(
+                                        TextPosition(offset: _keywordCtl.text.length),
+                                      );
+                                    });
+                                  },
+                                  child: Chip(
+                                    label: Text(r),
+                                    onDeleted: () => getIt<PostListCubit>().deleteKeyword(r),
+                                    deleteIcon: const Icon(Icons.close, size: 16),
+                                    deleteIconColor: Colors.redAccent,
+                                    backgroundColor: Colors.grey.shade100,
+                                  ),
                                 );
                               }).toList(),
                             ),
+
                           ],
                         );
                       },
