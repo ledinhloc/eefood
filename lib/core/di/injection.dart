@@ -33,6 +33,8 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../../features/auth/data/repositories/auth_repository_impl.dart';
 import '../../features/auth/domain/repositories/auth_repository.dart';
 import '../../features/auth/domain/usecases/auth_usecases.dart';
+import '../../features/post/data/repositories/search_repository.dart';
+import '../../features/post/presentation/provider/post_list_cubit.dart';
 import '../../features/profile/data/repo/profile_repository_imp.dart';
 import '../../features/recipe/data/repositories/shopping_repository_impl.dart';
 import '../../features/recipe/domain/repositories/shopping_repository.dart';
@@ -120,12 +122,15 @@ Future<void> setupDependencies() async {
   getIt.registerLazySingleton(() => ShoppingCubit(repository: getIt<ShoppingRepository>()));
 
   //post
+  getIt.registerLazySingleton<PostListCubit>(() => PostListCubit()..fetchPosts());
   getIt.registerLazySingleton<PostRepository>(() => PostRepositoryImpl(dio: getIt<DioClient>().dio ));
   getIt.registerLazySingleton<PostReactionRepository>(() => PostReactionRepositoryImpl(dio: getIt<DioClient>().dio ));
   getIt.registerLazySingleton<CollectionRepository>(() => CollectionRepositoryImpl(dio: getIt<DioClient>().dio ));
   getIt.registerLazySingleton<CommentRepository>(() => CommentRepositoryImpl(dio: getIt<DioClient>().dio ));
   getIt.registerLazySingleton<CommentReactionRepository>(() => CommentReactionRepositoryImpl(dio: getIt<DioClient>().dio));
   getIt.registerLazySingleton<ShareRepository>(() => ShareRepositoryImpl(dio: getIt<DioClient>().dio));
+  //search post
+  getIt.registerLazySingleton<SearchRepository>(() => SearchRepository());
   // notification
   getIt.registerLazySingleton<NotificationRepository>(() => NotificationRepositoryImpl(dio: getIt<DioClient>().dio ));
 
