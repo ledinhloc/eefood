@@ -11,5 +11,6 @@ class AppKeys{
   static const baseUrl = String.fromEnvironment('BASE_URL', defaultValue: 'http://192.168.1.16:8222');
   static const webDeloyUrl = "https://eefood-preview-card.vercel.app";
   static const hostDeloy = "eefood-preview-card.vercel.app";
+  static const recentKey = 'recent_search_keywords';
   //
 }

@@ -17,6 +17,8 @@ import '../widgets/post/post_card.dart';
 
 import 'package:badges/badges.dart' as badges;
 
+import '../widgets/post/search_popup.dart';
+
 class FeedScreen extends StatelessWidget {
   const FeedScreen({super.key});
 
@@ -24,7 +26,7 @@ class FeedScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return MultiBlocProvider(
       providers: [
-        BlocProvider(create: (_) => PostListCubit()..fetchPosts()),
+        BlocProvider.value(value: getIt<PostListCubit>()),
         // DÙNG .value với singleton getIt
         BlocProvider.value(value: getIt<NotificationCubit>()),
       ],
@@ -49,6 +51,33 @@ class _FeedViewState extends State<FeedView> {
     _activePopup?.remove();
     _activePopup = null;
   }
+
+  Future<void> _showSearchPopup(BuildContext context) async {
+    final cubit = getIt<PostListCubit>();
+    await cubit.loadRecentKeywords(); // load trước
+
+    final filters = await showDialog<Map<String, dynamic>>(
+      context: context,
+      barrierDismissible: true,
+      builder: (dialogContext) => BlocProvider.value(
+        value: cubit,
+        child: const SearchPopup(),
+      ),
+    );
+
+    if (filters != null) {
+      final keyword = filters['keyword'] as String?;
+      if (keyword != null && keyword.isNotEmpty) {
+        await cubit.saveKeyword(keyword);
+      }
+      await cubit.setFilters(
+        keyword: keyword,
+        region: filters['region'] as String?,
+        difficulty: filters['difficulty'] as String?,
+      );
+    }
+  }
+
 
   void showReactionPopup(
     BuildContext context,
@@ -96,7 +125,7 @@ class _FeedViewState extends State<FeedView> {
     _scrollController.addListener(() {
       if (_scrollController.position.pixels >=
           _scrollController.position.maxScrollExtent - 200) {
-        context.read<PostListCubit>().fetchPosts(loadMore: true);
+        getIt<PostListCubit>().fetchPosts(loadMore: true);
       }
     });
   }
@@ -139,6 +168,10 @@ class _FeedViewState extends State<FeedView> {
               ],
             ),
             actions: [
+              IconButton(
+                icon: const Icon(Icons.search_rounded),
+                onPressed: () => _showSearchPopup(context),
+              ),
               Padding(
                 padding: const EdgeInsets.only(right: 16.0),
                 child: BlocBuilder<NotificationCubit, NotificationState>(
@@ -192,7 +225,7 @@ class _FeedViewState extends State<FeedView> {
 
               return RefreshIndicator(
                 onRefresh: () async =>
-                    context.read<PostListCubit>().fetchPosts(),
+                    getIt<PostListCubit>().fetchPosts(),
                 child: ListView.builder(
                   controller: _scrollController,
                   itemCount: state.posts.length + (state.isLoading ? 1 : 0),

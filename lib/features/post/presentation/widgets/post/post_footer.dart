@@ -47,7 +47,7 @@ class _PostFooterState extends State<PostFooter>
   }
 
   void _handleReact(ReactionType? newReaction) async {
-    final cubit = context.read<PostListCubit>();
+    final cubit = getIt<PostListCubit>();
 
     if (_selectedReaction == newReaction || newReaction == null) {
       //neu chon lai cung loai
