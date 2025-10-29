@@ -148,7 +148,6 @@ class _SearchPopupState extends State<SearchPopup> {
                                 );
                               }).toList(),
                             ),
-
                           ],
                         );
                       },

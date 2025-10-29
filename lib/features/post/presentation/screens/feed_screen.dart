@@ -150,22 +150,32 @@ class _FeedViewState extends State<FeedView> {
           appBar: AppBar(
             automaticallyImplyLeading: false,
             backgroundColor: Colors.transparent,
-            title: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                
-                const Text(
-                  'Food Feed 🍽️',
-                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.w600),
-                ),
-                Text(
-                  greeting,
-                  style: const TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w400,
+            title: GestureDetector(
+              onTap: () {
+                if (_scrollController.hasClients) {
+                  _scrollController.animateTo(
+                    0,
+                    duration: const Duration(milliseconds: 400),
+                    curve: Curves.easeOut,//bắt đầu nhanh, sau đó chậm dần khi gần đến đích.
+                  );
+                }
+              },
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text(
+                    'Food Feed 🍽️',
+                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.w600),
                   ),
-                ),
-              ],
+                  Text(
+                    greeting,
+                    style: const TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w400,
+                    ),
+                  ),
+                ],
+              ),
             ),
             actions: [
               IconButton(
@@ -213,20 +223,36 @@ class _FeedViewState extends State<FeedView> {
               ),
             ],
           ),
-          body: BlocBuilder<PostListCubit, PostListState>(
-            builder: (context, state) {
-              if (state.isLoading && state.posts.isEmpty) {
-                return const Center(child: CircularProgressIndicator());
-              }
+          body:RefreshIndicator(
+            onRefresh: () async => getIt<PostListCubit>().fetchPosts(),
+            child: BlocBuilder<PostListCubit, PostListState>(
+              builder: (context, state) {
+                if (state.isLoading && state.posts.isEmpty) {
+                  // Dùng ListView để có thể cuộn (thay vì Center)
+                  return ListView(
+                    children: const [
+                      SizedBox(
+                        height: 300,
+                        child: Center(child: CircularProgressIndicator()),
+                      ),
+                    ],
+                  );
+                }
 
-              if (state.posts.isEmpty) {
-                return const Center(child: Text('Không có bài viết nào.'));
-              }
+                if (state.posts.isEmpty) {
+                  // Dùng ListView thay vì Center để RefreshIndicator vẫn hoạt động
+                  return ListView(
+                    children: const [
+                      SizedBox(
+                        height: 300,
+                        child: Center(child: Text('Không có bài viết nào.')),
+                      ),
+                    ],
+                  );
+                }
 
-              return RefreshIndicator(
-                onRefresh: () async =>
-                    getIt<PostListCubit>().fetchPosts(),
-                child: ListView.builder(
+                // Khi có dữ liệu
+                return ListView.builder(
                   controller: _scrollController,
                   itemCount: state.posts.length + (state.isLoading ? 1 : 0),
                   itemBuilder: (context, index) {
@@ -243,17 +269,16 @@ class _FeedViewState extends State<FeedView> {
                       onTap: () => Navigator.push(
                         context,
                         MaterialPageRoute(
-                          builder: (_) =>
-                              RecipeDetailPage(recipeId: post.recipeId!),
+                          builder: (_) => RecipeDetailPage(recipeId: post.recipeId!),
                         ),
                       ),
                       onShowReactions: (offset, callback) =>
                           showReactionPopup(context, offset, callback),
                     );
                   },
-                ),
-              );
-            },
+                );
+              },
+            ),
           ),
         );
       },
