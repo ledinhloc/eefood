@@ -115,6 +115,7 @@ class _FeedViewState extends State<FeedView> {
       builder: (context, snapshot) {
         final user = snapshot.data;
         final userName = user?.username ?? 'bạn';
+        final avatarUrl = user?.avatarUrl;
         final greeting = GreetingHelper.getGreeting(userName: userName);
 
         return Scaffold(
@@ -124,7 +125,6 @@ class _FeedViewState extends State<FeedView> {
             title: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                
                 const Text(
                   'Food Feed 🍽️',
                   style: TextStyle(fontSize: 20, fontWeight: FontWeight.w600),
@@ -139,44 +139,66 @@ class _FeedViewState extends State<FeedView> {
               ],
             ),
             actions: [
-              Padding(
-                padding: const EdgeInsets.only(right: 16.0),
-                child: BlocBuilder<NotificationCubit, NotificationState>(
-                  builder: (context, state) {
-                    return GestureDetector(
-                      onTap: () {
-                        final cubit = context.read<NotificationCubit>();
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (_) => BlocProvider.value(
-                              value: cubit,
-                              child: const NotificationScreen(),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.start,
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.only(right: 10.0),
+                    child: BlocBuilder<NotificationCubit, NotificationState>(
+                      builder: (context, state) {
+                        return GestureDetector(
+                          onTap: () {
+                            final cubit = context.read<NotificationCubit>();
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (_) => BlocProvider.value(
+                                  value: cubit,
+                                  child: const NotificationScreen(),
+                                ),
+                              ),
+                            );
+                          },
+                          child: badges.Badge(
+                            position: badges.BadgePosition.topEnd(
+                              top: -8,
+                              end: -4,
+                            ),
+                            showBadge: state.unreadCount > 0,
+                            badgeStyle: const badges.BadgeStyle(
+                              badgeColor: Colors.red,
+                            ),
+                            badgeContent: Text(
+                              '${state.unreadCount}',
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontSize: 10,
+                              ),
+                            ),
+                            child: const Icon(
+                              Icons.notifications_none_rounded,
+                              size: 28,
                             ),
                           ),
                         );
                       },
-                      child: badges.Badge(
-                        position: badges.BadgePosition.topEnd(top: -8, end: -4),
-                        showBadge: state.unreadCount > 0,
-                        badgeStyle: const badges.BadgeStyle(
-                          badgeColor: Colors.red,
-                        ),
-                        badgeContent: Text(
-                          '${state.unreadCount}',
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontSize: 10,
-                          ),
-                        ),
-                        child: const Icon(
-                          Icons.notifications_none_rounded,
-                          size: 28,
-                        ),
+                    ),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.only(right: 10.0),
+                    child: GestureDetector(
+                      onTap: () {
+                        Navigator.pushNamed(context, AppRoutes.personalUser);
+                      },
+                      child: CircleAvatar(
+                        radius: 17,
+                        backgroundImage: avatarUrl != null
+                            ? NetworkImage(avatarUrl)
+                            : null,
                       ),
-                    );
-                  },
-                ),
+                    ),
+                  ),
+                ],
               ),
             ],
           ),
