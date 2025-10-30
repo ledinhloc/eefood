@@ -26,18 +26,23 @@ class StepsTab extends StatelessWidget {
                 Text(
                   "Bước ${step.stepNumber}",
                   style: const TextStyle(
-                      fontWeight: FontWeight.bold, fontSize: 16),
+                    fontWeight: FontWeight.bold,
+                    fontSize: 16,
+                  ),
                 ),
                 const SizedBox(height: 6),
-                Text(step.instruction ?? '',
-                    style: const TextStyle(fontSize: 14)),
+                Text(
+                  step.instruction ?? '',
+                  style: const TextStyle(fontSize: 14),
+                ),
                 const SizedBox(height: 8),
 
                 // Thời gian của bước
                 if (step.stepTime != null)
-                  Text("⏱ ${step.stepTime} phút",
-                      style:
-                      const TextStyle(fontSize: 13, color: Colors.grey)),
+                  Text(
+                    "⏱ ${step.stepTime} phút",
+                    style: const TextStyle(fontSize: 13, color: Colors.grey),
+                  ),
 
                 // Hình minh họa
                 if (step.imageUrl != null && step.imageUrl!.isNotEmpty)
@@ -45,7 +50,23 @@ class StepsTab extends StatelessWidget {
                     padding: const EdgeInsets.only(top: 10),
                     child: ClipRRect(
                       borderRadius: BorderRadius.circular(8),
-                      child: Image.network(step.imageUrl!),
+                      child: Image.network(
+                        step.imageUrl!,
+                        fit: BoxFit.cover,
+                        errorBuilder: (context, error, stackTrace) {
+                          return Container(
+                            height: 150,
+                            color: Colors.grey[200],
+                            child: const Center(
+                              child: Icon(
+                                Icons.broken_image,
+                                color: Colors.grey,
+                                size: 48,
+                              ),
+                            ),
+                          );
+                        },
+                      ),
                     ),
                   ),
 
@@ -89,30 +110,30 @@ class _StepVideoPlayerState extends State<_StepVideoPlayer> {
   Widget build(BuildContext context) {
     return _controller.value.isInitialized
         ? AspectRatio(
-      aspectRatio: _controller.value.aspectRatio,
-      child: Stack(
-        alignment: Alignment.center,
-        children: [
-          VideoPlayer(_controller),
-          IconButton(
-            icon: Icon(
-              _controller.value.isPlaying
-                  ? Icons.pause_circle
-                  : Icons.play_circle,
-              size: 48,
-              color: Colors.white,
+            aspectRatio: _controller.value.aspectRatio,
+            child: Stack(
+              alignment: Alignment.center,
+              children: [
+                VideoPlayer(_controller),
+                IconButton(
+                  icon: Icon(
+                    _controller.value.isPlaying
+                        ? Icons.pause_circle
+                        : Icons.play_circle,
+                    size: 48,
+                    color: Colors.white,
+                  ),
+                  onPressed: () {
+                    setState(() {
+                      _controller.value.isPlaying
+                          ? _controller.pause()
+                          : _controller.play();
+                    });
+                  },
+                ),
+              ],
             ),
-            onPressed: () {
-              setState(() {
-                _controller.value.isPlaying
-                    ? _controller.pause()
-                    : _controller.play();
-              });
-            },
-          ),
-        ],
-      ),
-    )
+          )
         : const Center(child: CircularProgressIndicator());
   }
 }
