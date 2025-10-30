@@ -37,14 +37,14 @@ class ShoppingView extends StatelessWidget {
               return TextButton.icon(
                 icon: const Icon(Icons.arrow_drop_down_circle_outlined),
                 label: Text(
-                  state.viewMode == ShoppingViewMode.byRecipe ? 'công thức' : 'nguyên liệu',
+                  state.viewMode == ShoppingViewMode.byRecipe ? 'Món ăn' : 'Nguyên liệu',
                   style: const TextStyle(color: Colors.black, fontSize: 18),
                 ),
                 onPressed: () {
                   showCustomBottomSheet(context, [
                     BottomSheetOption(
                       icon: Icon(Icons.list),
-                      title: "Xem theo công thức",
+                      title: "Xem theo món ăn",
                       onTap: () {
                         context.read<ShoppingCubit>().toggleView();
                       },

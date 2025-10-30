@@ -6,16 +6,14 @@ import 'package:eefood/features/noti/presentation/provider/notification_cubit.da
 import 'package:eefood/features/noti/presentation/provider/notification_state.dart';
 import 'package:eefood/features/noti/presentation/screens/notification_screen.dart';
 import 'package:eefood/features/post/presentation/widgets/post/reaction_popup.dart';
-
 import 'package:eefood/features/recipe/presentation/screens/recipe_detail_page.dart';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../data/models/reaction_type.dart';
 import '../provider/post_list_cubit.dart';
 import '../widgets/post/post_card.dart';
-
 import 'package:badges/badges.dart' as badges;
+import '../widgets/post/search_popup.dart';
 
 class FeedScreen extends StatelessWidget {
   const FeedScreen({super.key});
@@ -24,11 +22,10 @@ class FeedScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return MultiBlocProvider(
       providers: [
-        BlocProvider(create: (_) => PostListCubit()..fetchPosts()),
-        // DÙNG .value với singleton getIt
+        BlocProvider.value(value: getIt<PostListCubit>()),
         BlocProvider.value(value: getIt<NotificationCubit>()),
       ],
-      child: FeedView(),
+      child: const FeedView(),
     );
   }
 }
@@ -50,12 +47,36 @@ class _FeedViewState extends State<FeedView> {
     _activePopup = null;
   }
 
+  Future<void> _showSearchPopup(BuildContext context) async {
+    final cubit = getIt<PostListCubit>();
+    await cubit.loadRecentKeywords();
+
+    final filters = await showDialog<Map<String, dynamic>>(
+      context: context,
+      barrierDismissible: true,
+      builder: (dialogContext) =>
+          BlocProvider.value(value: cubit, child: const SearchPopup()),
+    );
+
+    if (filters != null) {
+      final keyword = filters['keyword'] as String?;
+      if (keyword != null && keyword.isNotEmpty) {
+        await cubit.saveKeyword(keyword);
+      }
+      await cubit.setFilters(
+        keyword: keyword,
+        region: filters['region'] as String?,
+        difficulty: filters['difficulty'] as String?,
+      );
+    }
+  }
+
   void showReactionPopup(
     BuildContext context,
     Offset position,
     Function(ReactionType) onSelect,
   ) {
-    hideReactionPopup(); // chỉ 1 popup
+    hideReactionPopup();
 
     final overlay = Overlay.of(context);
     if (overlay == null) return;
@@ -96,7 +117,7 @@ class _FeedViewState extends State<FeedView> {
     _scrollController.addListener(() {
       if (_scrollController.position.pixels >=
           _scrollController.position.maxScrollExtent - 200) {
-        context.read<PostListCubit>().fetchPosts(loadMore: true);
+        getIt<PostListCubit>().fetchPosts(loadMore: true);
       }
     });
   }
@@ -139,66 +160,65 @@ class _FeedViewState extends State<FeedView> {
               ],
             ),
             actions: [
-              Row(
-                mainAxisAlignment: MainAxisAlignment.start,
-                children: [
-                  Padding(
-                    padding: const EdgeInsets.only(right: 10.0),
-                    child: BlocBuilder<NotificationCubit, NotificationState>(
-                      builder: (context, state) {
-                        return GestureDetector(
-                          onTap: () {
-                            final cubit = context.read<NotificationCubit>();
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (_) => BlocProvider.value(
-                                  value: cubit,
-                                  child: const NotificationScreen(),
-                                ),
-                              ),
-                            );
-                          },
-                          child: badges.Badge(
-                            position: badges.BadgePosition.topEnd(
-                              top: -8,
-                              end: -4,
-                            ),
-                            showBadge: state.unreadCount > 0,
-                            badgeStyle: const badges.BadgeStyle(
-                              badgeColor: Colors.red,
-                            ),
-                            badgeContent: Text(
-                              '${state.unreadCount}',
-                              style: const TextStyle(
-                                color: Colors.white,
-                                fontSize: 10,
-                              ),
-                            ),
-                            child: const Icon(
-                              Icons.notifications_none_rounded,
-                              size: 28,
+              IconButton(
+                icon: const Icon(Icons.search_rounded),
+                onPressed: () => _showSearchPopup(context),
+              ),
+
+              // ==== Notification badge fixed ====
+              BlocBuilder<NotificationCubit, NotificationState>(
+                builder: (context, state) {
+                  return Padding(
+                    padding: const EdgeInsets.only(right: 12.0),
+                    child: GestureDetector(
+                      onTap: () {
+                        final cubit = context.read<NotificationCubit>();
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => BlocProvider.value(
+                              value: cubit,
+                              child: const NotificationScreen(),
                             ),
                           ),
                         );
                       },
-                    ),
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.only(right: 10.0),
-                    child: GestureDetector(
-                      onTap: () {
-                        Navigator.pushNamed(context, AppRoutes.personalUser);
-                      },
-                      child: CircleAvatar(
-                        radius: 17,
-                        backgroundImage: avatarUrl != null
-                            ? NetworkImage(avatarUrl)
-                            : null,
+                      child: badges.Badge(
+                        showBadge: state.unreadCount > 0,
+                        badgeStyle: const badges.BadgeStyle(
+                          badgeColor: Colors.red,
+                        ),
+                        badgeContent: Text(
+                          '${state.unreadCount}',
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 10,
+                          ),
+                        ),
+                        child: const Icon(
+                          Icons.notifications_none_rounded,
+                          size: 28,
+                        ),
                       ),
                     ),
+                  );
+                },
+              ),
+
+              // ==== User avatar ====
+              Padding(
+                padding: const EdgeInsets.only(right: 10.0),
+                child: GestureDetector(
+                  onTap: () {
+                    Navigator.pushNamed(context, AppRoutes.personalUser);
+                  },
+                  child: CircleAvatar(
+                    radius: 17,
+                    backgroundImage: avatarUrl != null
+                        ? NetworkImage(avatarUrl)
+                        : null,
                   ),
-                ],
+                ),
               ),
             ],
           ),
@@ -213,8 +233,7 @@ class _FeedViewState extends State<FeedView> {
               }
 
               return RefreshIndicator(
-                onRefresh: () async =>
-                    context.read<PostListCubit>().fetchPosts(),
+                onRefresh: () async => getIt<PostListCubit>().fetchPosts(),
                 child: ListView.builder(
                   controller: _scrollController,
                   itemCount: state.posts.length + (state.isLoading ? 1 : 0),
