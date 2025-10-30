@@ -6,17 +6,13 @@ import 'package:eefood/features/noti/presentation/provider/notification_cubit.da
 import 'package:eefood/features/noti/presentation/provider/notification_state.dart';
 import 'package:eefood/features/noti/presentation/screens/notification_screen.dart';
 import 'package:eefood/features/post/presentation/widgets/post/reaction_popup.dart';
-
 import 'package:eefood/features/recipe/presentation/screens/recipe_detail_page.dart';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../data/models/reaction_type.dart';
 import '../provider/post_list_cubit.dart';
 import '../widgets/post/post_card.dart';
-
 import 'package:badges/badges.dart' as badges;
-
 import '../widgets/post/search_popup.dart';
 
 class FeedScreen extends StatelessWidget {
@@ -27,10 +23,9 @@ class FeedScreen extends StatelessWidget {
     return MultiBlocProvider(
       providers: [
         BlocProvider.value(value: getIt<PostListCubit>()),
-        // DÙNG .value với singleton getIt
         BlocProvider.value(value: getIt<NotificationCubit>()),
       ],
-      child: FeedView(),
+      child: const FeedView(),
     );
   }
 }
@@ -54,15 +49,13 @@ class _FeedViewState extends State<FeedView> {
 
   Future<void> _showSearchPopup(BuildContext context) async {
     final cubit = getIt<PostListCubit>();
-    await cubit.loadRecentKeywords(); // load trước
+    await cubit.loadRecentKeywords();
 
     final filters = await showDialog<Map<String, dynamic>>(
       context: context,
       barrierDismissible: true,
-      builder: (dialogContext) => BlocProvider.value(
-        value: cubit,
-        child: const SearchPopup(),
-      ),
+      builder: (dialogContext) =>
+          BlocProvider.value(value: cubit, child: const SearchPopup()),
     );
 
     if (filters != null) {
@@ -78,13 +71,12 @@ class _FeedViewState extends State<FeedView> {
     }
   }
 
-
   void showReactionPopup(
     BuildContext context,
     Offset position,
     Function(ReactionType) onSelect,
   ) {
-    hideReactionPopup(); // chỉ 1 popup
+    hideReactionPopup();
 
     final overlay = Overlay.of(context);
     if (overlay == null) return;
@@ -144,6 +136,7 @@ class _FeedViewState extends State<FeedView> {
       builder: (context, snapshot) {
         final user = snapshot.data;
         final userName = user?.username ?? 'bạn';
+        final avatarUrl = user?.avatarUrl;
         final greeting = GreetingHelper.getGreeting(userName: userName);
 
         return Scaffold(
@@ -153,7 +146,6 @@ class _FeedViewState extends State<FeedView> {
             title: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                
                 const Text(
                   'Food Feed 🍽️',
                   style: TextStyle(fontSize: 20, fontWeight: FontWeight.w600),
@@ -172,11 +164,13 @@ class _FeedViewState extends State<FeedView> {
                 icon: const Icon(Icons.search_rounded),
                 onPressed: () => _showSearchPopup(context),
               ),
-              Padding(
-                padding: const EdgeInsets.only(right: 16.0),
-                child: BlocBuilder<NotificationCubit, NotificationState>(
-                  builder: (context, state) {
-                    return GestureDetector(
+
+              // ==== Notification badge fixed ====
+              BlocBuilder<NotificationCubit, NotificationState>(
+                builder: (context, state) {
+                  return Padding(
+                    padding: const EdgeInsets.only(right: 12.0),
+                    child: GestureDetector(
                       onTap: () {
                         final cubit = context.read<NotificationCubit>();
                         Navigator.push(
@@ -190,7 +184,6 @@ class _FeedViewState extends State<FeedView> {
                         );
                       },
                       child: badges.Badge(
-                        position: badges.BadgePosition.topEnd(top: -8, end: -4),
                         showBadge: state.unreadCount > 0,
                         badgeStyle: const badges.BadgeStyle(
                           badgeColor: Colors.red,
@@ -207,8 +200,24 @@ class _FeedViewState extends State<FeedView> {
                           size: 28,
                         ),
                       ),
-                    );
+                    ),
+                  );
+                },
+              ),
+
+              // ==== User avatar ====
+              Padding(
+                padding: const EdgeInsets.only(right: 10.0),
+                child: GestureDetector(
+                  onTap: () {
+                    Navigator.pushNamed(context, AppRoutes.personalUser);
                   },
+                  child: CircleAvatar(
+                    radius: 17,
+                    backgroundImage: avatarUrl != null
+                        ? NetworkImage(avatarUrl)
+                        : null,
+                  ),
                 ),
               ),
             ],
@@ -224,8 +233,7 @@ class _FeedViewState extends State<FeedView> {
               }
 
               return RefreshIndicator(
-                onRefresh: () async =>
-                    getIt<PostListCubit>().fetchPosts(),
+                onRefresh: () async => getIt<PostListCubit>().fetchPosts(),
                 child: ListView.builder(
                   controller: _scrollController,
                   itemCount: state.posts.length + (state.isLoading ? 1 : 0),

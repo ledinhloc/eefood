@@ -17,6 +17,7 @@ import 'package:eefood/features/post/presentation/screens/feed_screen.dart';
 import 'package:eefood/features/profile/presentation/screens/edit_profile_page.dart';
 import 'package:eefood/features/profile/presentation/screens/food_preferences_page.dart';
 import 'package:eefood/features/profile/presentation/screens/language_page.dart';
+import 'package:eefood/features/profile/presentation/screens/personal_user_page.dart';
 import 'package:eefood/features/recipe/data/models/recipe_model.dart';
 import 'package:eefood/features/recipe/presentation/screens/recipe_crud_page.dart';
 import 'package:eefood/features/recipe/presentation/screens/recipe_detail_page.dart';
@@ -61,6 +62,8 @@ class AppRoutes {
   /* feat post */
   static const collectionList = '/collectionList';
   static const collectionDetail = '/collectionDetail';
+
+  static const personalUser = '/personalUser';
 
   // Danh sách các widget cho BottomNavigationBar trong main page
   static List<Widget> widgetOptions = <Widget>[
@@ -144,6 +147,7 @@ class AppRoutes {
         value: collectionCubit,
         child: CollectionDetailPage(collectionId: collectionId),
       );
-    }
+    },
+    personalUser: (contex) => PersonalUserPage(),
   };
 }

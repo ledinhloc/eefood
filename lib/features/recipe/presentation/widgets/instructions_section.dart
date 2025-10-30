@@ -147,8 +147,8 @@ class _InstructionsSectionState extends State<InstructionsSection> {
                     children: [
                       ClipRRect(
                         borderRadius: BorderRadius.circular(8),
-                        child: Image.file(
-                          File(step.imageUrl!),
+                        child: Image.network(
+                          step.imageUrl!,
                           width: double.infinity,
                           height: 180,
                           fit: BoxFit.cover,
