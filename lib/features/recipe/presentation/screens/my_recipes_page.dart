@@ -12,15 +12,20 @@ import '../widgets/published/published_list.dart';
 
 class MyRecipesPage extends StatelessWidget {
   MyRecipesPage({super.key});
+
   final GetMyRecipe _getMyRecipe = getIt<GetMyRecipe>();
   final RecipeRefreshCubit _refreshCubit = getIt<RecipeRefreshCubit>();
+  final PostCubit _postCubit = getIt<PostCubit>();
 
   @override
   Widget build(BuildContext context) {
     final tabTitles = ["Draft", "Published"];
 
-    return BlocProvider.value(
-      value: _refreshCubit,
+    return MultiBlocProvider(
+      providers: [
+        BlocProvider.value(value: _refreshCubit),
+        BlocProvider.value(value: _postCubit),
+      ],
       child: DefaultTabController(
         length: tabTitles.length,
         child: Scaffold(
@@ -41,25 +46,25 @@ class MyRecipesPage extends StatelessWidget {
           ),
           body: TabBarView(
             children: [
+              // Tab 1: Draft
               RecipeTab(
                 getMyRecipe: _getMyRecipe,
                 status: "DRAFT",
                 refreshCubit: _refreshCubit,
               ),
-              BlocProvider(
-                create: (_) => getIt<PostCubit>()..fetchPublishedPosts(),
-                child: BlocBuilder<PostCubit, PostState>(
-                  builder: (context, state) {
-                    if (state.isLoading) {
-                      return const Center(child: CircularProgressIndicator());
-                    } else if (state.posts.isNotEmpty) {
-                      return PublishedList(posts: state.posts);
-                    } else {
-                      return const Center(child: Text("No published recipes"));
-                    }
-                  },
-                ),
-              )
+
+              // Tab 2: Published
+              BlocBuilder<PostCubit, PostState>(
+                builder: (context, state) {
+                  if (state.isLoading) {
+                    return const Center(child: CircularProgressIndicator());
+                  } else if (state.posts.isNotEmpty) {
+                    return PublishedList(posts: state.posts);
+                  } else {
+                    return const Center(child: Text("Chưa có công thức đã đăng"));
+                  }
+                },
+              ),
             ],
           ),
           floatingActionButton: FloatingActionButton(

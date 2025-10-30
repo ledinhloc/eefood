@@ -142,5 +142,5 @@ Future<void> setupDependencies() async {
 
   //post in recipe
   getIt.registerLazySingleton<PostPublishRepository>(() => PostPublishRepositoryImpl(dio: getIt<DioClient>().dio));
-  getIt.registerFactory(() => PostCubit());
+  getIt.registerFactory(() => PostCubit()..fetchPublishedPosts());
 }

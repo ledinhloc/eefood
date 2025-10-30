@@ -47,7 +47,7 @@ class _NotificationSettingsScreenState
 
           return Scaffold(
             appBar: AppBar(
-              title: const Text('Notification Settings'),
+              title: const Text('Cài đặt thông báo'),
               backgroundColor: Colors.transparent,
               centerTitle: true,
             ),
@@ -56,27 +56,27 @@ class _NotificationSettingsScreenState
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  _buildSectionTitle(Icons.people_alt, "Social Notifications"),
-                  _buildSettingRow('COMMENT', 'Comment on your post'),
-                  _buildSettingRow('REACTION', 'Reaction to your post'),
-                  _buildSettingRow('FOLLOW', 'When someone follows you'),
+                  _buildSectionTitle(Icons.people_alt, "Thông báo xã hội"),
+                  _buildSettingRow('COMMENT', 'Bình luận về bài viết của bạn'),
+                  _buildSettingRow('REACTION', 'Người khác thả cảm xúc vào bài viết của bạn'),
+                  _buildSettingRow('FOLLOW', 'Khi có người theo dõi bạn'),
                   const SizedBox(height: 16),
 
                   _buildSectionTitle(
                     Icons.restaurant_menu,
-                    "Recipe Notifications",
+                    "Thông báo công thức nấu ăn",
                   ),
                   _buildSettingRow(
                     'SAVE_RECIPE',
-                    'Recipe saved to shopping list',
+                    'Khi công thức được lưu vào danh sách mua sắm',
                   ),
-                  _buildSettingRow('SHARE_RECIPE', 'When recipe is shared'),
+                  _buildSettingRow('SHARE_RECIPE', 'Khi công thức được chia sẻ'),
                   const SizedBox(height: 16),
 
-                  _buildSectionTitle(Icons.settings, "System Notifications"),
-                  _buildSettingRow('SYSTEM', 'System updates'),
-                  _buildSettingRow('WELCOME', 'Welcome and onboarding tips'),
-                  _buildSettingRow('RECOMMEND_RECIPE', 'Recommended recipes'),
+                  _buildSectionTitle(Icons.settings, "Thông báo hệ thống"),
+                  _buildSettingRow('SYSTEM', 'Cập nhật hệ thống'),
+                  _buildSettingRow('WELCOME', 'Chào mừng và hướng dẫn sử dụng'),
+                  _buildSettingRow('RECOMMEND_RECIPE', 'Công thức được đề xuất'),
 
                   const SizedBox(height: 24),
 
@@ -86,16 +86,16 @@ class _NotificationSettingsScreenState
                       onPressed: state.isLoading
                           ? null
                           : () async {
-                              await cubit.updateSettings(_localSettings);
-                              if (context.mounted) {
-                                showCustomSnackBar(
-                                  context,
-                                  'Cập nhật thành công',
-                                );
-                              }
-                            },
+                        await cubit.updateSettings(_localSettings);
+                        if (context.mounted) {
+                          showCustomSnackBar(
+                            context,
+                            'Cập nhật thành công',
+                          );
+                        }
+                      },
                       icon: const Icon(Icons.save_outlined),
-                      label: const Text('Save change'),
+                      label: const Text('Lưu thay đổi'),
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Colors.orange.shade600,
                         padding: const EdgeInsets.symmetric(vertical: 14),
