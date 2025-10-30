@@ -36,8 +36,11 @@ import '../../features/auth/domain/usecases/auth_usecases.dart';
 import '../../features/post/data/repositories/search_repository.dart';
 import '../../features/post/presentation/provider/post_list_cubit.dart';
 import '../../features/profile/data/repo/profile_repository_imp.dart';
+import '../../features/recipe/data/repositories/post_publish_repository_impl.dart';
 import '../../features/recipe/data/repositories/shopping_repository_impl.dart';
+import '../../features/recipe/domain/repositories/post_publish_repository.dart';
 import '../../features/recipe/domain/repositories/shopping_repository.dart';
+import '../../features/recipe/presentation/provider/post_cubit.dart';
 import '../../features/recipe/presentation/provider/shopping_cubit.dart';
 import '../network/dio_client.dart';
 
@@ -136,4 +139,8 @@ Future<void> setupDependencies() async {
 
   //collection
   getIt.registerLazySingleton<CollectionCubit>(() => CollectionCubit()..fetchCollectionsByUser());
+
+  //post in recipe
+  getIt.registerLazySingleton<PostPublishRepository>(() => PostPublishRepositoryImpl(dio: getIt<DioClient>().dio));
+  getIt.registerLazySingleton(() => PostCubit()..fetchPublishedPosts());
 }

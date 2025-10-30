@@ -11,26 +11,27 @@ import '../../../auth/domain/usecases/auth_usecases.dart';
 
 class ProfilePage extends StatelessWidget {
   ProfilePage({super.key});
-  final  _logout = getIt<Logout>();
-  Future<void> _handlerLogout(BuildContext context) async{
+  final _logout = getIt<Logout>();
+
+  Future<void> _handlerLogout(BuildContext context) async {
     if (!context.mounted) return;
 
     final confirm = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text("Confirm Logout"),
-        content: const Text("Are you sure you want to log out?"),
+        title: const Text("Xác nhận đăng xuất"),
+        content: const Text("Bạn có chắc chắn muốn đăng xuất không?"),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
-            child: const Text("Cancel"),
+            child: const Text("Hủy"),
           ),
           ElevatedButton(
             style: ElevatedButton.styleFrom(
               backgroundColor: Colors.redAccent,
             ),
             onPressed: () => Navigator.pop(context, true),
-            child: const Text("Logout"),
+            child: const Text("Đăng xuất"),
           ),
         ],
       ),
@@ -47,72 +48,87 @@ class ProfilePage extends StatelessWidget {
     }
   }
 
-  Future<void> _handlerEditProfile(BuildContext context, User user)  async {
-    final isReload = await Navigator.pushNamed(context, AppRoutes.editProfile, arguments: user);
+  Future<void> _handlerEditProfile(BuildContext context, User user) async {
+    final isReload =
+    await Navigator.pushNamed(context, AppRoutes.editProfile, arguments: user);
     if (isReload == true && context.mounted) {
       context.read<ProfileCubit>().loadProfile();
     }
   }
 
-
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
       create: (_) => ProfileCubit(getIt<GetCurrentUser>())..loadProfile(),
-      child:  BlocBuilder<ProfileCubit, User?> (
+      child: BlocBuilder<ProfileCubit, User?>(
         builder: (context, user) {
           if (user == null) {
-            return const Center(child: CircularProgressIndicator(),);
+            return const Center(child: CircularProgressIndicator());
           }
-          return  Scaffold(
+          return Scaffold(
             appBar: AppBar(
               automaticallyImplyLeading: false,
-              title: const Text('Profile', style: TextStyle(fontWeight: FontWeight.bold),),
+              title: const Text(
+                'Profile',
+                style: TextStyle(fontWeight: FontWeight.bold),
+              ),
             ),
             body: ListView(
               padding: const EdgeInsets.all(16),
               children: [
-                // Profile Header
+                // --- Phần đầu hồ sơ ---
                 Row(
                   children: [
-                    UserAvatar(url: user.avatarUrl, isLocal: false, username: user.username,),
+                    UserAvatar(
+                      url: user.avatarUrl,
+                      isLocal: false,
+                      username: user.username,
+                    ),
                     const SizedBox(width: 16),
                     Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                          user.username,
-                            style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                            user.username,
+                            style: const TextStyle(
+                                fontSize: 20, fontWeight: FontWeight.bold),
                           ),
                           const SizedBox(height: 4),
                           Text(
-                            "Community member",
+                            "Thành viên",
                             style: TextStyle(color: Colors.grey[600]),
                           ),
                           const SizedBox(height: 8),
                           OutlinedButton(
-                            onPressed: ()  {
+                            onPressed: () {
                               _handlerEditProfile(context, user);
                             },
-                            child: const Text("Edit profile"),
+                            child: const Text("Chỉnh sửa"),
                           ),
                         ],
                       ),
                     ),
                     const Spacer(),
-                    /* Xu ly logout*/
-                    IconButton(onPressed: () async =>await _handlerLogout(context), icon: Icon(Icons.exit_to_app_outlined, color: Colors.black, size: 30,),
+                    IconButton(
+                      onPressed: () async => await _handlerLogout(context),
+                      icon: const Icon(
+                        Icons.exit_to_app_outlined,
+                        color: Colors.black,
+                        size: 30,
+                      ),
                     )
                   ],
                 ),
+
                 const SizedBox(height: 20),
-                // Account section
-                const Text("Account", style: TextStyle(fontWeight: FontWeight.bold)),
+                // --- Phần tài khoản ---
+                const Text("Tài khoản",
+                    style: TextStyle(fontWeight: FontWeight.bold)),
                 const SizedBox(height: 8),
-                ListTile(
-                  title: const Text("Current Plan"),
-                  trailing: const Text("Free"),
+                const ListTile(
+                  title: Text("Gói hiện tại"),
+                  trailing: Text("Miễn phí"),
                 ),
 
                 Card(
@@ -120,67 +136,71 @@ class ProfilePage extends StatelessWidget {
                   child: ListTile(
                     leading: const Icon(Icons.star, color: Colors.red),
                     title: const Text(
-                        "Try all Plus features for free during your 7-day trial period!"),
+                        "Trải nghiệm tất cả tính năng Plus miễn phí trong 7 ngày!"),
                     trailing: ElevatedButton(
                       onPressed: () {},
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Colors.yellow.shade200,
                       ),
-                      child: const Text("Try for free"),
+                      child: const Text("Dùng thử miễn phí"),
                     ),
                   ),
                 ),
 
                 const SizedBox(height: 16),
-                const Text("Account Management",
+                const Text("Quản lý tài khoản",
                     style: TextStyle(fontWeight: FontWeight.bold)),
                 ListTile(
                   leading: const Icon(Icons.favorite_border),
-                  title: const Text("Food preferences"),
-                  subtitle: const Text("Only applicable to the For you tab"),
-                  onTap: () => Navigator.pushNamed(context, AppRoutes.foodPreference),
+                  title: const Text("Sở thích món ăn"),
+                  subtitle: const Text("Áp dụng cho tab Gợi ý cho bạn"),
+                  onTap: () =>
+                      Navigator.pushNamed(context, AppRoutes.foodPreference),
                 ),
-                ListTile(
-                  leading: const Icon(Icons.restore),
-                  title: const Text("Restore purchases"),
-                ),
-                const SizedBox(height: 16),
-                const Text("System", style: TextStyle(fontWeight: FontWeight.bold)),
-                ListTile(
-                  leading: const Icon(Icons.language),
-                  title: const Text("Languages"),
-                  onTap: () => Navigator.pushNamed(context, AppRoutes.language),
-                ),
-                ListTile(
-                  leading: const Icon(Icons.notifications_none),
-                  title: const Text("Notifications"),
-                ),
-                ListTile(
-                  leading: const Icon(Icons.brightness_6_outlined),
-                  title: const Text("Display"),
-                ),
+                // const ListTile(
+                //   leading: Icon(Icons.restore),
+                //   title: Text("Khôi phục giao dịch mua"),
+                // ),
 
                 const SizedBox(height: 16),
-                const Text("Support", style: TextStyle(fontWeight: FontWeight.bold)),
-                ListTile(
-                  leading: const Icon(Icons.chat_bubble_outline),
-                  title: const Text("Feedback"),
-                ),
-                ListTile(
-                  leading: const Icon(Icons.bug_report_outlined),
-                  title: const Text("Report a bug"),
-                ),
-
-                const SizedBox(height: 16),
-                const Text("Recommend",
+                const Text("Hệ thống",
                     style: TextStyle(fontWeight: FontWeight.bold)),
                 ListTile(
-                  leading: const Icon(Icons.thumb_up_outlined),
-                  title: const Text("Tell a friend!"),
+                  leading: const Icon(Icons.language),
+                  title: const Text("Ngôn ngữ"),
+                  onTap: () => Navigator.pushNamed(context, AppRoutes.language),
                 ),
-                ListTile(
-                  leading: const Icon(Icons.star_border),
-                  title: const Text("Rate app"),
+                const ListTile(
+                  leading: Icon(Icons.notifications_none),
+                  title: Text("Thông báo"),
+                ),
+                const ListTile(
+                  leading: Icon(Icons.brightness_6_outlined),
+                  title: Text("Hiển thị"),
+                ),
+
+                const SizedBox(height: 16),
+                const Text("Hỗ trợ",
+                    style: TextStyle(fontWeight: FontWeight.bold)),
+                const ListTile(
+                  leading: Icon(Icons.chat_bubble_outline),
+                  title: Text("Góp ý"),
+                ),
+                const ListTile(
+                  leading: Icon(Icons.bug_report_outlined),
+                  title: Text("Báo lỗi"),
+                ),
+
+                const SizedBox(height: 16),
+                const Text("Giới thiệu",
+                    style: TextStyle(fontWeight: FontWeight.bold)),
+                const ListTile(
+                  leading: Icon(Icons.thumb_up_outlined),
+                  title: Text("Giới thiệu cho bạn bè!"),
+                ),
+                const ListTile(
+                  leading: Icon(Icons.star_border),
+                  title: Text("Đánh giá ứng dụng"),
                 ),
               ],
             ),
@@ -191,8 +211,8 @@ class ProfilePage extends StatelessWidget {
               child: const Icon(Icons.notifications),
             ),
           );
-        }
-      )
+        },
+      ),
     );
   }
 }

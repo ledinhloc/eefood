@@ -13,10 +13,10 @@ class RecipeCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Card(
-      margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
+      margin: const EdgeInsets.symmetric(vertical: 3, horizontal: 12),
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       child: Padding(
-        padding: const EdgeInsets.all(12),
+        padding: const EdgeInsets.all(10),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -61,7 +61,7 @@ class RecipeCard extends StatelessWidget {
                 }, icon: Icon(Icons.more_vert_sharp))
               ],
             ),
-            const SizedBox(height: 8),
+            const SizedBox(height: 0),
             /* Ingredients list*/
             ListView.builder(
               shrinkWrap: true,

@@ -32,7 +32,6 @@ class _AddToCollectionSheetState extends State<AddToCollectionSheet> {
     col.posts?.any((post) => post.postId == widget.postId) ?? false)
         .map((e) => e.id)
         .toList();
-
     setState(() {
       selected.addAll(existing);
     });
@@ -161,24 +160,28 @@ class _AddToCollectionSheetState extends State<AddToCollectionSheet> {
                 final isSelected = selected.contains(col.id);
 
                 return ListTile(
-                  leading: col.coverImageUrl != null
-                      ? ClipRRect(
+                  leading: ClipRRect(
                     borderRadius: BorderRadius.circular(8),
-                    child: Image.network(
+                    child: col.coverImageUrl != null && col.coverImageUrl!.isNotEmpty
+                        ? Image.network(
                       col.coverImageUrl!,
                       width: 40,
                       height: 40,
                       fit: BoxFit.cover,
-                    ),
-                  )
-                      : Container(
-                    width: 40,
-                    height: 40,
-                    decoration: BoxDecoration(
+                      // Nếu load ảnh lỗi -> hiển thị icon fallback
+                      errorBuilder: (context, error, stackTrace) => Container(
+                        width: 40,
+                        height: 40,
+                        color: Colors.grey[300],
+                        child: const Icon(Icons.image_not_supported, color: Colors.grey),
+                      ),
+                    )
+                        : Container(
+                      width: 40,
+                      height: 40,
                       color: Colors.grey[300],
-                      borderRadius: BorderRadius.circular(8),
+                      child: const Icon(Icons.image, color: Colors.grey),
                     ),
-                    child: const Icon(Icons.image, color: Colors.grey),
                   ),
                   title: Text(col.name),
                   trailing: Checkbox(
