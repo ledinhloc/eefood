@@ -46,14 +46,14 @@ class ShoppingView extends StatelessWidget {
                       icon: Icon(Icons.list),
                       title: "Xem theo món ăn",
                       onTap: () {
-                        context.read<ShoppingCubit>().toggleView();
+                        context.read<ShoppingCubit>().toggleView(ShoppingViewMode.byRecipe);
                       },
                     ),
                     BottomSheetOption(
                       icon: Icon(Icons.shopping_cart),
                       title: "Xem theo nguyên liệu",
                       onTap: () {
-                        context.read<ShoppingCubit>().toggleView();
+                        context.read<ShoppingCubit>().toggleView(ShoppingViewMode.byIngredient);
                       },
                     ),
                   ]);
@@ -112,7 +112,7 @@ class ShoppingView extends StatelessWidget {
             background: Container(
               color: Colors.red,
               alignment: Alignment.centerRight,
-              padding: const EdgeInsets.symmetric(horizontal: 20),
+              padding: const EdgeInsets.symmetric(horizontal: 5),
               child: const Icon(Icons.delete, color: Colors.white),
             ),
             onDismissed: (_) {

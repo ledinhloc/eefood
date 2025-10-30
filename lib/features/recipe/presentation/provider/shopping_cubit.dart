@@ -57,11 +57,8 @@ class ShoppingCubit extends Cubit<ShoppingState> {
     }
   }
 
-  void toggleView() {
-    final next = state.viewMode == ShoppingViewMode.byRecipe
-        ? ShoppingViewMode.byIngredient
-        : ShoppingViewMode.byRecipe;
-    emit(state.copyWith(viewMode: next));
+  void toggleView(ShoppingViewMode viewMode) {
+    emit(state.copyWith(viewMode: viewMode));
   }
 
   // cập nhật ingredient

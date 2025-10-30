@@ -11,18 +11,25 @@ class InstructionsTab extends StatelessWidget {
       itemCount: recipe.ingredients?.length ?? 0,
       itemBuilder: (context, index) {
         final ing = recipe.ingredients![index];
+        final imageUrl = ing.ingredient?.image;
+
         return ListTile(
-          leading: ing.ingredient?.image != null
-              ? ClipRRect(
+          leading: ClipRRect(
             borderRadius: BorderRadius.circular(8),
-            child: Image.network(
-              ing.ingredient!.image!,
+            child: (imageUrl != null && imageUrl.isNotEmpty)
+                ? Image.network(
+              imageUrl,
               width: 40,
               height: 40,
               fit: BoxFit.cover,
-            ),
-          )
-              : const Icon(Icons.fastfood, color: Colors.orange),
+              errorBuilder: (context, error, stackTrace) {
+                return const Icon(Icons.image_not_supported,
+                    color: Colors.grey, size: 40);
+              },
+            )
+                : const Icon(Icons.image_not_supported,
+                color: Colors.grey, size: 40),
+          ),
           title: Text(ing.ingredient?.name ?? ''),
           subtitle: Text("${ing.quantity ?? ''} ${ing.unit ?? ''}"),
         );

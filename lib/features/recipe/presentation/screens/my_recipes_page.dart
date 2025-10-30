@@ -6,6 +6,10 @@ import 'package:eefood/core/di/injection.dart';
 import 'package:eefood/features/recipe/domain/usecases/recipe_usecases.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
+import '../provider/post_cubit.dart';
+import '../provider/post_state.dart';
+import '../widgets/published/published_list.dart';
+
 class MyRecipesPage extends StatelessWidget {
   MyRecipesPage({super.key});
   final GetMyRecipe _getMyRecipe = getIt<GetMyRecipe>();
@@ -42,11 +46,20 @@ class MyRecipesPage extends StatelessWidget {
                 status: "DRAFT",
                 refreshCubit: _refreshCubit,
               ),
-              RecipeTab(
-                getMyRecipe: _getMyRecipe,
-                status: "PUBLISHED",
-                refreshCubit: _refreshCubit,
-              ),
+              BlocProvider(
+                create: (_) => getIt<PostCubit>()..fetchPublishedPosts(),
+                child: BlocBuilder<PostCubit, PostState>(
+                  builder: (context, state) {
+                    if (state.isLoading) {
+                      return const Center(child: CircularProgressIndicator());
+                    } else if (state.posts.isNotEmpty) {
+                      return PublishedList(posts: state.posts);
+                    } else {
+                      return const Center(child: Text("No published recipes"));
+                    }
+                  },
+                ),
+              )
             ],
           ),
           floatingActionButton: FloatingActionButton(

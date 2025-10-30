@@ -5,6 +5,9 @@ import 'package:eefood/features/recipe/data/models/recipe_model.dart';
 import 'package:eefood/features/recipe/presentation/provider/recipe_cubit.dart';
 import 'package:eefood/features/recipe/presentation/provider/recipe_refresh_cubit.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+
+import '../provider/post_cubit.dart';
 
 class RecipeGridCard extends StatefulWidget {
   final RecipeModel recipe;
@@ -43,6 +46,20 @@ class _RecipeGridCardState extends State<RecipeGridCard> {
     } else {
       _removeDropdown();
     }
+  }
+  Future<void> _publishRecipe() async {
+    _removeDropdown();
+    final postCubit = context.read<PostCubit>();
+    final recipe = widget.recipe;
+
+    if (recipe.id == null) {
+      showCustomSnackBar(context, "Invalid recipe ID");
+      return;
+    }
+
+    await postCubit.createPost(context, recipe.id!, recipe.title ?? '');
+    widget.onRefresh?.call();
+    _refreshCubit.refresh();
   }
 
   void _removeDropdown() {

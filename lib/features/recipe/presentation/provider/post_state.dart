@@ -1,34 +1,34 @@
-import '../../data/models/post_model.dart';
+import '../../data/models/post_publish_model.dart';
 
 class PostState {
   final bool isLoading;
-  final PostModel? post;
+  final List<PostPublishModel> posts;
   final bool deleted;
   final String? error;
 
   const PostState({
     required this.isLoading,
-    required this.post,
+    required this.posts,
     required this.deleted,
     required this.error,
   });
 
   factory PostState.initial() => const PostState(
     isLoading: false,
-    post: null,
+    posts: [],
     deleted: false,
     error: null,
   );
 
   PostState copyWith({
     bool? isLoading,
-    PostModel? post,
+    List<PostPublishModel>? posts,
     bool? deleted,
     String? error,
   }) {
     return PostState(
       isLoading: isLoading ?? this.isLoading,
-      post: post ?? this.post,
+      posts: posts ?? this.posts,
       deleted: deleted ?? this.deleted,
       error: error,
     );
