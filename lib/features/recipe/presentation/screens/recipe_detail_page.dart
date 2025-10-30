@@ -109,39 +109,93 @@ class RecipeDetailPage extends StatelessWidget {
                         ),
                       ),
                       const SizedBox(height: 8),
-                      Row(
-                        children: [
-                          // --- Avatar ---
-                          CircleAvatar(
-                            radius: 22,
-                            backgroundImage: recipe.avatarUrl != null && recipe.avatarUrl!.isNotEmpty
-                                ? NetworkImage(recipe.avatarUrl!)
-                                : const AssetImage('assets/images/default_avatar.png') as ImageProvider,
-                            backgroundColor: Colors.grey[200],
-                          ),
-                          const SizedBox(width: 12),
+                      Container(
+                        padding: const EdgeInsets.all(12),
+                        decoration: BoxDecoration(
+                          color: Colors.orange.shade50,
+                          borderRadius: BorderRadius.circular(16),
+                        ),
+                        child: Row(
+                          children: [
+                            // --- Avatar đẹp hơn ---
+                            Container(
+                              width: 60,
+                              height: 60,
+                              decoration: BoxDecoration(
+                                shape: BoxShape.circle,
+                                border: Border.all(color: Colors.orange, width: 2),
+                              ),
+                              child: ClipOval(
+                                child: recipe.avatarUrl != null && recipe.avatarUrl!.isNotEmpty
+                                    ? Image.network(recipe.avatarUrl!, fit: BoxFit.cover)
+                                    : const Icon(Icons.person, size: 40, color: Colors.grey),
+                              ),
+                            ),
+                            const SizedBox(width: 16),
 
-                          // --- Username & Email ---
-                          Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                recipe.username,
-                                style: const TextStyle(
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 16,
-                                ),
+                            // --- Thông tin người dùng ---
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Row(
+                                    children: [
+                                      Flexible(
+                                        child: Text(
+                                          recipe.username,
+                                          style: const TextStyle(
+                                            fontSize: 17,
+                                            fontWeight: FontWeight.bold,
+                                            color: Colors.black87,
+                                          ),
+                                          overflow: TextOverflow.ellipsis,
+                                        ),
+                                      ),
+                                      const SizedBox(width: 6),
+                                      const Icon(Icons.verified, color: Colors.orange, size: 18),
+                                    ],
+                                  ),
+                                  const SizedBox(height: 2),
+                                  Text(
+                                    recipe.email,
+                                    style: const TextStyle(
+                                      fontSize: 13,
+                                      color: Colors.black54,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 4),
+                                  // GestureDetector(
+                                  //   onTap: () {
+                                  //     // TODO: mở trang cá nhân nếu bạn có UserProfilePage
+                                  //   },
+                                  //   child: const Text(
+                                  //     "Xem trang cá nhân",
+                                  //     style: TextStyle(
+                                  //       fontSize: 13,
+                                  //       color: Colors.orange,
+                                  //       decoration: TextDecoration.underline,
+                                  //     ),
+                                  //   ),
+                                  // ),
+                                ],
                               ),
-                              Text(
-                                recipe.email,
-                                style: const TextStyle(
-                                  fontSize: 13,
-                                  color: Colors.grey,
-                                ),
+                            ),
+
+                            // --- Nút follow (tùy chọn) ---
+                            ElevatedButton(
+                              onPressed: () {
+                                // TODO: xử lý theo dõi người dùng
+                              },
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: Colors.orange,
+                                foregroundColor: Colors.white,
+                                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                               ),
-                            ],
-                          ),
-                        ],
+                              child: const Text("Theo dõi", style: TextStyle(fontSize: 13)),
+                            ),
+                          ],
+                        ),
                       ),
                       const SizedBox(height: 16),
 
