@@ -30,9 +30,9 @@ class PostCubit extends Cubit<PostState> {
       final post = await _postRepository.createPost(recipeId, content);
 
       // thêm vào danh sách hiện tại
-      final updated = List<PostPublishModel>.from(state.posts)..insert(0, post);
-
-      emit(state.copyWith(isLoading: false, posts: updated));
+      // final updated = List<PostPublishModel>.from(state.posts)..insert(0, post);
+      await fetchPublishedPosts();
+      // emit(state.copyWith(isLoading: false, posts: updated));
       showCustomSnackBar(context, "✅ Published successfully");
     } catch (e) {
       emit(state.copyWith(isLoading: false, error: e.toString()));

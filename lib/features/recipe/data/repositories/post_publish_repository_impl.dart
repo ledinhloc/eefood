@@ -10,7 +10,6 @@ class PostPublishRepositoryImpl extends PostPublishRepository {
   @override
   Future<List<PostPublishModel>> getPublishedPosts() async {
     final response = await dio.get('/v1/posts/user');
-
     final data = response.data['data'] as List;
     return data.map((e) => PostPublishModel.fromJson(e)).toList();
   }
