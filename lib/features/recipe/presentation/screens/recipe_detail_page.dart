@@ -108,6 +108,41 @@ class RecipeDetailPage extends StatelessWidget {
                           ],
                         ),
                       ),
+                      const SizedBox(height: 8),
+                      Row(
+                        children: [
+                          // --- Avatar ---
+                          CircleAvatar(
+                            radius: 22,
+                            backgroundImage: recipe.avatarUrl != null && recipe.avatarUrl!.isNotEmpty
+                                ? NetworkImage(recipe.avatarUrl!)
+                                : const AssetImage('assets/images/default_avatar.png') as ImageProvider,
+                            backgroundColor: Colors.grey[200],
+                          ),
+                          const SizedBox(width: 12),
+
+                          // --- Username & Email ---
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                recipe.username,
+                                style: const TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 16,
+                                ),
+                              ),
+                              Text(
+                                recipe.email,
+                                style: const TextStyle(
+                                  fontSize: 13,
+                                  color: Colors.grey,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
                       const SizedBox(height: 16),
 
                       // --- Info summary ---
