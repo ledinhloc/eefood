@@ -9,9 +9,11 @@ import '../../domain/repositories/shopping_repository.dart';
 import '../provider/recipe_detail_cubit.dart';
 import '../widgets/instructions_tab.dart';
 import '../widgets/steps_tab.dart';
+
 class RecipeDetailPage extends StatelessWidget {
   final int recipeId;
   const RecipeDetailPage({super.key, required this.recipeId});
+
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
@@ -31,8 +33,7 @@ class RecipeDetailPage extends StatelessWidget {
           }
 
           final recipe = state.recipe!;
-          final totalTime =
-              (recipe.prepTime ?? 0) + (recipe.cookTime ?? 0);
+          final totalTime = (recipe.prepTime ?? 0) + (recipe.cookTime ?? 0);
 
           return Scaffold(
             body: DefaultTabController(
@@ -44,8 +45,7 @@ class RecipeDetailPage extends StatelessWidget {
                     pinned: true,
                     backgroundColor: Colors.white,
                     leading: IconButton(
-                      icon: const Icon(Icons.arrow_back_ios_new,
-                          color: Colors.white),
+                      icon: const Icon(Icons.arrow_back_ios_new, color: Colors.white),
                       onPressed: () => Navigator.pop(context),
                     ),
                     actions: [
@@ -65,7 +65,7 @@ class RecipeDetailPage extends StatelessWidget {
                             fit: BoxFit.cover,
                             errorBuilder: (_, __, ___) => Container(
                               color: Colors.grey.shade200,
-                              child: const Icon(Icons.image_not_supported),
+                              child: const Icon(Icons.image_not_supported, size: 80),
                             ),
                           ),
                           Container(
@@ -92,7 +92,7 @@ class RecipeDetailPage extends StatelessWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      // Source + title
+                      // --- Title ---
                       Center(
                         child: Column(
                           children: [
@@ -100,44 +100,187 @@ class RecipeDetailPage extends StatelessWidget {
                             Text(
                               recipe.title,
                               style: const TextStyle(
-                                  fontSize: 22, fontWeight: FontWeight.bold),
+                                fontSize: 22,
+                                fontWeight: FontWeight.bold,
+                              ),
                               textAlign: TextAlign.center,
                             ),
                           ],
                         ),
                       ),
+                      const SizedBox(height: 8),
+                      Container(
+                        padding: const EdgeInsets.all(12),
+                        decoration: BoxDecoration(
+                          color: Colors.orange.shade50,
+                          borderRadius: BorderRadius.circular(16),
+                        ),
+                        child: Row(
+                          children: [
+                            // --- Avatar đẹp hơn ---
+                            Container(
+                              width: 60,
+                              height: 60,
+                              decoration: BoxDecoration(
+                                shape: BoxShape.circle,
+                                border: Border.all(color: Colors.orange, width: 2),
+                              ),
+                              child: ClipOval(
+                                child: recipe.avatarUrl != null && recipe.avatarUrl!.isNotEmpty
+                                    ? Image.network(recipe.avatarUrl!, fit: BoxFit.cover)
+                                    : const Icon(Icons.person, size: 40, color: Colors.grey),
+                              ),
+                            ),
+                            const SizedBox(width: 16),
+
+                            // --- Thông tin người dùng ---
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Row(
+                                    children: [
+                                      Flexible(
+                                        child: Text(
+                                          recipe.username,
+                                          style: const TextStyle(
+                                            fontSize: 17,
+                                            fontWeight: FontWeight.bold,
+                                            color: Colors.black87,
+                                          ),
+                                          overflow: TextOverflow.ellipsis,
+                                        ),
+                                      ),
+                                      const SizedBox(width: 6),
+                                      const Icon(Icons.verified, color: Colors.orange, size: 18),
+                                    ],
+                                  ),
+                                  const SizedBox(height: 2),
+                                  Text(
+                                    recipe.email,
+                                    style: const TextStyle(
+                                      fontSize: 13,
+                                      color: Colors.black54,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 4),
+                                  // GestureDetector(
+                                  //   onTap: () {
+                                  //     // TODO: mở trang cá nhân nếu bạn có UserProfilePage
+                                  //   },
+                                  //   child: const Text(
+                                  //     "Xem trang cá nhân",
+                                  //     style: TextStyle(
+                                  //       fontSize: 13,
+                                  //       color: Colors.orange,
+                                  //       decoration: TextDecoration.underline,
+                                  //     ),
+                                  //   ),
+                                  // ),
+                                ],
+                              ),
+                            ),
+
+                            // --- Nút follow (tùy chọn) ---
+                            ElevatedButton(
+                              onPressed: () {
+                                // TODO: xử lý theo dõi người dùng
+                              },
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: Colors.orange,
+                                foregroundColor: Colors.white,
+                                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                              ),
+                              child: const Text("Theo dõi", style: TextStyle(fontSize: 13)),
+                            ),
+                          ],
+                        ),
+                      ),
                       const SizedBox(height: 16),
-                      // Info summary
+
+                      // --- Info summary ---
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                         children: [
-                          _infoBlock("${recipe.ingredients?.length ?? 0}",
-                              "Ingredients"),
+                          _infoBlock("${recipe.ingredients?.length ?? 0}", "Ingredients"),
                           _infoBlock("${totalTime}m", "Total Time"),
+                          _infoBlock(recipe.difficulty?.name ?? "N/A", "Difficulty"),
                         ],
                       ),
 
                       const SizedBox(height: 16),
 
-                      Text(recipe.description ?? '',
-                          style: const TextStyle(fontSize: 15)),
+                      // --- Description ---
+                      if (recipe.description != null && recipe.description!.isNotEmpty)
+                        Text(
+                          recipe.description!,
+                          style: const TextStyle(fontSize: 15),
+                        ),
 
                       const SizedBox(height: 12),
 
-                      Row(
+                      // --- Region, cook/prep times ---
+                      Wrap(
+                        spacing: 12,
+                        runSpacing: 8,
                         children: [
-                          const Icon(Icons.schedule, size: 20),
-                          const SizedBox(width: 4),
-                          Text("Prep: ${recipe.prepTime ?? 0} min"),
-                          const SizedBox(width: 10),
-                          Text("Cook: ${recipe.cookTime ?? 0} min"),
+                          if (recipe.region != null && recipe.region!.isNotEmpty)
+                            _iconText(Icons.place, recipe.region!),
+                          _iconText(Icons.schedule, "Prep: ${recipe.prepTime ?? 0} min"),
+                          _iconText(Icons.local_dining, "Cook: ${recipe.cookTime ?? 0} min"),
                         ],
                       ),
 
-                      const SizedBox(height: 16),
+                      // const SizedBox(height: 16),
+
+                      // --- Categories ---
+                      // if (recipe.categoryIds != null && recipe.categoryIds!.isNotEmpty)
+                      //   Wrap(
+                      //     spacing: 6,
+                      //     children: recipe.categoryIds!
+                      //         .map((id) => Chip(
+                      //       label: Text("Category $id"),
+                      //       backgroundColor: Colors.orange.shade50,
+                      //     ))
+                      //         .toList(),
+                      //   ),
+
+                      // const SizedBox(height: 16),
+
+                      // --- Video Preview ---
+                      if (recipe.videoUrl != null && recipe.videoUrl!.isNotEmpty)
+                        GestureDetector(
+                          onTap: () {
+                            // // Có thể mở video player riêng nếu bạn muốn
+                            // ScaffoldMessenger.of(context).showSnackBar(
+                            //   snackBarMessage("Mở video hướng dẫn: ${recipe.videoUrl}"),
+                            // );
+
+                          },
+                          child: Container(
+                            decoration: BoxDecoration(
+                              color: Colors.black12,
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                            padding: const EdgeInsets.all(12),
+                            child: Row(
+                              children: const [
+                                Icon(Icons.play_circle_fill, color: Colors.orange, size: 40),
+                                SizedBox(width: 8),
+                                Text("Xem video hướng dẫn",
+                                    style: TextStyle(
+                                        fontSize: 16, fontWeight: FontWeight.w500)),
+                              ],
+                            ),
+                          ),
+                        ),
+
+                      const SizedBox(height: 24),
                       const Divider(thickness: 1.2),
                       const SizedBox(height: 12),
 
+                      // --- Tabs: Ingredients / Steps ---
                       const TabBar(
                         labelColor: Colors.orange,
                         unselectedLabelColor: Colors.grey,
@@ -168,6 +311,8 @@ class RecipeDetailPage extends StatelessWidget {
     );
   }
 
+  // --- Helper widgets ---
+
   Widget _iconText(IconData icon, String text) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
@@ -176,6 +321,7 @@ class RecipeDetailPage extends StatelessWidget {
         borderRadius: BorderRadius.circular(20),
       ),
       child: Row(
+        mainAxisSize: MainAxisSize.min,
         children: [
           Icon(icon, size: 18, color: Colors.black54),
           const SizedBox(width: 4),
@@ -201,23 +347,11 @@ class RecipeDetailPage extends StatelessWidget {
       BottomSheetOption(
         icon: const Icon(Icons.add_shopping_cart_rounded, color: Colors.orange),
         title: 'Thêm vào danh sách mua sắm',
-        onTap: () => getIt<ShoppingCubit>().addRecipe(recipeId),
+        onTap: () {
+          getIt<ShoppingCubit>().addRecipe(recipeId);
+          showCustomSnackBar(context, "Thêm thành công");
+        },
       ),
-      // BottomSheetOption(
-      //   icon: const Icon(Icons.bookmark_add, color: Colors.blue),
-      //   title: 'Lưu vào bộ sưu tập',
-      //   onTap: () {
-      //     // Navigator.pop(context);
-      //     showModalBottomSheet(
-      //       context: context,
-      //       isScrollControlled: true,
-      //       shape: const RoundedRectangleBorder(
-      //         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-      //       ),
-      //       builder: (_) => AddToCollectionSheet(postId: post.id),
-      //     );
-      //   },
-      // ),
       BottomSheetOption(
         icon: const Icon(Icons.share_outlined),
         title: 'Chia sẻ',
@@ -237,10 +371,9 @@ class RecipeDetailPage extends StatelessWidget {
     if (isAuthor) {
       opts.addAll([
         BottomSheetOption(icon: const Icon(Icons.edit), title: 'Chỉnh sửa', onTap: () {}),
-        BottomSheetOption(icon: const Icon(Icons.delete_forever), title: 'Xóa', onTap: () {},)
+        BottomSheetOption(icon: const Icon(Icons.delete_forever), title: 'Xóa', onTap: () {}),
       ]);
     }
     showCustomBottomSheet(context, opts);
   }
-
 }

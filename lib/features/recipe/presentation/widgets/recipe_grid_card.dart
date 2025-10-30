@@ -5,6 +5,9 @@ import 'package:eefood/features/recipe/data/models/recipe_model.dart';
 import 'package:eefood/features/recipe/presentation/provider/recipe_cubit.dart';
 import 'package:eefood/features/recipe/presentation/provider/recipe_refresh_cubit.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+
+import '../provider/post_cubit.dart';
 
 class RecipeGridCard extends StatefulWidget {
   final RecipeModel recipe;
@@ -43,6 +46,88 @@ class _RecipeGridCardState extends State<RecipeGridCard> {
     } else {
       _removeDropdown();
     }
+  }
+  Future<void> _publishRecipe() async {
+    _removeDropdown();
+    final recipe = widget.recipe;
+
+    if (recipe.id == null) {
+      showCustomSnackBar(context, "Công thức không hợp lệ");
+      return;
+    }
+
+    final TextEditingController contentController = TextEditingController();
+    final PostCubit postCubit = getIt<PostCubit>(); // ✅ Lấy PostCubit từ getIt
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+      ),
+      builder: (context) {
+        return Padding(
+          padding: EdgeInsets.only(
+            bottom: MediaQuery.of(context).viewInsets.bottom,
+            left: 16,
+            right: 16,
+            top: 20,
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text(
+                "Đăng công thức",
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              ),
+              const SizedBox(height: 12),
+
+              TextField(
+                controller: contentController,
+                maxLines: 3,
+                decoration: const InputDecoration(
+                  labelText: "Nội dung bài đăng",
+                  hintText: "Hãy chia sẻ đôi điều về công thức này...",
+                  border: OutlineInputBorder(),
+                ),
+              ),
+
+              const SizedBox(height: 16),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  TextButton(
+                    onPressed: () => Navigator.pop(context),
+                    child: const Text("Hủy"),
+                  ),
+                  const SizedBox(width: 8),
+                  ElevatedButton(
+                    onPressed: () async {
+                      Navigator.pop(context); // đóng bottom sheet
+
+                      final content = contentController.text.trim();
+
+                      // ✅ Gọi cubit lấy từ getIt, không phụ thuộc context
+                      await postCubit.createPost(
+                        context,
+                        recipe.id!,
+                        content.isEmpty ? "" : content,
+                      );
+
+                      widget.onRefresh?.call();
+                      _refreshCubit.refresh();
+                    },
+                    child: const Text("Đăng bài"),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 12),
+            ],
+          ),
+        );
+      },
+    );
   }
 
   void _removeDropdown() {
@@ -91,18 +176,15 @@ class _RecipeGridCardState extends State<RecipeGridCard> {
               children: [
                 _buildMenuTile(
                   icon: Icons.delete,
-                  title: "Delete",
+                  title: "Xóa công thức",
                   color: Colors.red,
                   onTap: _deleteRecipe,
                 ),
                 _buildMenuTile(
                   icon: Icons.publish,
-                  title: "Publish",
+                  title: "Đăng công thức",
                   color: Colors.blue,
-                  onTap: () {
-                    _removeDropdown();
-                    widget.onRefresh?.call();
-                  },
+                  onTap: _publishRecipe
                 ),
               ],
             ),
