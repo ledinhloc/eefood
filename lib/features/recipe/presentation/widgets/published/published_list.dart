@@ -2,6 +2,7 @@ import 'package:eefood/core/widgets/snack_bar.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:eefood/core/di/injection.dart';
+import '../../../../../core/widgets/custom_bottom_sheet.dart';
 import '../../provider/post_cubit.dart';
 import '../../../../recipe/data/models/post_publish_model.dart';
 import '../../screens/recipe_detail_page.dart';
@@ -49,17 +50,13 @@ class _PostCard extends StatelessWidget {
     return InkWell(
       borderRadius: BorderRadius.circular(16),
       onTap: () {
-        if (post.recipeId != null) {
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (_) => RecipeDetailPage(recipeId: post.recipeId!),
-            ),
-          );
-        } else {
-          showCustomSnackBar(context, "Không tìm thấy công thức", isError: true);
-        }
-      },
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (_) => RecipeDetailPage(recipeId: post.recipeId!),
+          ),
+        );
+            },
       child: Card(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         elevation: 2,
@@ -90,23 +87,30 @@ class _PostCard extends StatelessWidget {
                     ),
                   ),
                 ),
-                // Menu update/delete
+                // Nút menu
                 Positioned(
                   top: 4,
                   right: 4,
-                  child: PopupMenuButton<String>(
+                  child: IconButton(
                     icon: const Icon(Icons.more_vert, size: 20),
-                    onSelected: (value) {
-                      if (value == "update") {
-                        postCubit.updatePost(context, post.id, post.title ?? "");
-                      } else if (value == "delete") {
-                        postCubit.deletePost(context, post.id);
-                      }
+                    onPressed: () {
+                      showCustomBottomSheet(context, [
+                        BottomSheetOption(
+                          icon: const Icon(Icons.edit, color: Colors.blue),
+                          title: "Sửa nội dung",
+                          onTap: () {
+                            _showEditDialog(context, postCubit, post);
+                          },
+                        ),
+                        BottomSheetOption(
+                          icon: const Icon(Icons.delete, color: Colors.red),
+                          title: "Xóa bài đăng",
+                          onTap: () {
+                            postCubit.deletePost(context, post.id);
+                          },
+                        ),
+                      ]);
                     },
-                    itemBuilder: (context) => const [
-                      PopupMenuItem(value: "update", child: Text("Cập nhật")),
-                      PopupMenuItem(value: "delete", child: Text("Xóa")),
-                    ],
                   ),
                 ),
               ],
@@ -127,6 +131,17 @@ class _PostCard extends StatelessWidget {
                       overflow: TextOverflow.ellipsis,
                     ),
                     const SizedBox(height: 4),
+
+                    // // ✅ Hiển thị content ở đây
+                    // if (post.content != null && post.content!.isNotEmpty)
+                    //   Text(
+                    //     post.content!,
+                    //     style: const TextStyle(fontSize: 13),
+                    //     maxLines: 2,
+                    //     overflow: TextOverflow.ellipsis,
+                    //   ),
+
+                    const SizedBox(height: 6),
                     Text(
                       "Chuẩn bị: ${post.prepTime ?? 'N/A'} | Nấu: ${post.cookTime ?? 'N/A'}",
                       style: const TextStyle(fontSize: 12, color: Colors.grey),
@@ -174,6 +189,46 @@ class _PostCard extends StatelessWidget {
             ),
           ],
         ),
+      ),
+    );
+  }
+
+  /// ✅ Hàm hiển thị dialog chỉnh sửa content
+  void _showEditDialog(
+      BuildContext context, PostCubit postCubit, PostPublishModel post) {
+    final controller = TextEditingController(text: post.content ?? "");
+
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text("Chỉnh sửa nội dung"),
+        content: TextField(
+          controller: controller,
+          maxLines: 4,
+          decoration: const InputDecoration(
+            border: OutlineInputBorder(),
+            hintText: "Nhập nội dung mới...",
+          ),
+        ),
+        actions: [
+          TextButton(
+            child: const Text("Hủy"),
+            onPressed: () => Navigator.pop(context),
+          ),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.blue,
+            ),
+            child: const Text("Lưu"),
+            onPressed: () {
+              final newContent = controller.text.trim();
+              if (newContent.isNotEmpty) {
+                postCubit.updatePost(context, post.id, newContent);
+              }
+              Navigator.pop(context);
+            },
+          ),
+        ],
       ),
     );
   }
