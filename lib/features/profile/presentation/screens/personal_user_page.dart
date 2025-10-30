@@ -5,7 +5,6 @@ import 'package:eefood/features/profile/presentation/widgets/about_tab.dart';
 import 'package:eefood/features/profile/presentation/widgets/personal_recipe_tab.dart';
 import 'package:eefood/features/profile/presentation/widgets/personal_user_header.dart';
 import 'package:eefood/features/profile/presentation/widgets/profile_tab_bar.dart';
-import 'package:eefood/features/recipe/presentation/widgets/recipe_tab.dart';
 import 'package:flutter/material.dart';
 
 class PersonalUserPage extends StatefulWidget {
@@ -43,9 +42,24 @@ class _PersonalUserPageState extends State<PersonalUserPage>
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        elevation: 0,
         backgroundColor: Colors.transparent,
-        title: const Text('Personal Profile'),
+        title: const Text(
+          'Personal profile',
+          style: TextStyle(
+            color: Colors.black87,
+            fontWeight: FontWeight.w600,
+            fontSize: 18,
+          ),
+        ),
         centerTitle: true,
+        iconTheme: const IconThemeData(color: Colors.black87),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.settings_outlined),
+            onPressed: () {},
+          ),
+        ],
       ),
       body: NestedScrollView(
         headerSliverBuilder: (context, innerBoxIsScrolled) => [
@@ -60,12 +74,8 @@ class _PersonalUserPageState extends State<PersonalUserPage>
         ],
         body: TabBarView(
           controller: _tabController,
-          physics:
-              const NeverScrollableScrollPhysics(), 
-          children: [
-            PersonalRecipeTab(),
-            AboutTab(),
-          ],
+          physics: const NeverScrollableScrollPhysics(),
+          children: [PersonalRecipeTab(), AboutTab()],
         ),
       ),
     );
