@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-class ProfileTabBar extends StatelessWidget {
+class ProfileTabBar extends StatelessWidget implements PreferredSizeWidget {
   final TabController tabController;
 
   const ProfileTabBar({super.key, required this.tabController});
@@ -8,13 +8,7 @@ class ProfileTabBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      margin: const EdgeInsets.only(top: 440), // Adjust based on header height
-      decoration: BoxDecoration(
-        color: Colors.white,
-        border: Border(
-          bottom: BorderSide(color: Colors.grey.shade200, width: 1),
-        ),
-      ),
+      color: Colors.white,
       child: TabBar(
         controller: tabController,
         labelColor: const Color(0xFFE67E22),
@@ -27,10 +21,13 @@ class ProfileTabBar extends StatelessWidget {
           fontWeight: FontWeight.w500,
         ),
         tabs: const [
-          Tab(text: 'Recipe'),
-          Tab(text: 'About'),
+          Tab(text: 'Bài viết cá nhân'),
+          Tab(text: 'Thông tin cá nhân'),
         ],
       ),
     );
   }
+
+  @override
+  Size get preferredSize => const Size.fromHeight(kToolbarHeight);
 }

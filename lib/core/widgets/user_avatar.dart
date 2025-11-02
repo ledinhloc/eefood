@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:eefood/app_routes.dart';
 import 'package:flutter/material.dart';
 /* widget avatar user*/
@@ -40,7 +41,9 @@ class UserAvatar extends StatelessWidget {
         radius: radius,
         backgroundColor: backgroundColor,
         backgroundImage: url != null
-            ? ((isLocal) ? FileImage(File(url!)) : NetworkImage(url!))
+            ? ((isLocal)
+                  ? FileImage(File(url!))
+                  : CachedNetworkImageProvider(url!))
             : null,
         child: (url == null || url!.isEmpty)
             ? Text(
