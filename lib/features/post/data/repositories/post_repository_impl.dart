@@ -9,12 +9,17 @@ class PostRepositoryImpl extends PostRepository{
   PostRepositoryImpl({required this.dio});
 
   @override
-  Future<List<PostModel>> getAllPosts(int page, int size, {
-    String? keyword,
-    int? userId,
-    String? region,
-    String? difficulty,
-  }) async{
+  Future<List<PostModel>> getAllPosts(
+      int page,
+      int size, {
+        String? keyword,
+        int? userId,
+        String? region,
+        String? difficulty,
+        String? category,
+        int? maxCookTime,
+        String? sortBy,
+      }) async {
     final response = await dio.get(
       '/v1/posts',
       queryParameters: {
@@ -24,11 +29,19 @@ class PostRepositoryImpl extends PostRepository{
         if (userId != null) 'userId': userId,
         if (region != null) 'region': region,
         if (difficulty != null) 'difficulty': difficulty,
-      }
+        if (category != null) 'category': category,
+        if (maxCookTime != null) 'maxCookTime': maxCookTime,
+        if (sortBy != null) 'sortBy': sortBy,
+      },
     );
 
-    final data = response.data['data']['content'] as List<dynamic>;
-    return data.map((e) => PostModel.fromJson(e)).toList();
+    if (response.statusCode == 200) {
+      final data = response.data['data'];
+      final content = data['content'] as List<dynamic>;
+      return content.map((json) => PostModel.fromJson(json)).toList();
+    } else {
+      throw Exception('Failed to load posts');
+    }
   }
 
   @override
