@@ -1,6 +1,15 @@
 import 'package:eefood/features/recipe/domain/entities/recipe.dart';
 
 class AppConstants {
+  static const List<String> backgroundImages = [
+    'https://t4.ftcdn.net/jpg/01/11/77/45/360_F_111774535_GomROlCAeTnMNNI61ESbu00qtCRoQkaX.jpg',
+    'https://cdn2.fptshop.com.vn/unsafe/1920x0/filters:format(webp):quality(75)/2024_5_20_638518205896977020_hinh-nen-may-tinh-chill-cover.jpeg',
+    'https://cdn.tgdd.vn/Files/2020/06/16/1263495/food_800x450.jpg',
+    'https://cdn2.fptshop.com.vn/unsafe/Uploads/images/tin-tuc/184494/Originals/anh-bia-nam-9.jpg',
+    'https://24hstore.vn/upload_images/images/anh-bia-facebook-dep/anh-bia-facebook-dep_(1).jpg',
+    'https://cdn2.fptshop.com.vn/unsafe/Uploads/images/tin-tuc/184494/Originals/anh-bia-nam-20.jpg',
+    'https://cdn2.fptshop.com.vn/unsafe/Uploads/images/tin-tuc/184494/Originals/anh-bia-nam-21.jpg',
+  ];
   static const List<String> cookTimes = [
     '5 min',
     '10 min',

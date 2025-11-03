@@ -1,3 +1,4 @@
+import 'package:eefood/features/auth/domain/entities/user.dart';
 import 'package:eefood/features/post/data/models/reaction_type.dart';
 import 'package:eefood/features/post/domain/repositories/post_reaction_repository.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -47,6 +48,23 @@ class PostListCubit extends Cubit<PostListState> {
     emit(state.copyWith(recentKeywords: []));
   }
 
+  Future<void> resetFilters() async {
+    emit(
+      PostListState(
+        posts: [],
+        isLoading: false,
+        hasMore: true,
+        currentPage: 1,
+        keyword: null,
+        userId: null,
+        region: null,
+        difficulty: null,
+        recentKeywords: state.recentKeywords,
+      ),
+    );
+    await fetchPosts(loadMore: false);
+  } 
+
   /// Cập nhật filters cục bộ trong state rồi fetch lại từ trang 1
   Future<void> setFilters({
     String? keyword,
@@ -58,23 +76,17 @@ class PostListCubit extends Cubit<PostListState> {
     String? diet,
     String? sort,
   }) async {
-    final newState = state.copyWith(
-      keyword: keyword ?? state.keyword,
-      userId: userId ?? state.userId,
-      region: region ?? state.region,
-      difficulty: difficulty ?? state.difficulty,
-    );
-    // emit intermediate state with filters and reset page
     emit(
       PostListState(
         posts: [],
         isLoading: false,
         hasMore: true,
         currentPage: 1,
-        keyword: newState.keyword,
-        userId: newState.userId,
-        region: newState.region,
-        difficulty: newState.difficulty,
+        keyword: keyword,
+        userId: userId,
+        region: region,
+        difficulty: difficulty,
+        recentKeywords: state.recentKeywords,
       ),
     );
     // fetch new data from page 1
@@ -129,6 +141,35 @@ class PostListCubit extends Cubit<PostListState> {
       difficulty: state.difficulty,
     );
     print('next page la : $nextPage');
+    print(posts.length);
+    emit(
+      PostListState(
+        posts: loadMore ? [...state.posts, ...posts] : posts,
+        isLoading: false,
+        hasMore: posts.length == 10,
+        currentPage: nextPage,
+      ),
+    );
+
+  }
+
+  Future<void> fetchOwnPost({
+    bool loadMore = false,
+    required int userId,
+  }) async {
+    if (state.isLoading || (!state.hasMore && loadMore)) return;
+
+    emit(state.copyWith(isLoading: true));
+    final nextPage = loadMore ? state.currentPage + 1 : 1;
+    final posts = await postRepo.getAllPosts(
+      nextPage,
+      10,
+      keyword: state.keyword,
+      userId: userId,
+      region: state.region,
+      difficulty: state.difficulty,
+    );
+    print('next page la : $nextPage');
 
     emit(
       PostListState(
@@ -136,6 +177,11 @@ class PostListCubit extends Cubit<PostListState> {
         isLoading: false,
         hasMore: posts.length == 10,
         currentPage: nextPage,
+        keyword: state.keyword,
+        userId: state.userId,
+        region: state.region,
+        difficulty: state.difficulty,
+        recentKeywords: state.recentKeywords,
       ),
     );
   }

@@ -1,6 +1,9 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:eefood/app_routes.dart';
 import 'package:eefood/core/di/injection.dart';
 import 'package:eefood/core/utils/greeting_helper.dart';
+import 'package:eefood/core/widgets/post_skeletion_loading.dart';
+import 'package:eefood/features/auth/domain/entities/user.dart';
 import 'package:eefood/features/auth/domain/usecases/auth_usecases.dart';
 import 'package:eefood/features/noti/presentation/provider/notification_cubit.dart';
 import 'package:eefood/features/noti/presentation/provider/notification_state.dart';
@@ -112,12 +115,16 @@ class _FeedViewState extends State<FeedView> {
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      context.read<PostListCubit>().fetchPosts();
+    });
     final cubit = context.read<NotificationCubit>();
     cubit.fetchUnreadCount();
+
     _scrollController.addListener(() {
       if (_scrollController.position.pixels >=
           _scrollController.position.maxScrollExtent - 200) {
-        getIt<PostListCubit>().fetchPosts(loadMore: true);
+        context.read<PostListCubit>().fetchPosts(loadMore: true);
       }
     });
   }
@@ -210,12 +217,16 @@ class _FeedViewState extends State<FeedView> {
                 padding: const EdgeInsets.only(right: 10.0),
                 child: GestureDetector(
                   onTap: () {
-                    Navigator.pushNamed(context, AppRoutes.personalUser);
+                    Navigator.pushNamed(
+                      context,
+                      AppRoutes.personalUser,
+                      arguments: {'user': user},
+                    );
                   },
                   child: CircleAvatar(
                     radius: 17,
                     backgroundImage: avatarUrl != null
-                        ? NetworkImage(avatarUrl)
+                        ? CachedNetworkImageProvider(avatarUrl)
                         : null,
                   ),
                 ),
@@ -225,7 +236,7 @@ class _FeedViewState extends State<FeedView> {
           body: BlocBuilder<PostListCubit, PostListState>(
             builder: (context, state) {
               if (state.isLoading && state.posts.isEmpty) {
-                return const Center(child: CircularProgressIndicator());
+                return PostSkeletonList(itemCount: 10);
               }
 
               if (state.posts.isEmpty) {
@@ -247,6 +258,7 @@ class _FeedViewState extends State<FeedView> {
 
                     final post = state.posts[index];
                     return PostCard(
+                      userId: post.userId,
                       post: post,
                       onTap: () => Navigator.push(
                         context,

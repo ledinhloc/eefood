@@ -5,5 +5,5 @@ import '../../../auth/domain/entities/user.dart';
 
 abstract class ProfileRepository{
   Future<Result<User>> updateUser(UserModel userModel);
-
+  Future<User?> getUserById(int userId);
 }

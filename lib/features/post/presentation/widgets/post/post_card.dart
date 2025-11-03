@@ -1,3 +1,4 @@
+import 'package:eefood/features/auth/domain/entities/user.dart';
 import 'package:flutter/material.dart';
 import '../../../data/models/post_model.dart';
 import '../../../data/models/reaction_type.dart';
@@ -14,12 +15,14 @@ const kNeutralLight = Color(0xFFF5F5F5);
 const kNeutralGray = Color(0xFFE0E0E0);
 
 class PostCard extends StatelessWidget {
+  final int userId;
   final PostModel post;
   final VoidCallback? onTap;
   final void Function(Offset offset, Function(ReactionType) onSelect)? onShowReactions;
 
   const PostCard({
     super.key,
+    required this.userId,
     required this.post,
     this.onTap,
     this.onShowReactions,
@@ -39,7 +42,7 @@ class PostCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          PostHeader(post: post),
+          PostHeader(userId: userId,post: post),
           GestureDetector(
             onTap: onTap,
             child: Hero(

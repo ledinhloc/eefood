@@ -27,9 +27,7 @@ class ProfilePage extends StatelessWidget {
             child: const Text("Hủy"),
           ),
           ElevatedButton(
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.redAccent,
-            ),
+            style: ElevatedButton.styleFrom(backgroundColor: Colors.redAccent),
             onPressed: () => Navigator.pop(context, true),
             child: const Text("Đăng xuất"),
           ),
@@ -43,14 +41,17 @@ class ProfilePage extends StatelessWidget {
       Navigator.pushNamedAndRemoveUntil(
         context,
         AppRoutes.welcome,
-            (route) => true,
+        (route) => true,
       );
     }
   }
 
   Future<void> _handlerEditProfile(BuildContext context, User user) async {
-    final isReload =
-    await Navigator.pushNamed(context, AppRoutes.editProfile, arguments: user);
+    final isReload = await Navigator.pushNamed(
+      context,
+      AppRoutes.editProfile,
+      arguments: user,
+    );
     if (isReload == true && context.mounted) {
       context.read<ProfileCubit>().loadProfile();
     }
@@ -89,10 +90,19 @@ class ProfilePage extends StatelessWidget {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text(
-                            user.username,
-                            style: const TextStyle(
-                                fontSize: 20, fontWeight: FontWeight.bold),
+                          GestureDetector(
+                            onTap: () => Navigator.pushNamed(
+                              context,
+                              AppRoutes.personalUser,
+                              arguments: {'user': user},
+                            ),
+                            child: Text(
+                              user.username,
+                              style: const TextStyle(
+                                fontSize: 20,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
                           ),
                           const SizedBox(height: 4),
                           Text(
@@ -117,14 +127,16 @@ class ProfilePage extends StatelessWidget {
                         color: Colors.black,
                         size: 30,
                       ),
-                    )
+                    ),
                   ],
                 ),
 
                 const SizedBox(height: 20),
                 // --- Phần tài khoản ---
-                const Text("Tài khoản",
-                    style: TextStyle(fontWeight: FontWeight.bold)),
+                const Text(
+                  "Tài khoản",
+                  style: TextStyle(fontWeight: FontWeight.bold),
+                ),
                 const SizedBox(height: 8),
                 const ListTile(
                   title: Text("Gói hiện tại"),
@@ -136,7 +148,8 @@ class ProfilePage extends StatelessWidget {
                   child: ListTile(
                     leading: const Icon(Icons.star, color: Colors.red),
                     title: const Text(
-                        "Trải nghiệm tất cả tính năng Plus miễn phí trong 7 ngày!"),
+                      "Trải nghiệm tất cả tính năng Plus miễn phí trong 7 ngày!",
+                    ),
                     trailing: ElevatedButton(
                       onPressed: () {},
                       style: ElevatedButton.styleFrom(
@@ -148,8 +161,10 @@ class ProfilePage extends StatelessWidget {
                 ),
 
                 const SizedBox(height: 16),
-                const Text("Quản lý tài khoản",
-                    style: TextStyle(fontWeight: FontWeight.bold)),
+                const Text(
+                  "Quản lý tài khoản",
+                  style: TextStyle(fontWeight: FontWeight.bold),
+                ),
                 ListTile(
                   leading: const Icon(Icons.favorite_border),
                   title: const Text("Sở thích món ăn"),
@@ -157,22 +172,28 @@ class ProfilePage extends StatelessWidget {
                   onTap: () =>
                       Navigator.pushNamed(context, AppRoutes.foodPreference),
                 ),
+
                 // const ListTile(
                 //   leading: Icon(Icons.restore),
                 //   title: Text("Khôi phục giao dịch mua"),
                 // ),
-
                 const SizedBox(height: 16),
-                const Text("Hệ thống",
-                    style: TextStyle(fontWeight: FontWeight.bold)),
+                const Text(
+                  "Hệ thống",
+                  style: TextStyle(fontWeight: FontWeight.bold),
+                ),
                 ListTile(
                   leading: const Icon(Icons.language),
                   title: const Text("Ngôn ngữ"),
                   onTap: () => Navigator.pushNamed(context, AppRoutes.language),
                 ),
-                const ListTile(
+                ListTile(
                   leading: Icon(Icons.notifications_none),
                   title: Text("Thông báo"),
+                  onTap: () => Navigator.pushNamed(
+                    context,
+                    AppRoutes.notificationSettingScreen,
+                  ),
                 ),
                 const ListTile(
                   leading: Icon(Icons.brightness_6_outlined),
@@ -180,8 +201,10 @@ class ProfilePage extends StatelessWidget {
                 ),
 
                 const SizedBox(height: 16),
-                const Text("Hỗ trợ",
-                    style: TextStyle(fontWeight: FontWeight.bold)),
+                const Text(
+                  "Hỗ trợ",
+                  style: TextStyle(fontWeight: FontWeight.bold),
+                ),
                 const ListTile(
                   leading: Icon(Icons.chat_bubble_outline),
                   title: Text("Góp ý"),
@@ -192,8 +215,10 @@ class ProfilePage extends StatelessWidget {
                 ),
 
                 const SizedBox(height: 16),
-                const Text("Giới thiệu",
-                    style: TextStyle(fontWeight: FontWeight.bold)),
+                const Text(
+                  "Giới thiệu",
+                  style: TextStyle(fontWeight: FontWeight.bold),
+                ),
                 const ListTile(
                   leading: Icon(Icons.thumb_up_outlined),
                   title: Text("Giới thiệu cho bạn bè!"),

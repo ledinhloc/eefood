@@ -148,6 +148,10 @@ class AppRoutes {
         child: CollectionDetailPage(collectionId: collectionId),
       );
     },
-    personalUser: (contex) => PersonalUserPage(),
+    personalUser: (contex) {
+      final args = ModalRoute.of(contex)!.settings.arguments as Map<String,dynamic>;
+      final user = args['user'] as User?;
+      return PersonalUserPage(user: user);
+    },
   };
 }
