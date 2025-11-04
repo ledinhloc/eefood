@@ -13,6 +13,24 @@ class ProfileRepositoryImpl extends ProfileRepository{
   final Dio dio;
   final SharedPreferences sharedPreferences;
   ProfileRepositoryImpl({required this.dio, required this.sharedPreferences});
+
+  @override
+  Future<User?> getUserById(int userId) async {
+    try {
+      final response = await dio.get(
+        '/v1/users/info/$userId',
+        options: Options(contentType: 'application/json'),
+      );
+
+      final data = UserModel.fromJson(response.data['data']);
+
+      return data.toEntity();
+    }
+    catch(err) {
+      throw Exception('Failed: $err');
+    }
+  }
+
   @override
   Future<Result<User>> updateUser(UserModel request) async {
     print(request.toJson());

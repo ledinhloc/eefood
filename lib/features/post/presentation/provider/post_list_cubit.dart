@@ -12,7 +12,6 @@ class PostListCubit extends Cubit<PostListState> {
   final PostReactionRepository reactionRepo = getIt<PostReactionRepository>();
   final SearchRepository searchRepo = getIt<SearchRepository>();
 
-
   PostListCubit()
       : super(
     PostListState(
@@ -51,6 +50,26 @@ class PostListCubit extends Cubit<PostListState> {
     emit(state.copyWith(recentKeywords: []));
   }
 
+  Future<void> resetFilters() async {
+    emit(
+      PostListState(
+        posts: [],
+        isLoading: false,
+        hasMore: true,
+        currentPage: 1,
+        keyword: null,
+        userId: null,
+        region: null,
+        difficulty: null,
+        category: null,
+        maxCookTime: null,
+        sortBy: 'newest',
+        recentKeywords: state.recentKeywords,
+      ),
+    );
+    await fetchPosts(loadMore: false);
+  }
+
   /// Cập nhật filters cục bộ trong state rồi fetch lại từ trang 1
   Future<void> setFilters({
     String? keyword,
@@ -60,6 +79,9 @@ class PostListCubit extends Cubit<PostListState> {
     String? category,
     int? maxCookTime,
     String? sortBy,
+
+    String? mealType,
+    String? diet,
   }) async {
     // Reset về trang 1 với filters mới
     emit(
@@ -100,6 +122,7 @@ class PostListCubit extends Cubit<PostListState> {
         recentKeywords: state.recentKeywords,
       ),
     );
+    // fetch new data from page 1
     await fetchPosts(loadMore: false);
   }
 
@@ -172,6 +195,39 @@ class PostListCubit extends Cubit<PostListState> {
       emit(state.copyWith(isLoading: false));
     }
   }
+
+  Future<void> fetchOwnPost({
+    bool loadMore = false,
+    required int userId,
+  }) async {
+    if (state.isLoading || (!state.hasMore && loadMore)) return;
+
+    emit(state.copyWith(isLoading: true));
+    final nextPage = loadMore ? state.currentPage + 1 : 1;
+    final posts = await postRepo.getAllPosts(
+      nextPage,
+      10,
+      keyword: state.keyword,
+      userId: userId,
+      region: state.region,
+      difficulty: state.difficulty,
+    );
+    print('next page la : $nextPage');
+
+    emit(
+      PostListState(
+        posts: loadMore ? [...state.posts, ...posts] : posts,
+        isLoading: false,
+        hasMore: posts.length == 10,
+        currentPage: nextPage,
+        keyword: state.keyword,
+        userId: state.userId,
+        region: state.region,
+        difficulty: state.difficulty,
+        recentKeywords: state.recentKeywords,
+      ),
+    );
+  }
 }
 
 class PostListState {
@@ -232,14 +288,15 @@ class PostListState {
       recentKeywords: recentKeywords ?? this.recentKeywords,
     );
   }
+}
 
   /// Check if có filter nào đang active
-  // bool get hasActiveFilters =>
-  //     keyword != null ||
-  //         userId != null ||
-  //         region != null ||
-  //         difficulty != null ||
-  //         category != null ||
-  //         maxCookTime != null ||
-  //         sortBy != 'newest';
+  bool get hasActiveFilters =>
+      keyword != null ||
+          userId != null ||
+          region != null ||
+          difficulty != null ||
+          category != null ||
+          maxCookTime != null ||
+          sortBy != 'newest';
 }

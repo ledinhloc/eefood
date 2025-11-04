@@ -1,15 +1,14 @@
-import 'package:eefood/core/di/injection.dart';
 import 'package:eefood/features/auth/domain/entities/user.dart';
-import 'package:eefood/features/auth/domain/usecases/auth_usecases.dart';
-import 'package:eefood/features/profile/presentation/widgets/about_tab.dart';
-import 'package:eefood/features/profile/presentation/widgets/personal_recipe_tab.dart';
-import 'package:eefood/features/profile/presentation/widgets/personal_user_header.dart';
-import 'package:eefood/features/profile/presentation/widgets/profile_tab_bar.dart';
-import 'package:eefood/features/recipe/presentation/widgets/recipe_tab.dart';
 import 'package:flutter/material.dart';
 
+import 'package:eefood/features/profile/presentation/widgets/personal_header/personal_user_header.dart';
+import 'package:eefood/features/profile/presentation/widgets/personal_tab_content/profile_tab_bar.dart';
+import 'package:eefood/features/profile/presentation/widgets/personal_tab_content/info_user/about_tab.dart';
+import 'package:eefood/features/profile/presentation/widgets/personal_tab_content/personal_recipe_tab.dart';
+
 class PersonalUserPage extends StatefulWidget {
-  const PersonalUserPage({super.key});
+  final User? user;
+  const PersonalUserPage({super.key, required this.user});
 
   @override
   State<PersonalUserPage> createState() => _PersonalUserPageState();
@@ -17,57 +16,77 @@ class PersonalUserPage extends StatefulWidget {
 
 class _PersonalUserPageState extends State<PersonalUserPage>
     with SingleTickerProviderStateMixin {
-  final GetCurrentUser _getCurrentUser = getIt<GetCurrentUser>();
-  User? user;
   late TabController _tabController;
+  late ScrollController _scrollController;
+  double _scrollOffset = 0;
 
   @override
   void initState() {
     super.initState();
-    _loadUser();
     _tabController = TabController(length: 2, vsync: this);
+    _scrollController = ScrollController()..addListener(_onScroll);
   }
 
-  void _loadUser() async {
-    user = await _getCurrentUser();
-    print(user?.avatarUrl);
+  void _onScroll() {
+    setState(() {
+      _scrollOffset = _scrollController.offset;
+    });
   }
 
   @override
   void dispose() {
     _tabController.dispose();
+    _scrollController.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        title: const Text('Personal Profile'),
-        centerTitle: true,
-      ),
       body: NestedScrollView(
+        controller: _scrollController,
         headerSliverBuilder: (context, innerBoxIsScrolled) => [
-          SliverToBoxAdapter(
-            child: Column(
-              children: [
-                PersonalUserHeader(user: user),
-                ProfileTabBar(tabController: _tabController),
-              ],
+          PersonalUserHeader(
+            user: widget.user!,
+            isScrolled: _scrollOffset > 150,
+          ),
+          SliverPersistentHeader(
+            pinned: true,
+            delegate: _SliverTabBarDelegate(
+              PreferredSize(
+                preferredSize: const Size.fromHeight(45),
+                child: ProfileTabBar(tabController: _tabController),
+              ),
             ),
           ),
         ],
         body: TabBarView(
           controller: _tabController,
-          physics:
-              const NeverScrollableScrollPhysics(), 
-          children: [
-            PersonalRecipeTab(),
-            AboutTab(),
-          ],
+          children: [PersonalRecipeTab(user: widget.user!,), AboutTab(user: widget.user!,)],
         ),
       ),
     );
   }
+}
+
+class _SliverTabBarDelegate extends SliverPersistentHeaderDelegate {
+  final PreferredSizeWidget tabBar;
+  _SliverTabBarDelegate(this.tabBar);
+
+  @override
+  double get minExtent => tabBar.preferredSize.height;
+  @override
+  double get maxExtent => tabBar.preferredSize.height;
+
+  @override
+  Widget build(
+    BuildContext context,
+    double shrinkOffset,
+    bool overlapsContent,
+  ) {
+    return Container(color: Colors.white, child: tabBar);
+  }
+
+  @override
+  bool shouldRebuild(_SliverTabBarDelegate oldDelegate) => false;
 }

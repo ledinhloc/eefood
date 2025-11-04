@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 
-class StatItem extends StatelessWidget {
+class StartItem extends StatelessWidget {
   final String title;
   final String value;
 
-  const StatItem({required this.title, required this.value});
+  const StartItem({required this.title, required this.value});
 
   @override
   Widget build(BuildContext context) {
