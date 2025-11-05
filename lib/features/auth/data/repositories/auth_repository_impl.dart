@@ -6,6 +6,7 @@ import 'package:eefood/features/auth/data/models/result_model.dart';
 import 'package:eefood/features/auth/data/models/user_preference_model.dart';
 import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
+import '../../../../core/di/injection.dart';
 import '../../domain/entities/user.dart';
 import '../../domain/repositories/auth_repository.dart';
 import '../models/UserModel.dart';
@@ -47,6 +48,8 @@ class AuthRepositoryImpl implements AuthRepository {
       //   );
       // }
       await _clearUser();
+      await getIt.reset();
+      await setupDependencies();
     }
     catch (e) {
       throw Exception('Logout failed: $e');
