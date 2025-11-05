@@ -291,12 +291,12 @@ class PostListState {
 }
 
   /// Check if có filter nào đang active
-  bool get hasActiveFilters =>
-      keyword != null ||
-          userId != null ||
-          region != null ||
-          difficulty != null ||
-          category != null ||
-          maxCookTime != null ||
-          sortBy != 'newest';
-}
+//   bool get hasActiveFilters => {
+//       keyword != null ||
+//           userId != null ||
+//           region != null ||
+//           difficulty != null ||
+//           category != null ||
+//           maxCookTime != null ||
+//           sortBy != 'newest';
+// }
