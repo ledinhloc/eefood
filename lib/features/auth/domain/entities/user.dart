@@ -8,6 +8,7 @@ class User{
   final Address? address;
   final String provider;
   final String? avatarUrl;
+  final String? backgroundUrl;
   final List<String>? allergies;
   final List<String>? eatingPreferences;
   final List<String>? dietaryPreferences;
@@ -22,6 +23,7 @@ class User{
     this.address,
     required this.provider,
     this.avatarUrl,
+    this.backgroundUrl,
     this.allergies,
     this.eatingPreferences,
     this.dietaryPreferences,

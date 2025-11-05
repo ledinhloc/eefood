@@ -3,7 +3,6 @@ import 'package:eefood/features/post/domain/repositories/post_reaction_repositor
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../core/di/injection.dart';
 import '../../data/models/post_model.dart';
-import '../../data/repositories/post_repository_impl.dart';
 import '../../data/repositories/search_repository.dart';
 import '../../domain/repositories/post_repository.dart';
 
@@ -267,15 +266,5 @@ class PostListState {
       recentKeywords: recentKeywords ?? this.recentKeywords,
     );
   }
-
-  /// Check if có filter nào đang active
-  bool get hasActiveFilters =>
-      keyword != null ||
-          userId != null ||
-          region != null ||
-          difficulty != null ||
-          category != null ||
-          maxCookTime != null ||
-          sortBy != 'newest';
 }
 

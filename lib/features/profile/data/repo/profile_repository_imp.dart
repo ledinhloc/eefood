@@ -43,6 +43,7 @@ class ProfileRepositoryImpl extends ProfileRepository{
       );
       final userModelRes = UserModel.fromJson(response.data['data']);
       _saveUser(userModelRes);
+      print(userModelRes.toJson());
       return Result.success(userModelRes.toEntity());
     } catch (e) {
       print(e);
