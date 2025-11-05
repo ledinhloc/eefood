@@ -14,6 +14,7 @@ class UserModel {
   final AddressModel? address;
   final String provider;
   final String? avatarUrl;
+  final String? backgroundUrl;
   final List<String>? allergies;
   final List<String>? eatingPreferences;
   final List<String>? dietaryPreferences;
@@ -31,6 +32,7 @@ class UserModel {
     this.address,
     required this.provider,
     this.avatarUrl,
+    this.backgroundUrl,
     this.allergies,
     this.eatingPreferences,
     this.dietaryPreferences,
@@ -52,6 +54,7 @@ class UserModel {
           : null,
       provider: json['provider'],
       avatarUrl: json['avatarUrl']?.toString(),
+      backgroundUrl: json['backgroundUrl']?.toString(),
       allergies: List<String>.from(json['allergies'] ?? []),
       eatingPreferences: List<String>.from(json['eatingPreferences'] ?? []),
       dietaryPreferences: List<String>.from(json['dietaryPreferences'] ?? []),
@@ -72,6 +75,7 @@ class UserModel {
       'address': address?.toJson(),
       'provider': provider,
       'avatarUrl': avatarUrl,
+      'backgroundUrl': backgroundUrl,
       'allergies': allergies,
       'eatingPreferences': eatingPreferences,
       'dietaryPreferences': dietaryPreferences,
@@ -90,6 +94,7 @@ class UserModel {
     address: address?.toEntity(),
     provider: provider,
     avatarUrl: avatarUrl,
+    backgroundUrl: backgroundUrl,
     allergies: allergies,
     eatingPreferences: eatingPreferences,
     dietaryPreferences: dietaryPreferences,

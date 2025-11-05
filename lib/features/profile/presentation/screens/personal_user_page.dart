@@ -27,6 +27,8 @@ class _PersonalUserPageState extends State<PersonalUserPage>
     _scrollController = ScrollController()..addListener(_onScroll);
   }
 
+
+
   void _onScroll() {
     setState(() {
       _scrollOffset = _scrollController.offset;
