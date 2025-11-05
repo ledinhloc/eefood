@@ -244,7 +244,7 @@ class _FeedViewState extends State<FeedView> {
               }
 
               return RefreshIndicator(
-                onRefresh: () async => getIt<PostListCubit>().fetchPosts(),
+                onRefresh: () async => context.read<PostListCubit>().fetchPosts(),
                 child: ListView.builder(
                   controller: _scrollController,
                   itemCount: state.posts.length + (state.isLoading ? 1 : 0),
