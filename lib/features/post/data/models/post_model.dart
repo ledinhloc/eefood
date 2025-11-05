@@ -8,10 +8,7 @@ class PostModel{
   final String username;
   final String email;
   final String avatarUrl;
-  final int? recipeId;
-  final String title;
   final String content;
-  final String imageUrl;
   final DateTime createdAt;
   final DateTime updatedAt;
   final int totalFavorites;
@@ -19,13 +16,25 @@ class PostModel{
   final Map<ReactionType, int> reactionCounts;
   final List<CommentModel> comments;
 
+  // ====== Thêm các field  từ recipe ======
+  final int recipeId;
+  final String title;
+  final String imageUrl;
+  final String? description;
+  final String? region;
+  final int? prepTime;
+  final int? cookTime;
+  final String? difficulty;
+  final List<String> recipeCategories;
+  final List<String> recipeIngredientKeywords;
+
   PostModel({
     required this.id,
     required this.userId,
     required this.username,
     required this.email,
     required this.avatarUrl,
-    this.recipeId,
+    required this.recipeId,
     required this.title,
     required this.content,
     required this.imageUrl,
@@ -35,6 +44,13 @@ class PostModel{
     required this.totalShares,
     required this.reactionCounts,
     required this.comments,
+    this.description,
+    this.region,
+    this.prepTime,
+    this.cookTime,
+    this.difficulty,
+    this.recipeCategories = const [],
+    this.recipeIngredientKeywords = const [],
   });
 
   factory PostModel.fromJson(Map<String, dynamic> json) {
@@ -67,6 +83,17 @@ class PostModel{
           ?.map((c) => CommentModel.fromJson(c))
           .toList() ??
           [],
+      description: json['description'],
+      region: json['region'],
+      prepTime: json['prepTime'],
+      cookTime: json['cookTime'],
+      difficulty: json['difficulty'],
+      recipeCategories: (json['recipeCategories'] as List<dynamic>?)
+          ?.map((e) => e.toString())
+          .toList() ?? [],
+      recipeIngredientKeywords: (json['recipeIngredientKeywords'] as List<dynamic>?)
+          ?.map((e) => e.toString())
+          .toList() ?? [],
     );
   }
 }

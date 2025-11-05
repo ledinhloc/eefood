@@ -1,4 +1,3 @@
-import 'package:eefood/features/auth/domain/entities/user.dart';
 import 'package:eefood/features/post/data/models/reaction_type.dart';
 import 'package:eefood/features/post/domain/repositories/post_reaction_repository.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -14,19 +13,22 @@ class PostListCubit extends Cubit<PostListState> {
   final SearchRepository searchRepo = getIt<SearchRepository>();
 
   PostListCubit()
-    : super(
-        PostListState(
-          posts: [],
-          isLoading: false,
-          hasMore: true,
-          currentPage: 1,
-          keyword: null,
-          userId: null,
-          region: null,
-          difficulty: null,
-          recentKeywords: [],
-        ),
-      );
+      : super(
+    PostListState(
+      posts: [],
+      isLoading: false,
+      hasMore: true,
+      currentPage: 1,
+      keyword: null,
+      userId: null,
+      region: null,
+      difficulty: null,
+      category: null,
+      maxCookTime: null,
+      sortBy: 'newest',
+      recentKeywords: [],
+    ),
+  );
 
   Future<void> loadRecentKeywords() async {
     final recents = await searchRepo.getRecentSearches();
@@ -59,11 +61,14 @@ class PostListCubit extends Cubit<PostListState> {
         userId: null,
         region: null,
         difficulty: null,
+        category: null,
+        maxCookTime: null,
+        sortBy: 'newest',
         recentKeywords: state.recentKeywords,
       ),
     );
     await fetchPosts(loadMore: false);
-  } 
+  }
 
   /// Cập nhật filters cục bộ trong state rồi fetch lại từ trang 1
   Future<void> setFilters({
@@ -71,13 +76,16 @@ class PostListCubit extends Cubit<PostListState> {
     int? userId,
     String? region,
     String? difficulty,
+    String? category,
+    int? maxCookTime,
+    String? sortBy,
+
     String? mealType,
-    String? time,
     String? diet,
-    String? sort,
   }) async {
+    // Reset về trang 1 với filters mới
     emit(
-      PostListState(
+      state.copyWith(
         posts: [],
         isLoading: false,
         hasMore: true,
@@ -86,6 +94,31 @@ class PostListCubit extends Cubit<PostListState> {
         userId: userId,
         region: region,
         difficulty: difficulty,
+        category: category,
+        maxCookTime: maxCookTime,
+        sortBy: sortBy ?? state.sortBy,
+      ),
+    );
+
+    // Fetch new data
+    await fetchPosts(loadMore: false);
+  }
+
+  /// Clear tất cả filters
+  Future<void> clearFilters() async {
+    emit(
+      PostListState(
+        posts: [],
+        isLoading: false,
+        hasMore: true,
+        currentPage: 1,
+        keyword: null,
+        userId: null,
+        region: null,
+        difficulty: null,
+        category: null,
+        maxCookTime: null,
+        sortBy: 'newest',
         recentKeywords: state.recentKeywords,
       ),
     );
@@ -131,26 +164,36 @@ class PostListCubit extends Cubit<PostListState> {
     if (state.isLoading || (!state.hasMore && loadMore)) return;
 
     emit(state.copyWith(isLoading: true));
-    final nextPage = loadMore ? state.currentPage + 1 : 1;
-    final posts = await postRepo.getAllPosts(
-      nextPage,
-      10,
-      keyword: state.keyword,
-      userId: state.userId,
-      region: state.region,
-      difficulty: state.difficulty,
-    );
-    print('next page la : $nextPage');
-    print(posts.length);
-    emit(
-      PostListState(
-        posts: loadMore ? [...state.posts, ...posts] : posts,
-        isLoading: false,
-        hasMore: posts.length == 10,
-        currentPage: nextPage,
-      ),
-    );
 
+    final nextPage = loadMore ? state.currentPage + 1 : 1;
+
+    try {
+      final posts = await postRepo.getAllPosts(
+        nextPage,
+        10,
+        keyword: state.keyword,
+        userId: state.userId,
+        region: state.region,
+        difficulty: state.difficulty,
+        category: state.category,
+        maxCookTime: state.maxCookTime,
+        sortBy: state.sortBy,
+      );
+
+      print('Loaded page $nextPage with ${posts.length} posts');
+
+      emit(
+        state.copyWith(
+          posts: loadMore ? [...state.posts, ...posts] : posts,
+          isLoading: false,
+          hasMore: posts.length == 10,
+          currentPage: nextPage,
+        ),
+      );
+    } catch (e) {
+      print('Error fetching posts: $e');
+      emit(state.copyWith(isLoading: false));
+    }
   }
 
   Future<void> fetchOwnPost({
@@ -196,7 +239,11 @@ class PostListState {
   final int? userId;
   final String? region;
   final String? difficulty;
+  final String? category;
+  final int? maxCookTime;
+  final String sortBy;
   final List<String> recentKeywords;
+
   PostListState({
     required this.posts,
     required this.isLoading,
@@ -206,6 +253,9 @@ class PostListState {
     this.userId,
     this.region,
     this.difficulty,
+    this.category,
+    this.maxCookTime,
+    this.sortBy = 'newest',
     this.recentKeywords = const [],
   });
 
@@ -218,6 +268,9 @@ class PostListState {
     int? userId,
     String? region,
     String? difficulty,
+    String? category,
+    int? maxCookTime,
+    String? sortBy,
     List<String>? recentKeywords,
   }) {
     return PostListState(
@@ -229,7 +282,21 @@ class PostListState {
       userId: userId ?? this.userId,
       region: region ?? this.region,
       difficulty: difficulty ?? this.difficulty,
+      category: category ?? this.category,
+      maxCookTime: maxCookTime ?? this.maxCookTime,
+      sortBy: sortBy ?? this.sortBy,
       recentKeywords: recentKeywords ?? this.recentKeywords,
     );
   }
+}
+
+  /// Check if có filter nào đang active
+  bool get hasActiveFilters =>
+      keyword != null ||
+          userId != null ||
+          region != null ||
+          difficulty != null ||
+          category != null ||
+          maxCookTime != null ||
+          sortBy != 'newest';
 }
