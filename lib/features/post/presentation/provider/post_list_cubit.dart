@@ -277,5 +277,5 @@ class PostListState {
           category != null ||
           maxCookTime != null ||
           sortBy != 'newest';
-  }
 }
+
