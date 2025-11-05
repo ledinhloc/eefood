@@ -1,16 +1,18 @@
 import 'dart:io';
-import 'dart:math';
 import 'package:cached_network_image/cached_network_image.dart';
-import 'package:eefood/core/constants/app_constants.dart';
 import 'package:eefood/core/di/injection.dart';
 import 'package:eefood/core/utils/file_upload.dart';
 import 'package:eefood/core/utils/media_picker.dart';
+import 'package:eefood/core/widgets/custom_bottom_sheet.dart';
 import 'package:eefood/core/widgets/snack_bar.dart';
 import 'package:eefood/features/auth/data/models/UserModel.dart';
+import 'package:eefood/features/auth/domain/usecases/auth_usecases.dart';
 import 'package:eefood/features/profile/domain/usecases/profile_usecase.dart';
+import 'package:eefood/features/profile/presentation/provider/profile_cubit.dart';
 import 'package:flutter/material.dart';
 import 'package:eefood/features/auth/domain/entities/user.dart';
 import 'package:eefood/features/profile/presentation/widgets/personal_header/personal_user_info.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 
 class PersonalUserHeader extends StatefulWidget {
   final User user;
@@ -27,97 +29,157 @@ class PersonalUserHeader extends StatefulWidget {
 }
 
 class _PersonalUserHeaderState extends State<PersonalUserHeader> {
-  late final String backgroundImage;
-  final UpdateProfile _updateProfile = getIt<UpdateProfile>();
-  final _fileUploader = getIt<FileUploader>();
-  late String? urlImage;
+  late final ProfileCubit _cubit;
 
   @override
   void initState() {
     super.initState();
-    final random = Random();
-    backgroundImage = AppConstants
-        .backgroundImages[random.nextInt(AppConstants.backgroundImages.length)];
+    _cubit = ProfileCubit(getIt<GetCurrentUser>())..loadProfile();
   }
 
-  Future<void> _handleChangeBackground() async {
+  Future<void> _handleChangeBackground(BuildContext context) async {
     final File? image = await MediaPicker.pickImage();
-    if (image != null) {
-      final url = await _fileUploader.uploadFile(image);
+    if (image == null) return;
 
-      final result = await _updateProfile(
-        UserModel(
-          id: widget.user.id,
-          backgroundUrl: urlImage,
-          username: widget.user.username,
-          email: widget.user.email,
-          role: widget.user.role,
-          provider: widget.user.provider,
-        ),
-      );
-      if (url.isNotEmpty) {
-        setState(() {
-          urlImage = url;
-        });
-      }
-      if (result.isSuccess) {
-        showCustomSnackBar(context, 'Đã lưu thông tin thành công');
-        Navigator.pop(context, true);
-      } else {
-        showCustomSnackBar(context, 'Lưu thất bại!', isError: true);
-      }
+    final uploader = getIt<FileUploader>();
+    final updateProfile = getIt<UpdateProfile>();
+    final url = await uploader.uploadFile(image);
+
+    final result = await updateProfile(
+      UserModel(
+        id: widget.user.id,
+        backgroundUrl: url,
+        username: widget.user.username,
+        email: widget.user.email,
+        role: widget.user.role,
+        provider: widget.user.provider,
+      ),
+    );
+
+    if (result.isSuccess) {
+      _cubit.loadProfile();
+      showCustomSnackBar(context, 'Đã lưu thông tin thành công');
+    } else {
+      showCustomSnackBar(context, 'Lưu thất bại!', isError: true);
+    }
+  }
+
+  Future<void> _handleRemoveBackground(BuildContext context) async {
+    final updateProfile = getIt<UpdateProfile>();
+    final result = await updateProfile(
+      UserModel(
+        id: widget.user.id,
+        backgroundUrl: "",
+        username: widget.user.username,
+        email: widget.user.email,
+        role: widget.user.role,
+        provider: widget.user.provider,
+      ),
+    );
+
+    if (result.isSuccess) {
+      _cubit.loadProfile();
+      showCustomSnackBar(context, 'Đã xóa thông tin thành công');
+    } else {
+      showCustomSnackBar(context, 'Xóa thất bại!', isError: true);
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    return SliverAppBar(
-      expandedHeight: 350,
-      pinned: true,
-      elevation: 0,
-      shadowColor: Colors.transparent,
-      surfaceTintColor: Colors.transparent,
-      scrolledUnderElevation: 0,
-      backgroundColor: Colors.white,
-      stretch: true,
-      leading: IconButton(
-        icon: const Icon(Icons.arrow_back, color: Colors.orangeAccent),
-        onPressed: () => Navigator.pop(context),
-      ),
-      actions: [
-        IconButton(
-          icon: const Icon(Icons.image_outlined, color: Colors.orangeAccent),
-          onPressed: _handleChangeBackground,
-        ),
-        IconButton(
-          icon: const Icon(Icons.settings_outlined, color: Colors.orangeAccent),
-          onPressed: () {},
-        ),
-      ],
-      flexibleSpace: FlexibleSpaceBar(
-        stretchModes: const [StretchMode.zoomBackground, StretchMode.fadeTitle],
-        titlePadding: const EdgeInsets.only(left: 16, bottom: 16),
-        centerTitle: true,
-        background: Stack(
-          fit: StackFit.expand,
-          children: [
-            CachedNetworkImage(imageUrl: backgroundImage, fit: BoxFit.cover),
-            Container(
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.topCenter,
-                  end: Alignment.bottomCenter,
-                  colors: [Colors.transparent, Colors.white.withOpacity(0.9)],
-                ),
+    return BlocBuilder<ProfileCubit, User?>(
+      bloc: _cubit,
+      builder: (context, userState) {
+        if (userState == null) {
+          return const SliverToBoxAdapter(
+            child: Center(child: CircularProgressIndicator()),
+          );
+        }
+
+        final bgUrl = userState.backgroundUrl;
+        final hasBackground = bgUrl != null && bgUrl.isNotEmpty;
+
+        return SliverAppBar(
+          expandedHeight: 350,
+          pinned: true,
+          elevation: 0,
+          shadowColor: Colors.transparent,
+          backgroundColor: Colors.white,
+          stretch: true,
+          leading: IconButton(
+            icon: const Icon(Icons.arrow_back, color: Colors.orangeAccent),
+            onPressed: () => Navigator.pop(context),
+          ),
+          actions: [
+            IconButton(
+              icon: const Icon(
+                Icons.image_outlined,
+                color: Colors.orangeAccent,
               ),
+              onPressed: () {
+                showCustomBottomSheet(context, [
+                  BottomSheetOption(
+                    icon: const Icon(
+                      Icons.file_upload_outlined,
+                      color: Colors.greenAccent,
+                    ),
+                    title: 'Thêm ảnh nền',
+                    onTap: () => _handleChangeBackground(context),
+                  ),
+                  BottomSheetOption(
+                    icon: const Icon(
+                      Icons.delete_outline_outlined,
+                      color: Colors.redAccent,
+                    ),
+                    title: 'Xóa ảnh nền',
+                    onTap: () => _handleRemoveBackground(context),
+                  ),
+                ]);
+              },
             ),
-            Align(
-              alignment: Alignment.bottomCenter,
-              child: PersonalUserInfo(user: widget.user),
+            IconButton(
+              icon: const Icon(
+                Icons.settings_outlined,
+                color: Colors.orangeAccent,
+              ),
+              onPressed: () {},
             ),
           ],
-        ),
-      ),
+          flexibleSpace: FlexibleSpaceBar(
+            stretchModes: const [
+              StretchMode.zoomBackground,
+              StretchMode.fadeTitle,
+            ],
+            titlePadding: const EdgeInsets.only(left: 16, bottom: 16),
+            centerTitle: true,
+            background: Stack(
+              fit: StackFit.expand,
+              children: [
+                if (hasBackground)
+                  CachedNetworkImage(imageUrl: bgUrl!, fit: BoxFit.cover)
+                else
+                  Container(color: Colors.grey[100]),
+                Container(
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      begin: Alignment.topCenter,
+                      end: Alignment.bottomCenter,
+                      colors: [
+                        Colors.transparent,
+                        Colors.white.withOpacity(0.9),
+                      ],
+                    ),
+                  ),
+                ),
+                Align(
+                  alignment: Alignment.bottomCenter,
+                  child: PersonalUserInfo(user: userState),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
     );
   }
 }

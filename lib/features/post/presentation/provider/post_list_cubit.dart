@@ -3,7 +3,6 @@ import 'package:eefood/features/post/domain/repositories/post_reaction_repositor
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../core/di/injection.dart';
 import '../../data/models/post_model.dart';
-import '../../data/repositories/post_repository_impl.dart';
 import '../../data/repositories/search_repository.dart';
 import '../../domain/repositories/post_repository.dart';
 
@@ -50,6 +49,7 @@ class PostListCubit extends Cubit<PostListState> {
     emit(state.copyWith(recentKeywords: []));
   }
 
+  /// Clear tất cả filters
   Future<void> resetFilters() async {
     emit(
       PostListState(
@@ -67,9 +67,9 @@ class PostListCubit extends Cubit<PostListState> {
         recentKeywords: state.recentKeywords,
       ),
     );
+    // fetch new data from page 1
     await fetchPosts(loadMore: false);
   }
-
   /// Cập nhật filters cục bộ trong state rồi fetch lại từ trang 1
   Future<void> setFilters({
     String? keyword,
@@ -101,28 +101,6 @@ class PostListCubit extends Cubit<PostListState> {
     );
 
     // Fetch new data
-    await fetchPosts(loadMore: false);
-  }
-
-  /// Clear tất cả filters
-  Future<void> clearFilters() async {
-    emit(
-      PostListState(
-        posts: [],
-        isLoading: false,
-        hasMore: true,
-        currentPage: 1,
-        keyword: null,
-        userId: null,
-        region: null,
-        difficulty: null,
-        category: null,
-        maxCookTime: null,
-        sortBy: 'newest',
-        recentKeywords: state.recentKeywords,
-      ),
-    );
-    // fetch new data from page 1
     await fetchPosts(loadMore: false);
   }
 
@@ -288,7 +266,6 @@ class PostListState {
       recentKeywords: recentKeywords ?? this.recentKeywords,
     );
   }
-}
 
   /// Check if có filter nào đang active
 //   bool get hasActiveFilters => {
@@ -300,3 +277,4 @@ class PostListState {
 //           maxCookTime != null ||
 //           sortBy != 'newest';
 // }
+}
