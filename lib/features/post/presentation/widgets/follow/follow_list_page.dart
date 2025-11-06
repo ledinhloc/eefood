@@ -1,0 +1,101 @@
+import 'package:eefood/features/post/presentation/provider/follow_cubit.dart';
+import 'package:eefood/features/post/presentation/widgets/follow/follow_item.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+
+class FollowListPage extends StatefulWidget {
+  final bool isFollowers;
+  final int userId;
+
+  const FollowListPage({
+    super.key,
+    required this.isFollowers,
+    required this.userId,
+  });
+
+  @override
+  State<FollowListPage> createState() => _FollowListPageState();
+}
+
+class _FollowListPageState extends State<FollowListPage> {
+  final _scrollController = ScrollController();
+  late final FollowCubit cubit;
+
+  @override
+  void initState() {
+    super.initState();
+    cubit = context.read<FollowCubit>();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      widget.isFollowers
+          ? cubit.fetchFollowers(widget.userId)
+          : cubit.fetchFollowings(widget.userId);
+    });
+
+    _scrollController.addListener(_onScroll);
+  }
+
+  void _onScroll() {
+    if (_scrollController.position.pixels >=
+            _scrollController.position.maxScrollExtent - 100 &&
+        !cubit.state.isLoading) {
+      widget.isFollowers
+          ? cubit.fetchFollowers(widget.userId, loadMore: true)
+          : cubit.fetchFollowings(widget.userId, loadMore: true);
+    }
+  }
+
+  @override
+  void dispose() {
+    _scrollController.removeListener(_onScroll);
+    _scrollController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final title = widget.isFollowers ? 'Người theo dõi' : 'Đang theo dõi';
+
+    return Scaffold(
+      appBar: AppBar(
+        title: Text(title),
+        centerTitle: true,
+        backgroundColor: Colors.transparent,
+      ),
+      body: BlocBuilder<FollowCubit, FollowState>(
+        builder: (context, state) {
+          final users = widget.isFollowers
+              ? state.followerList
+              : state.followingList;
+
+          if (state.isLoading && users.isEmpty) {
+            return const Center(child: CircularProgressIndicator());
+          }
+
+          return RefreshIndicator(
+            onRefresh: () async {
+              final cubit = context.read<FollowCubit>();
+              widget.isFollowers
+                  ? await cubit.fetchFollowers(widget.userId)
+                  : await cubit.fetchFollowings(widget.userId);
+            },
+            child: ListView.builder(
+              controller: _scrollController,
+              itemCount: users.length + (state.isLoading ? 1 : 0),
+              itemBuilder: (context, index) {
+                if (index == users.length) {
+                  return const Padding(
+                    padding: EdgeInsets.all(16),
+                    child: Center(child: CircularProgressIndicator()),
+                  );
+                }
+
+                final user = users[index];
+                return FollowItem(user: user);
+              },
+            ),
+          );
+        },
+      ),
+    );
+  }
+}

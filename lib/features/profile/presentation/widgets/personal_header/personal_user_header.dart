@@ -96,7 +96,7 @@ class _PersonalUserHeaderState extends State<PersonalUserHeader> {
           );
         }
 
-        final bgUrl = userState.backgroundUrl;
+        final bgUrl = widget.user.backgroundUrl;
         final hasBackground = bgUrl != null && bgUrl.isNotEmpty;
 
         return SliverAppBar(
@@ -173,7 +173,7 @@ class _PersonalUserHeaderState extends State<PersonalUserHeader> {
                 ),
                 Align(
                   alignment: Alignment.bottomCenter,
-                  child: PersonalUserInfo(user: userState),
+                  child: PersonalUserInfo(user: widget.user),
                 ),
               ],
             ),

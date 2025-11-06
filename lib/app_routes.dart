@@ -11,9 +11,11 @@ import 'package:eefood/features/auth/presentation/screens/verify_otp_page.dart';
 import 'package:eefood/features/auth/presentation/screens/welcome_page.dart';
 import 'package:eefood/features/noti/presentation/screens/notification_screen.dart';
 import 'package:eefood/features/noti/presentation/screens/ntofication_settings_screen.dart';
+import 'package:eefood/features/post/presentation/provider/follow_cubit.dart';
 import 'package:eefood/features/post/presentation/screens/collection_detail_page.dart';
 import 'package:eefood/features/post/presentation/screens/collection_list_page.dart';
 import 'package:eefood/features/post/presentation/screens/feed_screen.dart';
+import 'package:eefood/features/post/presentation/widgets/follow/follow_list_page.dart';
 import 'package:eefood/features/profile/presentation/screens/edit_profile_page.dart';
 import 'package:eefood/features/profile/presentation/screens/food_preferences_page.dart';
 import 'package:eefood/features/profile/presentation/screens/language_page.dart';
@@ -64,6 +66,8 @@ class AppRoutes {
   static const collectionDetail = '/collectionDetail';
 
   static const personalUser = '/personalUser';
+
+  static const followListPage = '/followListPage';
 
   // Danh sách các widget cho BottomNavigationBar trong main page
   static List<Widget> widgetOptions = <Widget>[
@@ -140,7 +144,7 @@ class AppRoutes {
     collectionList: (context) => const CollectionListPage(),
     collectionDetail: (context) {
       final args =
-      ModalRoute.of(context)!.settings.arguments as Map<String, dynamic>;
+          ModalRoute.of(context)!.settings.arguments as Map<String, dynamic>;
       final collectionCubit = args['collectionCubit'] as CollectionCubit;
       final collectionId = args['collectionId'] as int;
       return BlocProvider.value(
@@ -149,9 +153,20 @@ class AppRoutes {
       );
     },
     personalUser: (contex) {
-      final args = ModalRoute.of(contex)!.settings.arguments as Map<String,dynamic>;
+      final args =
+          ModalRoute.of(contex)!.settings.arguments as Map<String, dynamic>;
       final user = args['user'] as User?;
       return PersonalUserPage(user: user);
+    },
+    followListPage: (contex) {
+      final args =
+          ModalRoute.of(contex)!.settings.arguments as Map<String, dynamic>;
+      final isFollowers = args['isFollowers'] as bool;
+      final userId = args['userId'] as int;
+      return BlocProvider(
+        create: (_) => getIt<FollowCubit>(),
+        child: FollowListPage(isFollowers: isFollowers, userId: userId),
+      );
     },
   };
 }
