@@ -20,7 +20,11 @@ class FollowItem extends StatelessWidget {
         user.username!,
         style: const TextStyle(fontWeight: FontWeight.w600),
       ),
-      subtitle: Text(user.email ?? ''),
+      subtitle: Text(
+        user.email ?? '',
+        maxLines: 1,
+        overflow: TextOverflow.ellipsis,
+      ),
       trailing: FollowItemButton(targetUser: user),
     );
   }

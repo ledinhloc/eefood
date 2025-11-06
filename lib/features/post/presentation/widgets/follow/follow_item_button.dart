@@ -66,7 +66,7 @@ class _FollowItemButtonState extends State<FollowItemButton> {
                     vertical: 8,
                   ),
                   shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(16),
+                    borderRadius: BorderRadius.circular(14),
                   ),
                 ),
                 child: Text(

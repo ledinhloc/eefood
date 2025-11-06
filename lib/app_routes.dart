@@ -163,6 +163,14 @@ class AppRoutes {
           ModalRoute.of(contex)!.settings.arguments as Map<String, dynamic>;
       final isFollowers = args['isFollowers'] as bool;
       final userId = args['userId'] as int;
+      final followCubit = args['followCubit'] as FollowCubit?;
+
+      if (followCubit != null) {
+        return BlocProvider.value(
+          value: followCubit,
+          child: FollowListPage(isFollowers: isFollowers, userId: userId),
+        );
+      }
       return BlocProvider(
         create: (_) => getIt<FollowCubit>(),
         child: FollowListPage(isFollowers: isFollowers, userId: userId),

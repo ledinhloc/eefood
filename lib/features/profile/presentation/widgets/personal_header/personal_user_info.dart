@@ -133,7 +133,11 @@ class _PersonalUserInfoState extends State<PersonalUserInfo> {
               Navigator.pushNamed(
                 context,
                 AppRoutes.followListPage,
-                arguments: {'isFollowers': true, 'userId': widget.user.id},
+                arguments: {
+                  'isFollowers': true,
+                  'userId': widget.user.id,
+                  'followCubit': _followCubit, // Thêm dòng này
+                },
               );
             },
           ),
@@ -145,7 +149,11 @@ class _PersonalUserInfoState extends State<PersonalUserInfo> {
               Navigator.pushNamed(
                 context,
                 AppRoutes.followListPage,
-                arguments: {'isFollowers': false, 'userId': widget.user.id},
+                arguments: {
+                  'isFollowers': false,
+                  'userId': widget.user.id,
+                  'followCubit': _followCubit, // Thêm dòng này
+                },
               );
             },
           ),
