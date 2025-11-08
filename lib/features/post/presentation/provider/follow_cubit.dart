@@ -79,7 +79,7 @@ class FollowCubit extends Cubit<FollowState> {
 
   // Load thông tin tổng quan
   Future<void> loadFollowData(int targetId) async {
-    if (isClosed) return; // Thêm kiểm tra này
+    if (isClosed) return;
 
     emit(state.copyWith(isLoading: true, error: null));
     try {
@@ -87,7 +87,6 @@ class FollowCubit extends Cubit<FollowState> {
       final stats = await followRepository.getFollowStats(targetId);
 
       if (!isClosed) {
-        // Kiểm tra trước khi emit
         emit(
           state.copyWith(
             isFollowing: isFollowing,
@@ -104,43 +103,61 @@ class FollowCubit extends Cubit<FollowState> {
     }
   }
 
-  Future<void> toggleFollow(int targetId) async {
-    if (isClosed) return;
+  Future<void> toggleFollow(
+  int targetId,
+  int currentUserId, {
+  FollowModel? targetUser,
+}) async {
+  if (isClosed) return;
+  emit(state.copyWith(isLoading: true));
 
-    emit(state.copyWith(isLoading: true));
-    try {
-      final result = await followRepository.toggleFollow(targetId);
-      final stats = await followRepository.getFollowStats(targetId);
+  try {
+    final result = await followRepository.toggleFollow(targetId);
+    final stats = await followRepository.getFollowStats(targetId);
 
-      if (!isClosed) {
-        emit(
-          state.copyWith(
-            isFollowing: result,
-            followers: stats['followers'] ?? 0,
-            followings: stats['followings'] ?? 0,
-            followerList: state.followerList
-                .where((u) => u.id != targetId)
-                .toList(),
-            followingList: result
-                ? [
-                    ...state.followingList,
-                    FollowModel(
-                      id: targetId,
-                      followerId: 0,
-                      followingId: targetId,
-                    ),
-                  ]
-                : state.followingList.where((u) => u.id != targetId).toList(),
-            isLoading: false,
-          ),
-        );
+    if (!isClosed) {
+      List<FollowModel> updatedFollowers = List.from(state.followerList);
+      List<FollowModel> updatedFollowings = List.from(state.followingList);
+
+      if (targetUser != null) {
+        // Cập nhật trong danh sách followers (Người theo dõi)
+        updatedFollowers = state.followerList.map((user) {
+          final idToCompare = user.followerId ?? user.followingId;
+          if (idToCompare == targetUser.followerId ||
+              idToCompare == targetUser.followingId) {
+            return user.copyWith(isFollow: result);
+          }
+          return user;
+        }).toList();
+
+        // Cập nhật trong danh sách followings (Đang theo dõi)
+        updatedFollowings = state.followingList.map((user) {
+          final idToCompare = user.followingId ?? user.followerId;
+          if (idToCompare == targetUser.followerId ||
+              idToCompare == targetUser.followingId) {
+            return user.copyWith(isFollow: result);
+          }
+          return user;
+        }).toList();
       }
-    } catch (_) {
-      if (!isClosed) {
-        emit(state.copyWith(isLoading: false, error: 'Thao tác thất bại.'));
-      }
+
+      emit(
+        state.copyWith(
+          followerList: updatedFollowers,
+          followingList: updatedFollowings,
+          isFollowing: result,
+          followers: stats['followers'] ?? state.followers,
+          followings: stats['followings'] ?? state.followings,
+          isLoading: false,
+        ),
+      );
+    }
+  } catch (e) {
+    if (!isClosed) {
+      emit(state.copyWith(isLoading: false, error: 'Thao tác thất bại.'));
     }
   }
+}
 
   // Lazy load followers
   Future<void> fetchFollowers(int userId, {bool loadMore = false}) async {
@@ -151,22 +168,30 @@ class FollowCubit extends Cubit<FollowState> {
 
     try {
       final users = await followRepository.getFollowers(userId, nextPage, 10);
-      print('Chiều dài: ${users.length}');
-      emit(
-        state.copyWith(
-          followerList: loadMore ? [...state.followerList, ...users] : users,
-          followerPage: nextPage,
-          hasMoreFollowers: users.length == 10,
-          isLoading: false,
-        ),
-      );
+      final stats = await followRepository.getFollowStats(userId);
+
+      if (!isClosed) {
+        emit(
+          state.copyWith(
+            isFollowing: isUserFollowing(userId),
+            followerList: loadMore ? [...state.followerList, ...users] : users,
+            followerPage: nextPage,
+            hasMoreFollowers: users.length == 10,
+            followers: stats['followers'] ?? state.followers,
+            followings: stats['followings'] ?? state.followings,
+            isLoading: false,
+          ),
+        );
+      }
     } catch (_) {
-      emit(
-        state.copyWith(
-          isLoading: false,
-          error: 'Không thể tải người theo dõi.',
-        ),
-      );
+      if (!isClosed) {
+        emit(
+          state.copyWith(
+            isLoading: false,
+            error: 'Không thể tải người theo dõi.',
+          ),
+        );
+      }
     }
   }
 
@@ -179,25 +204,42 @@ class FollowCubit extends Cubit<FollowState> {
 
     try {
       final users = await followRepository.getFollowings(userId, nextPage, 10);
-      emit(
-        state.copyWith(
-          followingList: loadMore ? [...state.followingList, ...users] : users,
-          followingPage: nextPage,
-          hasMoreFollowings: users.length == 10,
-          isLoading: false,
-        ),
-      );
+      final stats = await followRepository.getFollowStats(userId);
+      if (!isClosed) {
+        emit(
+          state.copyWith(
+            isFollowing: isUserFollowing(userId),
+            followingList: loadMore
+                ? [...state.followingList, ...users]
+                : users,
+            followingPage: nextPage,
+            hasMoreFollowings: users.length == 10,
+            followers: stats['followers'] ?? state.followers,
+            followings: stats['followings'] ?? state.followings,
+            isLoading: false,
+          ),
+        );
+      }
     } catch (_) {
-      emit(
-        state.copyWith(
-          isLoading: false,
-          error: 'Không thể tải danh sách đang theo dõi.',
-        ),
-      );
+      if (!isClosed) {
+        emit(
+          state.copyWith(
+            isLoading: false,
+            error: 'Không thể tải danh sách đang theo dõi.',
+          ),
+        );
+      }
     }
   }
 
   bool isUserFollowing(int userId) {
     return state.followingList.any((user) => user.id == userId);
+  }
+
+  // Thêm method để clear error
+  void clearError() {
+    if (!isClosed) {
+      emit(state.copyWith(error: null));
+    }
   }
 }
