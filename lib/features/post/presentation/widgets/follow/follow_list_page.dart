@@ -25,22 +25,32 @@ class _FollowListPageState extends State<FollowListPage> {
   void initState() {
     super.initState();
     cubit = context.read<FollowCubit>();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      widget.isFollowers
-          ? cubit.fetchFollowers(widget.userId)
-          : cubit.fetchFollowings(widget.userId);
-    });
+
+    // Chỉ load nếu list đang trống
+    final hasData = widget.isFollowers
+        ? cubit.state.followerList.isNotEmpty
+        : cubit.state.followingList.isNotEmpty;
+
+    if (!hasData) {
+      _loadFollow();
+    }
 
     _scrollController.addListener(_onScroll);
   }
 
-  void _onScroll() {
+  void _loadFollow() async {
+    widget.isFollowers
+        ? await cubit.fetchFollowers(widget.userId)
+        : await cubit.fetchFollowings(widget.userId);
+  }
+
+  void _onScroll() async {
     if (_scrollController.position.pixels >=
             _scrollController.position.maxScrollExtent - 100 &&
         !cubit.state.isLoading) {
       widget.isFollowers
-          ? cubit.fetchFollowers(widget.userId, loadMore: true)
-          : cubit.fetchFollowings(widget.userId, loadMore: true);
+          ? await cubit.fetchFollowers(widget.userId, loadMore: true)
+          : await cubit.fetchFollowings(widget.userId, loadMore: true);
     }
   }
 
@@ -90,7 +100,10 @@ class _FollowListPageState extends State<FollowListPage> {
                 }
 
                 final user = users[index];
-                return FollowItem(user: user);
+                return FollowItem(
+                  user: user,
+                  isFollowersList: widget.isFollowers,
+                );
               },
             ),
           );

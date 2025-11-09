@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'package:eefood/app_routes.dart';
 import 'package:eefood/core/constants/app_keys.dart';
 import 'package:eefood/core/di/injection.dart';
+import 'package:eefood/features/post/data/models/follow_model.dart';
 import 'package:eefood/features/post/presentation/provider/follow_cubit.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -46,8 +47,8 @@ class _PersonalUserInfoState extends State<PersonalUserInfo> {
       setState(() {
         _isLoadingUser = false;
       });
-      // Sau khi có ID, load dữ liệu follow
-      _followCubit.loadFollowData(widget.user.id);
+
+      await _followCubit.loadFollowData(widget.user.id);
     }
   }
 
@@ -169,7 +170,7 @@ class _PersonalUserInfoState extends State<PersonalUserInfo> {
       child: ElevatedButton(
         onPressed: state.isLoading
             ? null
-            : () => _followCubit.toggleFollow(widget.user.id),
+            : () => _followCubit.toggleFollow(widget.user.id, _currentUserId!),
         style: ElevatedButton.styleFrom(
           backgroundColor: state.isFollowing
               ? Colors.grey

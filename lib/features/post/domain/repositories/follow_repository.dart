@@ -2,6 +2,7 @@ import 'package:eefood/features/auth/data/models/UserModel.dart';
 import 'package:eefood/features/post/data/models/follow_model.dart';
 
 abstract class FollowRepository {
+  Future<bool> unFollow(int targetId);
   Future<bool> toggleFollow(int targetId);
   Future<bool> checkFollow(int targetId);
   Future<List<FollowModel>> getFollowers(int userId, int page, int size);

@@ -8,6 +8,21 @@ class FollowRepositoryImpl extends FollowRepository {
   FollowRepositoryImpl({required this.dio});
 
   @override
+  Future<bool> unFollow(int targetId) async {
+    try {
+      final response = await dio.delete('/v1/follows/$targetId');
+
+      if (response.statusCode == 200) {
+        final data = response.data['data'];
+        return data;
+      }
+      return false;
+    } catch (err) {
+      throw Exception('Failed: $err');
+    }
+  }
+
+  @override
   Future<bool> toggleFollow(int targetId) async {
     try {
       final response = await dio.post('/v1/follows/$targetId');
