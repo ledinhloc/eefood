@@ -168,12 +168,21 @@ class AppRoutes {
       if (followCubit != null) {
         return BlocProvider.value(
           value: followCubit,
-          child: FollowListPage(isFollowers: isFollowers, userId: userId),
+          child: FollowListPage(
+            isFollowers: isFollowers,
+            userId: userId,
+            followCubit: followCubit,
+          ),
         );
       }
+      final newCubit = getIt<FollowCubit>();
       return BlocProvider(
         create: (_) => getIt<FollowCubit>(),
-        child: FollowListPage(isFollowers: isFollowers, userId: userId),
+        child: FollowListPage(
+          isFollowers: isFollowers,
+          userId: userId,
+          followCubit: newCubit,
+        ),
       );
     },
   };
