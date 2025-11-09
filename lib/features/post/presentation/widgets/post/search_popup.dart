@@ -1,3 +1,5 @@
+import 'package:eefood/core/utils/speech_helper.dart';
+import 'package:eefood/core/widgets/snack_bar.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
@@ -15,7 +17,14 @@ class _SearchPopupState extends State<SearchPopup> {
   final TextEditingController _keywordCtl = TextEditingController();
 
   // sample options - bạn có thể lấy động từ backend
-  final List<String> _regions = ['Tất cả', 'Hà Nội', 'TP.HCM', 'Đà Nẵng', 'Việt Nam', 'Nhật'];
+  final List<String> _regions = [
+    'Tất cả',
+    'Hà Nội',
+    'TP.HCM',
+    'Đà Nẵng',
+    'Việt Nam',
+    'Nhật',
+  ];
   final Map<String, String> _difficultyMap = {
     'Tất cả': '',
     'Dễ': 'EASY',
@@ -23,7 +32,13 @@ class _SearchPopupState extends State<SearchPopup> {
     'Khó': 'HARD',
   };
   late final List<String> _difficulties;
-  final List<String> _mealTypes = ['Tất cả', 'Khai vị', 'Món chính', 'Tráng miệng', 'Đồ uống'];
+  final List<String> _mealTypes = [
+    'Tất cả',
+    'Khai vị',
+    'Món chính',
+    'Tráng miệng',
+    'Đồ uống',
+  ];
   final List<String> _times = ['Tất cả', '<15p', '<30p', '<1h', '>1h'];
   final List<String> _diets = ['Tất cả', 'Ăn chay', 'Giảm cân', 'Healthy'];
 
@@ -50,8 +65,27 @@ class _SearchPopupState extends State<SearchPopup> {
     super.dispose();
   }
 
+  Map<String, dynamic> _buildFilters(String keyword) {
+    String? v(String value) => value == 'Tất cả' ? null : value;
+
+    final diff = _difficultyMap[_selectedDifficulty];
+    return {
+      'keyword': keyword.trim().isEmpty ? null : keyword.trim(),
+      'region': v(_selectedRegion),
+      'difficulty': (diff == null || diff.isEmpty) ? null : diff,
+      'mealType': v(_selectedMealType),
+      'time': v(_selectedTime),
+      'diet': v(_selectedDiet),
+      'sort': _selectedSort,
+    }..removeWhere((_, v) => v == null); // xoá key null cho gọn
+  }
+
   //toa nhom cac lua chon
-  Widget _buildChips(List<String> options, String selected, ValueChanged<String> onTap) {
+  Widget _buildChips(
+    List<String> options,
+    String selected,
+    ValueChanged<String> onTap,
+  ) {
     return Wrap(
       spacing: 5,
       runSpacing: 5,
@@ -59,7 +93,12 @@ class _SearchPopupState extends State<SearchPopup> {
         final selectedFlag = opt == selected;
         return ChoiceChip(
           materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
-          label: Text(opt, style: TextStyle(color: selectedFlag ? Colors.white : Colors.black87)),
+          label: Text(
+            opt,
+            style: TextStyle(
+              color: selectedFlag ? Colors.white : Colors.black87,
+            ),
+          ),
           selected: selectedFlag,
           onSelected: (_) => onTap(opt),
           selectedColor: Colors.redAccent,
@@ -80,35 +119,105 @@ class _SearchPopupState extends State<SearchPopup> {
           children: [
             // header
             Padding(
-              padding: const EdgeInsets.only(top: 2, left: 25, right: 12, bottom: 0),
+              padding: const EdgeInsets.only(
+                top: 2,
+                left: 25,
+                right: 12,
+                bottom: 0,
+              ),
               child: Row(
                 children: [
                   const Expanded(
-                    child: Text('Tìm kiếm', style: TextStyle(fontSize: 20, fontWeight: FontWeight.w600)),
+                    child: Text(
+                      'Tìm kiếm',
+                      style: TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
                   ),
                   IconButton(
                     onPressed: () => Navigator.of(context).pop(),
                     icon: const Icon(Icons.close),
-                  )
+                  ),
                 ],
               ),
             ),
             const Divider(height: 1),
             Expanded(
               child: SingleChildScrollView(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 12,
+                ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     // keyword
-                    const Text('Từ khoá', style: TextStyle(fontWeight: FontWeight.w600)),
+                    const Text(
+                      'Từ khoá',
+                      style: TextStyle(fontWeight: FontWeight.w600),
+                    ),
                     const SizedBox(height: 8),
                     TextField(
                       controller: _keywordCtl,
                       decoration: InputDecoration(
                         prefixIcon: const Icon(Icons.search_rounded),
+                        suffixIcon: SizedBox(
+                          width: 60,
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.end,
+                            children: [
+                              GestureDetector(
+                                onTap: () async {
+                                  final helper = SpeechHelper();
+                                  final keyword = await helper.listenOnceWithUI(
+                                    context,
+                                  );
+
+                                  if (keyword != null && context.mounted) {
+                                    setState(() {
+                                      _keywordCtl.text = keyword;
+                                      _keywordCtl.selection =
+                                          TextSelection.fromPosition(
+                                            TextPosition(
+                                              offset: keyword.length,
+                                            ),
+                                          );
+                                    });
+
+                                    // Tự động áp dụng luôn filter
+                                    final filters = _buildFilters(keyword);
+                                    Navigator.of(context).pop(filters);
+                                  } else {
+                                    if (context.mounted) {
+                                      showCustomSnackBar(
+                                        context,
+                                        'Không nhận được từ khóa tìm kiếm',
+                                      );
+                                    }
+                                  }
+                                },
+                                child: const Icon(
+                                  Icons.mic,
+                                  color: Colors.grey,
+                                  size: 20,
+                                ),
+                              ),
+                              SizedBox(width: 8),
+                              Icon(
+                                Icons.camera_alt_rounded,
+                                size: 20,
+                                color: Colors.grey,
+                              ),
+                              SizedBox(width: 6),
+                            ],
+                          ),
+                        ),
                         hintText: 'Nhập tên món / nguyên liệu',
-                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(10),
+                        ),
                         isDense: true,
                       ),
                     ),
@@ -123,7 +232,10 @@ class _SearchPopupState extends State<SearchPopup> {
                         return Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            const Text('Lịch sử tìm kiếm', style: TextStyle(fontWeight: FontWeight.w600)),
+                            const Text(
+                              'Lịch sử tìm kiếm',
+                              style: TextStyle(fontWeight: FontWeight.w600),
+                            ),
                             const SizedBox(height: 8),
                             Wrap(
                               spacing: 8,
@@ -133,15 +245,22 @@ class _SearchPopupState extends State<SearchPopup> {
                                   onTap: () {
                                     setState(() {
                                       _keywordCtl.text = r;
-                                      _keywordCtl.selection = TextSelection.fromPosition(
-                                        TextPosition(offset: _keywordCtl.text.length),
-                                      );
+                                      _keywordCtl.selection =
+                                          TextSelection.fromPosition(
+                                            TextPosition(
+                                              offset: _keywordCtl.text.length,
+                                            ),
+                                          );
                                     });
                                   },
                                   child: Chip(
                                     label: Text(r),
-                                    onDeleted: () => getIt<PostListCubit>().deleteKeyword(r),
-                                    deleteIcon: const Icon(Icons.close, size: 16),
+                                    onDeleted: () =>
+                                        getIt<PostListCubit>().deleteKeyword(r),
+                                    deleteIcon: const Icon(
+                                      Icons.close,
+                                      size: 16,
+                                    ),
                                     deleteIconColor: Colors.redAccent,
                                     backgroundColor: Colors.grey.shade100,
                                   ),
@@ -153,49 +272,99 @@ class _SearchPopupState extends State<SearchPopup> {
                       },
                     ),
                     // region
-                    const Text('Lọc theo khu vực', style: TextStyle(fontWeight: FontWeight.w600)),
+                    const Text(
+                      'Lọc theo khu vực',
+                      style: TextStyle(fontWeight: FontWeight.w600),
+                    ),
                     const SizedBox(height: 8),
-                    _buildChips(_regions, _selectedRegion, (v) => setState(() => _selectedRegion = v)),
+                    _buildChips(
+                      _regions,
+                      _selectedRegion,
+                      (v) => setState(() => _selectedRegion = v),
+                    ),
                     const SizedBox(height: 12),
 
                     // difficulty
-                    const Text('Lọc theo độ khó', style: TextStyle(fontWeight: FontWeight.w600)),
+                    const Text(
+                      'Lọc theo độ khó',
+                      style: TextStyle(fontWeight: FontWeight.w600),
+                    ),
                     const SizedBox(height: 8),
-                    _buildChips(_difficulties, _selectedDifficulty, (v) => setState(() => _selectedDifficulty = v)),
+                    _buildChips(
+                      _difficulties,
+                      _selectedDifficulty,
+                      (v) => setState(() => _selectedDifficulty = v),
+                    ),
                     const SizedBox(height: 12),
 
                     // meal type
-                    const Text('Loại bữa ăn', style: TextStyle(fontWeight: FontWeight.w600)),
+                    const Text(
+                      'Loại bữa ăn',
+                      style: TextStyle(fontWeight: FontWeight.w600),
+                    ),
                     const SizedBox(height: 8),
-                    _buildChips(_mealTypes, _selectedMealType, (v) => setState(() => _selectedMealType = v)),
+                    _buildChips(
+                      _mealTypes,
+                      _selectedMealType,
+                      (v) => setState(() => _selectedMealType = v),
+                    ),
                     const SizedBox(height: 12),
 
                     // time
-                    const Text('Thời gian nấu', style: TextStyle(fontWeight: FontWeight.w600)),
+                    const Text(
+                      'Thời gian nấu',
+                      style: TextStyle(fontWeight: FontWeight.w600),
+                    ),
                     const SizedBox(height: 8),
-                    _buildChips(_times, _selectedTime, (v) => setState(() => _selectedTime = v)),
+                    _buildChips(
+                      _times,
+                      _selectedTime,
+                      (v) => setState(() => _selectedTime = v),
+                    ),
                     const SizedBox(height: 12),
 
                     // diet
-                    const Text('Chế độ ăn', style: TextStyle(fontWeight: FontWeight.w600)),
+                    const Text(
+                      'Chế độ ăn',
+                      style: TextStyle(fontWeight: FontWeight.w600),
+                    ),
                     const SizedBox(height: 8),
-                    _buildChips(_diets, _selectedDiet, (v) => setState(() => _selectedDiet = v)),
+                    _buildChips(
+                      _diets,
+                      _selectedDiet,
+                      (v) => setState(() => _selectedDiet = v),
+                    ),
                     const SizedBox(height: 12),
 
                     // sort
-                    const Text('Sắp xếp theo', style: TextStyle(fontWeight: FontWeight.w600)),
+                    const Text(
+                      'Sắp xếp theo',
+                      style: TextStyle(fontWeight: FontWeight.w600),
+                    ),
                     const SizedBox(height: 8),
                     Wrap(
                       spacing: 8,
-                      children: ['Mới nhất', 'Phổ biến', 'Đánh giá cao', 'Cũ nhất'].map((s) {
-                        final sel = s == _selectedSort;
-                        return ChoiceChip(
-                          label: Text(s, style: TextStyle(color: sel ? Colors.white : Colors.black87)),
-                          selected: sel,
-                          onSelected: (_) => setState(() => _selectedSort = s),
-                          selectedColor: Colors.redAccent,
-                        );
-                      }).toList(),
+                      children:
+                          [
+                            'Mới nhất',
+                            'Phổ biến',
+                            'Đánh giá cao',
+                            'Cũ nhất',
+                          ].map((s) {
+                            final sel = s == _selectedSort;
+                            return ChoiceChip(
+                              label: Text(
+                                s,
+                                style: TextStyle(
+                                  color: sel ? Colors.white : Colors.black87,
+                                ),
+                              ),
+                              selected: sel,
+                              onSelected: (_) =>
+                                  setState(() => _selectedSort = s),
+                              selectedColor: Colors.redAccent,
+                            );
+                          }).toList(),
                     ),
                     const SizedBox(height: 20),
                   ],
@@ -226,14 +395,25 @@ class _SearchPopupState extends State<SearchPopup> {
                   ElevatedButton(
                     onPressed: () {
                       final filters = <String, dynamic>{
-                        'keyword': _keywordCtl.text.trim().isEmpty ? null : _keywordCtl.text.trim(),
-                        'region': _selectedRegion == 'Tất cả' ? null : _selectedRegion,
-                        'difficulty': _difficultyMap[_selectedDifficulty]?.isEmpty ?? true
+                        'keyword': _keywordCtl.text.trim().isEmpty
+                            ? null
+                            : _keywordCtl.text.trim(),
+                        'region': _selectedRegion == 'Tất cả'
+                            ? null
+                            : _selectedRegion,
+                        'difficulty':
+                            _difficultyMap[_selectedDifficulty]?.isEmpty ?? true
                             ? null
                             : _difficultyMap[_selectedDifficulty],
-                        'mealType': _selectedMealType == 'Tất cả' ? null : _selectedMealType,
-                        'time': _selectedTime == 'Tất cả' ? null : _selectedTime,
-                        'diet': _selectedDiet == 'Tất cả' ? null : _selectedDiet,
+                        'mealType': _selectedMealType == 'Tất cả'
+                            ? null
+                            : _selectedMealType,
+                        'time': _selectedTime == 'Tất cả'
+                            ? null
+                            : _selectedTime,
+                        'diet': _selectedDiet == 'Tất cả'
+                            ? null
+                            : _selectedDiet,
                         'sort': _selectedSort,
                       };
                       Navigator.of(context).pop(filters);
@@ -242,7 +422,7 @@ class _SearchPopupState extends State<SearchPopup> {
                   ),
                 ],
               ),
-            )
+            ),
           ],
         ),
       ),
