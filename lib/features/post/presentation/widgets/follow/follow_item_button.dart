@@ -53,29 +53,54 @@ class _FollowItemButtonState extends State<FollowItemButton> {
       return const SizedBox();
     }
 
-    return _isLoading
-        ? const SizedBox(
-            width: 20,
-            height: 20,
-            child: CircularProgressIndicator(strokeWidth: 2),
-          )
-        : ElevatedButton(
-            onPressed: () => _toggleFollow(context, displayedUserId),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: _isFollow
-                  ? Colors.grey
-                  : const Color(0xFFE67E22),
-              foregroundColor: Colors.white,
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(14),
-              ),
-            ),
-            child: Text(
-              _isFollow ? 'Đã theo dõi' : 'Theo dõi',
-              style: const TextStyle(fontSize: 12),
-            ),
+    return BlocBuilder<FollowCubit, FollowState>(
+      builder: (context, state) {
+        // Tìm trạng thái follow hiện tại từ cubit state
+        bool isFollow = widget.targetUser.isFollow ?? false;
+
+        // Tìm user trong danh sách để lấy trạng thái mới nhất
+        if (widget.isFollowersList) {
+          final found = state.followerList.firstWhere(
+            (u) => (u.followerId ?? u.followingId) == displayedUserId,
+            orElse: () => widget.targetUser,
           );
+          isFollow = found.isFollow ?? isFollow;
+        } else {
+          final found = state.followingList.firstWhere(
+            (u) => (u.followingId ?? u.followerId) == displayedUserId,
+            orElse: () => widget.targetUser,
+          );
+          isFollow = found.isFollow ?? isFollow;
+        }
+
+        return _isLoading
+            ? const SizedBox(
+                width: 20,
+                height: 20,
+                child: CircularProgressIndicator(strokeWidth: 2),
+              )
+            : ElevatedButton(
+                onPressed: () => _toggleFollow(context, displayedUserId),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: isFollow
+                      ? Colors.grey
+                      : const Color(0xFFE67E22),
+                  foregroundColor: Colors.white,
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 8,
+                  ),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(14),
+                  ),
+                ),
+                child: Text(
+                  isFollow ? 'Đã theo dõi' : 'Theo dõi',
+                  style: const TextStyle(fontSize: 12),
+                ),
+              );
+      },
+    );
   }
 
   Future<void> _toggleFollow(BuildContext context, int targetUserId) async {

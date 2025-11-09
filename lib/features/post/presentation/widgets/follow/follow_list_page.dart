@@ -6,11 +6,13 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 class FollowListPage extends StatefulWidget {
   final bool isFollowers;
   final int userId;
+  final FollowCubit followCubit;
 
   const FollowListPage({
     super.key,
     required this.isFollowers,
     required this.userId,
+    required this.followCubit,
   });
 
   @override
@@ -24,7 +26,7 @@ class _FollowListPageState extends State<FollowListPage> {
   @override
   void initState() {
     super.initState();
-    cubit = context.read<FollowCubit>();
+    cubit = widget.followCubit;
 
     // Chỉ load nếu list đang trống
     final hasData = widget.isFollowers
@@ -83,7 +85,7 @@ class _FollowListPageState extends State<FollowListPage> {
 
           return RefreshIndicator(
             onRefresh: () async {
-              final cubit = context.read<FollowCubit>();
+              final cubit = widget.followCubit;
               widget.isFollowers
                   ? await cubit.fetchFollowers(widget.userId)
                   : await cubit.fetchFollowings(widget.userId);

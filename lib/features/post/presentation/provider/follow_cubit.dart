@@ -104,60 +104,63 @@ class FollowCubit extends Cubit<FollowState> {
   }
 
   Future<void> toggleFollow(
-  int targetId,
-  int currentUserId, {
-  FollowModel? targetUser,
-}) async {
-  if (isClosed) return;
-  emit(state.copyWith(isLoading: true));
+    int targetId,
+    int currentUserId, {
+    FollowModel? targetUser,
+    int? profileUserId,
+  }) async {
+    if (isClosed) return;
+    emit(state.copyWith(isLoading: true));
 
-  try {
-    final result = await followRepository.toggleFollow(targetId);
-    final stats = await followRepository.getFollowStats(targetId);
+    try {
+      final result = await followRepository.toggleFollow(targetId);
+      final stats = await followRepository.getFollowStats(targetId);
 
-    if (!isClosed) {
-      List<FollowModel> updatedFollowers = List.from(state.followerList);
-      List<FollowModel> updatedFollowings = List.from(state.followingList);
+      if (!isClosed) {
+        List<FollowModel> updatedFollowers = List.from(state.followerList);
+        List<FollowModel> updatedFollowings = List.from(state.followingList);
 
-      if (targetUser != null) {
-        // Cập nhật trong danh sách followers (Người theo dõi)
-        updatedFollowers = state.followerList.map((user) {
-          final idToCompare = user.followerId ?? user.followingId;
-          if (idToCompare == targetUser.followerId ||
-              idToCompare == targetUser.followingId) {
-            return user.copyWith(isFollow: result);
-          }
-          return user;
-        }).toList();
+        if (targetUser != null) {
+          // Cập nhật trong danh sách followers (Người theo dõi)
+          updatedFollowers = state.followerList.map((user) {
+            final idToCompare = user.followerId ?? user.followingId;
+            if (idToCompare == targetUser.followerId ||
+                idToCompare == targetUser.followingId) {
+              return user.copyWith(isFollow: result);
+            }
+            return user;
+          }).toList();
 
-        // Cập nhật trong danh sách followings (Đang theo dõi)
-        updatedFollowings = state.followingList.map((user) {
-          final idToCompare = user.followingId ?? user.followerId;
-          if (idToCompare == targetUser.followerId ||
-              idToCompare == targetUser.followingId) {
-            return user.copyWith(isFollow: result);
-          }
-          return user;
-        }).toList();
+          // Cập nhật trong danh sách followings (Đang theo dõi)
+          updatedFollowings = state.followingList.map((user) {
+            final idToCompare = user.followingId ?? user.followerId;
+            if (idToCompare == targetUser.followerId ||
+                idToCompare == targetUser.followingId) {
+              return user.copyWith(isFollow: result);
+            }
+            return user;
+          }).toList();
+        }
+
+        final shouldUpdateIsFollowing = profileUserId != null && targetId == profileUserId;
+
+        emit(
+          state.copyWith(
+            followerList: updatedFollowers,
+            followingList: updatedFollowings,
+            isFollowing: shouldUpdateIsFollowing  ? result : state.isFollowing,
+            followers: stats['followers'] ?? state.followers,
+            followings: stats['followings'] ?? state.followings,
+            isLoading: false,
+          ),
+        );
       }
-
-      emit(
-        state.copyWith(
-          followerList: updatedFollowers,
-          followingList: updatedFollowings,
-          isFollowing: result,
-          followers: stats['followers'] ?? state.followers,
-          followings: stats['followings'] ?? state.followings,
-          isLoading: false,
-        ),
-      );
-    }
-  } catch (e) {
-    if (!isClosed) {
-      emit(state.copyWith(isLoading: false, error: 'Thao tác thất bại.'));
+    } catch (e) {
+      if (!isClosed) {
+        emit(state.copyWith(isLoading: false, error: 'Thao tác thất bại.'));
+      }
     }
   }
-}
 
   // Lazy load followers
   Future<void> fetchFollowers(int userId, {bool loadMore = false}) async {
