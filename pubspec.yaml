@@ -64,6 +64,9 @@ dependencies:
   cached_network_image: ^3.4.1 
   shimmer: ^3.0.0 #skeleton loading
   speech_to_text: ^7.3.0
+  camera: ^0.11.0
+  photo_manager: ^3.7.1
+  image_gallery_saver_plus: ^4.0.1
 dev_dependencies:
   flutter_test:
     sdk: flutter

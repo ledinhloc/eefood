@@ -16,6 +16,7 @@ import 'package:eefood/features/post/presentation/screens/collection_detail_page
 import 'package:eefood/features/post/presentation/screens/collection_list_page.dart';
 import 'package:eefood/features/post/presentation/screens/feed_screen.dart';
 import 'package:eefood/features/post/presentation/widgets/follow/follow_list_page.dart';
+import 'package:eefood/features/post/presentation/widgets/post/image_search/image_search_page.dart';
 import 'package:eefood/features/profile/presentation/screens/edit_profile_page.dart';
 import 'package:eefood/features/profile/presentation/screens/food_preferences_page.dart';
 import 'package:eefood/features/profile/presentation/screens/language_page.dart';
@@ -68,6 +69,8 @@ class AppRoutes {
   static const personalUser = '/personalUser';
 
   static const followListPage = '/followListPage';
+
+  static const imageSearchPage = '/imageSearchPage';
 
   // Danh sách các widget cho BottomNavigationBar trong main page
   static List<Widget> widgetOptions = <Widget>[
@@ -184,6 +187,9 @@ class AppRoutes {
           followCubit: newCubit,
         ),
       );
+    },
+    imageSearchPage: (context) {
+      return ImageSearchScreen();
     },
   };
 }
