@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:eefood/features/post/data/models/reaction_type.dart';
 import 'package:eefood/features/post/domain/repositories/post_reaction_repository.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -12,22 +14,22 @@ class PostListCubit extends Cubit<PostListState> {
   final SearchRepository searchRepo = getIt<SearchRepository>();
 
   PostListCubit()
-      : super(
-    PostListState(
-      posts: [],
-      isLoading: false,
-      hasMore: true,
-      currentPage: 1,
-      keyword: null,
-      userId: null,
-      region: null,
-      difficulty: null,
-      category: null,
-      maxCookTime: null,
-      sortBy: 'newest',
-      recentKeywords: [],
-    ),
-  );
+    : super(
+        PostListState(
+          posts: [],
+          isLoading: false,
+          hasMore: true,
+          currentPage: 1,
+          keyword: null,
+          userId: null,
+          region: null,
+          difficulty: null,
+          category: null,
+          maxCookTime: null,
+          sortBy: 'newest',
+          recentKeywords: [],
+        ),
+      );
 
   Future<void> loadRecentKeywords() async {
     final recents = await searchRepo.getRecentSearches();
@@ -70,6 +72,7 @@ class PostListCubit extends Cubit<PostListState> {
     // fetch new data from page 1
     await fetchPosts(loadMore: false);
   }
+
   /// Cập nhật filters cục bộ trong state rồi fetch lại từ trang 1
   Future<void> setFilters({
     String? keyword,
@@ -138,18 +141,23 @@ class PostListCubit extends Cubit<PostListState> {
     }
   }
 
-  Future<void> fetchPosts({bool loadMore = false}) async {
+  Future<void> fetchPosts({bool loadMore = false, File? imageFile}) async {
     if (state.isLoading || (!state.hasMore && loadMore)) return;
 
     emit(state.copyWith(isLoading: true));
 
     final nextPage = loadMore ? state.currentPage + 1 : 1;
+    String? keyword = state.keyword;
 
     try {
+      if (imageFile != null) {
+        keyword = await postRepo.getKeywordFromImage(imageFile);
+      }
+
       final posts = await postRepo.getAllPosts(
         nextPage,
         10,
-        keyword: state.keyword,
+        keyword: keyword,
         userId: state.userId,
         region: state.region,
         difficulty: state.difficulty,
@@ -166,6 +174,7 @@ class PostListCubit extends Cubit<PostListState> {
           isLoading: false,
           hasMore: posts.length == 10,
           currentPage: nextPage,
+          keyword: keyword,
         ),
       );
     } catch (e) {
@@ -267,4 +276,3 @@ class PostListState {
     );
   }
 }
-

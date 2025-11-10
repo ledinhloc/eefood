@@ -1,3 +1,4 @@
+import 'package:eefood/app_routes.dart';
 import 'package:eefood/core/utils/speech_helper.dart';
 import 'package:eefood/core/widgets/snack_bar.dart';
 import 'package:flutter/material.dart';
@@ -92,6 +93,7 @@ class _SearchPopupState extends State<SearchPopup> {
       children: options.map((opt) {
         final selectedFlag = opt == selected;
         return ChoiceChip(
+          checkmarkColor: Colors.greenAccent,
           materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
           label: Text(
             opt,
@@ -111,6 +113,7 @@ class _SearchPopupState extends State<SearchPopup> {
   @override
   Widget build(BuildContext context) {
     return Dialog(
+      backgroundColor: Colors.white,
       insetPadding: const EdgeInsets.symmetric(horizontal: 8, vertical: 10),
       child: SizedBox(
         width: double.infinity,
@@ -194,6 +197,7 @@ class _SearchPopupState extends State<SearchPopup> {
                                       showCustomSnackBar(
                                         context,
                                         'Không nhận được từ khóa tìm kiếm',
+                                        isError: false
                                       );
                                     }
                                   }
@@ -205,10 +209,19 @@ class _SearchPopupState extends State<SearchPopup> {
                                 ),
                               ),
                               SizedBox(width: 8),
-                              Icon(
-                                Icons.camera_alt_rounded,
-                                size: 20,
-                                color: Colors.grey,
+                              GestureDetector(
+                                onTap: () async{
+                                  await Navigator.pushNamed(
+                                    context,
+                                    AppRoutes.imageSearchPage,
+                                  );
+                                  Navigator.of(context).pop();
+                                },
+                                child: Icon(
+                                  Icons.camera_alt_rounded,
+                                  size: 20,
+                                  color: Colors.grey,
+                                ),
                               ),
                               SizedBox(width: 6),
                             ],

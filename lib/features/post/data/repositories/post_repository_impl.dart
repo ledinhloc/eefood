@@ -1,25 +1,55 @@
+import 'dart:io';
 
 import 'package:dio/dio.dart';
 import 'package:eefood/features/post/domain/repositories/post_repository.dart';
-
+import 'package:http_parser/http_parser.dart';
 import '../models/post_model.dart';
 
-class PostRepositoryImpl extends PostRepository{
+class PostRepositoryImpl extends PostRepository {
   final Dio dio;
   PostRepositoryImpl({required this.dio});
 
   @override
+  Future<String> getKeywordFromImage(File imageFile) async {
+    final String fileName = imageFile.path.split('/').last;
+
+    final formData = FormData.fromMap({
+      'image': await MultipartFile.fromFile(
+        imageFile.path,
+        filename: fileName,
+        contentType: MediaType('image', 'jpeg'),
+      ),
+    });
+
+    final response = await dio.post(
+      '/v1/posts/get-keyword',
+      data: formData,
+      options: Options(
+        contentType: 'multipart/form-data',
+        sendTimeout: Duration(seconds: 10),
+        receiveTimeout: Duration(seconds: 10),
+      ),
+    );
+
+    if (response.statusCode == 200) {
+      return response.data['data'] as String;
+    } else {
+      throw Exception('Failed to get keyword from image');
+    }
+  }
+
+  @override
   Future<List<PostModel>> getAllPosts(
-      int page,
-      int size, {
-        String? keyword,
-        int? userId,
-        String? region,
-        String? difficulty,
-        String? category,
-        int? maxCookTime,
-        String? sortBy,
-      }) async {
+    int page,
+    int size, {
+    String? keyword,
+    int? userId,
+    String? region,
+    String? difficulty,
+    String? category,
+    int? maxCookTime,
+    String? sortBy,
+  }) async {
     final response = await dio.get(
       '/v1/posts',
       queryParameters: {
@@ -45,7 +75,7 @@ class PostRepositoryImpl extends PostRepository{
   }
 
   @override
-  Future<PostModel> getPostById(int id) async{
+  Future<PostModel> getPostById(int id) async {
     final response = await dio.get('/v1/posts/$id');
     return PostModel.fromJson(response.data['data']);
   }
