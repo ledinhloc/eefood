@@ -8,6 +8,12 @@ import '../repositories/auth_repository.dart';
   Use case auth
 */
 
+class LoginGoogle{
+  final AuthRepository repository;
+  LoginGoogle(this.repository);
+  Future<User> call(String idToken) => repository.loginWithGoogle(idToken);
+}
+
 /* use case: Login*/
 class Login {
   final AuthRepository repository;

@@ -12,5 +12,6 @@ class AppKeys{
   static const webDeloyUrl = "https://eefood-preview-card.vercel.app";
   static const hostDeloy = "eefood-preview-card.vercel.app";
   static const recentKey = 'recent_search_keywords';
+  static const webClientId = String.fromEnvironment('WEB_CLIENT_ID');
   //
 }

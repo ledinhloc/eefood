@@ -1,11 +1,11 @@
 import 'package:eefood/app_routes.dart';
+import 'package:eefood/core/widgets/loading_overlay.dart';
 import 'package:eefood/core/widgets/snack_bar.dart';
-import 'package:eefood/features/auth/presentation/screens/forgot_password_page.dart';
-import 'package:eefood/features/auth/presentation/screens/register_page.dart';
+import 'package:eefood/features/auth/domain/usecases/google_service.dart';
 import 'package:eefood/features/auth/presentation/widgets/custom_text_field.dart';
-import 'package:eefood/main.dart';
 import 'package:flutter/material.dart';
 import 'package:lottie/lottie.dart';
+
 import '../../../../core/di/injection.dart';
 import '../../domain/entities/user.dart';
 import '../../domain/usecases/auth_usecases.dart';
@@ -14,6 +14,7 @@ import '../widgets/auth_button.dart';
 class LoginPage extends StatelessWidget {
   LoginPage({super.key});
 
+  final LoginGoogle _loginGoole = getIt<LoginGoogle>();
   final Login _login = getIt<Login>();
   final emailController = TextEditingController(text: 'ledinhloc7@gmail.com');
   final passController = TextEditingController(text: '12345678');
@@ -128,7 +129,10 @@ class LoginPage extends StatelessWidget {
                       ),
                       TextButton(
                         onPressed: () {
-                          Navigator.pushNamed(context, AppRoutes.forgotPassword);
+                          Navigator.pushNamed(
+                            context,
+                            AppRoutes.forgotPassword,
+                          );
                         },
                         child: const Text(
                           'Forgot password',
@@ -150,21 +154,32 @@ class LoginPage extends StatelessWidget {
                     text: 'Sign in',
                     onPressed: () async {
                       try {
+                        LoadingOverlay().show();
                         User user = await _login(
                           emailController.text,
                           passController.text,
                         );
 
                         // Kiểm tra nếu user chưa có sở thích nào thì chuyển đến onBoardingFlow
-                        if(user.allergies!.isEmpty  && user.eatingPreferences!.isEmpty) {
-                          Navigator.pushReplacementNamed(context, AppRoutes.onBoardingFlow);
+                        if (user.allergies!.isEmpty &&
+                            user.eatingPreferences!.isEmpty) {
+                          Navigator.pushReplacementNamed(
+                            context,
+                            AppRoutes.onBoardingFlow,
+                          );
                           return;
                         }
                         print(user);
                         Navigator.pushNamed(context, AppRoutes.main);
                       } catch (e) {
-                        showCustomSnackBar(context, 'Login failed: $e', isError: true);
+                        showCustomSnackBar(
+                          context,
+                          'Login failed: $e',
+                          isError: true,
+                        );
                         print(e);
+                      } finally {
+                        LoadingOverlay().hide();
                       }
                     },
                   ),
@@ -190,7 +205,10 @@ class LoginPage extends StatelessWidget {
                             ),
                             InkWell(
                               onTap: () {
-                                Navigator.pushNamed(context, AppRoutes.register);
+                                Navigator.pushNamed(
+                                  context,
+                                  AppRoutes.register,
+                                );
                               },
                               child: const Text(
                                 'Sign up',
@@ -216,7 +234,32 @@ class LoginPage extends StatelessWidget {
                     text: 'Continue with Google',
                     iconImage: const AssetImage('assets/images/google.png'),
                     iconSize: 20,
-                    onPressed: () {},
+                    onPressed: () async {
+                      try {
+                        LoadingOverlay().show();
+                        final idToken =
+                            await GoogleAuthService.signInWithGoogle();
+                        if (idToken == null) {
+                          showCustomSnackBar(context, "Bạn đã hủy đăng nhập");
+                          return;
+                        }
+                        User user = await _loginGoole(idToken);
+                        if (user.allergies!.isEmpty &&
+                            user.eatingPreferences!.isEmpty) {
+                          Navigator.pushReplacementNamed(
+                            context,
+                            AppRoutes.onBoardingFlow,
+                          );
+                          return;
+                        }
+                        print(user);
+                        Navigator.pushNamed(context, AppRoutes.main);
+                      } catch (err) {
+                        print('Failed: $err');
+                      } finally {
+                        LoadingOverlay().hide();
+                      }
+                    },
                     color: Colors.white,
                     textColor: Colors.black,
                   ),
