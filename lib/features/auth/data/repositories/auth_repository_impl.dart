@@ -4,6 +4,8 @@ import 'package:eefood/features/auth/data/models/otp_model.dart';
 import 'package:eefood/features/auth/data/models/register_response_model.dart';
 import 'package:eefood/features/auth/data/models/result_model.dart';
 import 'package:eefood/features/auth/data/models/user_preference_model.dart';
+import 'package:eefood/features/auth/domain/usecases/google_service.dart';
+import 'package:flutter/widgets.dart';
 import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../../../core/di/injection.dart';
@@ -18,6 +20,25 @@ class AuthRepositoryImpl implements AuthRepository {
   User? _userCache ;
 
   AuthRepositoryImpl({required this.dio, required this.sharedPreferences});
+
+  @override
+  Future<User> loginWithGoogle(String idToken) async {
+    try {
+      debugPrint("TOKEN ID: $idToken");
+      final response = await dio.post(
+        '/v1/auth/google-login',
+        data: {'idToken': idToken},
+        options: Options(contentType: 'application/json', extra: {'requireAuth': false}),
+      );
+      final userModel = UserModel.fromJson(response.data['data']);
+      await _saveUser(userModel);
+      return userModel.toEntity();
+    }
+    catch (e) {
+      print(e);
+      throw Exception('Login failed: $e');
+    }
+  }
 
   @override
   Future<User> login(String email, String password) async {
@@ -49,6 +70,7 @@ class AuthRepositoryImpl implements AuthRepository {
       // }
       await _clearUser();
       await getIt.reset();
+      await GoogleAuthService.signOut();
       await setupDependencies();
     }
     catch (e) {
