@@ -24,7 +24,7 @@ class FeedScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return MultiBlocProvider(
       providers: [
-        BlocProvider.value(value: getIt<PostListCubit>()),
+        BlocProvider.value(value: getIt<PostListCubit>()..fetchPosts()),
         BlocProvider.value(value: getIt<NotificationCubit>()),
       ],
       child: const FeedView(),
