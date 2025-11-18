@@ -1,3 +1,4 @@
+import 'package:badges/badges.dart' as badges;
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:eefood/app_routes.dart';
 import 'package:eefood/core/di/injection.dart';
@@ -7,14 +8,16 @@ import 'package:eefood/features/auth/domain/usecases/auth_usecases.dart';
 import 'package:eefood/features/noti/presentation/provider/notification_cubit.dart';
 import 'package:eefood/features/noti/presentation/provider/notification_state.dart';
 import 'package:eefood/features/noti/presentation/screens/notification_screen.dart';
+import 'package:eefood/features/post/presentation/provider/story_list_cubit.dart';
 import 'package:eefood/features/post/presentation/widgets/post/reaction_popup.dart';
+import 'package:eefood/features/post/presentation/widgets/story/story_section.dart';
 import 'package:eefood/features/recipe/presentation/screens/recipe_detail_page.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+
 import '../../data/models/reaction_type.dart';
 import '../provider/post_list_cubit.dart';
 import '../widgets/post/post_card.dart';
-import 'package:badges/badges.dart' as badges;
 import '../widgets/post/search_popup.dart';
 
 class FeedScreen extends StatelessWidget {
@@ -26,6 +29,7 @@ class FeedScreen extends StatelessWidget {
       providers: [
         BlocProvider.value(value: getIt<PostListCubit>()),
         BlocProvider.value(value: getIt<NotificationCubit>()),
+        BlocProvider.value(value: getIt<StoryCubit>()),
       ],
       child: const FeedView(),
     );
@@ -114,8 +118,12 @@ class _FeedViewState extends State<FeedView> {
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      context.read<PostListCubit>().fetchPosts();
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      final user = await _getCurrentUser();
+      if (user != null) {
+        await context.read<StoryCubit>().loadStories(user.id);
+      }
+      await context.read<PostListCubit>().fetchPosts();
     });
     final cubit = context.read<NotificationCubit>();
     cubit.fetchUnreadCount();
@@ -243,11 +251,29 @@ class _FeedViewState extends State<FeedView> {
               }
 
               return RefreshIndicator(
-                onRefresh: () async => context.read<PostListCubit>().fetchPosts(),
+                onRefresh: () async =>
+                    context.read<PostListCubit>().fetchPosts(),
                 child: ListView.builder(
                   controller: _scrollController,
                   itemCount: state.posts.length + (state.isLoading ? 1 : 0),
                   itemBuilder: (context, index) {
+                    if (index == 0) {
+                      return BlocBuilder<StoryCubit, StoryState>(
+                        builder: (context, storyState) {
+                          if (storyState.isLoading) {
+                            return const SizedBox(
+                              height: 150,
+                              child: Center(child: CircularProgressIndicator()),
+                            );
+                          }
+                          return StorySection(
+                            onCreateStory: () {},
+                            userStories: storyState.stories,
+                            currentUserId: user?.id ?? 0,
+                          );
+                        },
+                      );
+                    }
                     if (index == state.posts.length) {
                       return const Padding(
                         padding: EdgeInsets.all(16),
