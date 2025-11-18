@@ -79,6 +79,7 @@ Future<void> setupDependencies() async {
   getIt.registerLazySingleton(() => FileUploader(dio: getIt<DioClient>().dio));
 
   // Register UseCases
+  getIt.registerLazySingleton(() => LoginGoogle(getIt<AuthRepository>()));
   getIt.registerLazySingleton(() => Login(getIt<AuthRepository>()));
   getIt.registerLazySingleton(() => Logout(getIt<AuthRepository>()));
   getIt.registerLazySingleton(() => GetCurrentUser(getIt<AuthRepository>()));

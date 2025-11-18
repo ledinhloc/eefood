@@ -4,7 +4,8 @@ import 'package:eefood/features/auth/data/models/result_model.dart';
 
 import '../entities/user.dart';
 
-abstract class AuthRepository {
+abstract class AuthRepository { 
+  Future<User> loginWithGoogle(String idToken);
   Future<User> login(String email, String password);
   Future<void> logout();
   Future<User?> getCurrentUser();
