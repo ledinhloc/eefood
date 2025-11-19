@@ -68,6 +68,9 @@ dependencies:
   photo_manager: ^3.7.1
   image_gallery_saver_plus: ^4.0.1
   google_sign_in: ^6.2.1
+  pro_image_editor: ^11.3.0
+  path_provider: ^2.1.5
+  video_editor: ^3.0.0
 dev_dependencies:
   flutter_test:
     sdk: flutter

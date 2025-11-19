@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 class CreateStoryCard extends StatelessWidget {
   final VoidCallback onTap;
 
-  const CreateStoryCard({Key? key, required this.onTap}) : super(key: key);
+  CreateStoryCard({Key? key, required this.onTap}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {

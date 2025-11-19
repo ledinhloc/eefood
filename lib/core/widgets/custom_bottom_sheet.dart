@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 
 /// Hàm helper mở CustomBottomSheet
-void showCustomBottomSheet(
+Future<void> showCustomBottomSheet(
   BuildContext context,
   List<BottomSheetOption> options,
 ) {
-  showModalBottomSheet(
+  return showModalBottomSheet(
     context: context,
     backgroundColor: Colors.transparent,
     builder: (_) => CustomBottomSheet(options: options),
@@ -55,7 +55,10 @@ class CustomBottomSheet extends StatelessWidget {
             ...options.map(
               (opt) => ListTile(
                 leading: opt.icon,
-                title: Text(opt.title, style: const TextStyle(fontSize: 16, color: Colors.black)),
+                title: Text(
+                  opt.title,
+                  style: const TextStyle(fontSize: 16, color: Colors.black),
+                ),
                 onTap: () {
                   Navigator.pop(context);
                   opt.onTap();

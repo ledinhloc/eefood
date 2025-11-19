@@ -25,17 +25,28 @@ class StoryModel {
     this.isViewed,
   });
 
-  StoryModel copyWith({bool? isViewed}) {
+  StoryModel copyWith({
+    int? id,
+    int? userId,
+    String? type,
+    String? contentUrl,
+    DateTime? createdAt,
+    DateTime? expiredAt,
+    String? username,
+    String? email,
+    String? avatarUrl,
+    bool? isViewed,
+  }) {
     return StoryModel(
-      id: id,
-      userId: userId,
-      type: type,
-      contentUrl: contentUrl,
-      createdAt: createdAt,
-      expiredAt: expiredAt,
-      username: username,
-      email: email,
-      avatarUrl: avatarUrl,
+      id: id ?? this.id,
+      userId: userId ?? this.userId,
+      type: type ?? this.type,
+      contentUrl: contentUrl ?? this.contentUrl,
+      createdAt: createdAt ?? this.createdAt,
+      expiredAt: expiredAt ?? this.expiredAt,
+      username: username ?? this.username,
+      email: email ?? this.email,
+      avatarUrl: avatarUrl ?? this.avatarUrl,
       isViewed: isViewed ?? this.isViewed,
     );
   }

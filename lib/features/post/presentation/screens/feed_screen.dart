@@ -1,9 +1,13 @@
+import 'dart:io';
+
 import 'package:badges/badges.dart' as badges;
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:eefood/app_routes.dart';
 import 'package:eefood/core/di/injection.dart';
 import 'package:eefood/core/utils/greeting_helper.dart';
+import 'package:eefood/core/widgets/custom_bottom_sheet.dart';
 import 'package:eefood/core/widgets/post_skeletion_loading.dart';
+import 'package:eefood/core/widgets/snack_bar.dart';
 import 'package:eefood/features/auth/domain/usecases/auth_usecases.dart';
 import 'package:eefood/features/noti/presentation/provider/notification_cubit.dart';
 import 'package:eefood/features/noti/presentation/provider/notification_state.dart';
@@ -14,6 +18,7 @@ import 'package:eefood/features/post/presentation/widgets/story/story_section.da
 import 'package:eefood/features/recipe/presentation/screens/recipe_detail_page.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_spinkit/flutter_spinkit.dart';
 
 import '../../data/models/reaction_type.dart';
 import '../provider/post_list_cubit.dart';
@@ -136,6 +141,51 @@ class _FeedViewState extends State<FeedView> {
     });
   }
 
+  Future<void> handleCreateStory(BuildContext context, int? userId) async {
+    final storyCubit = context.read<StoryCubit>();
+    final result = await Navigator.pushNamed(
+      context,
+      AppRoutes.galleryPickerPage,
+      arguments: {
+        'userId': userId,
+        'storyCubit': storyCubit
+      }
+    );
+
+    if (result == null) return;
+
+    final files = result is List ? result : [result];
+    if (files.isEmpty) return;
+
+    try {
+      for (final file in files) {
+        if (file is! File) continue;
+        final isImage =
+            file.path.toLowerCase().endsWith('.jpg') ||
+            file.path.toLowerCase().endsWith('.jpeg') ||
+            file.path.toLowerCase().endsWith('.png') ||
+            file.path.toLowerCase().endsWith('.heic');
+
+        await storyCubit.createStory(
+          file,
+          userId: userId,
+          type: isImage ? 'image' : 'video',
+        );
+      }
+
+      // Reload danh sách story
+      await storyCubit.loadStories(userId ?? 0);
+
+      if (context.mounted) {
+        showCustomSnackBar(context, "Đã tạo story thành công!");
+      }
+    } catch (e) {
+      if (context.mounted) {
+        showCustomSnackBar(context, "Lỗi khi tạo story", isError: true);
+      }
+    }
+  }
+
   @override
   void dispose() {
     hideReactionPopup();
@@ -253,49 +303,57 @@ class _FeedViewState extends State<FeedView> {
               return RefreshIndicator(
                 onRefresh: () async =>
                     context.read<PostListCubit>().fetchPosts(),
-                child: ListView.builder(
+                child: CustomScrollView(
                   controller: _scrollController,
-                  itemCount: state.posts.length + (state.isLoading ? 1 : 0),
-                  itemBuilder: (context, index) {
-                    if (index == 0) {
-                      return BlocBuilder<StoryCubit, StoryState>(
+                  slivers: [
+                    // ===== STORY SECTION ======
+                    SliverToBoxAdapter(
+                      child: BlocBuilder<StoryCubit, StoryState>(
                         builder: (context, storyState) {
-                          if (storyState.isLoading) {
-                            return const SizedBox(
-                              height: 150,
-                              child: Center(child: CircularProgressIndicator()),
-                            );
-                          }
                           return StorySection(
-                            onCreateStory: () {},
+                            onCreateStory: () async {
+                              final user = await _getCurrentUser();
+                              await handleCreateStory(context, user?.id);
+                            },
                             userStories: storyState.stories,
                             currentUserId: user?.id ?? 0,
+                            isCreating: storyState.isCreating,
                           );
                         },
-                      );
-                    }
-                    if (index == state.posts.length) {
-                      return const Padding(
-                        padding: EdgeInsets.all(16),
-                        child: Center(child: CircularProgressIndicator()),
-                      );
-                    }
-
-                    final post = state.posts[index];
-                    return PostCard(
-                      userId: post.userId,
-                      post: post,
-                      onTap: () => Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (_) =>
-                              RecipeDetailPage(recipeId: post.recipeId!),
-                        ),
                       ),
-                      onShowReactions: (offset, callback) =>
-                          showReactionPopup(context, offset, callback),
-                    );
-                  },
+                    ),
+
+                    // ===== POSTS LIST ======
+                    SliverList(
+                      delegate: SliverChildBuilderDelegate((context, index) {
+                        if (index == state.posts.length) {
+                          return state.isLoading
+                              ? const Padding(
+                                  padding: EdgeInsets.all(16),
+                                  child: Center(
+                                    child: CircularProgressIndicator(),
+                                  ),
+                                )
+                              : const SizedBox();
+                        }
+
+                        final post = state.posts[index];
+                        return PostCard(
+                          userId: post.userId,
+                          post: post,
+                          onTap: () => Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) =>
+                                  RecipeDetailPage(recipeId: post.recipeId!),
+                            ),
+                          ),
+                          onShowReactions: (offset, callback) =>
+                              showReactionPopup(context, offset, callback),
+                        );
+                      }, childCount: state.posts.length + 1),
+                    ),
+                  ],
                 ),
               );
             },
