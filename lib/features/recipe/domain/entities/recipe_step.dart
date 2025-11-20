@@ -12,6 +12,6 @@ class RecipeStep {
     required this.instruction,
     this.imageUrl,
     this.videoUrl,
-    this.stepTime,
+    this.stepTime, required List<String> imageUrls, required List<String> videoUrls,
   });
 }
