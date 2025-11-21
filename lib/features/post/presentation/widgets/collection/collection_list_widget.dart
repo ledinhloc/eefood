@@ -101,6 +101,7 @@ class _CollectionItem extends StatelessWidget {
                     width: double.infinity,
                     errorBuilder: (_, __, ___) => Container(
                       height: 80,
+                      width: double.infinity,
                       color: Colors.grey[300],
                       child: const Icon(Icons.image),
                     ),
@@ -108,6 +109,7 @@ class _CollectionItem extends StatelessWidget {
                 else
                   Container(
                     height: 80,
+                    width: double.infinity,
                     color: Colors.grey[300],
                     child: const Center(child: Icon(Icons.image)),
                   ),

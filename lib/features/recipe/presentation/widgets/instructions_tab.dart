@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 
+import '../../data/models/recipe_detail_model.dart';
+
 class InstructionsTab extends StatelessWidget {
-  final dynamic recipe;
+  final RecipeDetailModel recipe;
   const InstructionsTab({super.key, required this.recipe});
 
   @override
