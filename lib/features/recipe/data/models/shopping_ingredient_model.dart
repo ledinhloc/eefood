@@ -3,7 +3,7 @@ class ShoppingIngredientModel {
   final int? ingredientId;
   final String? ingredientName;
   final String? image;
-  final int? quantity;
+  final double? quantity;
   final String? unit;
   final bool purchased;
   final List<int>? shoppingIngredientIds;
@@ -29,7 +29,7 @@ class ShoppingIngredientModel {
       image: json['image'] as String?,
       quantity: json['quantity'] == null
           ? null
-          : (json['quantity'] as num).toInt(),
+          : (json['quantity'] as num).toDouble(),
       unit: json['unit'] as String?,
       purchased: json['purchased'] as bool? ?? false,
       shoppingIngredientIds: (json['shoppingIngredientIds'] as List<dynamic>?)
@@ -54,7 +54,7 @@ class ShoppingIngredientModel {
     int? ingredientId,
     String? ingredientName,
     String? image,
-    int? quantity,
+    double? quantity,
     String? unit,
     bool? purchased,
     List<int>? shoppingIngredientIds,

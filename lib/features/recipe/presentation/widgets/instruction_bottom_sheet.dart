@@ -28,11 +28,10 @@ class _InstructionBottomSheetState extends State<InstructionBottomSheet> {
   final TextEditingController _textController = TextEditingController();
   final TextEditingController _stepTimeController = TextEditingController();
   final _fileUpload = getIt<FileUploader>();
-  File? _image;
-  File? _video;
-  String? urlImage;
-  String? urlVideo;
-
+  List<File> _images = [];
+  List<File> _videos = [];
+  List<String> urlImages = [];
+  List<String> urlVideos = [];
   @override
   void initState() {
     super.initState();
@@ -42,12 +41,22 @@ class _InstructionBottomSheetState extends State<InstructionBottomSheet> {
       if (step.stepTime != null) {
         _stepTimeController.text = step.stepTime.toString();
       }
-      if (step.imageUrl != null) {
-        _image = File(step.imageUrl!);
+
+      if (step.imageUrls != null && step.imageUrls!.isNotEmpty) {
+        urlImages = List.from(step.imageUrls!);
+        _images = step.imageUrls!.map((url) => File(url)).toList();
       }
-      if (step.videoUrl != null) {
-        _video = File(step.videoUrl!);
+
+      if (step.videoUrls != null && step.videoUrls!.isNotEmpty) {
+        urlVideos = List.from(step.videoUrls!);
+        _videos = step.videoUrls!.map((url) => File(url)).toList();
       }
+      // if (step.imageUrl != null) {
+      //   _image = File(step.imageUrl!);
+      // }
+      // if (step.videoUrl != null) {
+      //   _video = File(step.videoUrl!);
+      // }
     }
   }
 
@@ -57,8 +66,10 @@ class _InstructionBottomSheetState extends State<InstructionBottomSheet> {
       final url = await _fileUpload.uploadFile(image);
       if (url.isNotEmpty) {
         setState(() {
-          urlImage = url;
-          _image = image;
+          if(!urlImages.contains(url)){
+            urlImages.add(url);
+            _images.add(image);
+          }
         });
       }
     }
@@ -70,22 +81,34 @@ class _InstructionBottomSheetState extends State<InstructionBottomSheet> {
       final url = await _fileUpload.uploadFile(video);
       if (url.isNotEmpty) {
         setState(() {
-          urlVideo = url;
-          _video = video;
+          if(!urlVideos.contains(url)){
+            urlVideos.add(url);
+            _videos.add(video);
+          }
         });
       }
     }
   }
 
-  void _removeImage() {
+  void _removeImage(int index) {
     setState(() {
-      _image = null;
+      if(index < _images.length){
+        _images.removeAt(index);
+      }
+      if(index < urlImages.length){
+        urlImages.removeAt(index);
+      }
     });
   }
 
-  void _removeVideo() {
+  void _removeVideo(int index) {
     setState(() {
-      _video = null;
+      if(index < _videos.length){
+        _videos.removeAt(index);
+      }
+      if(index < urlVideos.length){
+        urlVideos.removeAt(index);
+      }
     });
   }
 
@@ -176,67 +199,74 @@ class _InstructionBottomSheetState extends State<InstructionBottomSheet> {
               ),
             ],
           ),
-          if (_image != null) ...[
-            const SizedBox(height: 16),
-            Stack(
-              children: [
-                Container(
-                  width: 100,
-                  height: 100,
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(8),
-                    image: DecorationImage(
-                      image: FileImage(_image!),
-                      fit: BoxFit.cover,
+
+          Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            children: List.generate(_images.length, (index) {
+              return Stack(
+                children: [
+                  Container(
+                    width: 100,
+                    height: 100,
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(8),
+                      image: DecorationImage(
+                        image: FileImage(_images[index]),
+                        fit: BoxFit.cover,
+                      ),
                     ),
                   ),
-                ),
-                Positioned(
-                  top: 0,
-                  right: 0,
-                  child: IconButton(
-                    icon: const Icon(
-                      Icons.close,
-                      size: 16,
-                      color: Colors.white,
-                    ),
-                    onPressed: _removeImage,
-                  ),
-                ),
-              ],
-            ),
-          ],
-          if (_video != null) ...[
-            const SizedBox(height: 16),
-            Stack(
-              children: [
-                Container(
-                  width: double.infinity,
-                  height: 150,
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(8),
-                    image: DecorationImage(
-                      image: FileImage(_video!),
-                      fit: BoxFit.cover,
+                  Positioned(
+                    top: 0,
+                    right: 0,
+                    child: IconButton(
+                      icon: const Icon(
+                        Icons.close,
+                        size: 16,
+                        color: Colors.white,
+                      ),
+                      onPressed: () => _removeImage(index),
                     ),
                   ),
-                  child: const Icon(
-                    Icons.play_circle_fill,
-                    size: 50,
-                    color: Colors.white70,
+                ],
+              );
+            }),
+          ),
+
+          Column(
+            children: List.generate(_videos.length, (index){
+              return Stack(
+                children: [
+                  Container(
+                    width: double.infinity,
+                    height: 150,
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(8),
+                      image: DecorationImage(
+                        image: FileImage(_videos[index]),
+                        fit: BoxFit.cover,
+                      ),
+                    ),
+                    child: const Icon(
+                      Icons.play_circle_fill,
+                      size: 50,
+                      color: Colors.white70,
+                    ),
                   ),
-                ),
-                Positioned(
-                  top: 0,
-                  right: 0,
-                  child: IconButton(
-                    icon: const Icon(Icons.close, color: Colors.white),
-                    onPressed: _removeVideo,
+                  Positioned(
+                    top: 0,
+                    right: 0,
+                    child: IconButton(
+                      icon: const Icon(Icons.close, color: Colors.white),
+                      onPressed: () => _removeVideo(index),
+                    ),
                   ),
-                ),
-              ],
-            ),
-          ],
+                ],
+              );
+            }),
+          ),
+
           const SizedBox(height: 24),
           Row(
             mainAxisAlignment: MainAxisAlignment.end,
@@ -253,8 +283,8 @@ class _InstructionBottomSheetState extends State<InstructionBottomSheet> {
                       RecipeStepModel(
                         stepNumber: widget.editingInstruction!.stepNumber,
                         instruction: _textController.text,
-                        imageUrl: urlImage,
-                        videoUrl: urlVideo,
+                        imageUrls: urlVideos.isNotEmpty ? urlImages : null,
+                        videoUrls: urlVideos.isNotEmpty ? urlVideos : null,
                         stepTime: int.tryParse(_stepTimeController.text),
                       ),
                     );

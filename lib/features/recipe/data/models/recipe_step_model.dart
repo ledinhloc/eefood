@@ -4,16 +4,17 @@ class RecipeStepModel {
   final int? id;
   final int stepNumber;
   final String? instruction;
-  final String? imageUrl;
-  final String? videoUrl;
+  final List<String>? imageUrls;
+  final List<String>? videoUrls;
   final int? stepTime;
+
   RecipeStepModel({
     this.id,
     required this.stepNumber,
     this.instruction,
-    this.imageUrl,
-    this.videoUrl,
-    this.stepTime
+    this.imageUrls,
+    this.videoUrls,
+    this.stepTime,
   });
 
   factory RecipeStepModel.fromJson(Map<String, dynamic> json) {
@@ -21,43 +22,48 @@ class RecipeStepModel {
       id: json['id'],
       stepNumber: json['stepNumber'],
       instruction: json['instruction'],
-      imageUrl: json['imageUrl'],
-      videoUrl: json['videoUrl'],
-      stepTime: json['stepTime']
+      imageUrls: json['imageUrls'] != null
+          ? List<String>.from(json['imageUrls'])
+          : [],
+      videoUrls: json['videoUrls'] != null
+          ? List<String>.from(json['videoUrls'])
+          : [],
+      stepTime: json['stepTime'],
     );
   }
 
-   Map<String, dynamic> toJson() => {
-        'id': id,
-        'stepNumber': stepNumber,
-        'instruction': instruction,
-        'imageUrl': imageUrl,
-        'videoUrl': videoUrl,
-        'stepTime': stepTime,
-      };
+  Map<String, dynamic> toJson() => {
+    'id': id,
+    'stepNumber': stepNumber,
+    'instruction': instruction,
+    'imageUrls': imageUrls,
+    'videoUrls': videoUrls,
+    'stepTime': stepTime,
+  };
 
   RecipeStep toEntity() => RecipeStep(
-    id: id!, 
-    stepNumber: stepNumber, 
-    instruction: instruction!,
-    imageUrl: imageUrl,
-    videoUrl: videoUrl,
-    stepTime: stepTime);
+    id: id ?? 0,
+    stepNumber: stepNumber,
+    instruction: instruction ?? "",
+    imageUrls: imageUrls ?? [],
+    videoUrls: videoUrls ?? [],
+    stepTime: stepTime,
+  );
 
   RecipeStepModel copyWith({
     int? id,
     int? stepNumber,
     String? instruction,
-    String? imageUrl,
-    String? videoUrl,
+    List<String>? imageUrls,
+    List<String>? videoUrls,
     int? stepTime,
   }) {
     return RecipeStepModel(
       id: id ?? this.id,
       stepNumber: stepNumber ?? this.stepNumber,
       instruction: instruction ?? this.instruction,
-      imageUrl: imageUrl ?? this.imageUrl,
-      videoUrl: videoUrl ?? this.videoUrl,
+      imageUrls: imageUrls ?? this.imageUrls,
+      videoUrls: videoUrls ?? this.videoUrls,
       stepTime: stepTime ?? this.stepTime,
     );
   }

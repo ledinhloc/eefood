@@ -1,8 +1,11 @@
+import 'package:eefood/features/recipe/data/models/recipe_model.dart';
 import 'package:flutter/material.dart';
 import 'package:video_player/video_player.dart';
 
+import '../../data/models/recipe_detail_model.dart';
+
 class StepsTab extends StatelessWidget {
-  final dynamic recipe;
+  final RecipeDetailModel recipe;
   const StepsTab({super.key, required this.recipe});
 
   @override
@@ -44,24 +47,40 @@ class StepsTab extends StatelessWidget {
                     style: const TextStyle(fontSize: 13, color: Colors.grey),
                   ),
 
-                // Hình minh họa
-                if (step.imageUrl != null && step.imageUrl!.isNotEmpty)
+                //Hinh minh hoa
+                if (step.imageUrls != null && step.imageUrls!.isNotEmpty)
                   Padding(
                     padding: const EdgeInsets.only(top: 10),
-                    child: ClipRRect(
-                      borderRadius: BorderRadius.circular(8),
-                      child: Image.network(
-                        step.imageUrl!,
-                        fit: BoxFit.cover,
-                        errorBuilder: (context, error, stackTrace) {
-                          return Container(
-                            height: 150,
-                            color: Colors.grey[200],
-                            child: const Center(
-                              child: Icon(
-                                Icons.broken_image,
-                                color: Colors.grey,
-                                size: 48,
+                    child: SizedBox(
+                      height: 200,
+                      child: ListView.builder(
+                        scrollDirection: Axis.horizontal,
+                        itemCount: step.imageUrls!.length,
+                        itemBuilder: (context, index) {
+                          return Padding(
+                            padding: const EdgeInsets.only(right: 8),
+                            child: ClipRRect(
+                              child: ClipRRect(
+                                borderRadius: BorderRadius.circular(8),
+                                child: Image.network(
+                                  step.imageUrls![index],
+                                  fit: BoxFit.cover,
+                                  width: 200,
+                                  errorBuilder: (context, error, stackTrace) {
+                                    return Container(
+                                      height: 150,
+                                      width: 200,
+                                      color: Colors.grey[200],
+                                      child: const Center(
+                                        child: Icon(
+                                          Icons.broken_image,
+                                          color: Colors.grey,
+                                          size: 48,
+                                        ),
+                                      ),
+                                    );
+                                  },
+                                ),
                               ),
                             ),
                           );
@@ -69,10 +88,26 @@ class StepsTab extends StatelessWidget {
                       ),
                     ),
                   ),
-
-                // Video hướng dẫn (nếu có)
-                if (step.videoUrl != null && step.videoUrl!.isNotEmpty)
-                  _StepVideoPlayer(videoUrl: step.videoUrl!),
+                //video huong dan
+                if (step.videoUrls != null && step.videoUrls!.isNotEmpty)
+                  Padding(
+                    padding: const EdgeInsets.only(top: 10),
+                    child: SizedBox(
+                      height: 200,
+                      child: ListView.builder(
+                        scrollDirection: Axis.horizontal,
+                        itemCount: step.videoUrls!.length,
+                        itemBuilder: (context, index) {
+                          return Padding(
+                            padding: const EdgeInsets.only(right: 8),
+                            child: _StepVideoPlayer(
+                              videoUrl: step.videoUrls![index],
+                            ),
+                          );
+                        },
+                      ),
+                    ),
+                  ),
               ],
             ),
           ),

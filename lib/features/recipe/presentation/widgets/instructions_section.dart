@@ -139,95 +139,120 @@ class _InstructionsSectionState extends State<InstructionsSection> {
               ),
 
               // --- Image Section ---
-              if (step.imageUrl != null) ...[
+              if (step.imageUrls != null && step.imageUrls!.isNotEmpty) ...[
                 const SizedBox(height: 12),
-                GestureDetector(
-                  onTap: () => _openImageFullScreen(step.imageUrl!),
-                  child: Stack(
-                    children: [
-                      ClipRRect(
-                        borderRadius: BorderRadius.circular(8),
-                        child: Image.network(
-                          step.imageUrl!,
-                          width: double.infinity,
-                          height: 180,
-                          fit: BoxFit.cover,
-                        ),
-                      ),
-                      Positioned(
-                        top: 8,
-                        right: 8,
-                        child: Container(
-                          decoration: BoxDecoration(
-                            color: Colors.black54,
-                            shape: BoxShape.circle,
-                          ),
-                          child: IconButton(
-                            icon: const Icon(
-                              Icons.close,
-                              size: 20,
-                              color: Colors.white,
+
+                Column(
+                  children: step.imageUrls!.asMap().entries.map((entry) {
+                    final img = entry.value;
+                    final imgIndex = entry.key;
+
+                    return Padding(
+                      padding: const EdgeInsets.only(bottom: 12),
+                      child: GestureDetector(
+                        onTap: () => _openImageFullScreen(img),
+                        child: Stack(
+                          children: [
+                            ClipRRect(
+                              borderRadius: BorderRadius.circular(8),
+                              child: Image.network(
+                                img,
+                                width: double.infinity,
+                                height: 180,
+                                fit: BoxFit.cover,
+                              ),
                             ),
-                            onPressed: () {
-                              cubit.updateStep(
-                                index,
-                                step.copyWith(imageUrl: null),
-                              );
-                            },
-                          ),
+                            Positioned(
+                              top: 8,
+                              right: 8,
+                              child: Container(
+                                decoration: BoxDecoration(
+                                  color: Colors.black54,
+                                  shape: BoxShape.circle,
+                                ),
+                                child: IconButton(
+                                  icon: const Icon(Icons.close, size: 20, color: Colors.white),
+                                  onPressed: () {
+                                    final newList = List<String>.from(step.imageUrls!);
+                                    newList.removeAt(imgIndex);
+
+                                    cubit.updateStep(
+                                      index,
+                                      step.copyWith(imageUrls: newList),
+                                    );
+                                  },
+                                ),
+                              ),
+                            ),
+                          ],
                         ),
                       ),
-                    ],
-                  ),
+                    );
+                  }).toList(),
                 ),
               ],
 
               // --- Video Section ---
-              if (step.videoUrl != null) ...[
+              if (step.videoUrls != null && step.videoUrls!.isNotEmpty) ...[
                 const SizedBox(height: 12),
-                GestureDetector(
-                  onTap: () => _openVideoFullScreen(step.videoUrl!),
-                  child: Stack(
-                    children: [
-                      ClipRRect(
-                        borderRadius: BorderRadius.circular(8),
-                        child: Container(
-                          width: double.infinity,
-                          height: 180,
-                          color: Colors.black,
-                          child: step.imageUrl != null
-                              ? Image.file(
-                                  File(step.imageUrl!),
-                                  fit: BoxFit.cover,
-                                )
-                              : null,
+
+                Column(
+                  children: step.videoUrls!.asMap().entries.map((entry) {
+                    final video = entry.value;
+                    final vidIndex = entry.key;
+
+                    return Padding(
+                      padding: const EdgeInsets.only(bottom: 12),
+                      child: GestureDetector(
+                        onTap: () => _openVideoFullScreen(video),
+                        child: Stack(
+                          children: [
+                            ClipRRect(
+                              borderRadius: BorderRadius.circular(8),
+                              child: Container(
+                                width: double.infinity,
+                                height: 180,
+                                color: Colors.black,
+                              ),
+                            ),
+
+                            const Positioned.fill(
+                              child: Center(
+                                child: Icon(
+                                  Icons.play_circle_fill,
+                                  size: 60,
+                                  color: Colors.white70,
+                                ),
+                              ),
+                            ),
+
+                            Positioned(
+                              top: 8,
+                              right: 8,
+                              child: Container(
+                                decoration: BoxDecoration(
+                                  color: Colors.black54,
+                                  shape: BoxShape.circle,
+                                ),
+                                child: IconButton(
+                                  icon: const Icon(Icons.close, size: 20, color: Colors.white),
+                                  onPressed: () {
+                                    final newList = List<String>.from(step.videoUrls!);
+                                    newList.removeAt(vidIndex);
+
+                                    cubit.updateStep(
+                                      index,
+                                      step.copyWith(videoUrls: newList),
+                                    );
+                                  },
+                                ),
+                              ),
+                            ),
+                          ],
                         ),
                       ),
-                      const Positioned(
-                        top: 0,
-                        left: 0,
-                        right: 0,
-                        bottom: 0,
-                        child: Center(
-                          child: Icon(
-                            Icons.play_circle_fill,
-                            size: 60,
-                            color: Colors.white70,
-                          ),
-                        ),
-                      ),
-                      Positioned(
-                        top: 8,
-                        right: 8,
-                        child: Container(
-                          decoration: BoxDecoration(
-                            color: Colors.black54,
-                            shape: BoxShape.circle,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
+                    );
+                  }).toList(),
                 ),
               ],
             ],
