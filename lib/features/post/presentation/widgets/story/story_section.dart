@@ -1,5 +1,8 @@
+import 'package:eefood/core/di/injection.dart';
 import 'package:eefood/features/post/data/models/user_story_model.dart';
 import 'package:eefood/features/post/presentation/provider/story_list_cubit.dart';
+import 'package:eefood/features/post/presentation/provider/story_reaction_cubit.dart';
+import 'package:eefood/features/post/presentation/provider/story_viewer_cubit.dart';
 import 'package:eefood/features/post/presentation/widgets/story/story_page.dart/story_viewer_page.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -57,8 +60,14 @@ class _StorySectionState extends State<StorySection> {
 
               final userStory = widget.userStories[index - 1];
 
+              final stories = userStory.stories;
+
+              if (stories.isEmpty) {
+                return const SizedBox();
+              }
+
               // story đầu tiên sẽ lấy làm thumbnail card
-              final previewStory = userStory.stories.first;
+              final previewStory = stories.first;
 
               bool hasUnViewed = userStory.stories.any(
                 (s) => s.isViewed == false,
@@ -74,12 +83,22 @@ class _StorySectionState extends State<StorySection> {
                     Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder: (_) => BlocProvider.value(
-                          value: context.read<StoryCubit>(),
+                        builder: (_) => MultiBlocProvider(
+                          providers: [
+                            BlocProvider.value(
+                              value: context.read<StoryCubit>(),
+                            ),
+                            BlocProvider(
+                              create: (_) => getIt<StoryViewerCubit>(),
+                            ),
+                            BlocProvider.value(
+                              value: getIt<StoryReactionCubit>(),
+                            ),
+                          ],
                           child: StoryViewerPage(
                             allUsers: widget.userStories,
                             userIndex: index - 1,
-                            initialStoryIndex: 0,
+                            isCurrentUserStory: isCurrentUserStory,
                           ),
                         ),
                       ),
@@ -90,7 +109,7 @@ class _StorySectionState extends State<StorySection> {
                         ? "Tin của bạn"
                         : userStory.username ?? "Người dùng",
                     imageUrl: previewStory.contentUrl ?? "",
-                    avatarUrl: userStory.avatarUrl,
+                    avatarUrl: userStory.avatarUrl ?? "",
                     hasStory: hasUnViewed,
                     isCreating: widget.isCreating && isCurrentUserStory,
                   ),

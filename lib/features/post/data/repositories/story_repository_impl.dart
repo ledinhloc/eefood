@@ -1,5 +1,6 @@
 import 'package:dio/dio.dart';
 import 'package:eefood/features/post/data/models/story_model.dart';
+import 'package:eefood/features/post/data/models/story_view_model.dart';
 import 'package:eefood/features/post/data/models/user_story_model.dart';
 import 'package:eefood/features/post/domain/repositories/story_repository.dart';
 import 'package:flutter/widgets.dart';
@@ -129,6 +130,29 @@ class StoryRepositoryImpl extends StoryRepository {
       }
     } catch (err) {
       throw Exception('Error: $err');
+    }
+  }
+
+  @override
+  Future<StoryViewPage> loadViewer(
+    int storyId, {
+    int page = 1,
+    int limit = 5,
+  }) async {
+    try {
+      final response = await dio.get(
+        '/v1/story/get-viewer',
+        queryParameters: {'storyId': storyId, 'page': page, 'limit': limit},
+      );
+
+      if (response.statusCode == 200) {
+        final data = response.data['data'];
+        return StoryViewPage.fromJson(data);
+      }
+
+      return StoryViewPage(totalElements: 0, numberOfElements: 0, viewers: []);
+    } catch (e) {
+      throw Exception('Failed to load viewer $e');
     }
   }
 }
