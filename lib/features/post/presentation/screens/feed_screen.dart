@@ -11,6 +11,8 @@ import 'package:eefood/features/post/presentation/widgets/post/reaction_popup.da
 import 'package:eefood/features/recipe/presentation/screens/recipe_detail_page.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import '../../../livestream/presentation/provider/start_live_cubit.dart';
+import '../../../livestream/presentation/screens/prepare_live_page.dart';
 import '../../data/models/reaction_type.dart';
 import '../provider/post_list_cubit.dart';
 import '../widgets/post/post_card.dart';
@@ -59,6 +61,7 @@ class _FeedViewState extends State<FeedView> {
       builder: (dialogContext) =>
           BlocProvider.value(value: cubit, child: const SearchPopup()),
     );
+    print(filters);
 
     if (filters != null) {
       final keyword = filters['keyword'] as String?;
@@ -170,6 +173,19 @@ class _FeedViewState extends State<FeedView> {
                 icon: const Icon(Icons.search_rounded),
                 onPressed: () => _showSearchPopup(context),
               ),
+              IconButton(
+                  onPressed:() {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => BlocProvider.value(
+                          value: getIt<StartLiveCubit>(),
+                          child: LivePrepScreen(),
+                        ),
+                      ),
+                    );
+                  },
+                  icon: const Icon(Icons.videocam)),
 
               // ==== Notification badge fixed ====
               BlocBuilder<NotificationCubit, NotificationState>(
