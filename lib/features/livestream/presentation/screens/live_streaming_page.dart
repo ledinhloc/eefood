@@ -44,7 +44,7 @@ class _LiveStreamScreenState extends State<LiveStreamScreen> {
       // Connect to room
       await _room!.connect(
         // AppKeys.livekitUrl, // Thay bằng LiveKit server của bạn
-        'ws://10.0.2.2:7881',
+        'ws://10.0.2.2:7880',
         widget.stream.livekitToken!,
       );
       print('---------- url: ${AppKeys.livekitUrl}');
