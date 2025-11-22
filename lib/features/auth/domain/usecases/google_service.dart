@@ -14,7 +14,10 @@ class GoogleAuthService {
       // Mở Google Login
       final GoogleSignInAccount? googleUser = await _googleSignIn.signIn();
 
-      if (googleUser == null) return null; // Người dùng bấm cancel
+      if (googleUser == null) {
+        await signOut();
+        return null;
+      }; // Người dùng bấm cancel
 
       final GoogleSignInAuthentication auth = await googleUser.authentication;
       if(auth.idToken==null) {
@@ -26,6 +29,7 @@ class GoogleAuthService {
       return auth.idToken;
     } catch (e) {
       print("Google Login Error: $e");
+      await signOut();
       rethrow;
     }
   }

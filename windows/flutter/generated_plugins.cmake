@@ -5,8 +5,11 @@
 list(APPEND FLUTTER_PLUGIN_LIST
   app_links
   awesome_notifications
+  connectivity_plus
   emoji_picker_flutter
   file_selector_windows
+  flutter_webrtc
+  livekit_client
   permission_handler_windows
   share_plus
   speech_to_text_windows

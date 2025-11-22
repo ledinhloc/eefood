@@ -1,5 +1,8 @@
 import 'package:eefood/core/utils/file_upload.dart';
 import 'package:eefood/features/auth/presentation/bloc/on_boarding_bloc/on_boarding_cubit.dart';
+import 'package:eefood/features/livestream/data/repositoty/live_repository_impl.dart';
+import 'package:eefood/features/livestream/domain/repository/live_repository.dart';
+import 'package:eefood/features/livestream/presentation/provider/start_live_cubit.dart';
 import 'package:eefood/features/noti/data/repositories/notification_repository_impl.dart';
 import 'package:eefood/features/noti/domain/repositories/notification_repository.dart';
 import 'package:eefood/features/noti/presentation/provider/notification_cubit.dart';
@@ -149,4 +152,8 @@ Future<void> setupDependencies() async {
   //post in recipe
   getIt.registerLazySingleton<PostPublishRepository>(() => PostPublishRepositoryImpl(dio: getIt<DioClient>().dio));
   getIt.registerLazySingleton(() => PostCubit()..fetchPublishedPosts());
+
+  //livestream
+  getIt.registerLazySingleton<LiveRepository>(()=> LiveRepositoryImpl(dio: getIt<DioClient>().dio));
+  getIt.registerLazySingleton<StartLiveCubit>(() => StartLiveCubit(getIt<LiveRepository>()));
 }
