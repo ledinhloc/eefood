@@ -43,9 +43,13 @@ class _LiveStreamScreenState extends State<LiveStreamScreen> {
 
       // Connect to room
       await _room!.connect(
-        AppKeys.livekitUrl, // Thay bằng LiveKit server của bạn
+        // AppKeys.livekitUrl, // Thay bằng LiveKit server của bạn
+        'ws://10.0.2.2:7881',
         widget.stream.livekitToken!,
       );
+      print('---------- url: ${AppKeys.livekitUrl}');
+      print('Room connected successfully');
+      await Future.delayed(const Duration(milliseconds: 500));
 
       // Publish camera
       if (widget.localVideoTrack != null) {
@@ -73,18 +77,20 @@ class _LiveStreamScreenState extends State<LiveStreamScreen> {
 
   Future<void> _toggleMic() async {
     if (_localAudioTrack != null) {
-      await _localAudioTrack!.mute(stopOnMute: !_localAudioTrack!.muted);
+      final newState = !_isMicOn; // đảo trạng thái hiện tại
+      await _localAudioTrack!.mute(stopOnMute: !newState);
       setState(() {
-        _isMicOn = !_localAudioTrack!.muted;
+        _isMicOn = newState;
       });
     }
   }
 
   Future<void> _toggleCamera() async {
     if (widget.localVideoTrack != null) {
-      await widget.localVideoTrack!.mute(stopOnMute: !widget.localVideoTrack!.muted);
+      final newStateCamera = !_isCameraOn;
+      await widget.localVideoTrack!.mute(stopOnMute: !newStateCamera);
       setState(() {
-        _isCameraOn = !widget.localVideoTrack!.muted;
+        _isCameraOn = newStateCamera;
       });
     }
   }

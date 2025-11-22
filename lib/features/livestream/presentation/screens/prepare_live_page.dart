@@ -1,3 +1,6 @@
+import 'dart:io';
+
+import 'package:eefood/core/widgets/snack_bar.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:livekit_client/livekit_client.dart';
@@ -26,15 +29,16 @@ class _LivePrepScreenState extends State<LivePrepScreen> {
   }
 
   Future<void> _initializeCamera() async {
+    if (!Platform.isAndroid && !Platform.isIOS) return;
+
     try {
       _localVideoTrack = await LocalVideoTrack.createCameraTrack(
-        const CameraCaptureOptions(
-          cameraPosition: CameraPosition.front,
-        ),
+        const CameraCaptureOptions(cameraPosition: CameraPosition.front),
       );
       setState(() {});
     } catch (e) {
       print('Lỗi khởi tạo camera: $e');
+      showCustomSnackBar(context, "Không thể mở camera");
     }
   }
 
@@ -63,10 +67,14 @@ class _LivePrepScreenState extends State<LivePrepScreen> {
   }
 
   void _startLiveStream() {
-    if (_descriptionController.text.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Vui lòng nhập mô tả')),
-      );
+    // if (_descriptionController.text.isEmpty) {
+    //   ScaffoldMessenger.of(context).showSnackBar(
+    //     const SnackBar(content: Text('Vui lòng nhập mô tả')),
+    //   );
+    //   return;
+    // }
+    if(_localVideoTrack == null){
+      showCustomSnackBar(context, 'Camera chua san sang');
       return;
     }
 
@@ -238,7 +246,7 @@ class _LivePrepScreenState extends State<LivePrepScreen> {
                         controller: _descriptionController,
                         style: const TextStyle(color: Colors.white),
                         decoration: InputDecoration(
-                          hintText: 'Nhấn để thêm mô tả...',
+                          hintText: 'Thêm mô tả...',
                           hintStyle: const TextStyle(color: Colors.white70),
                           border: InputBorder.none,
                           prefixIcon: const Icon(
