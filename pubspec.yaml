@@ -30,13 +30,14 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
+  livekit_client: ^2.5.1
   flutter_spinkit: ^5.2.0
   # The following adds the Cupertino Icons font to your application.
   # Use with the CupertinoIcons class for iOS style icons.
   cupertino_icons: ^1.0.8
   shared_preferences: ^2.5.3
 #  api
-  retrofit: ^4.2.0
+#  retrofit: ^4.2.0
   dio: ^5.9.0
   json_annotation: ^4.8.0
   get_it: ^8.2.0
@@ -51,7 +52,7 @@ dependencies:
   video_player: ^2.10.0 #hien thi video
 
   dropdown_search: ^6.0.2 # dropdown (selectbox)
-  device_info_plus: ^10.1.0 # info device
+  device_info_plus: ^11.5.0 # info device
   infinite_scroll_pagination: ^4.1.0 # scroll lazy loading
   badges: ^3.1.2 #badge notification
   stomp_dart_client: ^1.0.3 #websocket
@@ -75,9 +76,9 @@ dev_dependencies:
   flutter_test:
     sdk: flutter
 #  api
-  retrofit_generator: ^8.2.0
-  build_runner: ^2.4.6
-  json_serializable: ^6.7.0
+#  retrofit_generator: ^8.2.0
+#  build_runner: ^2.4.6
+#  json_serializable: ^6.7.0
 
   # The "flutter_lints" package below contains a set of recommended lints to
   # encourage good coding practices. The lint set provided by the package is

@@ -2,6 +2,8 @@
 /*
   Chứa các key cần dùng trong app
  */
+import 'package:eefood/core/utils/helpers.dart';
+
 class AppKeys{
   //SharedPreferences
   static const isLoginedIn = 'isLoggedIn';
@@ -9,6 +11,7 @@ class AppKeys{
   static const refreshToken = 'refreshToken';
   static const user = 'user';
   static const baseUrl = String.fromEnvironment('BASE_URL', defaultValue: 'http://192.168.1.16:8222');
+  static final livekitUrl = getLiveKitWsUrl(baseUrl, wsPort: 7881);
   static const webDeloyUrl = "https://eefood-preview-card.vercel.app";
   static const hostDeloy = "eefood-preview-card.vercel.app";
   static const recentKey = 'recent_search_keywords';
