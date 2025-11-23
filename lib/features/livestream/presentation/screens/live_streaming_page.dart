@@ -37,40 +37,63 @@ class _LiveStreamScreenState extends State<LiveStreamScreen> {
   Future<void> _connectToRoom() async {
     try {
       _room = Room();
-
-      // Setup listeners
       _room!.addListener(_onRoomUpdate);
 
       // Connect to room
       await _room!.connect(
-        // AppKeys.livekitUrl, // Thay bằng LiveKit server của bạn
         'ws://10.0.2.2:7880',
         widget.stream.livekitToken!,
       );
-      print('---------- url: ${AppKeys.livekitUrl}');
-      print('Room connected successfully');
-      await Future.delayed(const Duration(milliseconds: 500));
 
-      // Publish camera
-      if (widget.localVideoTrack != null) {
-        await _room!.localParticipant?.publishVideoTrack(widget.localVideoTrack!);
+      // print('Room connected successfully');
+
+      // await Future.delayed(const Duration(seconds: 1));
+      // if (_room!.localParticipant == null) {
+      //   throw Exception('Local participant not ready');
+      // }
+
+      // Publish video - KIỂM TRA track != null VÀ chưa bị stopped
+      if (widget.localVideoTrack != null &&
+          widget.localVideoTrack!.mediaStreamTrack.enabled) {
+
+        print('Publishing video track...');
+
+        await _room!.localParticipant!.publishVideoTrack(
+          widget.localVideoTrack!,
+        );
+
+        print('Video track published');
       }
 
-      // Publish microphone
-      _localAudioTrack = await LocalAudioTrack.create();
-      await _room!.localParticipant?.publishAudioTrack(_localAudioTrack!);
+      // Publish audio - TẠO MỚI track
+      print('Creating audio track...');
+
+      _localAudioTrack = await LocalAudioTrack.create(
+        AudioCaptureOptions(
+          // Có thể thêm options nếu cần
+        ),
+      );
+
+      print('Publishing audio track...');
+
+      await _room!.localParticipant!.publishAudioTrack(
+        _localAudioTrack!,
+      );
+
+      print('Audio track published');
 
       setState(() {});
+
     } catch (e) {
       print('Lỗi kết nối LiveKit: $e');
+
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Lỗi kết nối: $e')),
+          SnackBar(content: Text('Lỗi: $e')),
         );
       }
     }
   }
-
   void _onRoomUpdate() {
     setState(() {});
   }

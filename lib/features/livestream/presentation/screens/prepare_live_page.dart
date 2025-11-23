@@ -45,9 +45,9 @@ class _LivePrepScreenState extends State<LivePrepScreen> {
   Future<void> _toggleCamera() async {
     if (_localVideoTrack != null) {
       if (_isCameraOn) {
-        await _localVideoTrack!.stop();
+        await _localVideoTrack!.mute();
       } else {
-        await _localVideoTrack!.start();
+        await _localVideoTrack!.unmute();
       }
       setState(() {
         _isCameraOn = !_isCameraOn;
@@ -83,8 +83,8 @@ class _LivePrepScreenState extends State<LivePrepScreen> {
 
   @override
   void dispose() {
-    _localVideoTrack?.stop();
-    _localVideoTrack?.dispose();
+    // _localVideoTrack?.stop();
+    // _localVideoTrack?.dispose();
     _descriptionController.dispose();
     super.dispose();
   }
