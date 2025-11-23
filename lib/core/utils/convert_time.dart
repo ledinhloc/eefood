@@ -57,10 +57,23 @@ class TimeParser {
   }
 
   static String formatCommentTime(DateTime? dt) {
-    final diff = DateTime.now().difference(dt!);
-    if (diff.inMinutes < 1) return 'Vừa xong';
-    if (diff.inHours < 1) return '${diff.inMinutes} phút';
-    if (diff.inDays < 1) return '${diff.inHours} giờ';
-    return '${diff.inDays} ngày';
+    if (dt == null) return '';
+
+    final now = DateTime.now();
+    final difference = now.difference(dt);
+
+    if (difference.inDays > 365) {
+      return '${(difference.inDays / 365).floor()} năm trước';
+    } else if (difference.inDays > 30) {
+      return '${(difference.inDays / 30).floor()} tháng trước';
+    } else if (difference.inDays > 0) {
+      return '${difference.inDays} ngày trước';
+    } else if (difference.inHours > 0) {
+      return '${difference.inHours} giờ trước';
+    } else if (difference.inMinutes > 0) {
+      return '${difference.inMinutes} phút trước';
+    } else {
+      return 'Vừa xong';
+    }
   }
 }

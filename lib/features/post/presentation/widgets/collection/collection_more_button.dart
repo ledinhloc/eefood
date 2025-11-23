@@ -21,8 +21,8 @@ class CollectionMoreButton extends StatelessWidget {
 
     return IconButton(
       icon: Icon(Icons.more_vert, color: iconColor),
-      onPressed: () {
-        showCustomBottomSheet(context, [
+      onPressed: () async{
+        await showCustomBottomSheet(context, [
           BottomSheetOption(
             icon: const Icon(Icons.edit, color: Colors.blue),
             title: 'Đổi tên bộ sưu tập',

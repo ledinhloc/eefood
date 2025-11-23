@@ -70,7 +70,7 @@ class AuthRepositoryImpl implements AuthRepository {
       // }
       await _clearUser();
       await getIt.reset();
-      await GoogleAuthService.signOut();
+      //await GoogleAuthService.signOut();
       await setupDependencies();
     }
     catch (e) {

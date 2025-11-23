@@ -116,8 +116,8 @@ class _PersonalUserHeaderState extends State<PersonalUserHeader> {
                 Icons.image_outlined,
                 color: Colors.orangeAccent,
               ),
-              onPressed: () {
-                showCustomBottomSheet(context, [
+              onPressed: () async{
+                await showCustomBottomSheet(context, [
                   BottomSheetOption(
                     icon: const Icon(
                       Icons.file_upload_outlined,

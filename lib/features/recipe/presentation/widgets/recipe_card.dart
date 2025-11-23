@@ -31,8 +31,8 @@ class RecipeCard extends StatelessWidget {
                     fontSize: 16,
                   ),
                 ),
-                IconButton(onPressed: () {
-                  showCustomBottomSheet(context, [
+                IconButton(onPressed: () async{
+                  await showCustomBottomSheet(context, [
                     BottomSheetOption(
                       icon: Icon(Icons.arrow_right_alt),
                       title: "Xem món ăn",

@@ -7,24 +7,35 @@ import 'package:eefood/features/noti/data/repositories/notification_repository_i
 import 'package:eefood/features/noti/domain/repositories/notification_repository.dart';
 import 'package:eefood/features/noti/presentation/provider/notification_cubit.dart';
 import 'package:eefood/features/noti/presentation/provider/notification_settings_cubit.dart';
-import 'package:eefood/features/post/data/repositories/comment_reaction_repository_impl.dart';
-import 'package:eefood/features/post/data/repositories/follow_repository_impl.dart';
-import 'package:eefood/features/post/data/repositories/share_repository_impl.dart';
-import 'package:eefood/features/post/domain/repositories/comment_reaction_repository.dart';
-import 'package:eefood/features/post/domain/repositories/comment_repository.dart';
-import 'package:eefood/features/post/data/repositories/comment_repository_impl.dart';
 import 'package:eefood/features/post/data/repositories/collection_repository_impl.dart';
+import 'package:eefood/features/post/data/repositories/comment_reaction_repository_impl.dart';
+import 'package:eefood/features/post/data/repositories/comment_repository_impl.dart';
+import 'package:eefood/features/post/data/repositories/follow_repository_impl.dart';
 import 'package:eefood/features/post/data/repositories/post_reaction_repository_impl.dart';
 import 'package:eefood/features/post/data/repositories/post_repository_impl.dart';
+import 'package:eefood/features/post/data/repositories/share_repository_impl.dart';
+import 'package:eefood/features/post/data/repositories/story_comment_repository_impl.dart';
+import 'package:eefood/features/post/data/repositories/story_reaction_repository_impl.dart';
+import 'package:eefood/features/post/data/repositories/story_repository_impl.dart';
 import 'package:eefood/features/post/domain/repositories/collection_repository.dart';
+import 'package:eefood/features/post/domain/repositories/comment_reaction_repository.dart';
+import 'package:eefood/features/post/domain/repositories/comment_repository.dart';
 import 'package:eefood/features/post/domain/repositories/follow_repository.dart';
 import 'package:eefood/features/post/domain/repositories/post_reaction_repository.dart';
 import 'package:eefood/features/post/domain/repositories/post_repository.dart';
 import 'package:eefood/features/post/domain/repositories/share_repository.dart';
+import 'package:eefood/features/post/domain/repositories/story_comment_repository.dart';
+import 'package:eefood/features/post/domain/repositories/story_reaction_repository.dart';
+import 'package:eefood/features/post/domain/repositories/story_repository.dart';
 import 'package:eefood/features/post/presentation/provider/collection_cubit.dart';
 import 'package:eefood/features/post/presentation/provider/comment_list_cubit.dart';
 import 'package:eefood/features/post/presentation/provider/comment_reaction_cubit.dart';
 import 'package:eefood/features/post/presentation/provider/follow_cubit.dart';
+import 'package:eefood/features/post/presentation/provider/story_comment_cubit.dart';
+import 'package:eefood/features/post/presentation/provider/story_list_cubit.dart';
+import 'package:eefood/features/post/presentation/provider/story_reaction_cubit.dart';
+import 'package:eefood/features/post/presentation/provider/story_reaction_list_cubit.dart';
+import 'package:eefood/features/post/presentation/provider/story_viewer_cubit.dart';
 import 'package:eefood/features/profile/domain/repositories/profile_repository.dart';
 import 'package:eefood/features/profile/domain/usecases/profile_usecase.dart';
 import 'package:eefood/features/recipe/data/models/recipe_model.dart';
@@ -140,7 +151,16 @@ Future<void> setupDependencies() async {
   getIt.registerLazySingleton<CommentReactionRepository>(() => CommentReactionRepositoryImpl(dio: getIt<DioClient>().dio));
   getIt.registerLazySingleton<ShareRepository>(() => ShareRepositoryImpl(dio: getIt<DioClient>().dio));
   getIt.registerLazySingleton<FollowRepository>(() => FollowRepositoryImpl(dio: getIt<DioClient>().dio));
+  getIt.registerLazySingleton<StoryRepository>(() => StoryRepositoryImpl(dio: getIt<DioClient>().dio));
   getIt.registerLazySingleton<FollowCubit>(() => FollowCubit());
+  // story
+  getIt.registerLazySingleton<StoryCubit>(() => StoryCubit());
+  getIt.registerLazySingleton<StoryViewerCubit>(() => StoryViewerCubit());
+  getIt.registerLazySingleton<StoryReactionCubit>(() => StoryReactionCubit());
+  getIt.registerLazySingleton<StoryReactionStatsCubit>(() => StoryReactionStatsCubit());
+  getIt.registerLazySingleton<StoryReactionRepository>(() => StoryReactionRepositoryImpl(dio: getIt<DioClient>().dio));
+  getIt.registerLazySingleton<StoryCommentRepository>(() => StoryCommentRepositoryImpl(dio: getIt<DioClient>().dio));
+  getIt.registerLazySingleton<StoryCommentCubit>(() => StoryCommentCubit());
   //search post
   getIt.registerLazySingleton<SearchRepository>(() => SearchRepository());
   // notification

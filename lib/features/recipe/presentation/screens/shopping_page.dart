@@ -40,8 +40,8 @@ class ShoppingView extends StatelessWidget {
                   state.viewMode == ShoppingViewMode.byRecipe ? 'Món ăn' : 'Nguyên liệu',
                   style: const TextStyle(color: Colors.black, fontSize: 18),
                 ),
-                onPressed: () {
-                  showCustomBottomSheet(context, [
+                onPressed: () async{
+                  await showCustomBottomSheet(context, [
                     BottomSheetOption(
                       icon: Icon(Icons.list),
                       title: "Xem theo món ăn",

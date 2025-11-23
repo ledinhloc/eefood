@@ -1,5 +1,4 @@
 import 'package:eefood/app_routes.dart';
-import 'package:eefood/features/auth/presentation/screens/welcome_page.dart';
 import 'package:eefood/features/profile/presentation/provider/profile_cubit.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -68,6 +67,7 @@ class ProfilePage extends StatelessWidget {
           }
           return Scaffold(
             appBar: AppBar(
+              backgroundColor: Colors.transparent,
               automaticallyImplyLeading: false,
               title: const Text(
                 'Profile',
@@ -110,11 +110,18 @@ class ProfilePage extends StatelessWidget {
                             style: TextStyle(color: Colors.grey[600]),
                           ),
                           const SizedBox(height: 8),
-                          OutlinedButton(
-                            onPressed: () {
-                              _handlerEditProfile(context, user);
-                            },
-                            child: const Text("Chỉnh sửa"),
+                          SizedBox(
+                            width: double.infinity,
+                            child: OutlinedButton(
+                              onPressed: () {
+                                _handlerEditProfile(context, user);
+                              },
+                              child: const Text(
+                                "Chỉnh sửa",
+                                style: TextStyle(fontSize: 12),
+                                textAlign: TextAlign.start,
+                              ),
+                            ),
                           ),
                         ],
                       ),

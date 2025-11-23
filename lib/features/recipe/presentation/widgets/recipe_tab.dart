@@ -1,9 +1,10 @@
+import 'dart:async';
+
 import 'package:eefood/features/recipe/data/models/recipe_model.dart';
 import 'package:eefood/features/recipe/domain/usecases/recipe_usecases.dart';
 import 'package:eefood/features/recipe/presentation/provider/recipe_refresh_cubit.dart';
 import 'package:eefood/features/recipe/presentation/widgets/recipe_grid_card.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:infinite_scroll_pagination/infinite_scroll_pagination.dart';
 
 class RecipeTab extends StatefulWidget {
@@ -34,6 +35,7 @@ class _RecipeTabState extends State<RecipeTab>
 
   // Thêm biến để store listener, để remove nếu cần
   void Function(int)? _pageRequestListener;
+  late final StreamSubscription _refreshSub;
 
   @override
   bool get wantKeepAlive => true; // Giữ state alive
@@ -54,7 +56,8 @@ class _RecipeTabState extends State<RecipeTab>
     };
     _pagingController.addPageRequestListener(_pageRequestListener!);
 
-    widget.refreshCubit.stream.listen((_) {
+    _refreshSub = widget.refreshCubit.stream.listen((_) {
+      if (!mounted) return;
       _pagingController.refresh();
     });
   }
@@ -73,6 +76,8 @@ class _RecipeTabState extends State<RecipeTab>
         'createdAt',
         'DESC',
       );
+
+      if (!mounted) return;
 
       if (result.isSuccess) {
         List<RecipeModel>? newItems = result.data;
@@ -100,6 +105,7 @@ class _RecipeTabState extends State<RecipeTab>
         throw Exception('Fetch failed: ${result.error}');
       }
     } catch (error) {
+      if (!mounted) return;
       _pagingController.error = error;
     }
   }
@@ -109,6 +115,7 @@ class _RecipeTabState extends State<RecipeTab>
     if (_pageRequestListener != null) {
       _pagingController.removePageRequestListener(_pageRequestListener!);
     }
+    _refreshSub.cancel();
     _pagingController.dispose();
     super.dispose();
   }

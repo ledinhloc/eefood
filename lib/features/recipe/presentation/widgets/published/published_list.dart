@@ -93,8 +93,8 @@ class _PostCard extends StatelessWidget {
                   right: 4,
                   child: IconButton(
                     icon: const Icon(Icons.more_vert, size: 20),
-                    onPressed: () {
-                      showCustomBottomSheet(context, [
+                    onPressed: () async{
+                      await showCustomBottomSheet(context, [
                         BottomSheetOption(
                           icon: const Icon(Icons.edit, color: Colors.blue),
                           title: "Sửa nội dung",
