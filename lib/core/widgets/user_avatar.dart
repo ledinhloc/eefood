@@ -43,7 +43,7 @@ class UserAvatar extends StatelessWidget {
         backgroundImage: url != null
             ? ((isLocal)
                   ? FileImage(File(url!))
-                  : CachedNetworkImageProvider(url!))
+                  : CachedNetworkImageProvider(url!,))
             : null,
         child: (url == null || url!.isEmpty)
             ? Text(

@@ -100,8 +100,8 @@ class _PostHeaderState extends State<PostHeader> {
           ),
           trailing: IconButton(
             icon: const Icon(Icons.more_horiz, color: Colors.grey),
-            onPressed: () {
-              showCustomBottomSheet(context, [
+            onPressed: () async {
+              await showCustomBottomSheet(context, [
                 BottomSheetOption(
                   icon: const Icon(
                     Icons.visibility_off_outlined,

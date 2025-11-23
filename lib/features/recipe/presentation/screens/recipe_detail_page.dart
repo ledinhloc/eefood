@@ -342,7 +342,7 @@ class RecipeDetailPage extends StatelessWidget {
     );
   }
 
-  void _showRecipeOption(BuildContext context, int recipeId, {bool isAuthor = false}) {
+  void _showRecipeOption(BuildContext context, int recipeId, {bool isAuthor = false}) async {
     final opts = <BottomSheetOption>[
       BottomSheetOption(
         icon: const Icon(Icons.add_shopping_cart_rounded, color: Colors.orange),
@@ -374,6 +374,6 @@ class RecipeDetailPage extends StatelessWidget {
         BottomSheetOption(icon: const Icon(Icons.delete_forever), title: 'Xóa', onTap: () {}),
       ]);
     }
-    showCustomBottomSheet(context, opts);
+    await showCustomBottomSheet(context, opts);
   }
 }

@@ -174,7 +174,7 @@ class _CommentItemState extends State<CommentItem> {
       ),
     ];
 
-    showCustomBottomSheet(context, options);
+    await showCustomBottomSheet(context, options);
   }
 
   @override
