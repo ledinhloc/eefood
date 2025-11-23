@@ -299,8 +299,10 @@ class _FeedViewState extends State<FeedView> {
               }
 
               return RefreshIndicator(
-                onRefresh: () async =>
-                    context.read<PostListCubit>().fetchPosts(),
+                onRefresh:() async {
+                    await context.read<PostListCubit>().fetchPosts();
+                    await context.read<StoryCubit>().loadStories(user?.id ?? 0);
+                },
                 child: CustomScrollView(
                   controller: _scrollController,
                   slivers: [

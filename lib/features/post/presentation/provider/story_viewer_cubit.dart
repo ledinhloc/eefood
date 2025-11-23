@@ -12,21 +12,34 @@ class StoryViewerCubit extends Cubit<StoryViewerState> {
 
   StoryViewerCubit() : super(StoryViewerState.initial());
 
-  Future<void> loadViewer({required int storyId, bool loadMore = false}) async {
+  Future<void> loadViewer({
+    required int storyId,
+    bool loadMore = false,
+    bool forceReload = false,
+  }) async {
     if (isClosed) return;
+
+    if (forceReload) {
+      _storyCache.remove(storyId);
+    }
 
     final cachedState = _storyCache[storyId] ?? StoryViewerState.initial();
 
-    if (!loadMore && cachedState.viewers.isNotEmpty) {
-      emit(cachedState);
+    final isDifferentStory =
+        state.currentStoryId != null && state.currentStoryId != storyId;
+
+    if (!loadMore && !forceReload && cachedState.viewers.isNotEmpty) {
+      emit(cachedState.copyWith(currentStoryId: storyId));
       return;
     }
 
     if (cachedState.isLoading || (loadMore && !cachedState.hasMore)) return;
 
-    emit(cachedState.copyWith(isLoading: true));
+    emit(cachedState.copyWith(isLoading: true, currentStoryId: storyId));
 
-    final nextPage = loadMore ? cachedState.currentPage + 1 : 1;
+    final nextPage = (loadMore && !isDifferentStory)
+        ? cachedState.currentPage + 1
+        : 1;
 
     try {
       final pageData = await repository.loadViewer(
@@ -34,6 +47,8 @@ class StoryViewerCubit extends Cubit<StoryViewerState> {
         page: nextPage,
         limit: 5,
       );
+
+      print('Độ dài mảng người xem: ${pageData.viewers.length}');
 
       if (isClosed) return;
 
@@ -54,13 +69,23 @@ class StoryViewerCubit extends Cubit<StoryViewerState> {
         totalElements: pageData.totalElements,
         numberOfElements: pageData.numberOfElements,
         hasMore: hasMoreData,
+        currentStoryId: storyId,
       );
 
       _storyCache[storyId] = newState;
       emit(newState);
     } catch (e) {
       if (!isClosed) {
-        emit(cachedState.copyWith(isLoading: false, error: e.toString()));
+        if (isDifferentStory || forceReload) {
+          emit(
+            StoryViewerState.initial().copyWith(
+              error: e.toString(),
+              currentStoryId: storyId,
+            ),
+          );
+        } else {
+          emit(cachedState.copyWith(isLoading: false, error: e.toString()));
+        }
       }
     }
   }
@@ -71,6 +96,7 @@ class StoryViewerCubit extends Cubit<StoryViewerState> {
 }
 
 class StoryViewerState {
+  final int? currentStoryId;
   final bool isLoading;
   final List<StoryViewModel> viewers;
   final bool hasMore;
@@ -80,6 +106,7 @@ class StoryViewerState {
   final String? error;
 
   StoryViewerState({
+     this.currentStoryId,
     required this.isLoading,
     required this.viewers,
     required this.hasMore,
@@ -97,6 +124,7 @@ class StoryViewerState {
   );
 
   StoryViewerState copyWith({
+    int? currentStoryId,
     bool? isLoading,
     List<StoryViewModel>? viewers,
     bool? hasMore,
@@ -105,6 +133,7 @@ class StoryViewerState {
     int? numberOfElements,
     String? error,
   }) => StoryViewerState(
+    currentStoryId: currentStoryId ?? this.currentStoryId,
     isLoading: isLoading ?? this.isLoading,
     viewers: viewers ?? this.viewers,
     hasMore: hasMore ?? this.hasMore,

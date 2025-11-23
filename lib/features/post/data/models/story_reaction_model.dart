@@ -1,6 +1,7 @@
 import 'package:eefood/features/post/data/models/reaction_type.dart';
 
 class StoryReactionModel {
+  final int? id;
   final int storyId;
   final int userId;
   final String? username;
@@ -9,6 +10,7 @@ class StoryReactionModel {
   final DateTime createdAt;
 
   StoryReactionModel({
+    this.id,
     required this.storyId,
     required this.userId,
     this.username,
@@ -19,6 +21,7 @@ class StoryReactionModel {
 
   factory StoryReactionModel.fromJson(Map<String, dynamic> json) {
     return StoryReactionModel(
+      id: json['id'],
       storyId: json['storyId'],
       userId: json['userId'],
       username: json['username'],
@@ -29,6 +32,7 @@ class StoryReactionModel {
   }
 
   Map<String, dynamic> toJson() => {
+    'id': id,
     'storyId': storyId,
     'userId': userId,
     'username': username,

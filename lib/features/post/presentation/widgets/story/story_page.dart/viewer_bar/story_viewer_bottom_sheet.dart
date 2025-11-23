@@ -1,107 +1,182 @@
+import 'package:cached_network_image/cached_network_image.dart';
+import 'package:eefood/app_routes.dart';
+import 'package:eefood/features/post/data/models/story_model.dart';
+import 'package:eefood/features/post/presentation/provider/story_comment_cubit.dart';
+import 'package:eefood/features/post/presentation/provider/story_reaction_list_cubit.dart';
 import 'package:eefood/features/post/presentation/provider/story_viewer_cubit.dart';
+import 'package:eefood/features/post/presentation/widgets/story/story_page.dart/viewer_bar/tabs/story_comment_tab.dart';
+import 'package:eefood/features/post/presentation/widgets/story/story_page.dart/viewer_bar/tabs/story_reaction_tab.dart';
+import 'package:eefood/features/post/presentation/widgets/story/story_page.dart/viewer_bar/tabs/story_viewer_tab.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 class StoryViewerListSheet extends StatefulWidget {
   final int storyId;
-  final StoryViewerCubit cubit;
+  final StoryViewerCubit viewerCubit;
+  final StoryReactionStatsCubit reactionCubit;
+  final StoryModel story;
+  final StoryCommentCubit commentCubit;
+  final int? currentUserId;
 
   const StoryViewerListSheet({
     super.key,
-    required this.cubit,
+    required this.viewerCubit,
+    required this.reactionCubit,
     required this.storyId,
+    required this.commentCubit,
+    required this.story,
+    this.currentUserId,
   });
 
   @override
   State<StoryViewerListSheet> createState() => _StoryViewerListSheetState();
 }
 
-class _StoryViewerListSheetState extends State<StoryViewerListSheet> {
-  final scroll = ScrollController();
+class _StoryViewerListSheetState extends State<StoryViewerListSheet>
+    with SingleTickerProviderStateMixin {
+  late TabController _tabController;
 
   @override
   void initState() {
     super.initState();
-    scroll.addListener(_onScroll);
+    _tabController = TabController(length: 3, vsync: this);
   }
 
   @override
   void dispose() {
-    scroll.dispose();
+    _tabController.dispose();
     super.dispose();
-  }
-
-  void _onScroll() {
-    if (scroll.position.pixels >= scroll.position.maxScrollExtent - 80) {
-      widget.cubit.loadViewer(storyId: widget.storyId, loadMore: true);
-    }
   }
 
   @override
   Widget build(BuildContext context) {
-    return SizedBox(
-      height: MediaQuery.of(context).size.height * 0.75,
+    return Container(
+      height: MediaQuery.of(context).size.height * 0.8,
+      decoration: const BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.vertical(top: Radius.circular(22)),
+      ),
       child: Column(
         children: [
-          const SizedBox(height: 12),
-          Container(
-            height: 5,
-            width: 45,
-            decoration: BoxDecoration(
-              color: Colors.grey.shade600,
-              borderRadius: BorderRadius.circular(12),
-            ),
-          ),
-          const SizedBox(height: 14),
-          const Text(
-            "Người xem story",
-            style: TextStyle(fontSize: 16.5, fontWeight: FontWeight.w600),
-          ),
-          const SizedBox(height: 8),
-          Expanded(
-            child: BlocBuilder<StoryViewerCubit, StoryViewerState>(
-              builder: (context, state) {
-                if (state.isLoading && state.viewers.isEmpty) {
-                  return const Center(child: CircularProgressIndicator());
-                }
+          _buildHandle(),
+          const SizedBox(height: 16),
+          _buildStoryPreview(),
+          const SizedBox(height: 20),
+          _buildTabBar(),
+          Expanded(child: _buildTabBarView()),
+        ],
+      ),
+    );
+  }
 
-                return RefreshIndicator(
-                  onRefresh: () async {
-                    await widget.cubit.loadViewer(
-                      loadMore: true,
-                      storyId: widget.storyId,
-                    );
-                  },
-                  child: ListView.builder(
-                    controller: scroll,
-                    physics: const AlwaysScrollableScrollPhysics(),
-                    itemCount: state.viewers.length + (state.isLoading ? 1 : 0),
-                    itemBuilder: (context, i) {
-                      if (i == state.viewers.length) {
-                        return const Padding(
-                          padding: EdgeInsets.all(16),
-                          child: Center(child: CircularProgressIndicator()),
-                        );
-                      }
+  Widget _buildHandle() {
+    return Column(
+      children: [
+        const SizedBox(height: 12),
+        Container(
+          height: 5,
+          width: 45,
+          decoration: BoxDecoration(
+            color: Colors.grey.shade400,
+            borderRadius: BorderRadius.circular(12),
+          ),
+        ),
+      ],
+    );
+  }
 
-                      final v = state.viewers[i];
-                      return ListTile(
-                        leading: CircleAvatar(
-                          backgroundImage:
-                              (v.avatarUrl != null && v.avatarUrl!.isNotEmpty)
-                              ? NetworkImage(v.avatarUrl!)
-                              : null,
-                        ),
-                        title: Text(v.username ?? "Người dùng"),
-                      );
-                    },
+  Widget _buildStoryPreview() {
+    return Container(
+      height: 180,
+      width: double.infinity,
+      margin: const EdgeInsets.symmetric(horizontal: 12),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(12),
+        color: Colors.grey.shade200,
+      ),
+      child: GestureDetector(
+        onTap: () {
+          Navigator.pushNamed(
+            context,
+            AppRoutes.mediaView,
+            arguments: {
+              'url': widget.story.contentUrl,
+              'isVideo': widget.story.type == 'image' ? false : true,
+            },
+          );
+        },
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(12),
+          child: widget.story.contentUrl != null
+              ? CachedNetworkImage(
+                  imageUrl: widget.story.contentUrl!,
+                  fit: BoxFit.cover,
+                  placeholder: (context, url) =>
+                      const Center(child: CircularProgressIndicator()),
+                  errorWidget: (context, url, error) => const Icon(
+                    Icons.error_outline,
+                    size: 40,
+                    color: Colors.grey,
                   ),
-                );
-              },
-            ),
+                )
+              : const Icon(Icons.image_outlined, size: 60, color: Colors.grey),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildTabBar() {
+    return Container(
+      decoration: BoxDecoration(
+        border: Border(
+          bottom: BorderSide(color: Colors.grey.shade300, width: 1),
+        ),
+      ),
+      child: TabBar(
+        controller: _tabController,
+        labelColor: Colors.black,
+        unselectedLabelColor: Colors.grey,
+        indicatorColor: Colors.black,
+        indicatorWeight: 2,
+        labelStyle: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
+        tabs: [
+          BlocBuilder<StoryViewerCubit, StoryViewerState>(
+            builder: (context, state) {
+              return Tab(text: 'Người xem (${state.totalElements ?? 0})');
+            },
+          ),
+          BlocBuilder<StoryReactionStatsCubit, StoryReactionStatsState>(
+            builder: (context, state) {
+              return Tab(text: 'Cảm xúc (${state.totalReactions})');
+            },
+          ),
+          BlocBuilder<StoryCommentCubit, StoryCommentState>(
+            builder: (context, state) {
+              return Tab(text: 'Bình luận (${state.totalElements})');
+            },
           ),
         ],
       ),
+    );
+  }
+
+  Widget _buildTabBarView() {
+    return TabBarView(
+      controller: _tabController,
+      children: [
+        StoryViewerTab(
+          storyId: widget.storyId,
+          viewerCubit: widget.viewerCubit,
+        ),
+        StoryReactionTab(
+          storyId: widget.storyId,
+          reactionCubit: widget.reactionCubit,
+        ),
+        StoryCommentTab(
+          storyId: widget.storyId,
+          currentUserId: widget.currentUserId,
+        ),
+      ],
     );
   }
 }

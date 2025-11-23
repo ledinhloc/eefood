@@ -46,7 +46,7 @@ class StoryReactionRepositoryImpl extends StoryReactionRepository {
   }) async {
     try {
       final response = await dio.get(
-        '/v1/$storyId/users',
+        '/v1/story-reactions/$storyId/users',
         queryParameters: {'page': page, 'limit': limit},
       );
 

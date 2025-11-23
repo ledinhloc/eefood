@@ -119,6 +119,14 @@ class StoryCubit extends Cubit<StoryState> {
       emit(state.copyWith(isLoading: false, error: e.toString()));
     }
   }
+
+  Future<void> markView({required int storyId, required int viewerId}) async {
+    try {
+      await repository.markViewStory(storyId, viewerId);
+    } catch (e) {
+      throw new Exception('Failed to mark view $e');
+    }
+  }
 }
 
 enum StoryStatus { initial, uploading, success, failure }

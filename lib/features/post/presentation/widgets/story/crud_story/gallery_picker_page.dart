@@ -93,7 +93,7 @@ class _GalleryPickerPageState extends State<GalleryPickerPage> {
         builder: (_, multi, __) => ValueListenableBuilder(
           valueListenable: selectedIds,
           builder: (_, ids, __) =>
-              Text(multi ? "Đã chọn (${ids.length})" : "Chọn ảnh hoặc video"),
+              Text(multi ? "Đã chọn (${ids.length})" : "Chọn ảnh/video"),
         ),
       ),
       actions: [
@@ -120,6 +120,7 @@ class _GalleryPickerPageState extends State<GalleryPickerPage> {
             );
           },
         ),
+        IconButton(onPressed: () {}, icon: Icon(Icons.settings)),
       ],
     );
   }
