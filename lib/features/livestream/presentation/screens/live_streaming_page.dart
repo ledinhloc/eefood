@@ -3,17 +3,20 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:livekit_client/livekit_client.dart';
 
+import '../../../../core/di/injection.dart';
 import '../../data/model/live_stream_response.dart';
 import '../provider/start_live_cubit.dart';
 
 class LiveStreamScreen extends StatefulWidget {
   final LiveStreamResponse stream;
   final LocalVideoTrack? localVideoTrack;
+  final LocalAudioTrack? localAudioTrack;
 
   const LiveStreamScreen({
     Key? key,
     required this.stream,
     this.localVideoTrack,
+    this.localAudioTrack,
   }) : super(key: key);
 
   @override
@@ -22,15 +25,19 @@ class LiveStreamScreen extends StatefulWidget {
 
 class _LiveStreamScreenState extends State<LiveStreamScreen> {
   Room? _room;
-  LocalAudioTrack? _localAudioTrack;
   bool _isMicOn = true;
   bool _isCameraOn = true;
+  LocalVideoTrack? _localVideoTrack;
+  LocalAudioTrack? _localAudioTrack;
+  bool _isFrontCamera = true;
   final List<String> _comments = [];
   final TextEditingController _commentController = TextEditingController();
 
   @override
   void initState() {
     super.initState();
+    _localVideoTrack = widget.localVideoTrack;
+    _localAudioTrack = widget.localAudioTrack;
     _connectToRoom();
   }
 
@@ -40,22 +47,11 @@ class _LiveStreamScreenState extends State<LiveStreamScreen> {
       _room!.addListener(_onRoomUpdate);
 
       // Connect to room
-      await _room!.connect(
-        'ws://10.0.2.2:7880',
-        widget.stream.livekitToken!,
-      );
-
-      // print('Room connected successfully');
-
-      // await Future.delayed(const Duration(seconds: 1));
-      // if (_room!.localParticipant == null) {
-      //   throw Exception('Local participant not ready');
-      // }
+      await _room!.connect('ws://10.0.2.2:7880', widget.stream.livekitToken!);
 
       // Publish video - KIỂM TRA track != null VÀ chưa bị stopped
       if (widget.localVideoTrack != null &&
           widget.localVideoTrack!.mediaStreamTrack.enabled) {
-
         print('Publishing video track...');
 
         await _room!.localParticipant!.publishVideoTrack(
@@ -66,55 +62,121 @@ class _LiveStreamScreenState extends State<LiveStreamScreen> {
       }
 
       // Publish audio - TẠO MỚI track
-      print('Creating audio track...');
+      // print('Creating audio track...')
 
-      _localAudioTrack = await LocalAudioTrack.create(
-        AudioCaptureOptions(
-          // Có thể thêm options nếu cần
-        ),
-      );
+      if (widget.localAudioTrack != null &&
+          widget.localAudioTrack!.mediaStreamTrack.enabled) {
+        print('Publishing audio track...');
 
-      print('Publishing audio track...');
+        await _room!.localParticipant!.publishAudioTrack(
+          widget.localAudioTrack!,
+        );
 
-      await _room!.localParticipant!.publishAudioTrack(
-        _localAudioTrack!,
-      );
-
-      print('Audio track published');
+        print('Audio track published');
+      }
 
       setState(() {});
-
     } catch (e) {
       print('Lỗi kết nối LiveKit: $e');
 
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Lỗi: $e')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Lỗi: $e')));
       }
     }
   }
+
   void _onRoomUpdate() {
     setState(() {});
   }
 
   Future<void> _toggleMic() async {
-    if (_localAudioTrack != null) {
-      final newState = !_isMicOn; // đảo trạng thái hiện tại
-      await _localAudioTrack!.mute(stopOnMute: !newState);
+    if (_localAudioTrack == null) return;
+
+    try {
+      if (_isMicOn) {
+        await _localAudioTrack!.disable();
+        print('Microphone disabled');
+      } else {
+        await _localAudioTrack!.enable();
+        print('Microphone enabled');
+      }
+
       setState(() {
-        _isMicOn = newState;
+        _isMicOn = !_isMicOn;
       });
+    } catch (e) {
+      print('Error toggling microphone: $e');
     }
   }
 
   Future<void> _toggleCamera() async {
-    if (widget.localVideoTrack != null) {
-      final newStateCamera = !_isCameraOn;
-      await widget.localVideoTrack!.mute(stopOnMute: !newStateCamera);
+    if (_localVideoTrack == null) return;
+
+    try {
+      if (_isCameraOn) {
+        await _localVideoTrack!.disable();
+        print("camera disable");
+      } else {
+        await _localVideoTrack!.enable();
+        print("camera enable");
+      }
       setState(() {
-        _isCameraOn = newStateCamera;
+        _isCameraOn = !_isCameraOn;
       });
+    } catch (e) {
+      print('Error toggling camera: $e');
+    }
+  }
+
+  Future<void> _switchCamera() async {
+    print("switch camera: ------${!_isFrontCamera ? "front" : "back"}");
+    if (_localVideoTrack == null) {
+      print('track is null');
+      return;
+    }
+
+    try {
+      final wasEnabled = _isCameraOn;
+      final newPosition = _isFrontCamera
+          ? CameraPosition.back
+          : CameraPosition.front;
+
+      await _localVideoTrack!.stop();
+      _localVideoTrack = await LocalVideoTrack.createCameraTrack(
+        CameraCaptureOptions(cameraPosition: newPosition),
+      );
+
+      if (_room?.localParticipant != null) {
+        await _room!.localParticipant!.publishVideoTrack(_localVideoTrack!);
+      }
+
+      if (!wasEnabled) {
+        await _localVideoTrack!.disable();
+      }
+      setState(() {
+        _isFrontCamera = !_isFrontCamera;
+      });
+    } on Exception catch (e) {
+      print('Error switch camera');
+      try {
+        _localVideoTrack = await LocalVideoTrack.createCameraTrack(
+          CameraCaptureOptions(
+            cameraPosition: _isFrontCamera
+                ? CameraPosition.front
+                : CameraPosition.back,
+          ),
+        );
+
+        if (_room?.localParticipant != null) {
+          await _room!.localParticipant!.publishVideoTrack(_localVideoTrack!);
+        }
+
+        setState(() {});
+      } catch (e2) {
+        print("Error recreating track: $e2");
+      }
     }
   }
 
@@ -123,7 +185,9 @@ class _LiveStreamScreenState extends State<LiveStreamScreen> {
       context: context,
       builder: (context) => AlertDialog(
         title: const Text('Kết thúc phát trực tiếp?'),
-        content: const Text('Bạn có chắc muốn kết thúc phiên phát trực tiếp này?'),
+        content: const Text(
+          'Bạn có chắc muốn kết thúc phiên phát trực tiếp này?',
+        ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
@@ -139,15 +203,21 @@ class _LiveStreamScreenState extends State<LiveStreamScreen> {
     );
 
     if (confirm == true) {
-      await _room?.disconnect();
-      await _room?.dispose();
-      await widget.localVideoTrack?.stop();
+      await _localVideoTrack?.stop();
       await _localAudioTrack?.stop();
 
-      if (mounted) {
-        context.read<StartLiveCubit>().endLive(widget.stream.id);
-        Navigator.of(context).popUntil((route) => route.isFirst);
-      }
+      await _room?.disconnect().timeout(
+        const Duration(seconds: 2),
+        onTimeout: () => print("disconnect bị treo – bỏ qua để thoát UI"),
+      );
+
+      await _room?.dispose();
+      if (!mounted) return;
+
+      // context.read<StartLiveCubit>().endLive(widget.stream.id);
+      getIt<StartLiveCubit>().endLive(widget.stream.id);
+      Navigator.pop(context, true);
+      // Navigator.of(context).popUntil((route) => route.isFirst);
     }
   }
 
@@ -165,15 +235,19 @@ class _LiveStreamScreenState extends State<LiveStreamScreen> {
     _room?.removeListener(_onRoomUpdate);
     _room?.disconnect();
     _room?.dispose();
-    widget.localVideoTrack?.stop();
+
+    _localVideoTrack?.stop();
     _localAudioTrack?.stop();
+
     _commentController.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    final participantCount = (_room?.remoteParticipants.length ?? 0) + (_room?.localParticipant != null ? 1 : 0);
+    final participantCount =
+        (_room?.remoteParticipants.length ?? 0) +
+        (_room?.localParticipant != null ? 1 : 0);
 
     return Scaffold(
       backgroundColor: Colors.black,
@@ -181,18 +255,18 @@ class _LiveStreamScreenState extends State<LiveStreamScreen> {
         children: [
           // Video display
           Positioned.fill(
-            child: widget.localVideoTrack != null && _isCameraOn
-                ? VideoTrackRenderer(widget.localVideoTrack!)
+            child: _localVideoTrack != null && _isCameraOn
+                ? VideoTrackRenderer(_localVideoTrack!)
                 : Container(
-              color: Colors.black,
-              child: const Center(
-                child: Icon(
-                  Icons.videocam_off,
-                  color: Colors.white,
-                  size: 64,
-                ),
-              ),
-            ),
+                    color: Colors.black,
+                    child: const Center(
+                      child: Icon(
+                        Icons.videocam_off,
+                        color: Colors.white,
+                        size: 64,
+                      ),
+                    ),
+                  ),
           ),
 
           // Top bar
@@ -207,10 +281,7 @@ class _LiveStreamScreenState extends State<LiveStreamScreen> {
                   gradient: LinearGradient(
                     begin: Alignment.topCenter,
                     end: Alignment.bottomCenter,
-                    colors: [
-                      Colors.black.withOpacity(0.6),
-                      Colors.transparent,
-                    ],
+                    colors: [Colors.black.withOpacity(0.6), Colors.transparent],
                   ),
                 ),
                 child: Row(
@@ -251,10 +322,7 @@ class _LiveStreamScreenState extends State<LiveStreamScreen> {
                           SizedBox(width: 4),
                           Text(
                             'Chỉ mình tôi',
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontSize: 12,
-                            ),
+                            style: TextStyle(color: Colors.white, fontSize: 12),
                           ),
                         ],
                       ),
@@ -299,10 +367,7 @@ class _LiveStreamScreenState extends State<LiveStreamScreen> {
                 const SizedBox(height: 8),
                 Text(
                   '$participantCount người đang xem',
-                  style: const TextStyle(
-                    color: Colors.white70,
-                    fontSize: 14,
-                  ),
+                  style: const TextStyle(color: Colors.white70, fontSize: 14),
                 ),
               ],
             ),
@@ -344,10 +409,7 @@ class _LiveStreamScreenState extends State<LiveStreamScreen> {
             bottom: 120,
             child: Column(
               children: [
-                _buildRoundButton(
-                  icon: Icons.flash_off,
-                  onPressed: () {},
-                ),
+                _buildRoundButton(icon: Icons.flash_off, onPressed: () {}),
                 const SizedBox(height: 16),
                 _buildRoundButton(
                   icon: _isMicOn ? Icons.mic : Icons.mic_off,
@@ -356,18 +418,12 @@ class _LiveStreamScreenState extends State<LiveStreamScreen> {
                 const SizedBox(height: 16),
                 _buildRoundButton(
                   icon: Icons.cameraswitch,
-                  onPressed: () {},
+                  onPressed: _switchCamera,
                 ),
                 const SizedBox(height: 16),
-                _buildRoundButton(
-                  icon: Icons.face,
-                  onPressed: () {},
-                ),
+                _buildRoundButton(icon: Icons.face, onPressed: () {}),
                 const SizedBox(height: 16),
-                _buildRoundButton(
-                  icon: Icons.expand_more,
-                  onPressed: () {},
-                ),
+                _buildRoundButton(icon: Icons.expand_more, onPressed: () {}),
               ],
             ),
           ),
@@ -383,10 +439,7 @@ class _LiveStreamScreenState extends State<LiveStreamScreen> {
                 gradient: LinearGradient(
                   begin: Alignment.bottomCenter,
                   end: Alignment.topCenter,
-                  colors: [
-                    Colors.black.withOpacity(0.6),
-                    Colors.transparent,
-                  ],
+                  colors: [Colors.black.withOpacity(0.6), Colors.transparent],
                 ),
               ),
               child: SafeArea(
@@ -455,10 +508,7 @@ class _LiveStreamScreenState extends State<LiveStreamScreen> {
     required VoidCallback onPressed,
   }) {
     return Container(
-      decoration: BoxDecoration(
-        color: Colors.black54,
-        shape: BoxShape.circle,
-      ),
+      decoration: BoxDecoration(color: Colors.black54, shape: BoxShape.circle),
       child: IconButton(
         icon: Icon(icon, color: Colors.white),
         onPressed: onPressed,

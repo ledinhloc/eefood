@@ -18,14 +18,44 @@ class LivePrepScreen extends StatefulWidget {
 class _LivePrepScreenState extends State<LivePrepScreen> {
   final TextEditingController _descriptionController = TextEditingController();
   LocalVideoTrack? _localVideoTrack;
+  LocalAudioTrack? _localAudioTrack;
   bool _isCameraOn = true;
   bool _isMicOn = true;
   bool _isFrontCamera = true;
-
   @override
   void initState() {
     super.initState();
     _initializeCamera();
+    _initializeMicrophone();
+  }
+
+  Future<void> _initializeMicrophone() async {
+    if (!Platform.isAndroid && !Platform.isIOS) return;
+
+    try {
+      // print(' Initializing microphone...');
+
+      _localAudioTrack = await LocalAudioTrack.create(
+        AudioCaptureOptions(
+          noiseSuppression: true,
+          echoCancellation: true,
+          autoGainControl: true,
+        ),
+      );
+
+      await Future.delayed(const Duration(milliseconds: 200));
+
+      if (mounted) {
+        setState(() {});
+      }
+
+      // print(' Microphone initialized');
+    } catch (e) {
+      print('Lỗi khởi tạo microphone: $e');
+      if (mounted) {
+        showCustomSnackBar(context, "Không thể mở microphone");
+      }
+    }
   }
 
   Future<void> _initializeCamera() async {
@@ -35,34 +65,111 @@ class _LivePrepScreenState extends State<LivePrepScreen> {
       _localVideoTrack = await LocalVideoTrack.createCameraTrack(
         const CameraCaptureOptions(cameraPosition: CameraPosition.front),
       );
-      setState(() {});
+      await Future.delayed(const Duration(milliseconds: 300));
+      if (mounted) {
+        setState(() {});
+      }
     } catch (e) {
       print('Lỗi khởi tạo camera: $e');
       showCustomSnackBar(context, "Không thể mở camera");
     }
   }
 
-  Future<void> _toggleCamera() async {
-    if (_localVideoTrack != null) {
-      if (_isCameraOn) {
-        await _localVideoTrack!.mute();
+  //  THÊM hàm này
+  Future<void> _toggleMicrophone() async {
+    if (_localAudioTrack == null) {
+      print('---- Audio track is null');
+      return;
+    }
+
+    try {
+      if (_isMicOn) {
+        await _localAudioTrack!.disable();
+        print(' Microphone disabled');
       } else {
-        await _localVideoTrack!.unmute();
+        await _localAudioTrack!.enable();
+        print(' Microphone enabled');
       }
-      setState(() {
-        _isCameraOn = !_isCameraOn;
-      });
+
+      if (mounted) {
+        setState(() {
+          _isMicOn = !_isMicOn;
+        });
+      }
+    } catch (e) {
+      print('Error toggling microphone: $e');
+      if (mounted) {
+        showCustomSnackBar(
+            context,
+            'Không thể ${_isMicOn ? "tắt" : "bật"} microphone'
+        );
+      }
+    }
+  }
+
+  Future<void> _toggleCamera() async {
+    if (_localVideoTrack == null) return;
+    try {
+      if (_localVideoTrack != null) {
+        if (_isCameraOn) {
+          await _localVideoTrack!.disable();
+          print("camera disable");
+          // await _localVideoTrack!.mute();
+        } else {
+          await _localVideoTrack!.enable();
+          print("camera enable");
+        }
+        setState(() {
+          _isCameraOn = !_isCameraOn;
+        });
+      }
+    } on Exception catch (e) {
+      print('Error toggling camera: $e');
+      if (mounted) {
+        showCustomSnackBar(
+            context,
+            'Không thể ${_isCameraOn ? "tắt" : "bật"} camera: $e'
+        );
+      }
     }
   }
 
   Future<void> _switchCamera() async {
-    if (_localVideoTrack != null) {
-      await _localVideoTrack!.setCameraPosition(
-        _isFrontCamera ? CameraPosition.back : CameraPosition.front,
+    print("switch camera: ---${!_isFrontCamera?'front':'back'}");
+    if(_localVideoTrack == null){
+      print('track is null');
+      return;
+    }
+    
+    try {
+      final wasEnabled = _isCameraOn;
+      final newPosition = _isFrontCamera ? CameraPosition.back : CameraPosition.front;
+
+      // Stop track cũ
+      await _localVideoTrack!.stop();
+      // Tạo track mới
+      _localVideoTrack = await LocalVideoTrack.createCameraTrack(
+        CameraCaptureOptions(
+          cameraPosition: newPosition,
+        ),
       );
+
+      // Khôi phục state
+      if (!wasEnabled) {
+        await _localVideoTrack!.disable();
+      }
       setState(() {
         _isFrontCamera = !_isFrontCamera;
       });
+    } on Exception catch (e) {
+      print("Error switching camera: $e");
+      // Tạo lại track cũ nếu fail
+      _localVideoTrack = await LocalVideoTrack.createCameraTrack(
+        CameraCaptureOptions(
+          cameraPosition: _isFrontCamera ? CameraPosition.front : CameraPosition.back,
+        ),
+      );
+      setState(() {});
     }
   }
 
@@ -77,7 +184,10 @@ class _LivePrepScreenState extends State<LivePrepScreen> {
       showCustomSnackBar(context, 'Camera chua san sang');
       return;
     }
-
+    if (_localAudioTrack == null) {
+      showCustomSnackBar(context, 'Microphone chưa sẵn sàng');
+      return;
+    }
     context.read<StartLiveCubit>().startLive(_descriptionController.text);
   }
 
@@ -89,6 +199,23 @@ class _LivePrepScreenState extends State<LivePrepScreen> {
     super.dispose();
   }
 
+  Future<void> _disposeCameraAndAudio() async {
+    try {
+      if (_localVideoTrack != null) {
+        await _localVideoTrack!.stop();
+        _localVideoTrack!.dispose();
+        _localVideoTrack = null;
+      }
+      if (_localAudioTrack != null) {
+        await _localAudioTrack!.stop();
+        _localAudioTrack!.dispose();
+        _localAudioTrack = null;
+      }
+
+    } catch (e) {
+      print('Error disposing camera, audio: $e');
+    }
+  }
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -102,6 +229,7 @@ class _LivePrepScreenState extends State<LivePrepScreen> {
                 builder: (_) => LiveStreamScreen(
                   stream: state.stream!,
                   localVideoTrack: _localVideoTrack,
+                  localAudioTrack: _localAudioTrack,
                 ),
               ),
             );
@@ -144,7 +272,10 @@ class _LivePrepScreenState extends State<LivePrepScreen> {
                       children: [
                         IconButton(
                           icon: const Icon(Icons.close, color: Colors.white),
-                          onPressed: () => Navigator.pop(context),
+                          onPressed: () async {
+                            await _disposeCameraAndAudio();
+                            if (mounted) Navigator.pop(context);
+                          },
                         ),
                         const Spacer(),
                         Container(
@@ -189,13 +320,13 @@ class _LivePrepScreenState extends State<LivePrepScreen> {
                     children: [
                       _buildControlButton(
                         icon: _isCameraOn ? Icons.videocam : Icons.videocam_off,
-                        label: 'Flash đang tắt',
+                        label: 'Camera',
                         onPressed: _toggleCamera,
                       ),
                       const SizedBox(height: 20),
                       _buildControlButton(
                         icon: _isMicOn ? Icons.mic : Icons.mic_off,
-                        label: 'Tắt tiếng micro',
+                        label: _isMicOn ? 'Tắt micro' : 'Bật micro',
                         onPressed: () {
                           setState(() {
                             _isMicOn = !_isMicOn;
@@ -208,24 +339,24 @@ class _LivePrepScreenState extends State<LivePrepScreen> {
                         label: 'Xoay',
                         onPressed: _switchCamera,
                       ),
-                      const SizedBox(height: 20),
-                      _buildControlButton(
-                        icon: Icons.face,
-                        label: 'Nhãn dán',
-                        onPressed: () {},
-                      ),
-                      const SizedBox(height: 20),
-                      _buildControlButton(
-                        icon: Icons.star,
-                        label: 'Tăng tính năng cá thiên',
-                        onPressed: () {},
-                      ),
-                      const SizedBox(height: 20),
-                      _buildControlButton(
-                        icon: Icons.text_fields,
-                        label: 'Văn bản',
-                        onPressed: () {},
-                      ),
+                      // const SizedBox(height: 20),
+                      // _buildControlButton(
+                      //   icon: Icons.face,
+                      //   label: 'Nhãn dán',
+                      //   onPressed: () {},
+                      // ),
+                      // const SizedBox(height: 20),
+                      // _buildControlButton(
+                      //   icon: Icons.star,
+                      //   label: 'Tăng tính năng cá thiên',
+                      //   onPressed: () {},
+                      // ),
+                      // const SizedBox(height: 20),
+                      // _buildControlButton(
+                      //   icon: Icons.text_fields,
+                      //   label: 'Văn bản',
+                      //   onPressed: () {},
+                      // ),
                     ],
                   ),
                 ),
