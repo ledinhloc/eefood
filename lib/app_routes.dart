@@ -11,14 +11,18 @@ import 'package:eefood/features/auth/presentation/screens/verify_otp_page.dart';
 import 'package:eefood/features/auth/presentation/screens/welcome_page.dart';
 import 'package:eefood/features/noti/presentation/screens/notification_screen.dart';
 import 'package:eefood/features/noti/presentation/screens/ntofication_settings_screen.dart';
+import 'package:eefood/features/post/data/models/story_setting_model.dart';
 import 'package:eefood/features/post/presentation/provider/follow_cubit.dart';
 import 'package:eefood/features/post/presentation/provider/story_list_cubit.dart';
+import 'package:eefood/features/post/presentation/provider/story_setting_cubit.dart';
 import 'package:eefood/features/post/presentation/screens/collection_detail_page.dart';
 import 'package:eefood/features/post/presentation/screens/collection_list_page.dart';
 import 'package:eefood/features/post/presentation/screens/feed_screen.dart';
 import 'package:eefood/features/post/presentation/widgets/follow/follow_list_page.dart';
 import 'package:eefood/features/post/presentation/widgets/post/image_search/image_search_page.dart';
 import 'package:eefood/features/post/presentation/widgets/story/crud_story/gallery_picker_page.dart';
+import 'package:eefood/features/post/presentation/widgets/story/story_settings/story_setting_page.dart';
+import 'package:eefood/features/post/presentation/widgets/story/story_settings/story_user_selector_page.dart';
 import 'package:eefood/features/profile/presentation/screens/edit_profile_page.dart';
 import 'package:eefood/features/profile/presentation/screens/food_preferences_page.dart';
 import 'package:eefood/features/profile/presentation/screens/language_page.dart';
@@ -74,10 +78,13 @@ class AppRoutes {
   static const followListPage = '/followListPage';
 
   static const imageSearchPage = '/imageSearchPage';
-
+  /* feat story */
   static const galleryPickerPage = '/galleryPickerPage';
 
   static const mediaEditPage = '/mediaEditPage';
+
+  static const storySettingPage = '/storySettingPage';
+
 
   // Danh sách các widget cho BottomNavigationBar trong main page
   static List<Widget> widgetOptions = <Widget>[
@@ -204,6 +211,15 @@ class AppRoutes {
       final userId = args['userId'] as int;
       final storyCubit = args['storyCubit'] as StoryCubit;
       return GalleryPickerPage(userId: userId, storyCubit: storyCubit);
+    },
+    storySettingPage: (context) {
+      final args =
+          ModalRoute.of(context)!.settings.arguments as Map<String, dynamic>;
+      final userId = args['userId'] as int;
+      return BlocProvider(
+        create: (_) => getIt<StorySettingCubit>(),
+        child: StorySettingPage(userId: userId),
+      );
     },
   };
 }
