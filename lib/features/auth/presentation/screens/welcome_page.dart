@@ -1,3 +1,10 @@
+import 'package:eefood/app_routes.dart';
+import 'package:eefood/core/di/injection.dart';
+import 'package:eefood/core/widgets/loading_overlay.dart';
+import 'package:eefood/core/widgets/snack_bar.dart';
+import 'package:eefood/features/auth/domain/entities/user.dart';
+import 'package:eefood/features/auth/domain/usecases/auth_usecases.dart';
+import 'package:eefood/features/auth/domain/usecases/google_service.dart';
 import 'package:eefood/features/auth/presentation/screens/login_page.dart';
 import 'package:flutter/material.dart';
 
@@ -5,7 +12,9 @@ import '../../../../core/constants/app_colors.dart';
 import '../widgets/auth_button.dart';
 
 class WelcomePage extends StatelessWidget {
-  const WelcomePage({super.key});
+  WelcomePage({super.key});
+
+  final LoginGoogle _loginGoogle = getIt<LoginGoogle>();
 
   @override
   Widget build(BuildContext context) {
@@ -15,7 +24,7 @@ class WelcomePage extends StatelessWidget {
           // Hình ảnh làm nền
           Image.asset(
             'assets/images/bg_welcome.png',
-            fit: BoxFit.cover, // Đảm bảo hình ảnh phủ toàn bộ không gian
+            fit: BoxFit.cover,
             width: double.infinity,
             height: double.infinity,
           ),
@@ -58,7 +67,32 @@ class WelcomePage extends StatelessWidget {
                 const SizedBox(height: 100),
                 /*Google button*/
                 ElevatedButton.icon(
-                  onPressed: () {},
+                  onPressed: () async {
+                    try {
+                      LoadingOverlay().show();
+                      final idToken =
+                          await GoogleAuthService.signInWithGoogle();
+                      if (idToken == null) {
+                        showCustomSnackBar(context, "Bạn đã hủy đăng nhập");
+                        return;
+                      }
+                      User user = await _loginGoogle(idToken);
+                      if (user.allergies!.isEmpty &&
+                          user.eatingPreferences!.isEmpty) {
+                        Navigator.pushReplacementNamed(
+                          context,
+                          AppRoutes.onBoardingFlow,
+                        );
+                        return;
+                      }
+                      print(user);
+                      Navigator.pushNamed(context, AppRoutes.main);
+                    } catch (err) {
+                      print('Failed: $err');
+                    } finally {
+                      LoadingOverlay().hide();
+                    }
+                  },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.white,
                     foregroundColor: Colors.black,
@@ -71,7 +105,7 @@ class WelcomePage extends StatelessWidget {
                     'assets/images/google.png', // icon google tự add
                     height: 24,
                   ),
-                  label: const Text("Continue with Google"),
+                  label: const Text("Tiếp tuc Google"),
                 ),
                 const SizedBox(height: 15),
                 /*

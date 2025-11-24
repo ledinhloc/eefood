@@ -11,7 +11,6 @@ import 'package:eefood/features/auth/presentation/screens/verify_otp_page.dart';
 import 'package:eefood/features/auth/presentation/screens/welcome_page.dart';
 import 'package:eefood/features/noti/presentation/screens/notification_screen.dart';
 import 'package:eefood/features/noti/presentation/screens/ntofication_settings_screen.dart';
-import 'package:eefood/features/post/data/models/story_setting_model.dart';
 import 'package:eefood/features/post/presentation/provider/follow_cubit.dart';
 import 'package:eefood/features/post/presentation/provider/story_list_cubit.dart';
 import 'package:eefood/features/post/presentation/provider/story_setting_cubit.dart';
@@ -22,7 +21,6 @@ import 'package:eefood/features/post/presentation/widgets/follow/follow_list_pag
 import 'package:eefood/features/post/presentation/widgets/post/image_search/image_search_page.dart';
 import 'package:eefood/features/post/presentation/widgets/story/crud_story/gallery_picker_page.dart';
 import 'package:eefood/features/post/presentation/widgets/story/story_settings/story_setting_page.dart';
-import 'package:eefood/features/post/presentation/widgets/story/story_settings/story_user_selector_page.dart';
 import 'package:eefood/features/profile/presentation/screens/edit_profile_page.dart';
 import 'package:eefood/features/profile/presentation/screens/food_preferences_page.dart';
 import 'package:eefood/features/profile/presentation/screens/language_page.dart';
@@ -85,7 +83,6 @@ class AppRoutes {
 
   static const storySettingPage = '/storySettingPage';
 
-
   // Danh sách các widget cho BottomNavigationBar trong main page
   static List<Widget> widgetOptions = <Widget>[
     FeedScreen(),
@@ -101,7 +98,7 @@ class AppRoutes {
   static final Map<String, WidgetBuilder> listRoute = {
     main: (context) => const MainScreen(),
     login: (context) => LoginPage(),
-    welcome: (context) => const WelcomePage(),
+    welcome: (context) => WelcomePage(),
     splashPage: (context) => const SplashPage(),
     editProfile: (context) {
       final user = ModalRoute.of(context)!.settings.arguments as User;

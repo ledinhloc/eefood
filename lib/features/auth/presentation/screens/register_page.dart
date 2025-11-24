@@ -1,8 +1,11 @@
 import 'package:eefood/app_routes.dart';
 import 'package:eefood/core/di/injection.dart';
+import 'package:eefood/core/widgets/loading_overlay.dart';
 import 'package:eefood/core/widgets/snack_bar.dart';
 import 'package:eefood/features/auth/data/models/otp_model.dart';
+import 'package:eefood/features/auth/domain/entities/user.dart';
 import 'package:eefood/features/auth/domain/usecases/auth_usecases.dart';
+import 'package:eefood/features/auth/domain/usecases/google_service.dart';
 import 'package:eefood/features/auth/presentation/bloc/register_bloc/register_cubit.dart';
 import 'package:eefood/features/auth/presentation/bloc/register_bloc/register_state.dart';
 import 'package:eefood/features/auth/presentation/widgets/auth_button.dart';
@@ -14,6 +17,7 @@ import 'package:lottie/lottie.dart';
 
 class RegisterPage extends StatelessWidget {
   RegisterPage({super.key});
+  final LoginGoogle _loginGoogle = getIt<LoginGoogle>();
   final Register _register = getIt<Register>();
   final nameController = TextEditingController(text: 'khoa');
   final emailController = TextEditingController(
@@ -185,7 +189,38 @@ class RegisterPage extends StatelessWidget {
                                   'assets/images/google.png',
                                 ),
                                 iconSize: 20,
-                                onPressed: () {},
+                                onPressed: () async {
+                                  try {
+                                    LoadingOverlay().show();
+                                    final idToken =
+                                        await GoogleAuthService.signInWithGoogle();
+                                    if (idToken == null) {
+                                      showCustomSnackBar(
+                                        context,
+                                        "Bạn đã hủy đăng nhập",
+                                      );
+                                      return;
+                                    }
+                                    User user = await _loginGoogle(idToken);
+                                    if (user.allergies!.isEmpty &&
+                                        user.eatingPreferences!.isEmpty) {
+                                      Navigator.pushReplacementNamed(
+                                        context,
+                                        AppRoutes.onBoardingFlow,
+                                      );
+                                      return;
+                                    }
+                                    print(user);
+                                    Navigator.pushNamed(
+                                      context,
+                                      AppRoutes.main,
+                                    );
+                                  } catch (err) {
+                                    print('Failed: $err');
+                                  } finally {
+                                    LoadingOverlay().hide();
+                                  }
+                                },
                                 color: Colors.white,
                                 textColor: Colors.black,
                               ),

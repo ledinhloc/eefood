@@ -1,3 +1,6 @@
+import 'dart:async';
+import 'dart:convert';
+
 import 'package:dio/dio.dart';
 import 'package:eefood/core/constants/app_keys.dart';
 import 'package:eefood/features/auth/data/models/otp_model.dart';
@@ -6,13 +9,12 @@ import 'package:eefood/features/auth/data/models/result_model.dart';
 import 'package:eefood/features/auth/data/models/user_preference_model.dart';
 import 'package:eefood/features/auth/domain/usecases/google_service.dart';
 import 'package:flutter/widgets.dart';
-import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
+
 import '../../../../core/di/injection.dart';
 import '../../domain/entities/user.dart';
 import '../../domain/repositories/auth_repository.dart';
 import '../models/UserModel.dart';
-import 'dart:async';
 
 class AuthRepositoryImpl implements AuthRepository {
   final Dio dio;
@@ -58,7 +60,7 @@ class AuthRepositoryImpl implements AuthRepository {
   }
 
   @override
-  Future<void> logout() async {
+  Future<void> logout({String? provider}) async {
     try {
       // final refreshToken = sharedPreferences.getString(AppKeys.refreshToken);
       // if (refreshToken != null) {
@@ -70,7 +72,9 @@ class AuthRepositoryImpl implements AuthRepository {
       // }
       await _clearUser();
       await getIt.reset();
-      //await GoogleAuthService.signOut();
+      if(provider=='GOOGLE') {
+        await GoogleAuthService.signOut();
+      }
       await setupDependencies();
     }
     catch (e) {
