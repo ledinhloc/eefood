@@ -1,8 +1,11 @@
 import 'dart:io';
 import 'dart:typed_data';
 
+import 'package:eefood/app_routes.dart';
+import 'package:eefood/core/di/injection.dart';
 import 'package:eefood/core/widgets/snack_bar.dart';
 import 'package:eefood/features/post/presentation/provider/story_list_cubit.dart';
+import 'package:eefood/features/post/presentation/provider/story_setting_cubit.dart';
 import 'package:eefood/features/post/presentation/widgets/story/crud_story/media_editor/media_editor_page.dart';
 import 'package:eefood/features/post/presentation/widgets/story/crud_story/multi_create_story_page.dart';
 import 'package:flutter/material.dart';
@@ -28,10 +31,12 @@ class _GalleryPickerPageState extends State<GalleryPickerPage> {
 
   final ValueNotifier<bool> isMulti = ValueNotifier(false);
   final ValueNotifier<Set<String>> selectedIds = ValueNotifier({});
+  late StorySettingCubit _storySettingCubit;
 
   @override
   void initState() {
     super.initState();
+    _storySettingCubit = getIt<StorySettingCubit>();
     _fetchAssets();
   }
 
@@ -120,7 +125,14 @@ class _GalleryPickerPageState extends State<GalleryPickerPage> {
             );
           },
         ),
-        IconButton(onPressed: () {}, icon: Icon(Icons.settings)),
+        IconButton(
+          onPressed: () => Navigator.pushNamed(
+            context,
+            AppRoutes.storySettingPage,
+            arguments: {'userId': widget.userId},
+          ),
+          icon: Icon(Icons.settings),
+        ),
       ],
     );
   }

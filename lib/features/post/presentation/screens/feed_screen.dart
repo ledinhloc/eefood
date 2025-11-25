@@ -17,6 +17,7 @@ import 'package:eefood/features/post/presentation/widgets/story/story_section.da
 import 'package:eefood/features/recipe/presentation/screens/recipe_detail_page.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+
 import '../../../livestream/presentation/provider/start_live_cubit.dart';
 import '../../../livestream/presentation/screens/prepare_live_page.dart';
 import '../../data/models/reaction_type.dart';
@@ -146,10 +147,7 @@ class _FeedViewState extends State<FeedView> {
     final result = await Navigator.pushNamed(
       context,
       AppRoutes.galleryPickerPage,
-      arguments: {
-        'userId': userId,
-        'storyCubit': storyCubit
-      }
+      arguments: {'userId': userId, 'storyCubit': storyCubit},
     );
 
     if (result == null) return;
@@ -229,18 +227,19 @@ class _FeedViewState extends State<FeedView> {
                 onPressed: () => _showSearchPopup(context),
               ),
               IconButton(
-                  onPressed:() {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (_) => BlocProvider.value(
-                          value: getIt<StartLiveCubit>(),
-                          child: LivePrepScreen(),
-                        ),
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => BlocProvider.value(
+                        value: getIt<StartLiveCubit>(),
+                        child: LivePrepScreen(),
                       ),
-                    );
-                  },
-                  icon: const Icon(Icons.videocam)),
+                    ),
+                  );
+                },
+                icon: const Icon(Icons.videocam),
+              ),
 
               // ==== Notification badge fixed ====
               BlocBuilder<NotificationCubit, NotificationState>(
@@ -304,24 +303,39 @@ class _FeedViewState extends State<FeedView> {
             ],
           ),
           body: BlocBuilder<PostListCubit, PostListState>(
-            builder: (context, state) {
-              if (state.isLoading && state.posts.isEmpty) {
-                return PostSkeletonList(itemCount: 10);
-              }
-
-              if (state.posts.isEmpty) {
-                return const Center(child: Text('Không có bài viết nào.'));
+            builder: (context, postState) {
+              // Loading lần đầu
+              if (postState.isLoading && postState.posts.isEmpty) {
+                return Column(
+                  children: [
+                    // Story section luôn hiển thị
+                    BlocBuilder<StoryCubit, StoryState>(
+                      builder: (context, storyState) {
+                        return StorySection(
+                          onCreateStory: () async {
+                            final user = await _getCurrentUser();
+                            await handleCreateStory(context, user?.id);
+                          },
+                          userStories: storyState.stories,
+                          currentUserId: user?.id ?? 0,
+                          isCreating: storyState.isCreating,
+                          onRefresh: () =>
+                              context.read<StoryCubit>().loadStories(user!.id),
+                        );
+                      },
+                    ),
+                    const Expanded(child: PostSkeletonList(itemCount: 10)),
+                  ],
+                );
               }
 
               return RefreshIndicator(
-                onRefresh:() async {
-                    await context.read<PostListCubit>().fetchPosts();
-                    await context.read<StoryCubit>().loadStories(user?.id ?? 0);
-                },
+                onRefresh: () => context.read<PostListCubit>().fetchPosts(),
                 child: CustomScrollView(
                   controller: _scrollController,
+                  physics: const AlwaysScrollableScrollPhysics(),
                   slivers: [
-                    // ===== STORY SECTION ======
+                    // Story Section (luôn hiển thị)
                     SliverToBoxAdapter(
                       child: BlocBuilder<StoryCubit, StoryState>(
                         builder: (context, storyState) {
@@ -333,41 +347,72 @@ class _FeedViewState extends State<FeedView> {
                             userStories: storyState.stories,
                             currentUserId: user?.id ?? 0,
                             isCreating: storyState.isCreating,
+                            onRefresh: () => context
+                                .read<StoryCubit>()
+                                .loadStories(user!.id),
                           );
                         },
                       ),
                     ),
 
-                    // ===== POSTS LIST ======
-                    SliverList(
-                      delegate: SliverChildBuilderDelegate((context, index) {
-                        if (index == state.posts.length) {
-                          return state.isLoading
-                              ? const Padding(
-                                  padding: EdgeInsets.all(16),
-                                  child: Center(
-                                    child: CircularProgressIndicator(),
-                                  ),
-                                )
-                              : const SizedBox();
-                        }
-
-                        final post = state.posts[index];
-                        return PostCard(
-                          userId: post.userId,
-                          post: post,
-                          onTap: () => Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (_) =>
-                                  RecipeDetailPage(recipeId: post.recipeId!),
-                            ),
+                    // Posts Section
+                    if (postState.posts.isEmpty)
+                      // Không có posts
+                      SliverFillRemaining(
+                        hasScrollBody: false,
+                        child: Center(
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: const [
+                              Icon(
+                                Icons.inbox_outlined,
+                                size: 64,
+                                color: Colors.grey,
+                              ),
+                              SizedBox(height: 16),
+                              Text(
+                                'Không có bài viết nào.',
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  color: Colors.grey,
+                                ),
+                              ),
+                            ],
                           ),
-                          onShowReactions: (offset, callback) =>
-                              showReactionPopup(context, offset, callback),
-                        );
-                      }, childCount: state.posts.length + 1),
-                    ),
+                        ),
+                      )
+                    else
+                      // Có posts
+                      SliverList(
+                        delegate: SliverChildBuilderDelegate((context, index) {
+                          // Loading indicator ở cuối
+                          if (index == postState.posts.length) {
+                            return postState.isLoading
+                                ? const Padding(
+                                    padding: EdgeInsets.all(16),
+                                    child: Center(
+                                      child: CircularProgressIndicator(),
+                                    ),
+                                  )
+                                : const SizedBox(height: 16);
+                          }
+
+                          final post = postState.posts[index];
+                          return PostCard(
+                            userId: post.userId,
+                            post: post,
+                            onTap: () => Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (_) =>
+                                    RecipeDetailPage(recipeId: post.recipeId!),
+                              ),
+                            ),
+                            onShowReactions: (offset, callback) =>
+                                showReactionPopup(context, offset, callback),
+                          );
+                        }, childCount: postState.posts.length + 1),
+                      ),
                   ],
                 ),
               );

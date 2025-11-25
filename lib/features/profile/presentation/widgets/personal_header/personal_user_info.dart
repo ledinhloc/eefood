@@ -34,6 +34,15 @@ class _PersonalUserInfoState extends State<PersonalUserInfo> {
   }
 
   @override
+  void didUpdateWidget(PersonalUserInfo oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    // Reload data nếu user thay đổi
+    if (oldWidget.user.id != widget.user.id) {
+      _followCubit.loadFollowData(widget.user.id);
+    }
+  }
+
+  @override
   void didChangeDependencies() {
     super.didChangeDependencies();
     if (_currentUserId != null && !_isLoadingUser) {
@@ -139,6 +148,7 @@ class _PersonalUserInfoState extends State<PersonalUserInfo> {
             title: 'Người theo dõi',
             value: state.followers.toString(),
             onTap: () async {
+              debugPrint('personal user info page userId: ${widget.user.id}');
               await Navigator.pushNamed(
                 context,
                 AppRoutes.followListPage,

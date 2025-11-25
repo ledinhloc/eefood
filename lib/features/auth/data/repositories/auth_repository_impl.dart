@@ -1,23 +1,24 @@
+import 'dart:async';
+import 'dart:convert';
+
 import 'package:dio/dio.dart';
 import 'package:eefood/core/constants/app_keys.dart';
 import 'package:eefood/features/auth/data/models/otp_model.dart';
 import 'package:eefood/features/auth/data/models/register_response_model.dart';
 import 'package:eefood/features/auth/data/models/result_model.dart';
-import 'package:eefood/features/auth/data/models/user_preference_model.dart';
 import 'package:eefood/features/auth/domain/usecases/google_service.dart';
 import 'package:flutter/widgets.dart';
-import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
+
 import '../../../../core/di/injection.dart';
 import '../../domain/entities/user.dart';
 import '../../domain/repositories/auth_repository.dart';
 import '../models/UserModel.dart';
-import 'dart:async';
 
 class AuthRepositoryImpl implements AuthRepository {
   final Dio dio;
   final SharedPreferences sharedPreferences;
-  User? _userCache ;
+  User? _userCache;
 
   AuthRepositoryImpl({required this.dio, required this.sharedPreferences});
 
@@ -28,25 +29,10 @@ class AuthRepositoryImpl implements AuthRepository {
       final response = await dio.post(
         '/v1/auth/google-login',
         data: {'idToken': idToken},
-        options: Options(contentType: 'application/json', extra: {'requireAuth': false}),
-      );
-      final userModel = UserModel.fromJson(response.data['data']);
-      await _saveUser(userModel);
-      return userModel.toEntity();
-    }
-    catch (e) {
-      print(e);
-      throw Exception('Login failed: $e');
-    }
-  }
-
-  @override
-  Future<User> login(String email, String password) async {
-    try {
-      final response = await dio.post(
-        '/v1/auth/login',
-        data: {'email': email, 'password': password},
-        options: Options(contentType: 'application/json', extra: {'requireAuth': false}),
+        options: Options(
+          contentType: 'application/json',
+          extra: {'requireAuth': false},
+        ),
       );
       final userModel = UserModel.fromJson(response.data['data']);
       await _saveUser(userModel);
@@ -58,7 +44,27 @@ class AuthRepositoryImpl implements AuthRepository {
   }
 
   @override
-  Future<void> logout() async {
+  Future<User> login(String email, String password) async {
+    try {
+      final response = await dio.post(
+        '/v1/auth/login',
+        data: {'email': email, 'password': password},
+        options: Options(
+          contentType: 'application/json',
+          extra: {'requireAuth': false},
+        ),
+      );
+      final userModel = UserModel.fromJson(response.data['data']);
+      await _saveUser(userModel);
+      return userModel.toEntity();
+    } catch (e) {
+      print(e);
+      throw Exception('Login failed: $e');
+    }
+  }
+
+  @override
+  Future<void> logout({String? provider}) async {
     try {
       // final refreshToken = sharedPreferences.getString(AppKeys.refreshToken);
       // if (refreshToken != null) {
@@ -70,10 +76,11 @@ class AuthRepositoryImpl implements AuthRepository {
       // }
       await _clearUser();
       await getIt.reset();
-      //await GoogleAuthService.signOut();
+      if (provider == 'GOOGLE') {
+        await GoogleAuthService.signOut();
+      }
       await setupDependencies();
-    }
-    catch (e) {
+    } catch (e) {
       throw Exception('Logout failed: $e');
     }
   }
@@ -84,7 +91,7 @@ class AuthRepositoryImpl implements AuthRepository {
     //lay user entity trong local
     try {
       final userJson = sharedPreferences.getString(AppKeys.user);
-      if(userJson == null) return null;
+      if (userJson == null) return null;
 
       final userMap = jsonDecode(userJson);
       _userCache = UserModel.fromJson(userMap).toEntity();
@@ -103,7 +110,13 @@ class AuthRepositoryImpl implements AuthRepository {
         final response = await dio.post(
           '/v1/auth/refresh',
           data: {'refreshToken': refreshToken},
-          options: Options(contentType: 'application/json', extra: {'requireAuth': false}),
+          options: Options(
+            contentType: 'application/json',
+            extra: {'requireAuth': false},
+            validateStatus: (status) {
+              return status != null && status >= 200 && status < 300;
+            },
+          ),
         );
         final userModel = UserModel.fromJson(response.data['data']);
         await _saveUser(userModel);
@@ -118,7 +131,7 @@ class AuthRepositoryImpl implements AuthRepository {
     try {
       final response = await dio.get(
         '/v1/users/me',
-        options: Options( contentType: 'application/json',),
+        options: Options(contentType: 'application/json'),
       );
       final userModel = UserModel.fromJson(response.data['data']);
       await _saveUser(userModel);
@@ -138,7 +151,10 @@ class AuthRepositoryImpl implements AuthRepository {
       final response = await dio.post(
         '/v1/auth/register',
         data: {'username': username, 'email': email, 'password': password},
-        options: Options(contentType: 'application/json', extra: {'requireAuth': false}),
+        options: Options(
+          contentType: 'application/json',
+          extra: {'requireAuth': false},
+        ),
       );
       final json = response.data as Map<String, dynamic>;
       final status = json['status'] as int;
@@ -158,12 +174,19 @@ class AuthRepositoryImpl implements AuthRepository {
   }
 
   @override
-  Future<Result<bool>> verifyOtp(String email, String otpCode, OtpType otpType) async {
+  Future<Result<bool>> verifyOtp(
+    String email,
+    String otpCode,
+    OtpType otpType,
+  ) async {
     try {
       final response = await dio.post(
         '/v1/auth/verify-otp',
         data: {'email': email, 'otpCode': otpCode, 'otpType': otpType.name},
-        options: Options(contentType: 'application/json', extra: {'requireAuth': false}),
+        options: Options(
+          contentType: 'application/json',
+          extra: {'requireAuth': false},
+        ),
       );
       final json = response.data as Map<String, dynamic>;
       final status = json['status'] as int;
@@ -184,7 +207,10 @@ class AuthRepositoryImpl implements AuthRepository {
       final response = await dio.post(
         '/v1/auth/forgot-password/request',
         data: {'email': email},
-        options: Options(contentType: 'application/json', extra: {'requireAuth': false}),
+        options: Options(
+          contentType: 'application/json',
+          extra: {'requireAuth': false},
+        ),
       );
 
       final json = response.data as Map<String, dynamic>;
@@ -201,12 +227,19 @@ class AuthRepositoryImpl implements AuthRepository {
   }
 
   @override
-  Future<Result<bool>> resetPassword(String email, String otpCode, String newPassword) async {
+  Future<Result<bool>> resetPassword(
+    String email,
+    String otpCode,
+    String newPassword,
+  ) async {
     try {
       final response = await dio.post(
         '/v1/auth/forgot-password/reset',
         data: {'email': email, 'otp': otpCode, 'newPassword': newPassword},
-        options: Options(contentType: 'application/json', extra: {'requireAuth': false}),
+        options: Options(
+          contentType: 'application/json',
+          extra: {'requireAuth': false},
+        ),
       );
 
       final json = response.data as Map<String, dynamic>;
@@ -222,27 +255,20 @@ class AuthRepositoryImpl implements AuthRepository {
     }
   }
 
-  @override
-  Future<Result<User>> updatePreferencesUser(UserUpdatePreferences request) async {
-    try {
-      final response = await dio.put(
-        '/v1/users/update',
-        data: request.toJson(),
-        options: Options(contentType: 'application/json', extra: {'requireAuth': false}),
-      );
-      final userModelRes = UserModel.fromJson(response.data['data']);
-      return Result.success(userModelRes.toEntity());
-    } catch (e) {
-      print(e);
-      throw Exception('Update preferences failed: $e');
-    }
-  }
-
   Future<void> _saveUser(UserModel userModel) async {
     _userCache = userModel.toEntity();
-    await sharedPreferences.setString(AppKeys.user, jsonEncode(userModel.toJson()));
-    await sharedPreferences.setString(AppKeys.accessToken, userModel.accessToken ?? '');
-    await sharedPreferences.setString(AppKeys.refreshToken, userModel.refreshToken ?? '');
+    await sharedPreferences.setString(
+      AppKeys.user,
+      jsonEncode(userModel.toJson()),
+    );
+    await sharedPreferences.setString(
+      AppKeys.accessToken,
+      userModel.accessToken ?? '',
+    );
+    await sharedPreferences.setString(
+      AppKeys.refreshToken,
+      userModel.refreshToken ?? '',
+    );
   }
 
   Future<void> _clearUser() async {

@@ -12,7 +12,7 @@ class ProfilePage extends StatelessWidget {
   ProfilePage({super.key});
   final _logout = getIt<Logout>();
 
-  Future<void> _handlerLogout(BuildContext context) async {
+  Future<void> _handlerLogout(BuildContext context, User user) async {
     if (!context.mounted) return;
 
     final confirm = await showDialog<bool>(
@@ -35,7 +35,7 @@ class ProfilePage extends StatelessWidget {
     );
 
     if (confirm == true) {
-      await _logout();
+      await _logout(provider: user.provider);
       if (!context.mounted) return;
       Navigator.pushNamedAndRemoveUntil(
         context,
@@ -128,7 +128,8 @@ class ProfilePage extends StatelessWidget {
                     ),
                     const Spacer(),
                     IconButton(
-                      onPressed: () async => await _handlerLogout(context),
+                      onPressed: () async =>
+                          await _handlerLogout(context, user),
                       icon: const Icon(
                         Icons.exit_to_app_outlined,
                         color: Colors.black,
