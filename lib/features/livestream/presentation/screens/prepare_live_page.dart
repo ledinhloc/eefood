@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:camera/camera.dart';
 import 'package:eefood/core/widgets/snack_bar.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -22,6 +23,8 @@ class _LivePrepScreenState extends State<LivePrepScreen> {
   bool _isCameraOn = true;
   bool _isMicOn = true;
   bool _isFrontCamera = true;
+  bool _isFlashOn = false;
+  CameraController? _cameraController;
   @override
   void initState() {
     super.initState();
@@ -55,6 +58,52 @@ class _LivePrepScreenState extends State<LivePrepScreen> {
       if (mounted) {
         showCustomSnackBar(context, "Không thể mở microphone");
       }
+    }
+  }
+
+  Future<void> _toggleFlash() async {
+    if (_localVideoTrack == null) return;
+
+    // Flash chỉ hoạt động với camera sau
+    if (_isFrontCamera) {
+      showCustomSnackBar(context, "Flash chỉ hoạt động với camera sau");
+      return;
+    }
+
+    try {
+      _isFlashOn = !_isFlashOn;
+
+      // Lấy danh sách camera
+      final cameras = await availableCameras();
+      final backCamera = cameras.firstWhere(
+            (camera) => camera.lensDirection == CameraLensDirection.back,
+      );
+
+      // Khởi tạo CameraController nếu chưa có
+      if (_cameraController == null || !_cameraController!.value.isInitialized) {
+        _cameraController = CameraController(
+          backCamera,
+          ResolutionPreset.high,
+        );
+        await _cameraController!.initialize();
+      }
+
+      // Bật/tắt flash
+      await _cameraController!.setFlashMode(
+        _isFlashOn ? FlashMode.torch : FlashMode.off,
+      );
+
+      setState(() {});
+
+      print('Flash ${_isFlashOn ? "ON" : "OFF"}');
+    } catch (e) {
+      print('Error toggling flash: $e');
+      _isFlashOn = !_isFlashOn; // Revert lại trạng thái
+      setState(() {});
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Lỗi bật/tắt flash: $e')),
+      );
     }
   }
 
@@ -142,6 +191,11 @@ class _LivePrepScreenState extends State<LivePrepScreen> {
     }
     
     try {
+      if (_isFlashOn && _cameraController != null) {
+        await _cameraController!.setFlashMode(FlashMode.off);
+        _isFlashOn = false;
+      }
+
       final wasEnabled = _isCameraOn;
       final newPosition = _isFrontCamera ? CameraPosition.back : CameraPosition.front;
 
@@ -195,11 +249,13 @@ class _LivePrepScreenState extends State<LivePrepScreen> {
   void dispose() {
     // _localVideoTrack?.stop();
     // _localVideoTrack?.dispose();
+    _cameraController?.dispose();
     _descriptionController.dispose();
     super.dispose();
   }
 
   Future<void> _disposeCameraAndAudio() async {
+    _cameraController?.dispose();
     try {
       if (_localVideoTrack != null) {
         await _localVideoTrack!.stop();
@@ -339,6 +395,12 @@ class _LivePrepScreenState extends State<LivePrepScreen> {
                         label: 'Xoay',
                         onPressed: _switchCamera,
                       ),
+                      _buildControlButton(
+                        icon: _isFlashOn ? Icons.flash_on : Icons.flash_off,
+                        label: 'Flash',
+                        onPressed: _toggleCamera,
+                      ),
+                      const SizedBox(height: 20),
                       // const SizedBox(height: 20),
                       // _buildControlButton(
                       //   icon: Icons.face,

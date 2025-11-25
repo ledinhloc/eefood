@@ -81,7 +81,7 @@ class _PersonalUserInfoState extends State<PersonalUserInfo> {
       child: BlocBuilder<FollowCubit, FollowState>(
         builder: (context, state) {
           return Padding(
-            padding: const EdgeInsets.only(bottom: 16),
+            padding: const EdgeInsets.only(bottom: 0),
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [

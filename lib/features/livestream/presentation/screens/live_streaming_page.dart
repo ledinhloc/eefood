@@ -1,9 +1,14 @@
+import 'dart:async';
+
+import 'package:camera/camera.dart';
 import 'package:eefood/core/constants/app_keys.dart';
+import 'package:eefood/core/widgets/snack_bar.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:livekit_client/livekit_client.dart';
 
 import '../../../../core/di/injection.dart';
+import '../../../../core/utils/helpers.dart';
 import '../../data/model/live_stream_response.dart';
 import '../provider/start_live_cubit.dart';
 
@@ -30,6 +35,9 @@ class _LiveStreamScreenState extends State<LiveStreamScreen> {
   LocalVideoTrack? _localVideoTrack;
   LocalAudioTrack? _localAudioTrack;
   bool _isFrontCamera = true;
+  bool _isFlashOn = false;
+  CameraController? _cameraController;
+  Timer? _timer; //thoi gian live
   final List<String> _comments = [];
   final TextEditingController _commentController = TextEditingController();
 
@@ -39,6 +47,12 @@ class _LiveStreamScreenState extends State<LiveStreamScreen> {
     _localVideoTrack = widget.localVideoTrack;
     _localAudioTrack = widget.localAudioTrack;
     _connectToRoom();
+
+    _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
+      if (mounted) {
+        setState(() {}); // Refresh UI để cập nhật thời gian
+      }
+    });
   }
 
   Future<void> _connectToRoom() async {
@@ -91,6 +105,58 @@ class _LiveStreamScreenState extends State<LiveStreamScreen> {
     setState(() {});
   }
 
+  Duration _getElapsedTime() {
+    if (widget.stream.startedAt != null) {
+      return DateTime.now().difference(widget.stream.startedAt!);
+    }
+    return Duration.zero;
+  }
+
+  Future<void> _toggleFlash() async {
+    if (_localVideoTrack == null) return;
+
+    // Flash chỉ hoạt động với camera sau
+    if (_isFrontCamera) {
+      showCustomSnackBar(context, "Flash chỉ hoạt động với camera sau");
+      return;
+    }
+
+    try {
+      _isFlashOn = !_isFlashOn;
+
+      // Lấy danh sách camera
+      final cameras = await availableCameras();
+      final backCamera = cameras.firstWhere(
+            (camera) => camera.lensDirection == CameraLensDirection.back,
+      );
+
+      // Khởi tạo CameraController nếu chưa có
+      if (_cameraController == null || !_cameraController!.value.isInitialized) {
+        _cameraController = CameraController(
+          backCamera,
+          ResolutionPreset.high,
+        );
+        await _cameraController!.initialize();
+      }
+
+      // Bật/tắt flash
+      await _cameraController!.setFlashMode(
+        _isFlashOn ? FlashMode.torch : FlashMode.off,
+      );
+
+      setState(() {});
+
+      print('Flash ${_isFlashOn ? "ON" : "OFF"}');
+    } catch (e) {
+      print('Error toggling flash: $e');
+      _isFlashOn = !_isFlashOn; // Revert lại trạng thái
+      setState(() {});
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Lỗi bật/tắt flash: $e')),
+      );
+    }
+  }
   Future<void> _toggleMic() async {
     if (_localAudioTrack == null) return;
 
@@ -138,6 +204,12 @@ class _LiveStreamScreenState extends State<LiveStreamScreen> {
     }
 
     try {
+      // Tắt flash khi chuyển camera
+      if (_isFlashOn && _cameraController != null) {
+        await _cameraController!.setFlashMode(FlashMode.off);
+        _isFlashOn = false;
+      }
+
       final wasEnabled = _isCameraOn;
       final newPosition = _isFrontCamera
           ? CameraPosition.back
@@ -194,7 +266,9 @@ class _LiveStreamScreenState extends State<LiveStreamScreen> {
             child: const Text('Hủy'),
           ),
           TextButton(
-            onPressed: () => Navigator.pop(context, true),
+            onPressed: (){
+              Navigator.pop(context, true);
+            },
             style: TextButton.styleFrom(foregroundColor: Colors.red),
             child: const Text('Kết thúc'),
           ),
@@ -215,7 +289,7 @@ class _LiveStreamScreenState extends State<LiveStreamScreen> {
       if (!mounted) return;
 
       // context.read<StartLiveCubit>().endLive(widget.stream.id);
-      getIt<StartLiveCubit>().endLive(widget.stream.id);
+      await getIt<StartLiveCubit>().endLive(widget.stream.id);
       Navigator.pop(context, true);
       // Navigator.of(context).popUntil((route) => route.isFirst);
     }
@@ -232,12 +306,15 @@ class _LiveStreamScreenState extends State<LiveStreamScreen> {
 
   @override
   void dispose() {
+    _timer?.cancel();
     _room?.removeListener(_onRoomUpdate);
     _room?.disconnect();
     _room?.dispose();
 
     _localVideoTrack?.stop();
     _localAudioTrack?.stop();
+
+    _cameraController?.dispose();
 
     _commentController.dispose();
     super.dispose();
@@ -296,14 +373,28 @@ class _LiveStreamScreenState extends State<LiveStreamScreen> {
                         color: Colors.red,
                         borderRadius: BorderRadius.circular(4),
                       ),
-                      child: const Text(
-                        'TRỰC TIẾP',
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontWeight: FontWeight.bold,
-                          fontSize: 12,
-                        ),
-                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          const Text(
+                            "TRỰC TIẾP",
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontWeight: FontWeight.bold,
+                              fontSize: 12
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          Text(
+                            formatDuration(_getElapsedTime()), // THÊM
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontWeight: FontWeight.bold,
+                              fontSize: 12,
+                            ),
+                          ),
+                        ],
+                      )
                     ),
                     const SizedBox(width: 8),
                     // Privacy
@@ -409,11 +500,9 @@ class _LiveStreamScreenState extends State<LiveStreamScreen> {
             bottom: 120,
             child: Column(
               children: [
-                _buildRoundButton(icon: Icons.flash_off, onPressed: () {}),
-                const SizedBox(height: 16),
                 _buildRoundButton(
-                  icon: _isMicOn ? Icons.mic : Icons.mic_off,
-                  onPressed: _toggleMic,
+                  icon: _isCameraOn ? Icons.videocam : Icons.videocam_off,
+                  onPressed: _toggleCamera,
                 ),
                 const SizedBox(height: 16),
                 _buildRoundButton(
@@ -421,9 +510,19 @@ class _LiveStreamScreenState extends State<LiveStreamScreen> {
                   onPressed: _switchCamera,
                 ),
                 const SizedBox(height: 16),
-                _buildRoundButton(icon: Icons.face, onPressed: () {}),
+                _buildRoundButton(
+                  icon: _isFlashOn ? Icons.flash_on : Icons.flash_off,
+                  onPressed: _toggleFlash,
+                ),
                 const SizedBox(height: 16),
-                _buildRoundButton(icon: Icons.expand_more, onPressed: () {}),
+                _buildRoundButton(
+                  icon: _isMicOn ? Icons.mic : Icons.mic_off,
+                  onPressed: _toggleMic,
+                ),
+                // const SizedBox(height: 16),
+                // _buildRoundButton(icon: Icons.face, onPressed: () {}),
+                // const SizedBox(height: 16),
+                // _buildRoundButton(icon: Icons.expand_more, onPressed: () {}),
               ],
             ),
           ),
@@ -478,26 +577,26 @@ class _LiveStreamScreenState extends State<LiveStreamScreen> {
           ),
 
           // Bottom navigation
-          Positioned(
-            left: 0,
-            right: 0,
-            bottom: 0,
-            child: Container(
-              color: Colors.black,
-              child: SafeArea(
-                top: false,
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                  children: [
-                    _buildNavButton(Icons.person_add_outlined),
-                    _buildNavButton(Icons.grid_view),
-                    _buildNavButton(Icons.search),
-                    _buildNavButton(Icons.menu),
-                  ],
-                ),
-              ),
-            ),
-          ),
+          // Positioned(
+          //   left: 0,
+          //   right: 0,
+          //   bottom: 0,
+          //   child: Container(
+          //     color: Colors.black,
+          //     child: SafeArea(
+          //       top: false,
+          //       child: Row(
+          //         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+          //         children: [
+          //           _buildNavButton(Icons.person_add_outlined),
+          //           _buildNavButton(Icons.grid_view),
+          //           _buildNavButton(Icons.search),
+          //           _buildNavButton(Icons.menu),
+          //         ],
+          //       ),
+          //     ),
+          //   ),
+          // ),
         ],
       ),
     );

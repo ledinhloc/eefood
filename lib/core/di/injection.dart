@@ -50,9 +50,11 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../../features/auth/data/repositories/auth_repository_impl.dart';
 import '../../features/auth/domain/repositories/auth_repository.dart';
 import '../../features/auth/domain/usecases/auth_usecases.dart';
+import '../../features/livestream/presentation/provider/watch_live_cubit.dart';
 import '../../features/post/data/repositories/search_repository.dart';
 import '../../features/post/presentation/provider/post_list_cubit.dart';
 import '../../features/profile/data/repo/profile_repository_imp.dart';
+import '../../features/profile/presentation/provider/user_live_status_cubit.dart';
 import '../../features/recipe/data/repositories/post_publish_repository_impl.dart';
 import '../../features/recipe/data/repositories/shopping_repository_impl.dart';
 import '../../features/recipe/domain/repositories/post_publish_repository.dart';
@@ -176,4 +178,6 @@ Future<void> setupDependencies() async {
   //livestream
   getIt.registerLazySingleton<LiveRepository>(()=> LiveRepositoryImpl(dio: getIt<DioClient>().dio));
   getIt.registerLazySingleton<StartLiveCubit>(() => StartLiveCubit(getIt<LiveRepository>()));
+  getIt.registerFactory<WatchLiveCubit>(() => WatchLiveCubit(getIt<LiveRepository>()));
+  getIt.registerLazySingleton<UserLiveStatusCubit>(() => UserLiveStatusCubit(getIt<LiveRepository>()));
 }
