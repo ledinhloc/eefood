@@ -14,7 +14,7 @@ import '../widgets/auth_button.dart';
 class LoginPage extends StatelessWidget {
   LoginPage({super.key});
 
-  final LoginGoogle _loginGoole = getIt<LoginGoogle>();
+  final LoginGoogle _loginGoogle = getIt<LoginGoogle>();
   final Login _login = getIt<Login>();
   final emailController = TextEditingController(text: 'ledinhloc7@gmail.com');
   final passController = TextEditingController(text: '12345678');
@@ -243,7 +243,7 @@ class LoginPage extends StatelessWidget {
                           showCustomSnackBar(context, "Bạn đã hủy đăng nhập");
                           return;
                         }
-                        User user = await _loginGoole(idToken);
+                        User user = await _loginGoogle(idToken);
                         if (user.allergies!.isEmpty &&
                             user.eatingPreferences!.isEmpty) {
                           Navigator.pushReplacementNamed(

@@ -7,7 +7,7 @@ import '../entities/user.dart';
 abstract class AuthRepository { 
   Future<User> loginWithGoogle(String idToken);
   Future<User> login(String email, String password);
-  Future<void> logout();
+  Future<void> logout({String? provider});
   Future<User?> getCurrentUser();
   Future<void> refreshToken();
   Future<User> getProfile();

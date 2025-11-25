@@ -1,4 +1,5 @@
 import 'dart:io';
+
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:eefood/core/di/injection.dart';
 import 'package:eefood/core/utils/file_upload.dart';
@@ -6,12 +7,12 @@ import 'package:eefood/core/utils/media_picker.dart';
 import 'package:eefood/core/widgets/custom_bottom_sheet.dart';
 import 'package:eefood/core/widgets/snack_bar.dart';
 import 'package:eefood/features/auth/data/models/UserModel.dart';
+import 'package:eefood/features/auth/domain/entities/user.dart';
 import 'package:eefood/features/auth/domain/usecases/auth_usecases.dart';
 import 'package:eefood/features/profile/domain/usecases/profile_usecase.dart';
 import 'package:eefood/features/profile/presentation/provider/profile_cubit.dart';
-import 'package:flutter/material.dart';
-import 'package:eefood/features/auth/domain/entities/user.dart';
 import 'package:eefood/features/profile/presentation/widgets/personal_header/personal_user_info.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 class PersonalUserHeader extends StatefulWidget {
@@ -30,11 +31,18 @@ class PersonalUserHeader extends StatefulWidget {
 
 class _PersonalUserHeaderState extends State<PersonalUserHeader> {
   late final ProfileCubit _cubit;
+  final GetCurrentUser _getCurrentUser = getIt<GetCurrentUser>();
+  late User? user;
 
   @override
   void initState() {
     super.initState();
     _cubit = ProfileCubit(getIt<GetCurrentUser>())..loadProfile();
+    _getUser();
+  }
+
+  void _getUser() async {
+    user = await _getCurrentUser();
   }
 
   Future<void> _handleChangeBackground(BuildContext context) async {
@@ -111,32 +119,34 @@ class _PersonalUserHeaderState extends State<PersonalUserHeader> {
             onPressed: () => Navigator.pop(context),
           ),
           actions: [
-            IconButton(
-              icon: const Icon(
-                Icons.image_outlined,
-                color: Colors.orangeAccent,
+            if (user?.id !=null && (user!.id == widget.user.id)) ...[
+              IconButton(
+                icon: const Icon(
+                  Icons.image_outlined,
+                  color: Colors.orangeAccent,
+                ),
+                onPressed: () async {
+                  await showCustomBottomSheet(context, [
+                    BottomSheetOption(
+                      icon: const Icon(
+                        Icons.file_upload_outlined,
+                        color: Colors.greenAccent,
+                      ),
+                      title: 'Thêm ảnh nền',
+                      onTap: () => _handleChangeBackground(context),
+                    ),
+                    BottomSheetOption(
+                      icon: const Icon(
+                        Icons.delete_outline_outlined,
+                        color: Colors.redAccent,
+                      ),
+                      title: 'Xóa ảnh nền',
+                      onTap: () => _handleRemoveBackground(context),
+                    ),
+                  ]);
+                },
               ),
-              onPressed: () async{
-                await showCustomBottomSheet(context, [
-                  BottomSheetOption(
-                    icon: const Icon(
-                      Icons.file_upload_outlined,
-                      color: Colors.greenAccent,
-                    ),
-                    title: 'Thêm ảnh nền',
-                    onTap: () => _handleChangeBackground(context),
-                  ),
-                  BottomSheetOption(
-                    icon: const Icon(
-                      Icons.delete_outline_outlined,
-                      color: Colors.redAccent,
-                    ),
-                    title: 'Xóa ảnh nền',
-                    onTap: () => _handleRemoveBackground(context),
-                  ),
-                ]);
-              },
-            ),
+            ],
             IconButton(
               icon: const Icon(
                 Icons.settings_outlined,

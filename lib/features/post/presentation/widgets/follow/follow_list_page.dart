@@ -22,11 +22,18 @@ class FollowListPage extends StatefulWidget {
 class _FollowListPageState extends State<FollowListPage> {
   final _scrollController = ScrollController();
   late final FollowCubit cubit;
+  int? _lastLoadedUserId;
 
   @override
   void initState() {
     super.initState();
     cubit = widget.followCubit;
+    debugPrint('Follow list page userId: ${widget.userId}');
+
+    if (_lastLoadedUserId != widget.userId) {
+      cubit.resetListState();
+      _lastLoadedUserId = widget.userId;
+    }
 
     // Chỉ load nếu list đang trống
     final hasData = widget.isFollowers
