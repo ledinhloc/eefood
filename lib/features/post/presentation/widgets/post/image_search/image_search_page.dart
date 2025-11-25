@@ -1,4 +1,6 @@
 import 'dart:io';
+import 'dart:typed_data';
+
 import 'package:camera/camera.dart';
 import 'package:eefood/core/di/injection.dart';
 import 'package:eefood/features/post/presentation/provider/post_list_cubit.dart';
@@ -9,7 +11,6 @@ import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:image_gallery_saver_plus/image_gallery_saver_plus.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:photo_manager/photo_manager.dart';
-import 'dart:typed_data';
 
 class ImageSearchScreen extends StatefulWidget {
   const ImageSearchScreen({super.key});
@@ -24,6 +25,7 @@ class _ImageSearchScreenState extends State<ImageSearchScreen> {
   XFile? _lastImage;
   bool _isInitialized = false;
   File? _recentPhotoFile;
+  File? _capturedPhotoOverlay;
 
   @override
   void initState() {
@@ -105,6 +107,10 @@ class _ImageSearchScreenState extends State<ImageSearchScreen> {
     if (!mounted) return;
     Navigator.pop(context);
 
+    setState(() {
+      _capturedPhotoOverlay = null;
+    });
+
     _showSearchResultsBottomSheet(cubit, file, cubit.state.keyword);
   }
 
@@ -114,6 +120,10 @@ class _ImageSearchScreenState extends State<ImageSearchScreen> {
     try {
       final image = await _cameraController!.takePicture();
       final file = File(image.path);
+
+      setState(() {
+        _capturedPhotoOverlay = file;
+      });
 
       // Lưu ảnh vào gallery
       final Uint8List bytes = await file.readAsBytes();
@@ -137,7 +147,10 @@ class _ImageSearchScreenState extends State<ImageSearchScreen> {
     final image = await picker.pickImage(source: ImageSource.gallery);
     if (image == null) return;
     final file = File(image.path);
-    setState(() => _recentPhotoFile = file);
+    setState(() {
+      _capturedPhotoOverlay = file;
+      _recentPhotoFile = file;
+    });
     await _handleImageSearch(file);
   }
 
@@ -193,6 +206,16 @@ class _ImageSearchScreenState extends State<ImageSearchScreen> {
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(20),
                   border: Border.all(color: Colors.white54, width: 3),
+                ),
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(20),
+                  child: _capturedPhotoOverlay != null
+                      ? Image.file(_capturedPhotoOverlay!, fit: BoxFit.cover)
+                      : const Icon(
+                          Icons.photo_library,
+                          color: Colors.white,
+                          size: 28,
+                        ),
                 ),
               ),
             ),
