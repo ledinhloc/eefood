@@ -17,6 +17,7 @@ class WatchLiveCubit extends Cubit<WatchLiveState>{
     try{
       emit(WatchLiveState(loading: true));
       final res = await repository.getLiveStream(id);
+      print('>'*20 +res.roomName.toString());
       emit(WatchLiveState(stream: res));
     }catch(e){
       emit(WatchLiveState(error: e.toString()));

@@ -34,6 +34,7 @@ class _LiveViewerScreenState extends State<LiveViewerScreen> {
   // Reactions
   final List<ReactionAnimation> _reactions = [];
   Timer? _reactionTimer;
+  EventsListener<RoomEvent>? _listener;
 
   @override
   void initState() {
@@ -58,17 +59,84 @@ class _LiveViewerScreenState extends State<LiveViewerScreen> {
 
   Future<void> _loadStream() async {
     await context.read<WatchLiveCubit>().loadLive(widget.streamId);
+    print('>'*20 + "load live");
   }
+
+  // Future<void> _connectToRoom(LiveStreamResponse stream) async {
+  //   if (_isConnected) return;
+  //
+  //   try {
+  //     _room = Room();
+  //     _room!.addListener(_onRoomUpdate);
+  //
+  //     // Connect to room
+  //     await _room!.connect('ws://10.0.2.2:7880', stream.livekitToken!);
+  //
+  //     // Listen for remote tracks
+  //     // _room!.remoteParticipants.values.forEach(_handleRemoteParticipant);
+  //     _room!.on<ParticipantConnectedEvent>((event) {
+  //       print('Participant joined: ${event.participant.identity}');
+  //       _handleRemoteParticipant(event.participant);
+  //     });
+  //
+  //     setState(() {
+  //       _isConnected = true;
+  //     });
+  //
+  //     print('Connected to room as viewer');
+  //   } catch (e) {
+  //     print('Lỗi kết nối LiveKit: $e');
+  //     if (mounted) {
+  //       ScaffoldMessenger.of(context).showSnackBar(
+  //         SnackBar(content: Text('Lỗi kết nối: $e')),
+  //       );
+  //     }
+  //   }
+  // }
 
   Future<void> _connectToRoom(LiveStreamResponse stream) async {
     if (_isConnected) return;
 
     try {
       _room = Room();
-      _room!.addListener(_onRoomUpdate);
+
+      // Tạo listener cho room events
+      _listener = _room!.createListener();
+
+      // Lắng nghe các events
+      _listener!
+        ..on<ParticipantConnectedEvent>((event) {
+          print('Participant connected: ${event.participant.identity}');
+          _handleRemoteParticipant(event.participant);
+        })
+        ..on<TrackSubscribedEvent>((event) {
+          print('Track subscribed: ${event.track.kind}');
+          if (event.track is RemoteVideoTrack) {
+            setState(() {
+              _remoteVideoTrack = event.track as RemoteVideoTrack;
+            });
+          } else if (event.track is RemoteAudioTrack) {
+            setState(() {
+              _remoteAudioTrack = event.track as RemoteAudioTrack;
+            });
+          }
+        })
+        ..on<TrackUnsubscribedEvent>((event) {
+          print('Track unsubscribed');
+        })
+        ..on<RoomDisconnectedEvent>((event) {
+          print('Room disconnected');
+        })
+        ..on<ParticipantDisconnectedEvent>((event) {
+          print('Participant disconnected: ${event.participant.identity}');
+        });
 
       // Connect to room
       await _room!.connect('ws://10.0.2.2:7880', stream.livekitToken!);
+
+      print('Connected to room as viewer');
+      print('Room state: ${_room!.connectionState}');
+      print('Remote participants count: ${_room!.remoteParticipants.length}');
 
       // Listen for remote tracks
       _room!.remoteParticipants.values.forEach(_handleRemoteParticipant);
@@ -77,7 +145,6 @@ class _LiveViewerScreenState extends State<LiveViewerScreen> {
         _isConnected = true;
       });
 
-      print('Connected to room as viewer');
     } catch (e) {
       print('Lỗi kết nối LiveKit: $e');
       if (mounted) {
@@ -89,25 +156,56 @@ class _LiveViewerScreenState extends State<LiveViewerScreen> {
   }
 
   void _handleRemoteParticipant(RemoteParticipant participant) {
-    participant.addListener(() {
-      _onParticipantChanged(participant);
+    print('Handling participant: ${participant.identity}');
+    print('Video tracks count: ${participant.videoTrackPublications.length}');
+
+    // Tạo listener cho participant
+    final participantListener = participant.createListener();
+
+    participantListener.on<TrackPublishedEvent>((event) {
+      print('Track published: ${event.publication.kind}');
     });
 
     // Check existing tracks
     for (var track in participant.videoTrackPublications) {
+      print('Video track - subscribed: ${track.subscribed}, sid: ${track.sid}');
       if (track.track != null && track.subscribed) {
-        _remoteVideoTrack = track.track as RemoteVideoTrack;
-        setState(() {});
+        setState(() {
+          _remoteVideoTrack = track.track as RemoteVideoTrack;
+        });
+        print('Video track assigned!');
       }
     }
 
     for (var track in participant.audioTrackPublications) {
       if (track.track != null && track.subscribed) {
-        _remoteAudioTrack = track.track as RemoteAudioTrack;
-        setState(() {});
+        setState(() {
+          _remoteAudioTrack = track.track as RemoteAudioTrack;
+        });
       }
     }
   }
+
+  // void _handleRemoteParticipant(RemoteParticipant participant) {
+  //   participant.addListener(() {
+  //     _onParticipantChanged(participant);
+  //   });
+  //
+  //   // Check existing tracks
+  //   for (var track in participant.videoTrackPublications) {
+  //     if (track.track != null && track.subscribed) {
+  //       _remoteVideoTrack = track.track as RemoteVideoTrack;
+  //       setState(() {});
+  //     }
+  //   }
+  //
+  //   for (var track in participant.audioTrackPublications) {
+  //     if (track.track != null && track.subscribed) {
+  //       _remoteAudioTrack = track.track as RemoteAudioTrack;
+  //       setState(() {});
+  //     }
+  //   }
+  // }
 
   void _onParticipantChanged(RemoteParticipant participant) {
     // Update video tracks
@@ -201,6 +299,7 @@ class _LiveViewerScreenState extends State<LiveViewerScreen> {
   void dispose() {
     _timer?.cancel();
     _reactionTimer?.cancel();
+    _listener?.dispose();
     _room?.removeListener(_onRoomUpdate);
     _room?.disconnect();
     _room?.dispose();
@@ -395,8 +494,8 @@ class _LiveViewerScreenState extends State<LiveViewerScreen> {
 
               // Streamer info
               Positioned(
-                top: 80,
-                left: 16,
+                top: 110,
+                left: 10,
                 child: Container(
                   padding: const EdgeInsets.all(8),
                   decoration: BoxDecoration(
