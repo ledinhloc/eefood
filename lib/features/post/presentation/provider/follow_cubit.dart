@@ -15,6 +15,7 @@ class FollowState {
   final List<FollowModel> followerList;
   final List<FollowModel> followingList;
   final String? error;
+  final int? currentUserId;
 
   FollowState({
     required this.isFollowing,
@@ -28,6 +29,7 @@ class FollowState {
     required this.followerList,
     required this.followingList,
     this.error,
+    this.currentUserId,
   });
 
   FollowState copyWith({
@@ -42,6 +44,7 @@ class FollowState {
     List<FollowModel>? followerList,
     List<FollowModel>? followingList,
     String? error,
+    int? currentUserId,
   }) {
     return FollowState(
       isFollowing: isFollowing ?? this.isFollowing,
@@ -55,6 +58,7 @@ class FollowState {
       followerList: followerList ?? this.followerList,
       followingList: followingList ?? this.followingList,
       error: error,
+      currentUserId: currentUserId ?? this.currentUserId,
     );
   }
 
@@ -69,6 +73,7 @@ class FollowState {
     followingPage: 0,
     followerList: [],
     followingList: [],
+    currentUserId: null,
   );
 }
 
@@ -83,8 +88,25 @@ class FollowCubit extends Cubit<FollowState> {
     }
   }
 
+  void resetListState() {
+    _safeEmit(
+      state.copyWith(
+        followerList: [],
+        followingList: [],
+        followerPage: 0,
+        followingPage: 0,
+        hasMoreFollowers: true,
+        hasMoreFollowings: true,
+        error: null,
+      ),
+    );
+  }
+
   // Load thông tin tổng quan
   Future<void> loadFollowData(int targetId) async {
+    if (state.currentUserId != null && state.currentUserId != targetId) {
+      resetListState();
+    }
     _safeEmit(state.copyWith(isLoading: true, error: null));
     try {
       final isFollowing = await followRepository.checkFollow(targetId);
@@ -166,6 +188,10 @@ class FollowCubit extends Cubit<FollowState> {
 
   // Lazy load followers
   Future<void> fetchFollowers(int userId, {bool loadMore = false}) async {
+    if (state.currentUserId != userId) {
+      resetListState();
+      _safeEmit(state.copyWith(currentUserId: userId));
+    }
     if (state.isLoading || (loadMore && !state.hasMoreFollowers)) return;
 
     _safeEmit(state.copyWith(isLoading: true));
@@ -198,6 +224,10 @@ class FollowCubit extends Cubit<FollowState> {
 
   // Lazy load followings
   Future<void> fetchFollowings(int userId, {bool loadMore = false}) async {
+    if (state.currentUserId != userId) {
+      resetListState();
+      _safeEmit(state.copyWith(currentUserId: userId));
+    }
     if (state.isLoading || (loadMore && !state.hasMoreFollowings)) return;
 
     _safeEmit(state.copyWith(isLoading: true));
