@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:developer' as developer;
 
 import 'package:eefood/core/constants/app_keys.dart';
 import 'package:eefood/core/utils/helpers.dart';
@@ -27,6 +28,8 @@ class _LiveViewerScreenState extends State<LiveViewerScreen> {
   RemoteVideoTrack? _remoteVideoTrack;
   RemoteAudioTrack? _remoteAudioTrack;
   bool _isConnected = false;
+  bool _isConnecting = false;
+  bool _hasAttemptedConnection = false;
   Timer? _timer;
   final List<CommentItem> _comments = [];
   final TextEditingController _commentController = TextEditingController();
@@ -40,6 +43,7 @@ class _LiveViewerScreenState extends State<LiveViewerScreen> {
   @override
   void initState() {
     super.initState();
+    developer.log('[VIEWER] initState called', name: 'LiveViewer');
     _loadStream();
 
     _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
@@ -59,95 +63,152 @@ class _LiveViewerScreenState extends State<LiveViewerScreen> {
   }
 
   Future<void> _loadStream() async {
-    await context.read<WatchLiveCubit>().loadLive(widget.streamId);
-    print('>'*20 + "load live");
-  }
-
-  // Future<void> _connectToRoom(LiveStreamResponse stream) async {
-  //   if (_isConnected) return;
-  //
-  //   try {
-  //     _room = Room();
-  //     _room!.addListener(_onRoomUpdate);
-  //
-  //     // Connect to room
-  //     await _room!.connect('ws://10.0.2.2:7880', stream.livekitToken!);
-  //
-  //     // Listen for remote tracks
-  //     // _room!.remoteParticipants.values.forEach(_handleRemoteParticipant);
-  //     _room!.on<ParticipantConnectedEvent>((event) {
-  //       print('Participant joined: ${event.participant.identity}');
-  //       _handleRemoteParticipant(event.participant);
-  //     });
-  //
-  //     setState(() {
-  //       _isConnected = true;
-  //     });
-  //
-  //     print('Connected to room as viewer');
-  //   } catch (e) {
-  //     print('Lỗi kết nối LiveKit: $e');
-  //     if (mounted) {
-  //       ScaffoldMessenger.of(context).showSnackBar(
-  //         SnackBar(content: Text('Lỗi kết nối: $e')),
-  //       );
-  //     }
-  //   }
-  // }
-
-  Future<void> _connectToRoom(LiveStreamResponse stream) async {
-    if (_isConnected) return;
+    developer.log('[VIEWER] Loading stream...', name: 'LiveViewer');
 
     try {
-      _room = Room();
+      await context.read<WatchLiveCubit>().loadLive(widget.streamId);
+      developer.log('[VIEWER] Stream loaded successfully', name: 'LiveViewer');
 
-      // Tạo listener cho room events
+      // Connect sau khi load stream xong
+      final stream = context.read<WatchLiveCubit>().state.stream;
+
+      if (stream != null) {
+        developer.log('[VIEWER] Stream data: title=${stream.title}, token=${stream.livekitToken != null ? "exists" : "null"}', name: 'LiveViewer');
+
+        if (stream.livekitToken != null) {
+          await _connectToRoom(stream);
+        } else {
+          developer.log('[VIEWER] No livekit token found', name: 'LiveViewer');
+        }
+      } else {
+        developer.log(' [VIEWER] Stream is null', name: 'LiveViewer');
+      }
+    } catch (e, stackTrace) {
+      developer.log(' [VIEWER] Error loading stream: $e', name: 'LiveViewer', error: e, stackTrace: stackTrace);
+    }
+  }
+
+  Future<void> _connectToRoom(LiveStreamResponse stream) async {
+    if (_isConnected || _isConnecting || _hasAttemptedConnection) {
+      developer.log('[VIEWER] Skip connection - connected:$_isConnected, connecting:$_isConnecting, attempted:$_hasAttemptedConnection', name: 'LiveViewer');
+      return;
+    }
+
+    developer.log('[VIEWER] Starting connection...', name: 'LiveViewer');
+
+    setState(() {
+      _isConnecting = true;
+      _hasAttemptedConnection = true;
+    });
+
+    try {
+      _room = Room(
+        roomOptions: const RoomOptions(
+          adaptiveStream: true,
+          dynacast: true,
+        ),
+      );
+
+      developer.log('[VIEWER] Room created', name: 'LiveViewer');
+
       _listener = _room!.createListener();
 
-      // Lắng nghe các events
+      developer.log('[VIEWER] Setting up event listeners...', name: 'LiveViewer');
+
       _listener!
+      //streamer đã vào room
         ..on<ParticipantConnectedEvent>((event) {
-          print('Participant connected: ${event.participant.identity}');
+          developer.log('[VIEWER] Participant connected: ${event.participant.identity}', name: 'LiveViewer');
           _handleRemoteParticipant(event.participant);
         })
+        //viewer đã subscribe được video/audio
         ..on<TrackSubscribedEvent>((event) {
-          print('Track subscribed: ${event.track.kind}');
+          developer.log('[VIEWER] Track subscribed: ${event.track.kind}, sid: ${event.track.sid}', name: 'LiveViewer');
+
           if (event.track is RemoteVideoTrack) {
             setState(() {
               _remoteVideoTrack = event.track as RemoteVideoTrack;
             });
+            developer.log('[VIEWER] VIDEO TRACK ASSIGNED!', name: 'LiveViewer');
           } else if (event.track is RemoteAudioTrack) {
             setState(() {
               _remoteAudioTrack = event.track as RemoteAudioTrack;
             });
+            developer.log('[VIEWER] AUDIO TRACK ASSIGNED!', name: 'LiveViewer');
           }
         })
+        //streamer tắt cam/mic
         ..on<TrackUnsubscribedEvent>((event) {
-          print('Track unsubscribed');
+          developer.log('[VIEWER] Track unsubscribed: ${event.track.kind}', name: 'LiveViewer');
+          if (event.track is RemoteVideoTrack) {
+            setState(() {
+              _remoteVideoTrack = null;
+            });
+          }
         })
+        //mất kết nối / streamer end live
         ..on<RoomDisconnectedEvent>((event) {
-          print('Room disconnected');
+          developer.log('[VIEWER] Room disconnected: ${event.reason}', name: 'LiveViewer');
+          setState(() {
+            _isConnected = false;
+            _isConnecting = false;
+          });
         })
         ..on<ParticipantDisconnectedEvent>((event) {
-          print('Participant disconnected: ${event.participant.identity}');
+          developer.log(' [VIEWER] Participant disconnected: ${event.participant.identity}', name: 'LiveViewer');
         });
 
-      // Connect to room
-      await _room!.connect(AppKeys.livekitUrl, stream.livekitToken!);
+      // developer.log('[VIEWER] Connecting to: ${AppKeys.livekitUrl}', name: 'LiveViewer');
+      // developer.log('[VIEWER] Token (first 30 chars): ${stream.livekitToken!.substring(0, stream.livekitToken!.length > 30 ? 30 : stream.livekitToken!.length)}...', name: 'LiveViewer');
 
-      print('Connected to room as viewer');
-      print('Room state: ${_room!.connectionState}');
-      print('Remote participants count: ${_room!.remoteParticipants.length}');
+      await _room!.connect(
+        AppKeys.livekitUrl,
+        stream.livekitToken!,
+        connectOptions: const ConnectOptions(
+          autoSubscribe: true,
+        ),
+      );
 
-      // Listen for remote tracks
-      _room!.remoteParticipants.values.forEach(_handleRemoteParticipant);
+      developer.log('[VIEWER] Connected! State: ${_room!.connectionState}', name: 'LiveViewer');
+      developer.log('[VIEWER] Remote participants: ${_room!.remoteParticipants.length}', name: 'LiveViewer');
+
+      // List all participants
+      _room!.remoteParticipants.forEach((sid, participant) {
+        developer.log(' [VIEWER] Participant - SID: $sid, Identity: ${participant.identity}', name: 'LiveViewer');
+        developer.log('    Video tracks: ${participant.videoTrackPublications.length}', name: 'LiveViewer');
+        developer.log('    Audio tracks: ${participant.audioTrackPublications.length}', name: 'LiveViewer');
+
+        // Log chi tiết từng track
+        for (var pub in participant.videoTrackPublications) {
+          developer.log('       Video pub - sid: ${pub.sid}, subscribed: ${pub.subscribed}, muted: ${pub.muted}', name: 'LiveViewer');
+        }
+      });
+
+      // Đợi 1 giây để tracks được subscribe
+      developer.log(' [VIEWER] Waiting for tracks to be ready...', name: 'LiveViewer');
+      await Future.delayed(const Duration(seconds: 2));
+
+      // Handle existing participants
+      for (var participant in _room!.remoteParticipants.values) {
+        developer.log(' [VIEWER] Processing existing participant: ${participant.identity}', name: 'LiveViewer');
+        _handleRemoteParticipant(participant);
+      }
 
       setState(() {
         _isConnected = true;
+        _isConnecting = false;
       });
 
-    } catch (e) {
-      print('Lỗi kết nối LiveKit: $e');
+      developer.log(' [VIEWER] Connection setup complete!', name: 'LiveViewer');
+
+    } catch (e, stackTrace) {
+      developer.log(' [VIEWER] Connection error', name: 'LiveViewer', error: e, stackTrace: stackTrace);
+
+      setState(() {
+        _isConnecting = false;
+        _hasAttemptedConnection = false;
+      });
+
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Lỗi kết nối: $e')),
@@ -156,57 +217,69 @@ class _LiveViewerScreenState extends State<LiveViewerScreen> {
     }
   }
 
+  //Lắng nghe mọi thay đổi của streamer
   void _handleRemoteParticipant(RemoteParticipant participant) {
-    print('Handling participant: ${participant.identity}');
-    print('Video tracks count: ${participant.videoTrackPublications.length}');
+    developer.log(' [VIEWER] Handling participant: ${participant.identity}', name: 'LiveViewer');
+    developer.log('    Video publications: ${participant.videoTrackPublications.length}', name: 'LiveViewer');
+    developer.log('    Audio publications: ${participant.audioTrackPublications.length}', name: 'LiveViewer');
 
-    // Tạo listener cho participant
-    final participantListener = participant.createListener();
+    // Add listener cho participant
+    participant.addListener(() {
+      developer.log(' [VIEWER] Participant state changed: ${participant.identity}', name: 'LiveViewer');
 
-    participantListener.on<TrackPublishedEvent>((event) {
-      print('Track published: ${event.publication.kind}');
+      for (var pub in participant.videoTrackPublications) {
+        developer.log('    Video - subscribed: ${pub.subscribed}, muted: ${pub.muted}, hasTrack: ${pub.track != null}', name: 'LiveViewer');
+
+        if (pub.track != null && pub.subscribed && !pub.muted) {
+          if (_remoteVideoTrack != pub.track) {
+            setState(() {
+              _remoteVideoTrack = pub.track as RemoteVideoTrack;
+            });
+            developer.log('       NEW Video track assigned in listener!', name: 'LiveViewer');
+          }
+        }
+      }
+
+      for (var pub in participant.audioTrackPublications) {
+        if (pub.track != null && pub.subscribed) {
+          if (_remoteAudioTrack != pub.track) {
+            setState(() {
+              _remoteAudioTrack = pub.track as RemoteAudioTrack;
+            });
+            developer.log('    NEW Audio track assigned in listener!', name: 'LiveViewer');
+          }
+        }
+      }
     });
 
-    // Check existing tracks
-    for (var track in participant.videoTrackPublications) {
-      print('Video track - subscribed: ${track.subscribed}, sid: ${track.sid}');
-      if (track.track != null && track.subscribed) {
+    // Check existing tracks immediately
+    for (var pub in participant.videoTrackPublications) {
+      developer.log('    [VIEWER] Checking video track - subscribed: ${pub.subscribed}, sid: ${pub.sid}, hasTrack: ${pub.track != null}', name: 'LiveViewer');
+
+      if (pub.track != null && pub.subscribed) {
         setState(() {
-          _remoteVideoTrack = track.track as RemoteVideoTrack;
+          _remoteVideoTrack = pub.track as RemoteVideoTrack;
         });
-        print('Video track assigned!');
+        developer.log('       Initial video track assigned!', name: 'LiveViewer');
+      } else if (!pub.subscribed) {
+        developer.log('      [VIEWER] Track not subscribed, attempting subscribe...', name: 'LiveViewer');
+        try {
+          pub.subscribe();
+        } catch (e) {
+          developer.log('   ❌ Failed to subscribe: $e', name: 'LiveViewer');
+        }
       }
     }
 
-    for (var track in participant.audioTrackPublications) {
-      if (track.track != null && track.subscribed) {
+    for (var pub in participant.audioTrackPublications) {
+      if (pub.track != null && pub.subscribed) {
         setState(() {
-          _remoteAudioTrack = track.track as RemoteAudioTrack;
+          _remoteAudioTrack = pub.track as RemoteAudioTrack;
         });
+        developer.log('      Initial audio track assigned!', name: 'LiveViewer');
       }
     }
   }
-
-  // void _handleRemoteParticipant(RemoteParticipant participant) {
-  //   participant.addListener(() {
-  //     _onParticipantChanged(participant);
-  //   });
-  //
-  //   // Check existing tracks
-  //   for (var track in participant.videoTrackPublications) {
-  //     if (track.track != null && track.subscribed) {
-  //       _remoteVideoTrack = track.track as RemoteVideoTrack;
-  //       setState(() {});
-  //     }
-  //   }
-  //
-  //   for (var track in participant.audioTrackPublications) {
-  //     if (track.track != null && track.subscribed) {
-  //       _remoteAudioTrack = track.track as RemoteAudioTrack;
-  //       setState(() {});
-  //     }
-  //   }
-  // }
 
   void _onParticipantChanged(RemoteParticipant participant) {
     // Update video tracks
@@ -242,7 +315,7 @@ class _LiveViewerScreenState extends State<LiveViewerScreen> {
 
     setState(() {
       _comments.add(CommentItem(
-        username: "Bạn", // Thay bằng username thật từ user data
+        username: "Bạn",
         comment: _commentController.text.trim(),
         timestamp: DateTime.now(),
       ));
@@ -288,6 +361,7 @@ class _LiveViewerScreenState extends State<LiveViewerScreen> {
     );
 
     if (confirm == true) {
+      developer.log(' [VIEWER] Leaving stream...', name: 'LiveViewer');
       await _room?.disconnect();
       await _room?.dispose();
       if (mounted) {
@@ -298,6 +372,7 @@ class _LiveViewerScreenState extends State<LiveViewerScreen> {
 
   @override
   void dispose() {
+    developer.log('[VIEWER] Disposing...', name: 'LiveViewer');
     _timer?.cancel();
     _reactionTimer?.cancel();
     _listener?.dispose();
@@ -338,7 +413,12 @@ class _LiveViewerScreenState extends State<LiveViewerScreen> {
                   ),
                   const SizedBox(height: 16),
                   ElevatedButton(
-                    onPressed: _loadStream,
+                    onPressed: () {
+                      setState(() {
+                        _hasAttemptedConnection = false;
+                      });
+                      _loadStream();
+                    },
                     child: const Text('Thử lại'),
                   ),
                 ],
@@ -360,12 +440,6 @@ class _LiveViewerScreenState extends State<LiveViewerScreen> {
         }
 
         final stream = state.stream!;
-
-        // Connect to room if not connected
-        if (!_isConnected && stream.livekitToken != null) {
-          _connectToRoom(stream);
-        }
-
         final participantCount = (_room?.remoteParticipants.length ?? 0) + 1;
 
         return Scaffold(
@@ -378,23 +452,36 @@ class _LiveViewerScreenState extends State<LiveViewerScreen> {
                     ? VideoTrackRenderer(_remoteVideoTrack!)
                     : Container(
                   color: Colors.black,
-                  child: const Center(
+                  child: Center(
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         Icon(
-                          Icons.videocam_off,
+                          _isConnecting
+                              ? Icons.sync
+                              : Icons.videocam_off,
                           color: Colors.white54,
                           size: 64,
                         ),
-                        SizedBox(height: 16),
+                        const SizedBox(height: 16),
                         Text(
-                          'Đang chờ video...',
-                          style: TextStyle(
+                          _isConnecting
+                              ? 'Đang kết nối...'
+                              : _isConnected
+                              ? 'Đang chờ video...'
+                              : 'Chưa kết nối',
+                          style: const TextStyle(
                             color: Colors.white54,
                             fontSize: 16,
                           ),
                         ),
+                        if (_isConnecting)
+                          const Padding(
+                            padding: EdgeInsets.only(top: 16),
+                            child: CircularProgressIndicator(
+                              color: Colors.white54,
+                            ),
+                          ),
                       ],
                     ),
                   ),

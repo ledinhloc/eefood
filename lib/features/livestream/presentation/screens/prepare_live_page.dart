@@ -383,11 +383,7 @@ class _LivePrepScreenState extends State<LivePrepScreen> {
                       _buildControlButton(
                         icon: _isMicOn ? Icons.mic : Icons.mic_off,
                         label: _isMicOn ? 'Tắt micro' : 'Bật micro',
-                        onPressed: () {
-                          setState(() {
-                            _isMicOn = !_isMicOn;
-                          });
-                        },
+                        onPressed: _toggleMicrophone,
                       ),
                       const SizedBox(height: 20),
                       _buildControlButton(
@@ -398,7 +394,7 @@ class _LivePrepScreenState extends State<LivePrepScreen> {
                       _buildControlButton(
                         icon: _isFlashOn ? Icons.flash_on : Icons.flash_off,
                         label: 'Flash',
-                        onPressed: _toggleCamera,
+                        onPressed: _toggleFlash,
                       ),
                       const SizedBox(height: 20),
                       // const SizedBox(height: 20),
