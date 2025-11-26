@@ -2,6 +2,7 @@ import 'package:eefood/core/di/injection.dart';
 import 'package:eefood/features/post/data/models/user_story_model.dart';
 import 'package:eefood/features/post/presentation/provider/story_list_cubit.dart';
 import 'package:eefood/features/post/presentation/provider/story_reaction_cubit.dart';
+import 'package:eefood/features/post/presentation/provider/story_reaction_list_cubit.dart';
 import 'package:eefood/features/post/presentation/provider/story_viewer_cubit.dart';
 import 'package:eefood/features/post/presentation/widgets/story/story_page.dart/story_viewer_page.dart';
 import 'package:flutter/material.dart';
@@ -143,6 +144,9 @@ class _StorySectionState extends State<StorySection> {
                                   BlocProvider.value(
                                     value: getIt<StoryReactionCubit>(),
                                   ),
+                                  BlocProvider.value(
+                                    value: getIt<StoryReactionStatsCubit>(),
+                                  )
                                 ],
                                 child: StoryViewerPage(
                                   allUsers: widget.userStories,

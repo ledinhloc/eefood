@@ -1,5 +1,3 @@
-import 'dart:async';
-
 import 'package:dio/dio.dart';
 import 'package:eefood/app_routes.dart';
 import 'package:eefood/core/constants/app_keys.dart';
@@ -14,41 +12,14 @@ import '../widgets/snack_bar.dart';
 /* handler refresh token */
 class DioClient {
   final Dio dio = Dio();
-  Completer<void>? _refreshCompleter;
-  bool _isRefreshing = false;
 
   DioClient() {
     dio.options = BaseOptions(
       baseUrl: '${AppKeys.baseUrl}/api',
-      connectTimeout: const Duration(seconds: 30), // Timeout kết nối
-      receiveTimeout: const Duration(seconds: 30), // Timeout nhận dữ liệu
+      connectTimeout: const Duration(seconds: 20), // Timeout kết nối
+      receiveTimeout: const Duration(seconds: 20), // Timeout nhận dữ liệu
       contentType: 'application/json; charset=UTF-8', // Default content type
     );
-
-    // Xử lý loading khi fetch api và lỗi sẽ direct error page
-    // dio.interceptors.add(
-    //   InterceptorsWrapper(
-    //     onRequest: (options, handler) async {
-    //       final context = navigatorKey.currentContext;
-    //       if (context != null) {
-    //         LoadingOverlay().show();
-    //       }
-    //       return handler.next(options);
-    //     },
-    //     onResponse: (response, handler) async {
-    //       LoadingOverlay().hide();
-    //       return handler.next(response);
-    //     },
-    //     onError: (DioException e, handler) async {
-    //       LoadingOverlay().hide();
-    //       // final context = navigatorKey.currentContext;
-    //       // if (context != null && e.type != DioExceptionType.cancel) {
-    //       //   navigatorKey.currentState?.pushNamed(AppRoutes.errorPage);
-    //       // }
-    //       return handler.next(e);
-    //     },
-    //   ),
-    // );
 
     // Thêm interceptor để xử lý token và refresh token
     dio.interceptors.add(
@@ -83,40 +54,16 @@ class DioClient {
           // Xử lý lỗi 401 (Unauthorized) bằng cách refresh token
           if (e.response?.statusCode == 401 &&
               !e.requestOptions.path.contains('/auth/refresh')) {
-            if (e.requestOptions.path.contains('/auth/refresh')) {
-              return handler.next(e);
-            }
             try {
               final refreshToken = getIt<SharedPreferences>().getString(
                 AppKeys.refreshToken,
               );
               if (refreshToken != null) {
-                if (_isRefreshing) {
-                  await _refreshCompleter?.future;
-                } else {
-                  // Bắt đầu refresh token mới
-                  _isRefreshing = true;
-                  _refreshCompleter = Completer<void>();
-
-                  try {
-                    print('Bắt đầu refresh token...');
-                    await getIt<RefreshToken>()();
-                    print('Refresh token thành công');
-                    _refreshCompleter!.complete();
-                  } catch (refreshError) {
-                    print('Refresh token thất bại: $refreshError');
-                    _refreshCompleter!.completeError(refreshError);
-                    rethrow;
-                  } finally {
-                    _isRefreshing = false;
-                  }
-                }
+                // Gọi use case refresh token
+                await getIt<RefreshToken>()();
                 final newAccessToken = getIt<SharedPreferences>().getString(
                   AppKeys.accessToken,
                 );
-                if (newAccessToken == null) {
-                  throw Exception('No new access token after refresh');
-                }
                 // Tạo lại request với token mới
                 final clonedRequest = await dio.request(
                   e.requestOptions.path,
@@ -124,7 +71,7 @@ class DioClient {
                     method: e.requestOptions.method,
                     headers: {
                       ...e.requestOptions.headers,
-                      'Authorization': 'Bearer $newAccessToken',
+                      "Authorization": "Bearer $newAccessToken",
                     },
                   ),
                   data: e.requestOptions.data,

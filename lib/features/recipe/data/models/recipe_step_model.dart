@@ -20,7 +20,7 @@ class RecipeStepModel {
   factory RecipeStepModel.fromJson(Map<String, dynamic> json) {
     return RecipeStepModel(
       id: json['id'],
-      stepNumber: json['stepNumber'],
+      stepNumber: json['stepNumber'] ?? 0,
       instruction: json['instruction'],
       imageUrls: json['imageUrls'] != null
           ? List<String>.from(json['imageUrls'])

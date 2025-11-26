@@ -1,12 +1,10 @@
 import 'dart:io';
+
 import 'package:eefood/core/di/injection.dart';
 import 'package:eefood/core/utils/file_upload.dart';
 import 'package:eefood/core/utils/media_picker.dart';
-import 'package:eefood/features/recipe/presentation/provider/recipe_cubit.dart';
-import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:image_picker/image_picker.dart';
 import 'package:eefood/features/recipe/data/models/recipe_step_model.dart';
+import 'package:flutter/material.dart';
 
 class InstructionBottomSheet extends StatefulWidget {
   final Function(RecipeStepModel, {int? index}) onSaveInstruction;
@@ -66,7 +64,7 @@ class _InstructionBottomSheetState extends State<InstructionBottomSheet> {
       final url = await _fileUpload.uploadFile(image);
       if (url.isNotEmpty) {
         setState(() {
-          if(!urlImages.contains(url)){
+          if (!urlImages.contains(url)) {
             urlImages.add(url);
             _images.add(image);
           }
@@ -81,7 +79,7 @@ class _InstructionBottomSheetState extends State<InstructionBottomSheet> {
       final url = await _fileUpload.uploadFile(video);
       if (url.isNotEmpty) {
         setState(() {
-          if(!urlVideos.contains(url)){
+          if (!urlVideos.contains(url)) {
             urlVideos.add(url);
             _videos.add(video);
           }
@@ -92,10 +90,10 @@ class _InstructionBottomSheetState extends State<InstructionBottomSheet> {
 
   void _removeImage(int index) {
     setState(() {
-      if(index < _images.length){
+      if (index < _images.length) {
         _images.removeAt(index);
       }
-      if(index < urlImages.length){
+      if (index < urlImages.length) {
         urlImages.removeAt(index);
       }
     });
@@ -103,10 +101,10 @@ class _InstructionBottomSheetState extends State<InstructionBottomSheet> {
 
   void _removeVideo(int index) {
     setState(() {
-      if(index < _videos.length){
+      if (index < _videos.length) {
         _videos.removeAt(index);
       }
-      if(index < urlVideos.length){
+      if (index < urlVideos.length) {
         urlVideos.removeAt(index);
       }
     });
@@ -235,7 +233,7 @@ class _InstructionBottomSheetState extends State<InstructionBottomSheet> {
           ),
 
           Column(
-            children: List.generate(_videos.length, (index){
+            children: List.generate(_videos.length, (index) {
               return Stack(
                 children: [
                   Container(
@@ -281,9 +279,9 @@ class _InstructionBottomSheetState extends State<InstructionBottomSheet> {
                   if (_textController.text.isNotEmpty) {
                     widget.onSaveInstruction(
                       RecipeStepModel(
-                        stepNumber: widget.editingInstruction!.stepNumber,
+                        stepNumber: widget.editingInstruction?.stepNumber ?? 0,
                         instruction: _textController.text,
-                        imageUrls: urlVideos.isNotEmpty ? urlImages : null,
+                        imageUrls: urlImages.isNotEmpty ? urlImages : null,
                         videoUrls: urlVideos.isNotEmpty ? urlVideos : null,
                         stepTime: int.tryParse(_stepTimeController.text),
                       ),

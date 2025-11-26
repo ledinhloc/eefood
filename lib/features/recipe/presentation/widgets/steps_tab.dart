@@ -1,4 +1,3 @@
-import 'package:eefood/features/recipe/data/models/recipe_model.dart';
 import 'package:flutter/material.dart';
 import 'package:video_player/video_player.dart';
 
@@ -15,101 +14,112 @@ class StepsTab extends StatelessWidget {
       itemCount: recipe.steps?.length ?? 0,
       itemBuilder: (context, index) {
         final step = recipe.steps![index];
-        return Card(
-          margin: const EdgeInsets.symmetric(vertical: 8),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12),
+
+        return Container(
+          margin: const EdgeInsets.only(bottom: 14),
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            border: Border.all(color: Colors.grey.shade200),
+            borderRadius: BorderRadius.circular(0),
           ),
-          elevation: 1,
-          child: Padding(
-            padding: const EdgeInsets.all(12),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  "Bước ${step.stepNumber}",
-                  style: const TextStyle(
-                    fontWeight: FontWeight.bold,
-                    fontSize: 16,
-                  ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // --- Title ---
+              Text(
+                "Bước ${step.stepNumber}",
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 18,
+                  color: Colors.orange.shade700,
                 ),
-                const SizedBox(height: 6),
-                Text(
-                  step.instruction ?? '',
-                  style: const TextStyle(fontSize: 14),
+              ),
+
+              const SizedBox(height: 8),
+
+              // --- Instruction ---
+              Text(
+                step.instruction ?? '',
+                style: const TextStyle(
+                  fontSize: 15,
+                  height: 1.4,
+                  color: Colors.black87,
                 ),
-                const SizedBox(height: 8),
+              ),
 
-                // Thời gian của bước
-                if (step.stepTime != null)
-                  Text(
-                    "⏱ ${step.stepTime} phút",
-                    style: const TextStyle(fontSize: 13, color: Colors.grey),
-                  ),
+              const SizedBox(height: 10),
 
-                //Hinh minh hoa
-                if (step.imageUrls != null && step.imageUrls!.isNotEmpty)
-                  Padding(
-                    padding: const EdgeInsets.only(top: 10),
-                    child: SizedBox(
-                      height: 200,
-                      child: ListView.builder(
-                        scrollDirection: Axis.horizontal,
-                        itemCount: step.imageUrls!.length,
-                        itemBuilder: (context, index) {
-                          return Padding(
-                            padding: const EdgeInsets.only(right: 8),
-                            child: ClipRRect(
-                              child: ClipRRect(
-                                borderRadius: BorderRadius.circular(8),
-                                child: Image.network(
-                                  step.imageUrls![index],
-                                  fit: BoxFit.cover,
-                                  width: 200,
-                                  errorBuilder: (context, error, stackTrace) {
-                                    return Container(
-                                      height: 150,
-                                      width: 200,
-                                      color: Colors.grey[200],
-                                      child: const Center(
-                                        child: Icon(
-                                          Icons.broken_image,
-                                          color: Colors.grey,
-                                          size: 48,
-                                        ),
-                                      ),
-                                    );
-                                  },
-                                ),
-                              ),
-                            ),
-                          );
-                        },
-                      ),
+              // --- Step time ---
+              if (step.stepTime != null)
+                Row(
+                  children: [
+                    const Icon(
+                      Icons.timer_outlined,
+                      size: 18,
+                      color: Colors.grey,
+                    ),
+                    const SizedBox(width: 4),
+                    Text(
+                      "${step.stepTime} phút",
+                      style: const TextStyle(fontSize: 13, color: Colors.grey),
+                    ),
+                  ],
+                ),
+
+              // --- Images ---
+              if (step.imageUrls != null && step.imageUrls!.isNotEmpty)
+                Padding(
+                  padding: const EdgeInsets.only(top: 12),
+                  child: SizedBox(
+                    height: 200,
+                    child: ListView.separated(
+                      scrollDirection: Axis.horizontal,
+                      itemCount: step.imageUrls!.length,
+                      separatorBuilder: (_, __) => const SizedBox(width: 10),
+                      itemBuilder: (context, index) {
+                        return ClipRRect(
+                          borderRadius: BorderRadius.circular(12),
+                          child: Image.network(
+                            step.imageUrls![index],
+                            fit: BoxFit.cover,
+                            width: 220,
+                            errorBuilder: (context, error, stackTrace) {
+                              return Container(
+                                color: Colors.grey[200],
+                                width: 220,
+                                child: const Icon(Icons.broken_image, size: 48),
+                              );
+                            },
+                          ),
+                        );
+                      },
                     ),
                   ),
-                //video huong dan
-                if (step.videoUrls != null && step.videoUrls!.isNotEmpty)
-                  Padding(
-                    padding: const EdgeInsets.only(top: 10),
-                    child: SizedBox(
-                      height: 200,
-                      child: ListView.builder(
-                        scrollDirection: Axis.horizontal,
-                        itemCount: step.videoUrls!.length,
-                        itemBuilder: (context, index) {
-                          return Padding(
-                            padding: const EdgeInsets.only(right: 8),
-                            child: _StepVideoPlayer(
-                              videoUrl: step.videoUrls![index],
-                            ),
-                          );
-                        },
-                      ),
+                ),
+
+              // --- Videos ---
+              if (step.videoUrls != null && step.videoUrls!.isNotEmpty)
+                Padding(
+                  padding: const EdgeInsets.only(top: 12),
+                  child: SizedBox(
+                    height: 200,
+                    child: ListView.separated(
+                      scrollDirection: Axis.horizontal,
+                      itemCount: step.videoUrls!.length,
+                      separatorBuilder: (_, __) => const SizedBox(width: 10),
+                      itemBuilder: (context, index) {
+                        return ClipRRect(
+                          borderRadius: BorderRadius.circular(12),
+                          child: _StepVideoPlayer(
+                            videoUrl: step.videoUrls![index],
+                          ),
+                        );
+                      },
                     ),
                   ),
-              ],
-            ),
+                ),
+            ],
           ),
         );
       },
@@ -132,7 +142,9 @@ class _StepVideoPlayerState extends State<_StepVideoPlayer> {
   void initState() {
     super.initState();
     _controller = VideoPlayerController.network(widget.videoUrl)
-      ..initialize().then((_) => setState(() {}));
+      ..initialize().then((_) {
+        if (mounted) setState(() {});
+      });
   }
 
   @override
@@ -144,18 +156,24 @@ class _StepVideoPlayerState extends State<_StepVideoPlayer> {
   @override
   Widget build(BuildContext context) {
     return _controller.value.isInitialized
-        ? AspectRatio(
-            aspectRatio: _controller.value.aspectRatio,
-            child: Stack(
-              alignment: Alignment.center,
-              children: [
-                VideoPlayer(_controller),
-                IconButton(
+        ? Stack(
+            alignment: Alignment.center,
+            children: [
+              AspectRatio(
+                aspectRatio: _controller.value.aspectRatio,
+                child: VideoPlayer(_controller),
+              ),
+              Container(
+                decoration: BoxDecoration(
+                  color: Colors.black45,
+                  shape: BoxShape.circle,
+                ),
+                child: IconButton(
                   icon: Icon(
                     _controller.value.isPlaying
-                        ? Icons.pause_circle
-                        : Icons.play_circle,
-                    size: 48,
+                        ? Icons.pause_circle_filled
+                        : Icons.play_circle_fill,
+                    size: 50,
                     color: Colors.white,
                   ),
                   onPressed: () {
@@ -166,9 +184,13 @@ class _StepVideoPlayerState extends State<_StepVideoPlayer> {
                     });
                   },
                 ),
-              ],
-            ),
+              ),
+            ],
           )
-        : const Center(child: CircularProgressIndicator());
+        : Container(
+            height: 200,
+            color: Colors.black12,
+            child: const Center(child: CircularProgressIndicator()),
+          );
   }
 }
