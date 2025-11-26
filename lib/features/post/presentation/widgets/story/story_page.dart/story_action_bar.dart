@@ -33,6 +33,22 @@ class StoryActionBar extends StatefulWidget {
 
 class _StoryActionBarState extends State<StoryActionBar> {
   final GlobalKey _reactKey = GlobalKey();
+  late StoryReactionCubit _reactionCubit;
+  late StoryReactionStatsCubit _reactionStatsCubit;
+
+  @override
+  void initState() {
+    super.initState();
+    _reactionCubit = context.read<StoryReactionCubit>();
+    _reactionStatsCubit = context.read<StoryReactionStatsCubit>();
+    if (widget.storyId != null) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        context.read<StoryReactionCubit>().loadReactionForStory(
+          widget.storyId!,
+        );
+      });
+    }
+  }
 
   void _showPopup() {
     widget.onPause();
@@ -89,13 +105,41 @@ class _StoryActionBarState extends State<StoryActionBar> {
     });
   }
 
+  void _handleReaction(
+    ReactionType type,
+    bool hasReacted,
+    StoryReactionCubit reactionCubit,
+    StoryReactionStatsCubit statsCubit,
+  ) async {
+    if (widget.storyId == null) return;
+
+    if (hasReacted) {
+      final oldType = reactionCubit.state.reaction!.reactionType;
+      statsCubit.decrementReaction(oldType);
+      await reactionCubit.removeReaction(widget.storyId!);
+    } else {
+      statsCubit.incrementReaction(type);
+      await reactionCubit.reactToStory(widget.storyId!, type);
+    }
+
+    if (mounted) {
+      Future.delayed(const Duration(milliseconds: 500), () {
+        if (mounted && widget.storyId != null) {
+          statsCubit.loadReactions(storyId: widget.storyId!);
+        }
+      });
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return BlocBuilder<StoryReactionCubit, StoryReactionState>(
       builder: (context, reactionState) {
         final currentReaction =
             reactionState.reaction?.reactionType ?? ReactionType.LOVE;
-        final hasReacted = reactionState.reaction != null;
+        debugPrint('Reaction hiện tại: ${reactionState.reaction?.reactionType}');
+        final hasReacted =
+            reactionState.reaction != null;
 
         return BlocBuilder<StoryReactionStatsCubit, StoryReactionStatsState>(
           builder: (context, statsState) {
@@ -114,7 +158,12 @@ class _StoryActionBarState extends State<StoryActionBar> {
                         key: _reactKey,
                         onTap: () {
                           widget.onPause();
-                          widget.onReact(currentReaction);
+                          _handleReaction(
+                            currentReaction,
+                            hasReacted,
+                            _reactionCubit,
+                            _reactionStatsCubit,
+                          );
                           widget.onResume();
                         },
                         onLongPressStart: (_) {

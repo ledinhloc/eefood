@@ -53,6 +53,7 @@ class _StoryViewerPageState extends State<StoryViewerPage> {
   late StoryViewerCubit _storyViewerCubit;
   late StoryReactionStatsCubit _reactionStatsCubit;
   late StoryCommentCubit _commentCubit;
+  late StoryReactionCubit _reactionCubit;
   final StoryRepository storyRepository = getIt<StoryRepository>();
 
   Duration _videoDuration = Duration();
@@ -62,8 +63,9 @@ class _StoryViewerPageState extends State<StoryViewerPage> {
     super.initState();
 
     _storyViewerCubit = context.read<StoryViewerCubit>();
-    _reactionStatsCubit = getIt<StoryReactionStatsCubit>();
+    _reactionStatsCubit = context.read<StoryReactionStatsCubit>();
     _commentCubit = getIt<StoryCommentCubit>();
+    _reactionCubit = context.read<StoryReactionCubit>();
 
     // Initialize helpers
     _progressHelper = StoryProgressHelper(
@@ -142,6 +144,8 @@ class _StoryViewerPageState extends State<StoryViewerPage> {
 
     _progressHelper.reset();
 
+    _reactionCubit.reset();
+
     setState(() {});
 
     if (_isCurrentUserStory()) {
@@ -149,26 +153,31 @@ class _StoryViewerPageState extends State<StoryViewerPage> {
       _commentCubit.reset();
       _loadViewersForCurrentStory();
     } else {
+      _reactionStatsCubit.reset();
+      _commentCubit.reset();
       _loadStatsForCurrentStory();
     }
   }
 
-  void _loadViewersForCurrentStory() {
+  void _loadViewersForCurrentStory() async {
     final storyId =
         _navigationHelper.currentUser.stories[_navigationHelper.storyIndex].id;
     if (storyId != null) {
       _viewerLoaderHelper.loadViewersForStory(storyId);
-      _reactionStatsCubit.loadReactions(storyId: storyId);
+      await _reactionStatsCubit.loadReactions(storyId: storyId);
       print('Loading viewers and reactions for story $storyId');
     }
   }
 
-  void _loadStatsForCurrentStory() {
+  void _loadStatsForCurrentStory() async {
     final storyId =
         _navigationHelper.currentUser.stories[_navigationHelper.storyIndex].id;
     if (storyId != null) {
-      _reactionStatsCubit.loadReactions(storyId: storyId);
-      _commentCubit.loadComments(storyId);
+      final storyReactionCubit = context.read<StoryReactionCubit>();
+      storyReactionCubit.loadReactionForStory(storyId);
+
+      await _reactionStatsCubit.loadReactions(storyId: storyId);
+      await _commentCubit.loadComments(storyId);
       print('Loading stats for story $storyId');
     }
   }
@@ -368,20 +377,43 @@ class _StoryViewerPageState extends State<StoryViewerPage> {
                     providers: [
                       BlocProvider.value(value: _reactionStatsCubit),
                       BlocProvider.value(value: _commentCubit),
+                      BlocProvider.value(
+                        value: _reactionCubit, // ADD THIS
+                      ),
+                      BlocProvider.value(value: _reactionStatsCubit),
                     ],
                     child: SafeArea(
                       child: Container(
                         alignment: Alignment.bottomRight,
                         padding: const EdgeInsets.only(bottom: 8, right: 12),
                         child: StoryActionBar(
+                          key: ValueKey('action_bar_$storyId'),
                           storyId: storyId,
                           currentUserId: widget.currentUserId,
                           onReact: (reaction) {
                             if (storyId != null) {
-                              storyReactionCubit.reactToStory(
-                                storyId,
-                                reaction,
-                              );
+                              if (_reactionCubit.state.reaction != null) {
+                                _reactionStatsCubit.decrementReaction(
+                                  _reactionCubit.state.reaction!.reactionType,
+                                );
+                              }
+                              _reactionStatsCubit.incrementReaction(reaction);
+
+                              _reactionCubit
+                                  .reactToStory(storyId, reaction)
+                                  .then((_) {
+                                    // Reload to ensure consistency
+                                    Future.delayed(
+                                      const Duration(milliseconds: 500),
+                                      () {
+                                        if (mounted) {
+                                          _reactionStatsCubit.loadReactions(
+                                            storyId: storyId,
+                                          );
+                                        }
+                                      },
+                                    );
+                                  });
                             }
                           },
                           onPause: _progressHelper.pause,
@@ -392,10 +424,29 @@ class _StoryViewerPageState extends State<StoryViewerPage> {
                               _reactionHelper.showReactionPopup(context, pos, (
                                 reaction,
                               ) {
-                                storyReactionCubit.reactToStory(
-                                  story.id!,
-                                  reaction,
-                                );
+                                // Handle optimistic update
+                                if (_reactionCubit.state.reaction != null) {
+                                  _reactionStatsCubit.decrementReaction(
+                                    _reactionCubit.state.reaction!.reactionType,
+                                  );
+                                }
+                                _reactionStatsCubit.incrementReaction(reaction);
+
+                                _reactionCubit
+                                    .reactToStory(story.id!, reaction)
+                                    .then((_) {
+                                      // Reload to ensure consistency
+                                      Future.delayed(
+                                        const Duration(milliseconds: 500),
+                                        () {
+                                          if (mounted) {
+                                            _reactionStatsCubit.loadReactions(
+                                              storyId: story.id!,
+                                            );
+                                          }
+                                        },
+                                      );
+                                    });
                               });
                             }
                           },

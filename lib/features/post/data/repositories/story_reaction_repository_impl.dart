@@ -8,6 +8,20 @@ class StoryReactionRepositoryImpl extends StoryReactionRepository {
   StoryReactionRepositoryImpl({required this.dio});
 
   @override
+  Future<StoryReactionModel?> getCurrentUserReaction(int storyId) async {
+    try {
+      final response = await dio.get('/v1/story-reactions/$storyId/current');
+
+      if (response.statusCode == 200 && response.data['data'] != null) {
+        return StoryReactionModel.fromJson(response.data['data']);
+      }
+      return null;
+    } catch (e) {
+      throw Exception('Failed to load current user reaction $e');
+    }
+  }
+
+  @override
   Future<StoryReactionModel?> reactToStory(
     int storyId,
     ReactionType type,
@@ -22,8 +36,7 @@ class StoryReactionRepositoryImpl extends StoryReactionRepository {
         return StoryReactionModel.fromJson(response.data['data']);
       }
       return null;
-    }
-    catch(e) {
+    } catch (e) {
       throw Exception('Failed to react story $e');
     }
   }
@@ -32,8 +45,7 @@ class StoryReactionRepositoryImpl extends StoryReactionRepository {
   Future<void> removeReaction(int storyId) async {
     try {
       await dio.delete('/v1/story-reactions/$storyId');
-    }
-    catch(e) {
+    } catch (e) {
       throw Exception('Failed to deleted reaction story $e');
     }
   }

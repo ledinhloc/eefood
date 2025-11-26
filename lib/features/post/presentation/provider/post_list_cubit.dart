@@ -188,7 +188,7 @@ class PostListCubit extends Cubit<PostListState> {
     required int userId,
   }) async {
     if (state.isLoading || (!state.hasMore && loadMore)) return;
-
+    if(isClosed) return;
     emit(state.copyWith(isLoading: true));
     final nextPage = loadMore ? state.currentPage + 1 : 1;
     final posts = await postRepo.getAllPosts(

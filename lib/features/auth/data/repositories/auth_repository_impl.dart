@@ -113,9 +113,6 @@ class AuthRepositoryImpl implements AuthRepository {
           options: Options(
             contentType: 'application/json',
             extra: {'requireAuth': false},
-            validateStatus: (status) {
-              return status != null && status >= 200 && status < 300;
-            },
           ),
         );
         final userModel = UserModel.fromJson(response.data['data']);

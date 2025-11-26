@@ -31,18 +31,11 @@ class PersonalUserHeader extends StatefulWidget {
 
 class _PersonalUserHeaderState extends State<PersonalUserHeader> {
   late final ProfileCubit _cubit;
-  final GetCurrentUser _getCurrentUser = getIt<GetCurrentUser>();
-  late User? user;
 
   @override
   void initState() {
     super.initState();
     _cubit = ProfileCubit(getIt<GetCurrentUser>())..loadProfile();
-    _getUser();
-  }
-
-  void _getUser() async {
-    user = await _getCurrentUser();
   }
 
   Future<void> _handleChangeBackground(BuildContext context) async {
@@ -119,7 +112,7 @@ class _PersonalUserHeaderState extends State<PersonalUserHeader> {
             onPressed: () => Navigator.pop(context),
           ),
           actions: [
-            if (user?.id !=null && (user!.id == widget.user.id)) ...[
+            if (userState.id == widget.user.id) ...[
               IconButton(
                 icon: const Icon(
                   Icons.image_outlined,

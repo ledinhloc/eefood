@@ -12,6 +12,7 @@ class StoryReactionStatsState {
   final bool hasMore;
   final String? error;
   final int currentPage;
+  final int? storyId;
 
   StoryReactionStatsState({
     this.reactions = const [],
@@ -21,6 +22,7 @@ class StoryReactionStatsState {
     this.hasMore = true,
     this.error,
     this.currentPage = 1,
+    this.storyId,
   });
 
   StoryReactionStatsState copyWith({
@@ -31,6 +33,7 @@ class StoryReactionStatsState {
     bool? hasMore,
     String? error,
     int? currentPage,
+    int? storyId,
   }) {
     return StoryReactionStatsState(
       reactions: reactions ?? this.reactions,
@@ -40,6 +43,7 @@ class StoryReactionStatsState {
       hasMore: hasMore ?? this.hasMore,
       error: error,
       currentPage: currentPage ?? this.currentPage,
+      storyId: storyId ?? this.storyId,
     );
   }
 }
@@ -54,18 +58,21 @@ class StoryReactionStatsCubit extends Cubit<StoryReactionStatsState> {
     bool loadMore = false,
   }) async {
     if (isClosed) return;
-    if (state.isLoading) return;
-    if (loadMore && !state.hasMore) return;
+    if (!loadMore && state.storyId != storyId) {
+      emit(StoryReactionStatsState(storyId: storyId, isLoading: true));
+    } else {
+      if (state.isLoading) return;
+      if (loadMore && !state.hasMore) return;
+      emit(state.copyWith(isLoading: true, error: null));
+    }
 
     final page = loadMore ? state.currentPage + 1 : 1;
-
-    emit(state.copyWith(isLoading: true, error: null));
 
     try {
       final result = await repository.getUserReactedStory(
         storyId,
         page: page,
-        limit: 20,
+        limit: 5,
       );
 
       if (isClosed) return;
@@ -88,6 +95,7 @@ class StoryReactionStatsCubit extends Cubit<StoryReactionStatsState> {
           isLoading: false,
           hasMore: newReactions.length < result.totalElements,
           currentPage: page,
+          storyId: storyId
         ),
       );
     } catch (e) {
@@ -102,4 +110,35 @@ class StoryReactionStatsCubit extends Cubit<StoryReactionStatsState> {
       emit(StoryReactionStatsState());
     }
   }
+
+  void incrementReaction(ReactionType type) {
+    if (isClosed) return;
+
+    final newCounts = Map<ReactionType, int>.from(state.reactionCounts);
+    newCounts[type] = (newCounts[type] ?? 0) + 1;
+
+    emit(
+      state.copyWith(
+        reactionCounts: newCounts,
+        totalReactions: state.totalReactions + 1,
+      ),
+    );
+  }
+
+  void decrementReaction(ReactionType type) {
+    if (isClosed) return;
+
+    final newCounts = Map<ReactionType, int>.from(state.reactionCounts);
+    if (newCounts[type] != null && newCounts[type]! > 0) {
+      newCounts[type] = newCounts[type]! - 1;
+    }
+
+    emit(
+      state.copyWith(
+        reactionCounts: newCounts,
+        totalReactions: state.totalReactions > 0 ? state.totalReactions - 1 : 0,
+      ),
+    );
+  }
+
 }

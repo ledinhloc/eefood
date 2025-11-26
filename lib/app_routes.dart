@@ -141,8 +141,8 @@ class AppRoutes {
     recipeCrudPage: (context) {
       final args =
           ModalRoute.of(context)!.settings.arguments as Map<String, dynamic>;
-      final recipe = args?['initialRecipe'] as RecipeModel?;
-      final isCreate = args?['isCreate'] as bool? ?? true;
+      final recipe = args['initialRecipe'] as RecipeModel?;
+      final isCreate = args['isCreate'] as bool? ?? true;
       return RecipeCreatePage(isCreate: isCreate, initialRecipe: recipe);
     },
     errorPage: (context) => ErrorPage(),
