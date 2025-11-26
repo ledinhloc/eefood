@@ -1,7 +1,10 @@
 import 'package:eefood/core/utils/file_upload.dart';
 import 'package:eefood/features/auth/presentation/bloc/on_boarding_bloc/on_boarding_cubit.dart';
+import 'package:eefood/features/livestream/data/repositoty/live_comment_repo_impl.dart';
 import 'package:eefood/features/livestream/data/repositoty/live_repository_impl.dart';
+import 'package:eefood/features/livestream/domain/repository/live_comment_repo.dart';
 import 'package:eefood/features/livestream/domain/repository/live_repository.dart';
+import 'package:eefood/features/livestream/presentation/provider/live_comment_cubit.dart';
 import 'package:eefood/features/livestream/presentation/provider/start_live_cubit.dart';
 import 'package:eefood/features/noti/data/repositories/notification_repository_impl.dart';
 import 'package:eefood/features/noti/domain/repositories/notification_repository.dart';
@@ -186,4 +189,7 @@ Future<void> setupDependencies() async {
   getIt.registerLazySingleton<StartLiveCubit>(() => StartLiveCubit(getIt<LiveRepository>()));
   getIt.registerFactory<WatchLiveCubit>(() => WatchLiveCubit(getIt<LiveRepository>()));
   getIt.registerLazySingleton<UserLiveStatusCubit>(() => UserLiveStatusCubit(getIt<LiveRepository>()));
+
+  getIt.registerLazySingleton<LiveCommentRepository>(() => LiveCommentRepositoryImpl(dio: getIt<DioClient>().dio));
+  getIt.registerFactory<LiveCommentCubit>(() => LiveCommentCubit(getIt<LiveCommentRepository>()));
 }

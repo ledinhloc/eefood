@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../../../core/di/injection.dart';
 import '../../../../livestream/data/model/live_stream_response.dart';
+import '../../../../livestream/presentation/provider/live_comment_cubit.dart';
 import '../../../../livestream/presentation/provider/watch_live_cubit.dart';
 import '../../../../livestream/presentation/screens/live_viewer_screen.dart';
 class LiveStatusBadge extends StatelessWidget {
@@ -23,6 +24,21 @@ class LiveStatusBadge extends StatelessWidget {
               create: (_) => getIt<WatchLiveCubit>(),
               child: LiveViewerScreen(streamId: stream!.id),
             ),
+          ),
+        );
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (_) => MultiBlocProvider(
+                providers: [
+                  BlocProvider(
+                      create: (_) => getIt<WatchLiveCubit>()
+                  ),
+                  BlocProvider(
+                    create: (_) => getIt<LiveCommentCubit>()..loadComments(stream!.id),
+                  ),
+                ],
+                child: LiveViewerScreen(streamId: stream!.id)),
           ),
         );
       },
