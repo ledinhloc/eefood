@@ -11,15 +11,30 @@ Future<bool> showCustomSnackBar(
 }) {
   final completer = Completer<bool>();
 
+  final messenger = ScaffoldMessenger.of(context);
+
   final snackBar = SnackBar(
-    behavior: SnackBarBehavior.floating, // Nổi lên thay vì dính đáy
-    margin: const EdgeInsets.all(16), // Khoảng cách xung quanh
-    backgroundColor: isError ? Colors.redAccent : Colors.green, // Màu theo loại
+    behavior: SnackBarBehavior.floating,
+    margin: const EdgeInsets.all(16),
+    backgroundColor: isError ? Colors.red : Colors.green,
+    dismissDirection: DismissDirection.none,
     shape: RoundedRectangleBorder(
-      borderRadius: BorderRadius.circular(12), // Bo tròn
-      side: BorderSide(color: Colors.white70, width: 1),
+      borderRadius: BorderRadius.circular(12),
+      side: const BorderSide(color: Colors.white70, width: 1),
     ),
-    duration: const Duration(seconds: 3), // Thời gian hiển thị
+    duration: const Duration(seconds: 3),
+
+    // Bấm OK
+    action: SnackBarAction(
+      label: 'OK',
+      textColor: Colors.white,
+      onPressed: () {
+        if (!completer.isCompleted) completer.complete(true);
+        messenger.hideCurrentSnackBar(reason: SnackBarClosedReason.action);
+      },
+    ),
+
+    // Nội dung
     content: Row(
       children: [
         Icon(
@@ -38,19 +53,14 @@ Future<bool> showCustomSnackBar(
         ),
       ],
     ),
-    action: SnackBarAction(
-      label: 'OK',
-      textColor: Colors.white,
-      onPressed: () {
-        completer.complete(true); // Người dùng bấm OK
-      },
-    ),
   );
 
-  ScaffoldMessenger.of(context).showSnackBar(snackBar);
-  // Nếu snackBar biến mất mà chưa bấm OK thì trả false
+  messenger.showSnackBar(snackBar);
+
+  // Tự đóng bằng timer
   Future.delayed(const Duration(seconds: 3), () {
     if (!completer.isCompleted) completer.complete(false);
+    messenger.hideCurrentSnackBar(reason: SnackBarClosedReason.timeout);
   });
 
   return completer.future;
