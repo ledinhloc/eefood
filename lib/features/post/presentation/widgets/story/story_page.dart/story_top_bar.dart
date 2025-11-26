@@ -8,6 +8,7 @@ import 'package:flutter/material.dart';
 import '../../../../../../app_routes.dart';
 import '../../../../../../core/di/injection.dart';
 import '../../../../../profile/domain/repositories/profile_repository.dart';
+import '../../../../../profile/domain/usecases/profile_usecase.dart';
 
 class StoryTopBar extends StatelessWidget {
   final UserStoryModel user;
@@ -42,7 +43,7 @@ class StoryTopBar extends StatelessWidget {
             children: [
               GestureDetector(
                 onTap: () async {
-                  User? userStory = await getIt<ProfileRepository>().getUserById(user.userId);
+                  User? userStory = await getIt<GetUserById>().call(user.userId);
                   Navigator.pushReplacementNamed(
                     context,
                     AppRoutes.personalUser,

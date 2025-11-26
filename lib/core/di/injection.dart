@@ -111,6 +111,7 @@ Future<void> setupDependencies() async {
 
   //use case profile
   getIt.registerLazySingleton(() => UpdateProfile(getIt<ProfileRepository>()));
+  getIt.registerLazySingleton(() => GetUserById(getIt<ProfileRepository>()));
 
   // OnBoarding Cubit (singleton)
   getIt.registerLazySingleton<OnBoardingCubit>(() => OnBoardingCubit());

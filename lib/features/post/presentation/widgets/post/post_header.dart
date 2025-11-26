@@ -8,6 +8,7 @@ import 'package:eefood/features/profile/domain/repositories/profile_repository.d
 import 'package:flutter/material.dart';
 import '../../../../../core/widgets/user_avatar.dart';
 import '../../../../auth/domain/entities/user.dart';
+import '../../../../profile/domain/usecases/profile_usecase.dart';
 import '../../../data/models/post_model.dart';
 import '../../../../../core/widgets/custom_bottom_sheet.dart';
 import '../collection/add_to_collection_sheet.dart';
@@ -43,7 +44,7 @@ class PostHeader extends StatelessWidget {
       ),
       title: GestureDetector(
         onTap: () async {
-          User? userStory = await getIt<ProfileRepository>().getUserById(userId);
+          User? userStory = await  getIt<GetUserById>().call(userId);
           await Navigator.pushNamed(
             context,
             AppRoutes.personalUser,
