@@ -61,7 +61,7 @@ class _LiveStreamScreenState extends State<LiveStreamScreen> {
       _room!.addListener(_onRoomUpdate);
 
       // Connect to room
-      await _room!.connect('ws://10.0.2.2:7880', widget.stream.livekitToken!);
+      await _room!.connect(AppKeys.livekitUrl, widget.stream.livekitToken!);
 
       // Publish video - KIỂM TRA track != null VÀ chưa bị stopped
       if (widget.localVideoTrack != null &&

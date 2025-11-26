@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:eefood/core/constants/app_keys.dart';
 import 'package:eefood/core/utils/helpers.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -132,7 +133,7 @@ class _LiveViewerScreenState extends State<LiveViewerScreen> {
         });
 
       // Connect to room
-      await _room!.connect('ws://10.0.2.2:7880', stream.livekitToken!);
+      await _room!.connect(AppKeys.livekitUrl, stream.livekitToken!);
 
       print('Connected to room as viewer');
       print('Room state: ${_room!.connectionState}');
