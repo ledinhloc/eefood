@@ -9,8 +9,12 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:livekit_client/livekit_client.dart';
 
 import '../../../../core/di/injection.dart';
+import '../../../../core/utils/food_emotion_helper.dart';
+import '../../data/model/live_reaction_response.dart';
 import '../../data/model/live_stream_response.dart';
+import '../provider/live_reaction_cubit.dart';
 import '../provider/watch_live_cubit.dart';
+import '../widgets/live_reaction_animation.dart';
 
 class LiveViewerScreen extends StatefulWidget {
   final int streamId;
@@ -34,7 +38,7 @@ class _LiveViewerScreenState extends State<LiveViewerScreen> {
   final ScrollController _scrollController = ScrollController();
 
   // Reactions
-  final List<ReactionAnimation> _reactions = [];
+  final List<LiveReactionResponse> _activeReactions = [];
   Timer? _reactionTimer;
   EventsListener<RoomEvent>? _listener;
 
@@ -47,15 +51,6 @@ class _LiveViewerScreenState extends State<LiveViewerScreen> {
     _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
       if (mounted) {
         setState(() {}); // Refresh UI để cập nhật thời gian và viewer count
-      }
-    });
-
-    // Timer để xóa reactions cũ
-    _reactionTimer = Timer.periodic(const Duration(milliseconds: 100), (timer) {
-      if (mounted) {
-        setState(() {
-          _reactions.removeWhere((r) => r.isExpired());
-        });
       }
     });
   }
@@ -393,9 +388,20 @@ class _LiveViewerScreenState extends State<LiveViewerScreen> {
     return Duration.zero;
   }
 
-  void _addReaction(String emoji) {
+  Future<void> _sendReaction(FoodEmotion emotion) async {
+    try {
+      await context.read<LiveReactionCubit>().createReaction(
+        widget.streamId,
+        emotion,
+      );
+    } catch (e) {
+      developer.log('Error sending reaction: $e', name: 'LiveViewer');
+    }
+  }
+
+  void _onReactionCompleted(LiveReactionResponse reaction) {
     setState(() {
-      _reactions.add(ReactionAnimation(emoji: emoji));
+      _activeReactions.remove(reaction);
     });
   }
 
@@ -434,7 +440,6 @@ class _LiveViewerScreenState extends State<LiveViewerScreen> {
   void dispose() {
     developer.log('[VIEWER] Disposing...', name: 'LiveViewer');
     _timer?.cancel();
-    _reactionTimer?.cancel();
     _listener?.dispose();
     _room?.removeListener(_onRoomUpdate);
     _room?.disconnect();
@@ -446,323 +451,314 @@ class _LiveViewerScreenState extends State<LiveViewerScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return BlocBuilder<WatchLiveCubit, WatchLiveState>(
-      builder: (context, state) {
-        if (state.loading) {
-          return const Scaffold(
-            backgroundColor: Colors.black,
-            body: Center(child: CircularProgressIndicator(color: Colors.white)),
-          );
-        }
+    return BlocListener<LiveReactionCubit, LiveReactionState>(
+        listener:(context, reactionState) {
+          if (reactionState.reactions.isNotEmpty) {
+            final newReactions = reactionState.reactions
+                .where((r) => !_activeReactions.contains(r))
+                .toList();
 
-        if (state.error != null) {
+            if (newReactions.isNotEmpty) {
+              setState(() {
+                _activeReactions.addAll(newReactions);
+              });
+            }
+          }
+        },
+      child: BlocBuilder<WatchLiveCubit, WatchLiveState>(
+        builder: (context, state) {
+          if (state.loading) {
+            return const Scaffold(
+              backgroundColor: Colors.black,
+              body: Center(child: CircularProgressIndicator(color: Colors.white)),
+            );
+          }
+
+          if (state.error != null) {
+            return Scaffold(
+              backgroundColor: Colors.black,
+              body: Center(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    const Icon(Icons.error_outline, color: Colors.red, size: 64),
+                    const SizedBox(height: 16),
+                    Text(
+                      'Lỗi: ${state.error}',
+                      style: const TextStyle(color: Colors.white),
+                      textAlign: TextAlign.center,
+                    ),
+                    const SizedBox(height: 16),
+                    ElevatedButton(
+                      onPressed: () {
+                        setState(() {
+                          _hasAttemptedConnection = false;
+                        });
+                        _loadStream();
+                      },
+                      child: const Text('Thử lại'),
+                    ),
+                  ],
+                ),
+              ),
+            );
+          }
+
+          if (state.stream == null) {
+            return const Scaffold(
+              backgroundColor: Colors.black,
+              body: Center(
+                child: Text(
+                  'Không tìm thấy phiên phát sóng',
+                  style: TextStyle(color: Colors.white),
+                ),
+              ),
+            );
+          }
+
+          final stream = state.stream!;
+          final participantCount = (_room?.remoteParticipants.length ?? 0) + 1;
+
           return Scaffold(
             backgroundColor: Colors.black,
-            body: Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  const Icon(Icons.error_outline, color: Colors.red, size: 64),
-                  const SizedBox(height: 16),
-                  Text(
-                    'Lỗi: ${state.error}',
-                    style: const TextStyle(color: Colors.white),
-                    textAlign: TextAlign.center,
-                  ),
-                  const SizedBox(height: 16),
-                  ElevatedButton(
-                    onPressed: () {
-                      setState(() {
-                        _hasAttemptedConnection = false;
-                      });
-                      _loadStream();
-                    },
-                    child: const Text('Thử lại'),
-                  ),
-                ],
-              ),
-            ),
-          );
-        }
-
-        if (state.stream == null) {
-          return const Scaffold(
-            backgroundColor: Colors.black,
-            body: Center(
-              child: Text(
-                'Không tìm thấy phiên phát sóng',
-                style: TextStyle(color: Colors.white),
-              ),
-            ),
-          );
-        }
-
-        final stream = state.stream!;
-        final participantCount = (_room?.remoteParticipants.length ?? 0) + 1;
-
-        return Scaffold(
-          backgroundColor: Colors.black,
-          body: Stack(
-            children: [
-              // Video display
-              Positioned.fill(
-                child: _remoteVideoTrack != null
-                    ? VideoTrackRenderer(_remoteVideoTrack!)
-                    : Container(
-                        color: Colors.black,
-                        child: Center(
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Icon(
-                                _isConnecting ? Icons.sync : Icons.videocam_off,
-                                color: Colors.white54,
-                                size: 64,
-                              ),
-                              const SizedBox(height: 16),
-                              Text(
-                                _isConnecting
-                                    ? 'Đang kết nối...'
-                                    : _isConnected
-                                    ? 'Đang chờ video...'
-                                    : 'Chưa kết nối',
-                                style: const TextStyle(
-                                  color: Colors.white54,
-                                  fontSize: 16,
-                                ),
-                              ),
-                              if (_isConnecting)
-                                const Padding(
-                                  padding: EdgeInsets.only(top: 16),
-                                  child: CircularProgressIndicator(
-                                    color: Colors.white54,
-                                  ),
-                                ),
-                            ],
+            body: Stack(
+              children: [
+                // Video display
+                Positioned.fill(
+                  child: _remoteVideoTrack != null
+                      ? VideoTrackRenderer(_remoteVideoTrack!)
+                      : Container(
+                    color: Colors.black,
+                    child: Center(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(
+                            _isConnecting ? Icons.sync : Icons.videocam_off,
+                            color: Colors.white54,
+                            size: 64,
                           ),
-                        ),
-                      ),
-              ),
-
-              // Reactions overlay
-              ...(_reactions.map((r) => r.build())),
-
-              // Top bar
-              Positioned(
-                top: 0,
-                left: 0,
-                right: 0,
-                child: SafeArea(
-                  child: Container(
-                    padding: const EdgeInsets.all(12),
-                    decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                        begin: Alignment.topCenter,
-                        end: Alignment.bottomCenter,
-                        colors: [
-                          Colors.black.withOpacity(0.6),
-                          Colors.transparent,
+                          const SizedBox(height: 16),
+                          Text(
+                            _isConnecting
+                                ? 'Đang kết nối...'
+                                : _isConnected
+                                ? 'Đang chờ video...'
+                                : 'Chưa kết nối',
+                            style: const TextStyle(
+                              color: Colors.white54,
+                              fontSize: 16,
+                            ),
+                          ),
+                          if (_isConnecting)
+                            const Padding(
+                              padding: EdgeInsets.only(top: 16),
+                              child: CircularProgressIndicator(
+                                color: Colors.white54,
+                              ),
+                            ),
                         ],
                       ),
                     ),
+                  ),
+                ),
+
+                // Reactions overlay
+                ..._activeReactions.map((reaction) {
+                  return LiveReactionAnimation(
+                    key: ValueKey(reaction.id),
+                    reaction: reaction,
+                    onComplete: () => _onReactionCompleted(reaction),
+                  );
+                }).toList(),
+
+                // Top bar
+                Positioned(
+                  top: 0,
+                  left: 0,
+                  right: 0,
+                  child: SafeArea(
+                    child: Container(
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          begin: Alignment.topCenter,
+                          end: Alignment.bottomCenter,
+                          colors: [
+                            Colors.black.withOpacity(0.6),
+                            Colors.transparent,
+                          ],
+                        ),
+                      ),
+                      child: Row(
+                        children: [
+                          // Live badge
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 12,
+                              vertical: 6,
+                            ),
+                            decoration: BoxDecoration(
+                              color: Colors.red,
+                              borderRadius: BorderRadius.circular(4),
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                const Text(
+                                  "TRỰC TIẾP",
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 12,
+                                  ),
+                                ),
+                                const SizedBox(width: 8),
+                                Text(
+                                  formatDuration(_getElapsedTime(stream)),
+                                  style: const TextStyle(
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 12,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          // Viewer count
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 10,
+                              vertical: 6,
+                            ),
+                            decoration: BoxDecoration(
+                              color: Colors.black54,
+                              borderRadius: BorderRadius.circular(4),
+                            ),
+                            child: Row(
+                              children: [
+                                const Icon(
+                                  Icons.visibility,
+                                  color: Colors.white,
+                                  size: 14,
+                                ),
+                                const SizedBox(width: 4),
+                                Text(
+                                  '$participantCount',
+                                  style: const TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 12,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          const Spacer(),
+                          // Close button
+                          IconButton(
+                            icon: const Icon(Icons.close, color: Colors.white),
+                            onPressed: _leaveLiveStream,
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+
+                // Streamer info
+                Positioned(
+                  top: 110,
+                  left: 10,
+                  child: Container(
+                    padding: const EdgeInsets.all(8),
+                    decoration: BoxDecoration(
+                      color: Colors.black54,
+                      borderRadius: BorderRadius.circular(20),
+                    ),
                     child: Row(
                       children: [
-                        // Live badge
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 12,
-                            vertical: 6,
-                          ),
-                          decoration: BoxDecoration(
-                            color: Colors.red,
-                            borderRadius: BorderRadius.circular(4),
-                          ),
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              const Text(
-                                "TRỰC TIẾP",
-                                style: TextStyle(
-                                  color: Colors.white,
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 12,
-                                ),
-                              ),
-                              const SizedBox(width: 8),
-                              Text(
-                                formatDuration(_getElapsedTime(stream)),
-                                style: const TextStyle(
-                                  color: Colors.white,
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 12,
-                                ),
-                              ),
-                            ],
-                          ),
+                        CircleAvatar(
+                          radius: 16,
+                          backgroundColor: Colors.blue,
+                          backgroundImage: stream.avatarUrl != null
+                              ? NetworkImage(stream.avatarUrl!)
+                              : null,
+                          child: stream.avatarUrl == null
+                              ? const Icon(
+                            Icons.person,
+                            color: Colors.white,
+                            size: 20,
+                          )
+                              : null,
                         ),
                         const SizedBox(width: 8),
-                        // Viewer count
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 10,
-                            vertical: 6,
+                        Text(
+                          stream.username ?? 'Streamer',
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 14,
                           ),
-                          decoration: BoxDecoration(
-                            color: Colors.black54,
-                            borderRadius: BorderRadius.circular(4),
-                          ),
-                          child: Row(
-                            children: [
-                              const Icon(
-                                Icons.visibility,
-                                color: Colors.white,
-                                size: 14,
-                              ),
-                              const SizedBox(width: 4),
-                              Text(
-                                '$participantCount',
-                                style: const TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 12,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                        const Spacer(),
-                        // Close button
-                        IconButton(
-                          icon: const Icon(Icons.close, color: Colors.white),
-                          onPressed: _leaveLiveStream,
                         ),
                       ],
                     ),
                   ),
                 ),
-              ),
 
-              // Streamer info
-              Positioned(
-                top: 110,
-                left: 10,
-                child: Container(
-                  padding: const EdgeInsets.all(8),
-                  decoration: BoxDecoration(
-                    color: Colors.black54,
-                    borderRadius: BorderRadius.circular(20),
-                  ),
-                  child: Row(
-                    children: [
-                      CircleAvatar(
-                        radius: 16,
-                        backgroundColor: Colors.blue,
-                        backgroundImage: stream.avatarUrl != null
-                            ? NetworkImage(stream.avatarUrl!)
-                            : null,
-                        child: stream.avatarUrl == null
-                            ? const Icon(
-                                Icons.person,
-                                color: Colors.white,
-                                size: 20,
-                              )
-                            : null,
-                      ),
-                      const SizedBox(width: 8),
-                      Text(
-                        stream.username ?? 'Streamer',
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontWeight: FontWeight.bold,
-                          fontSize: 14,
-                        ),
-                      ),
-                    ],
+                // Comments list
+                Positioned(
+                    bottom: 30,
+                    left: 10,
+                    right: 16,
+                    height: 400,
+                    child: LiveCommentList(
+                        controller: _commentController,
+                        scrollController: _scrollController
+                    )
+                ),
+
+                // Reaction buttons
+                Positioned(
+                  right: 12,
+                  bottom: 200,
+                  child: Column(
+                    children: FoodEmotion.values.map((emotion){
+                      return Padding(
+                          padding: const EdgeInsets.only(bottom: 12),
+                        child: _buildReactionButton(emotion),
+                      );
+                    }).toList(),
                   ),
                 ),
-              ),
 
-              // Comments list
-              Positioned(
-                bottom: 30,
-                  left: 10,
-                  right: 16,
-                  height: 400,
-                  child: LiveCommentList(
-                      controller: _commentController,
-                      scrollController: _scrollController
-                  )
-              ),
-
-              // Reaction buttons
-              Positioned(
-                right: 12,
-                bottom: 200,
-                child: Column(
-                  children: [
-                    _buildReactionButton('❤️', () => _addReaction('❤️')),
-                    const SizedBox(height: 12),
-                    _buildReactionButton('😂', () => _addReaction('😂')),
-                    const SizedBox(height: 12),
-                    _buildReactionButton('😮', () => _addReaction('😮')),
-                    const SizedBox(height: 12),
-                    _buildReactionButton('👏', () => _addReaction('👏')),
-                    const SizedBox(height: 12),
-                    _buildReactionButton('🔥', () => _addReaction('🔥')),
-                  ],
-                ),
-              ),
-
-            ],
-          ),
-        );
-      },
-    );
-  }
-
-  Widget _buildReactionButton(String emoji, VoidCallback onPressed) {
-    return GestureDetector(
-      onTap: onPressed,
-      child: Container(
-        width: 48,
-        height: 48,
-        decoration: BoxDecoration(
-          color: Colors.black54,
-          shape: BoxShape.circle,
-        ),
-        child: Center(child: Text(emoji, style: const TextStyle(fontSize: 24))),
+              ],
+            ),
+          );
+        },
       ),
     );
   }
-}
 
-// Reaction animation
-class ReactionAnimation {
-  final String emoji;
-  final DateTime createdAt;
-  final double startX;
-  final double endY;
-
-  ReactionAnimation({required this.emoji})
-    : createdAt = DateTime.now(),
-      startX = 50 + (DateTime.now().millisecondsSinceEpoch % 200).toDouble(),
-      endY = -200;
-
-  bool isExpired() {
-    return DateTime.now().difference(createdAt).inSeconds > 3;
-  }
-
-  Widget build() {
-    final elapsed = DateTime.now().difference(createdAt).inMilliseconds;
-    final progress = (elapsed / 3000).clamp(0.0, 1.0);
-
-    return Positioned(
-      right: startX,
-      bottom: 200 - (progress * 400), // Move up
-      child: Opacity(
-        opacity: 1 - progress, // Fade out
-        child: Transform.scale(
-          scale: 1 + (progress * 0.5), // Scale up slightly
-          child: Text(emoji, style: const TextStyle(fontSize: 32)),
+  Widget _buildReactionButton(FoodEmotion emotion) {
+    return GestureDetector(
+      onTap: () => _sendReaction(emotion),
+      child: Container(
+        width: 52,
+        height: 52,
+        decoration: BoxDecoration(
+          color: FoodEmotionHelper.getColor(emotion).withOpacity(0.3),
+          shape: BoxShape.circle,
+          border: Border.all(
+            color: FoodEmotionHelper.getColor(emotion).withOpacity(0.6),
+            width: 2,
+          ),
+        ),
+        child: Center(
+          child: Text(
+            FoodEmotionHelper.getEmoji(emotion),
+            style: const TextStyle(fontSize: 26),
+          ),
         ),
       ),
     );
