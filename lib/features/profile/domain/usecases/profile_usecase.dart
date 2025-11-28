@@ -10,3 +10,12 @@ class UpdateProfile {
   UpdateProfile(this.repository);
   Future<Result<User>> call(UserModel user) => repository.updateUser(user);
 }
+
+class GetUserById {
+  final ProfileRepository repository;
+  GetUserById(this.repository);
+
+  Future<User?> call(int id) {
+    return repository.getUserById(id);
+  }
+}
