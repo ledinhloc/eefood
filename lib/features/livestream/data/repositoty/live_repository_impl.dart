@@ -6,6 +6,18 @@ class LiveRepositoryImpl extends LiveRepository{
   final Dio dio;
 
   LiveRepositoryImpl({required this.dio});
+
+  @override
+  Future<LiveStreamResponse> checkUserStream(int userId) async {
+    final res = await dio.get(
+      '/v1/livestreams/check',
+      queryParameters: {
+        'userId': userId
+      },
+    );
+    return LiveStreamResponse.fromJson(res.data['data']);
+  }
+
   @override
   Future<LiveStreamResponse> startLiveStream(String description) async {
     final res = await dio.post(

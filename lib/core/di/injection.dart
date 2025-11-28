@@ -1,7 +1,10 @@
 import 'package:eefood/core/utils/file_upload.dart';
 import 'package:eefood/features/auth/presentation/bloc/on_boarding_bloc/on_boarding_cubit.dart';
+import 'package:eefood/features/livestream/data/repositoty/live_comment_repo_impl.dart';
 import 'package:eefood/features/livestream/data/repositoty/live_repository_impl.dart';
+import 'package:eefood/features/livestream/domain/repository/live_comment_repo.dart';
 import 'package:eefood/features/livestream/domain/repository/live_repository.dart';
+import 'package:eefood/features/livestream/presentation/provider/live_comment_cubit.dart';
 import 'package:eefood/features/livestream/presentation/provider/start_live_cubit.dart';
 import 'package:eefood/features/noti/data/repositories/notification_repository_impl.dart';
 import 'package:eefood/features/noti/domain/repositories/notification_repository.dart';
@@ -53,9 +56,11 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../../features/auth/data/repositories/auth_repository_impl.dart';
 import '../../features/auth/domain/repositories/auth_repository.dart';
 import '../../features/auth/domain/usecases/auth_usecases.dart';
+import '../../features/livestream/presentation/provider/watch_live_cubit.dart';
 import '../../features/post/data/repositories/search_repository.dart';
 import '../../features/post/presentation/provider/post_list_cubit.dart';
 import '../../features/profile/data/repo/profile_repository_imp.dart';
+import '../../features/profile/presentation/provider/user_live_status_cubit.dart';
 import '../../features/recipe/data/repositories/post_publish_repository_impl.dart';
 import '../../features/recipe/data/repositories/shopping_repository_impl.dart';
 import '../../features/recipe/domain/repositories/post_publish_repository.dart';
@@ -109,6 +114,7 @@ Future<void> setupDependencies() async {
 
   //use case profile
   getIt.registerLazySingleton(() => UpdateProfile(getIt<ProfileRepository>()));
+  getIt.registerLazySingleton(() => GetUserById(getIt<ProfileRepository>()));
 
   // OnBoarding Cubit (singleton)
   getIt.registerLazySingleton<OnBoardingCubit>(() => OnBoardingCubit());
@@ -181,4 +187,9 @@ Future<void> setupDependencies() async {
   //livestream
   getIt.registerLazySingleton<LiveRepository>(()=> LiveRepositoryImpl(dio: getIt<DioClient>().dio));
   getIt.registerLazySingleton<StartLiveCubit>(() => StartLiveCubit(getIt<LiveRepository>()));
+  getIt.registerFactory<WatchLiveCubit>(() => WatchLiveCubit(getIt<LiveRepository>()));
+  getIt.registerLazySingleton<UserLiveStatusCubit>(() => UserLiveStatusCubit(getIt<LiveRepository>()));
+
+  getIt.registerLazySingleton<LiveCommentRepository>(() => LiveCommentRepositoryImpl(dio: getIt<DioClient>().dio));
+  getIt.registerFactory<LiveCommentCubit>(() => LiveCommentCubit(getIt<LiveCommentRepository>()));
 }
