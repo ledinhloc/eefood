@@ -30,9 +30,7 @@ class LiveStatusBadge extends StatelessWidget {
                     create: (_) => getIt<LiveCommentCubit>()..loadComments(stream!.id),
                   ),
                   BlocProvider(
-                    create: (_) => getIt<LiveReactionCubit>()
-                      ..loadReactions(stream!.id)
-                      ..startPolling(stream!.id),
+                    create: (_) => getIt<LiveReactionCubit>(param1: stream!.id)
                   ),
                 ],
                 child: LiveViewerScreen(streamId: stream!.id)),

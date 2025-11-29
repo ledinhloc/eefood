@@ -1,7 +1,13 @@
 import 'dart:async';
+import 'dart:convert';
 import 'dart:developer' as developer;
+import 'package:eefood/core/constants/app_keys.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:equatable/equatable.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:stomp_dart_client/stomp.dart';
+import 'package:stomp_dart_client/stomp_config.dart';
+import 'package:stomp_dart_client/stomp_frame.dart';
 
 import '../../data/model/live_reaction_response.dart';
 import '../../domain/repository/live_reaction_repo.dart';
@@ -37,9 +43,100 @@ class LiveReactionState extends Equatable {
 // Cubit
 class LiveReactionCubit extends Cubit<LiveReactionState> {
   final LiveReactionRepository _repository;
-  Timer? _pollTimer;
+  final SharedPreferences _prefs;
+  final int liveStreamId;
+  StompClient? _stompClient;
+  LiveReactionCubit(this._repository, this._prefs, this.liveStreamId) : super(const LiveReactionState()){
+    developer.log(
+      'LiveReactionCubit created for stream $liveStreamId',
+      name: 'LiveReaction',
+    );
+    // Auto connect WebSocket ngay khi khởi tạo
+    connectWebSocket();
+  }
 
-  LiveReactionCubit(this._repository) : super(const LiveReactionState());
+  void connectWebSocket() {
+    // Check nếu đã connect rồi thì return
+    if (_stompClient?.connected == true) {
+      developer.log(
+        'Already connected to stream $liveStreamId',
+        name: 'LiveReaction',
+      );
+      return;
+    }
+
+    final token = _prefs.getString(AppKeys.accessToken) ?? '';
+
+    developer.log(
+      'Connecting to WebSocket for stream $liveStreamId',
+      name: 'LiveReaction',
+    );
+
+    _stompClient = StompClient(
+      config: StompConfig.sockJS(
+        url: '${AppKeys.baseUrl}/ws-reaction?token=$token',
+        // stompConnectHeaders: {'Authorization': 'Bearer $token'},
+        // webSocketConnectHeaders: {'Authorization': 'Bearer $token'},
+        onConnect: _onWebSocketConnected,
+        onWebSocketError: (err) {
+          developer.log('WS error: $err', name: 'LiveReaction');
+          emit(state.copyWith(error: 'WebSocket error: $err'));
+        },
+        onStompError: (frame) {
+          developer.log('STOMP error: ${frame.body}', name: 'LiveReaction');
+        },
+        onDisconnect: (frame) {
+          developer.log(
+            'Disconnected from stream $liveStreamId',
+            name: 'LiveReaction',
+          );
+        },
+      ),
+    );
+
+    _stompClient!.activate();
+
+  }
+
+  void _onWebSocketConnected(StompFrame frame) {
+    developer.log(
+      '[WebSocket] Connected to stream $liveStreamId',
+      name: 'LiveReaction',
+    );
+
+    // Subscribe vào topic reaction của livestream này
+    final destination = '/topic/live-reaction/$liveStreamId';
+
+    _stompClient?.subscribe(
+      destination: destination,
+      callback: (StompFrame frame) {
+        if (frame.body != null) {
+          try {
+            final json = jsonDecode(frame.body!);
+            final reaction = LiveReactionResponse.fromJson(
+              Map<String, dynamic>.from(json),
+            );
+
+            developer.log(
+              'Received reaction: ${reaction.emotion} from ${reaction.username}',
+              name: 'LiveReaction',
+            );
+
+            // Emit reaction mới - chỉ giữ 1 reaction để trigger animation
+            emit(state.copyWith(reactions: [reaction]));
+
+          } catch (e) {
+            developer.log(
+              'Error parsing reaction: $e',
+              name: 'LiveReaction',
+            );
+          }
+        }
+      },
+    );
+
+    developer.log('Subscribed to: $destination', name: 'LiveReaction');
+  }
 
   // Load reactions ban đầu
   Future<void> loadReactions(int liveStreamId) async {
@@ -62,8 +159,9 @@ class LiveReactionCubit extends Cubit<LiveReactionState> {
       );
 
       // Thêm reaction mới vào danh sách
-      final updatedReactions = [...state.reactions, newReaction];
-      emit(state.copyWith(reactions: updatedReactions));
+      // final updatedReactions = [...state.reactions, newReaction];
+      // final updatedReactions = [newReaction];
+      // emit(state.copyWith(reactions: updatedReactions));
 
       developer.log(
         'Reaction created: ${emotion.name} by ${newReaction.username}',
@@ -75,28 +173,13 @@ class LiveReactionCubit extends Cubit<LiveReactionState> {
     }
   }
 
-  // Polling reactions mới từ server (optional)
-  void startPolling(int liveStreamId, {Duration interval = const Duration(seconds: 3)}) {
-    _pollTimer?.cancel();
-    _pollTimer = Timer.periodic(interval, (_) async {
-      try {
-        final reactions = await _repository.getReactions(liveStreamId);
-        if (!isClosed) {
-          emit(state.copyWith(reactions: reactions));
-        }
-      } catch (e) {
-        developer.log('Polling error: $e', name: 'LiveReaction');
-      }
-    });
-  }
-
-  void stopPolling() {
-    _pollTimer?.cancel();
-  }
-
   @override
   Future<void> close() {
-    stopPolling();
+    developer.log(
+      'Closing LiveReactionCubit for stream $liveStreamId',
+      name: 'LiveReaction',
+    );
+    _stompClient?.deactivate();
     return super.close();
   }
 }

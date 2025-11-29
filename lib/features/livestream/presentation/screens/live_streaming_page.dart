@@ -11,6 +11,7 @@ import '../../../../core/di/injection.dart';
 import '../../../../core/utils/helpers.dart';
 import '../../data/model/live_stream_response.dart';
 import '../provider/start_live_cubit.dart';
+import '../widgets/live_status_timer.dart';
 
 class LiveStreamScreen extends StatefulWidget {
   final LiveStreamResponse stream;
@@ -103,13 +104,6 @@ class _LiveStreamScreenState extends State<LiveStreamScreen> {
 
   void _onRoomUpdate() {
     setState(() {});
-  }
-
-  Duration _getElapsedTime() {
-    if (widget.stream.startedAt != null) {
-      return DateTime.now().difference(widget.stream.startedAt!);
-    }
-    return Duration.zero;
   }
 
   Future<void> _toggleFlash() async {
@@ -364,38 +358,7 @@ class _LiveStreamScreenState extends State<LiveStreamScreen> {
                 child: Row(
                   children: [
                     // Live badge
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 12,
-                        vertical: 6,
-                      ),
-                      decoration: BoxDecoration(
-                        color: Colors.red,
-                        borderRadius: BorderRadius.circular(4),
-                      ),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          const Text(
-                            "TRỰC TIẾP",
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontWeight: FontWeight.bold,
-                              fontSize: 12
-                            ),
-                          ),
-                          const SizedBox(width: 8),
-                          Text(
-                            formatDuration(_getElapsedTime()), // THÊM
-                            style: const TextStyle(
-                              color: Colors.white,
-                              fontWeight: FontWeight.bold,
-                              fontSize: 12,
-                            ),
-                          ),
-                        ],
-                      )
-                    ),
+                    LiveStatusTimer(startTime: widget.stream.startedAt!),
                     const SizedBox(width: 8),
                     // Privacy
                     Container(

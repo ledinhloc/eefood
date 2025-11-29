@@ -4,6 +4,7 @@ import 'dart:developer' as developer;
 import 'package:eefood/core/constants/app_keys.dart';
 import 'package:eefood/core/utils/helpers.dart';
 import 'package:eefood/features/livestream/presentation/widgets/live_comment_list.dart';
+import 'package:eefood/features/livestream/presentation/widgets/live_status_timer.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:livekit_client/livekit_client.dart';
@@ -39,7 +40,6 @@ class _LiveViewerScreenState extends State<LiveViewerScreen> {
 
   // Reactions
   final List<LiveReactionResponse> _activeReactions = [];
-  Timer? _reactionTimer;
   EventsListener<RoomEvent>? _listener;
 
   @override
@@ -381,13 +381,6 @@ class _LiveViewerScreenState extends State<LiveViewerScreen> {
     setState(() {});
   }
 
-  Duration _getElapsedTime(LiveStreamResponse stream) {
-    if (stream.startedAt != null) {
-      return DateTime.now().difference(stream.startedAt!);
-    }
-    return Duration.zero;
-  }
-
   Future<void> _sendReaction(FoodEmotion emotion) async {
     try {
       await context.read<LiveReactionCubit>().createReaction(
@@ -452,25 +445,27 @@ class _LiveViewerScreenState extends State<LiveViewerScreen> {
   @override
   Widget build(BuildContext context) {
     return BlocListener<LiveReactionCubit, LiveReactionState>(
-        listener:(context, reactionState) {
-          if (reactionState.reactions.isNotEmpty) {
-            final newReactions = reactionState.reactions
-                .where((r) => !_activeReactions.contains(r))
-                .toList();
+      listener: (context, reactionState) {
+        if (reactionState.reactions.isNotEmpty) {
+          final newReactions = reactionState.reactions
+              .where((r) => !_activeReactions.contains(r))
+              .toList();
 
-            if (newReactions.isNotEmpty) {
-              setState(() {
-                _activeReactions.addAll(newReactions);
-              });
-            }
+          if (newReactions.isNotEmpty) {
+            setState(() {
+              _activeReactions.addAll(newReactions);
+            });
           }
-        },
+        }
+      },
       child: BlocBuilder<WatchLiveCubit, WatchLiveState>(
         builder: (context, state) {
           if (state.loading) {
             return const Scaffold(
               backgroundColor: Colors.black,
-              body: Center(child: CircularProgressIndicator(color: Colors.white)),
+              body: Center(
+                child: CircularProgressIndicator(color: Colors.white),
+              ),
             );
           }
 
@@ -481,7 +476,11 @@ class _LiveViewerScreenState extends State<LiveViewerScreen> {
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    const Icon(Icons.error_outline, color: Colors.red, size: 64),
+                    const Icon(
+                      Icons.error_outline,
+                      color: Colors.red,
+                      size: 64,
+                    ),
                     const SizedBox(height: 16),
                     Text(
                       'Lỗi: ${state.error}',
@@ -528,39 +527,41 @@ class _LiveViewerScreenState extends State<LiveViewerScreen> {
                   child: _remoteVideoTrack != null
                       ? VideoTrackRenderer(_remoteVideoTrack!)
                       : Container(
-                    color: Colors.black,
-                    child: Center(
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Icon(
-                            _isConnecting ? Icons.sync : Icons.videocam_off,
-                            color: Colors.white54,
-                            size: 64,
-                          ),
-                          const SizedBox(height: 16),
-                          Text(
-                            _isConnecting
-                                ? 'Đang kết nối...'
-                                : _isConnected
-                                ? 'Đang chờ video...'
-                                : 'Chưa kết nối',
-                            style: const TextStyle(
-                              color: Colors.white54,
-                              fontSize: 16,
+                          color: Colors.black,
+                          child: Center(
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Icon(
+                                  _isConnecting
+                                      ? Icons.sync
+                                      : Icons.videocam_off,
+                                  color: Colors.white54,
+                                  size: 64,
+                                ),
+                                const SizedBox(height: 16),
+                                Text(
+                                  _isConnecting
+                                      ? 'Đang kết nối...'
+                                      : _isConnected
+                                      ? 'Đang chờ video...'
+                                      : 'Chưa kết nối',
+                                  style: const TextStyle(
+                                    color: Colors.white54,
+                                    fontSize: 16,
+                                  ),
+                                ),
+                                if (_isConnecting)
+                                  const Padding(
+                                    padding: EdgeInsets.only(top: 16),
+                                    child: CircularProgressIndicator(
+                                      color: Colors.white54,
+                                    ),
+                                  ),
+                              ],
                             ),
                           ),
-                          if (_isConnecting)
-                            const Padding(
-                              padding: EdgeInsets.only(top: 16),
-                              child: CircularProgressIndicator(
-                                color: Colors.white54,
-                              ),
-                            ),
-                        ],
-                      ),
-                    ),
-                  ),
+                        ),
                 ),
 
                 // Reactions overlay
@@ -593,38 +594,7 @@ class _LiveViewerScreenState extends State<LiveViewerScreen> {
                       child: Row(
                         children: [
                           // Live badge
-                          Container(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 12,
-                              vertical: 6,
-                            ),
-                            decoration: BoxDecoration(
-                              color: Colors.red,
-                              borderRadius: BorderRadius.circular(4),
-                            ),
-                            child: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                const Text(
-                                  "TRỰC TIẾP",
-                                  style: TextStyle(
-                                    color: Colors.white,
-                                    fontWeight: FontWeight.bold,
-                                    fontSize: 12,
-                                  ),
-                                ),
-                                const SizedBox(width: 8),
-                                Text(
-                                  formatDuration(_getElapsedTime(stream)),
-                                  style: const TextStyle(
-                                    color: Colors.white,
-                                    fontWeight: FontWeight.bold,
-                                    fontSize: 12,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
+                          LiveStatusTimer(startTime: stream.startedAt!),
                           const SizedBox(width: 8),
                           // Viewer count
                           Container(
@@ -686,10 +656,10 @@ class _LiveViewerScreenState extends State<LiveViewerScreen> {
                               : null,
                           child: stream.avatarUrl == null
                               ? const Icon(
-                            Icons.person,
-                            color: Colors.white,
-                            size: 20,
-                          )
+                                  Icons.person,
+                                  color: Colors.white,
+                                  size: 20,
+                                )
                               : null,
                         ),
                         const SizedBox(width: 8),
@@ -708,14 +678,14 @@ class _LiveViewerScreenState extends State<LiveViewerScreen> {
 
                 // Comments list
                 Positioned(
-                    bottom: 30,
-                    left: 10,
-                    right: 16,
-                    height: 400,
-                    child: LiveCommentList(
-                        controller: _commentController,
-                        scrollController: _scrollController
-                    )
+                  bottom: 30,
+                  left: 10,
+                  right: 16,
+                  height: 400,
+                  child: LiveCommentList(
+                    controller: _commentController,
+                    scrollController: _scrollController,
+                  ),
                 ),
 
                 // Reaction buttons
@@ -723,15 +693,14 @@ class _LiveViewerScreenState extends State<LiveViewerScreen> {
                   right: 12,
                   bottom: 200,
                   child: Column(
-                    children: FoodEmotion.values.map((emotion){
+                    children: FoodEmotion.values.map((emotion) {
                       return Padding(
-                          padding: const EdgeInsets.only(bottom: 12),
+                        padding: const EdgeInsets.only(bottom: 12),
                         child: _buildReactionButton(emotion),
                       );
                     }).toList(),
                   ),
                 ),
-
               ],
             ),
           );
