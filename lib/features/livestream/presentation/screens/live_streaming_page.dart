@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:developer' as developer;
 
 import 'package:camera/camera.dart';
 import 'package:eefood/core/constants/app_keys.dart';
@@ -9,8 +10,15 @@ import 'package:livekit_client/livekit_client.dart';
 
 import '../../../../core/di/injection.dart';
 import '../../../../core/utils/helpers.dart';
+import '../../data/model/live_reaction_response.dart';
 import '../../data/model/live_stream_response.dart';
+import '../../domain/repository/live_comment_repo.dart';
 import '../provider/start_live_cubit.dart';
+import '../provider/streamer_comment_cubit.dart';
+import '../provider/streamer_reaction_cubit.dart';
+import '../widgets/live_comment_list.dart';
+import '../widgets/live_reaction_animation.dart';
+import '../widgets/live_status_timer.dart';
 
 class LiveStreamScreen extends StatefulWidget {
   final LiveStreamResponse stream;
@@ -40,6 +48,8 @@ class _LiveStreamScreenState extends State<LiveStreamScreen> {
   Timer? _timer; //thoi gian live
   final List<String> _comments = [];
   final TextEditingController _commentController = TextEditingController();
+  final List<LiveReactionResponse> _activeReactions = [];
+  final ScrollController _scrollController = ScrollController();
 
   @override
   void initState() {
@@ -52,6 +62,26 @@ class _LiveStreamScreenState extends State<LiveStreamScreen> {
       if (mounted) {
         setState(() {}); // Refresh UI để cập nhật thời gian
       }
+    });
+
+    Future.microtask(() {
+      final reactionCubit = context.read<StreamerReactionCubit>();
+      final commentCubit = context.read<StreamerCommentCubit>();
+
+      reactionCubit.onCommentReceived = (comment) {
+        if (mounted) {
+          commentCubit.addCommentFromWebSocket(comment);
+
+          //  Giới hạn comments định kỳ
+          // commentCubit.limitComments(maxComments: 50);
+        }
+      };
+    });
+  }
+
+  void _onReactionCompleted(LiveReactionResponse reaction) {
+    setState(() {
+      _activeReactions.remove(reaction);
     });
   }
 
@@ -105,13 +135,6 @@ class _LiveStreamScreenState extends State<LiveStreamScreen> {
     setState(() {});
   }
 
-  Duration _getElapsedTime() {
-    if (widget.stream.startedAt != null) {
-      return DateTime.now().difference(widget.stream.startedAt!);
-    }
-    return Duration.zero;
-  }
-
   Future<void> _toggleFlash() async {
     if (_localVideoTrack == null) return;
 
@@ -127,15 +150,13 @@ class _LiveStreamScreenState extends State<LiveStreamScreen> {
       // Lấy danh sách camera
       final cameras = await availableCameras();
       final backCamera = cameras.firstWhere(
-            (camera) => camera.lensDirection == CameraLensDirection.back,
+        (camera) => camera.lensDirection == CameraLensDirection.back,
       );
 
       // Khởi tạo CameraController nếu chưa có
-      if (_cameraController == null || !_cameraController!.value.isInitialized) {
-        _cameraController = CameraController(
-          backCamera,
-          ResolutionPreset.high,
-        );
+      if (_cameraController == null ||
+          !_cameraController!.value.isInitialized) {
+        _cameraController = CameraController(backCamera, ResolutionPreset.high);
         await _cameraController!.initialize();
       }
 
@@ -152,11 +173,12 @@ class _LiveStreamScreenState extends State<LiveStreamScreen> {
       _isFlashOn = !_isFlashOn; // Revert lại trạng thái
       setState(() {});
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Lỗi bật/tắt flash: $e')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Lỗi bật/tắt flash: $e')));
     }
   }
+
   Future<void> _toggleMic() async {
     if (_localAudioTrack == null) return;
 
@@ -266,7 +288,7 @@ class _LiveStreamScreenState extends State<LiveStreamScreen> {
             child: const Text('Hủy'),
           ),
           TextButton(
-            onPressed: (){
+            onPressed: () {
               Navigator.pop(context, true);
             },
             style: TextButton.styleFrom(foregroundColor: Colors.red),
@@ -295,15 +317,6 @@ class _LiveStreamScreenState extends State<LiveStreamScreen> {
     }
   }
 
-  void _sendComment() {
-    if (_commentController.text.isNotEmpty) {
-      setState(() {
-        _comments.add(_commentController.text);
-      });
-      _commentController.clear();
-    }
-  }
-
   @override
   void dispose() {
     _timer?.cancel();
@@ -317,6 +330,7 @@ class _LiveStreamScreenState extends State<LiveStreamScreen> {
     _cameraController?.dispose();
 
     _commentController.dispose();
+    _scrollController.dispose();
     super.dispose();
   }
 
@@ -326,278 +340,166 @@ class _LiveStreamScreenState extends State<LiveStreamScreen> {
         (_room?.remoteParticipants.length ?? 0) +
         (_room?.localParticipant != null ? 1 : 0);
 
-    return Scaffold(
-      backgroundColor: Colors.black,
-      body: Stack(
+    return MultiBlocListener(
+      listeners: [
+        BlocListener<StreamerReactionCubit, StreamerReactionState>(
+          listener: (context, reactionState) {
+            if (reactionState.reactions.isNotEmpty) {
+              final newReactions = reactionState.reactions
+                  .where((r) => !_activeReactions.any((a) => a.id == r.id))
+                  .toList();
+
+              if (newReactions.isNotEmpty) {
+                setState(() {
+                  _activeReactions.addAll(newReactions);
+
+                  // // Giới hạn max 20 reactions hiển thị
+                  // if (_activeReactions.length > 20) {
+                  //   _activeReactions.removeRange(0, _activeReactions.length - 20);
+                  // }
+                });
+              }
+            }
+          },
+        ),
+      ],
+      child: Scaffold(
+        backgroundColor: Colors.black,
+        body: Stack(
+          children: [
+            // Video display
+            Positioned.fill(
+              child: _localVideoTrack != null && _isCameraOn
+                  ? VideoTrackRenderer(_localVideoTrack!)
+                  : Container(
+                      color: Colors.black,
+                      child: const Center(
+                        child: Icon(
+                          Icons.videocam_off,
+                          color: Colors.white,
+                          size: 64,
+                        ),
+                      ),
+                    ),
+            ),
+
+            //Reactions overlay
+            ..._activeReactions.map((reaction) {
+              return LiveReactionAnimation(
+                key: ValueKey(reaction.id),
+                reaction: reaction,
+                onComplete: () => _onReactionCompleted(reaction),
+              );
+            }).toList(),
+
+            // Top bar
+            _buildTopBar(participantCount),
+
+            // User info
+            _buildUserInfo(participantCount),
+
+            // Comments list
+            Positioned(
+              bottom: 30,
+              left: 10,
+              right: 16,
+              height: 400,
+              child: LiveCommentList(
+                controller: _commentController,
+                scrollController: _scrollController,
+                isStreamer: true,
+              ),
+            ),
+
+            _buildRightControls(),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildUserInfo(int participantCount) {
+    return Positioned(
+      bottom: 120,
+      left: 16,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Video display
-          Positioned.fill(
-            child: _localVideoTrack != null && _isCameraOn
-                ? VideoTrackRenderer(_localVideoTrack!)
-                : Container(
-                    color: Colors.black,
-                    child: const Center(
-                      child: Icon(
-                        Icons.videocam_off,
-                        color: Colors.white,
-                        size: 64,
-                      ),
-                    ),
-                  ),
-          ),
-
-          // Top bar
-          Positioned(
-            top: 0,
-            left: 0,
-            right: 0,
-            child: SafeArea(
-              child: Container(
-                padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    begin: Alignment.topCenter,
-                    end: Alignment.bottomCenter,
-                    colors: [Colors.black.withOpacity(0.6), Colors.transparent],
-                  ),
-                ),
-                child: Row(
-                  children: [
-                    // Live badge
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 12,
-                        vertical: 6,
-                      ),
-                      decoration: BoxDecoration(
-                        color: Colors.red,
-                        borderRadius: BorderRadius.circular(4),
-                      ),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          const Text(
-                            "TRỰC TIẾP",
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontWeight: FontWeight.bold,
-                              fontSize: 12
-                            ),
-                          ),
-                          const SizedBox(width: 8),
-                          Text(
-                            formatDuration(_getElapsedTime()), // THÊM
-                            style: const TextStyle(
-                              color: Colors.white,
-                              fontWeight: FontWeight.bold,
-                              fontSize: 12,
-                            ),
-                          ),
-                        ],
-                      )
-                    ),
-                    const SizedBox(width: 8),
-                    // Privacy
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 10,
-                        vertical: 6,
-                      ),
-                      decoration: BoxDecoration(
-                        color: Colors.black54,
-                        borderRadius: BorderRadius.circular(4),
-                      ),
-                      child: const Row(
-                        children: [
-                          Icon(Icons.lock, color: Colors.white, size: 14),
-                          SizedBox(width: 4),
-                          Text(
-                            'Chỉ mình tôi',
-                            style: TextStyle(color: Colors.white, fontSize: 12),
-                          ),
-                        ],
-                      ),
-                    ),
-                    const Spacer(),
-                    // Close button
-                    IconButton(
-                      icon: const Icon(Icons.close, color: Colors.white),
-                      onPressed: _endLiveStream,
-                    ),
-                  ],
+          Row(
+            children: [
+              const CircleAvatar(
+                radius: 20,
+                backgroundColor: Colors.blue,
+                child: Icon(Icons.person, color: Colors.white),
+              ),
+              const SizedBox(width: 8),
+              Text(
+                widget.stream.title,
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontWeight: FontWeight.bold,
+                  fontSize: 16,
                 ),
               ),
-            ),
+            ],
           ),
-
-          // User info
-          Positioned(
-            bottom: 120,
-            left: 16,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  children: [
-                    const CircleAvatar(
-                      radius: 20,
-                      backgroundColor: Colors.blue,
-                      child: Icon(Icons.person, color: Colors.white),
-                    ),
-                    const SizedBox(width: 8),
-                    Text(
-                      widget.stream.title,
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontWeight: FontWeight.bold,
-                        fontSize: 16,
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  '$participantCount người đang xem',
-                  style: const TextStyle(color: Colors.white70, fontSize: 14),
-                ),
-              ],
-            ),
+          const SizedBox(height: 8),
+          Text(
+            '$participantCount người đang xem',
+            style: const TextStyle(color: Colors.white70, fontSize: 14),
           ),
-
-          // Comments list
-          Positioned(
-            bottom: 80,
-            left: 16,
-            right: 100,
-            height: 200,
-            child: ListView.builder(
-              reverse: true,
-              itemCount: _comments.length,
-              itemBuilder: (context, index) {
-                final comment = _comments[_comments.length - 1 - index];
-                return Container(
-                  margin: const EdgeInsets.only(bottom: 8),
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 12,
-                    vertical: 8,
-                  ),
-                  decoration: BoxDecoration(
-                    color: Colors.black54,
-                    borderRadius: BorderRadius.circular(20),
-                  ),
-                  child: Text(
-                    comment,
-                    style: const TextStyle(color: Colors.white),
-                  ),
-                );
-              },
-            ),
-          ),
-
-          // Right side controls
-          Positioned(
-            right: 12,
-            bottom: 120,
-            child: Column(
-              children: [
-                _buildRoundButton(
-                  icon: _isCameraOn ? Icons.videocam : Icons.videocam_off,
-                  onPressed: _toggleCamera,
-                ),
-                const SizedBox(height: 16),
-                _buildRoundButton(
-                  icon: Icons.cameraswitch,
-                  onPressed: _switchCamera,
-                ),
-                const SizedBox(height: 16),
-                _buildRoundButton(
-                  icon: _isFlashOn ? Icons.flash_on : Icons.flash_off,
-                  onPressed: _toggleFlash,
-                ),
-                const SizedBox(height: 16),
-                _buildRoundButton(
-                  icon: _isMicOn ? Icons.mic : Icons.mic_off,
-                  onPressed: _toggleMic,
-                ),
-                // const SizedBox(height: 16),
-                // _buildRoundButton(icon: Icons.face, onPressed: () {}),
-                // const SizedBox(height: 16),
-                // _buildRoundButton(icon: Icons.expand_more, onPressed: () {}),
-              ],
-            ),
-          ),
-
-          // Bottom bar
-          Positioned(
-            left: 0,
-            right: 0,
-            bottom: 0,
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.bottomCenter,
-                  end: Alignment.topCenter,
-                  colors: [Colors.black.withOpacity(0.6), Colors.transparent],
-                ),
-              ),
-              child: SafeArea(
-                child: Row(
-                  children: [
-                    // Comment input
-                    Expanded(
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 16),
-                        decoration: BoxDecoration(
-                          color: Colors.white.withOpacity(0.2),
-                          borderRadius: BorderRadius.circular(25),
-                        ),
-                        child: TextField(
-                          controller: _commentController,
-                          style: const TextStyle(color: Colors.white),
-                          decoration: const InputDecoration(
-                            hintText: 'Nhấn để thêm bình luận...',
-                            hintStyle: TextStyle(color: Colors.white70),
-                            border: InputBorder.none,
-                          ),
-                          onSubmitted: (_) => _sendComment(),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(width: 8),
-                    // Send button
-                    IconButton(
-                      icon: const Icon(Icons.send, color: Colors.white),
-                      onPressed: _sendComment,
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ),
-
-          // Bottom navigation
-          // Positioned(
-          //   left: 0,
-          //   right: 0,
-          //   bottom: 0,
-          //   child: Container(
-          //     color: Colors.black,
-          //     child: SafeArea(
-          //       top: false,
-          //       child: Row(
-          //         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-          //         children: [
-          //           _buildNavButton(Icons.person_add_outlined),
-          //           _buildNavButton(Icons.grid_view),
-          //           _buildNavButton(Icons.search),
-          //           _buildNavButton(Icons.menu),
-          //         ],
-          //       ),
-          //     ),
-          //   ),
-          // ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildTopBar(int participantCount) {
+    return Positioned(
+      top: 0,
+      left: 0,
+      right: 0,
+      child: SafeArea(
+        child: Container(
+          padding: const EdgeInsets.all(12),
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter,
+              colors: [Colors.black.withOpacity(0.6), Colors.transparent],
+            ),
+          ),
+          child: Row(
+            children: [
+              LiveStatusTimer(startTime: widget.stream.startedAt!),
+              const SizedBox(width: 8),
+              Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 10,
+                  vertical: 6,
+                ),
+                decoration: BoxDecoration(
+                  color: Colors.black54,
+                  borderRadius: BorderRadius.circular(4),
+                ),
+                child: const Row(
+                  children: [
+                    Icon(Icons.lock, color: Colors.white, size: 14),
+                    SizedBox(width: 4),
+                    Text(
+                      'Chỉ mình tôi',
+                      style: TextStyle(color: Colors.white, fontSize: 12),
+                    ),
+                  ],
+                ),
+              ),
+              const Spacer(),
+              IconButton(
+                icon: const Icon(Icons.close, color: Colors.white),
+                onPressed: _endLiveStream,
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }
@@ -616,10 +518,34 @@ class _LiveStreamScreenState extends State<LiveStreamScreen> {
     );
   }
 
-  Widget _buildNavButton(IconData icon) {
-    return IconButton(
-      icon: Icon(icon, color: Colors.white),
-      onPressed: () {},
+  Widget _buildRightControls() {
+    return Positioned(
+      right: 12,
+      bottom: 120,
+      child: Column(
+        children: [
+          _buildRoundButton(
+            icon: _isCameraOn ? Icons.videocam : Icons.videocam_off,
+            onPressed: _toggleCamera,
+          ),
+          const SizedBox(height: 16),
+          _buildRoundButton(
+            icon: Icons.cameraswitch,
+            onPressed: _switchCamera,
+          ),
+          const SizedBox(height: 16),
+          _buildRoundButton(
+            icon: _isFlashOn ? Icons.flash_on : Icons.flash_off,
+            onPressed: _toggleFlash,
+          ),
+          const SizedBox(height: 16),
+          _buildRoundButton(
+            icon: _isMicOn ? Icons.mic : Icons.mic_off,
+            onPressed: _toggleMic,
+          ),
+        ],
+      ),
     );
   }
+
 }

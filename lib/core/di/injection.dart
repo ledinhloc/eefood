@@ -1,8 +1,10 @@
 import 'package:eefood/core/utils/file_upload.dart';
 import 'package:eefood/features/auth/presentation/bloc/on_boarding_bloc/on_boarding_cubit.dart';
 import 'package:eefood/features/livestream/data/repositoty/live_comment_repo_impl.dart';
+import 'package:eefood/features/livestream/data/repositoty/live_reaction_repo_impl.dart';
 import 'package:eefood/features/livestream/data/repositoty/live_repository_impl.dart';
 import 'package:eefood/features/livestream/domain/repository/live_comment_repo.dart';
+import 'package:eefood/features/livestream/domain/repository/live_reaction_repo.dart';
 import 'package:eefood/features/livestream/domain/repository/live_repository.dart';
 import 'package:eefood/features/livestream/presentation/provider/live_comment_cubit.dart';
 import 'package:eefood/features/livestream/presentation/provider/start_live_cubit.dart';
@@ -56,6 +58,9 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../../features/auth/data/repositories/auth_repository_impl.dart';
 import '../../features/auth/domain/repositories/auth_repository.dart';
 import '../../features/auth/domain/usecases/auth_usecases.dart';
+import '../../features/livestream/presentation/provider/live_reaction_cubit.dart';
+import '../../features/livestream/presentation/provider/streamer_comment_cubit.dart';
+import '../../features/livestream/presentation/provider/streamer_reaction_cubit.dart';
 import '../../features/livestream/presentation/provider/watch_live_cubit.dart';
 import '../../features/post/data/repositories/search_repository.dart';
 import '../../features/post/presentation/provider/post_list_cubit.dart';
@@ -135,11 +140,15 @@ Future<void> setupDependencies() async {
 
   //notification cubit
   getIt.registerLazySingleton<NotificationCubit>(() => NotificationCubit());
-  getIt.registerLazySingleton<NotificationSettingsCubit>(() => NotificationSettingsCubit());
+  getIt.registerLazySingleton<NotificationSettingsCubit>(
+    () => NotificationSettingsCubit(),
+  );
 
   // post
   getIt.registerFactory<CommentListCubit>(() => CommentListCubit());
-  getIt.registerLazySingleton<CommentReactionCubit>(() => CommentReactionCubit());
+  getIt.registerLazySingleton<CommentReactionCubit>(
+    () => CommentReactionCubit(),
+  );
 
   //recipe
   getIt.registerLazySingleton(() => CreateRecipe(getIt<RecipeRepository>()));
@@ -148,48 +157,117 @@ Future<void> setupDependencies() async {
   getIt.registerLazySingleton(() => DeleteRecipe(getIt<RecipeRepository>()));
 
   //shopping
-  getIt.registerLazySingleton<ShoppingRepository>(() => ShoppingRepositoryImpl(dio: getIt<DioClient>().dio ));
-  getIt.registerLazySingleton(() => ShoppingCubit(repository: getIt<ShoppingRepository>()));
+  getIt.registerLazySingleton<ShoppingRepository>(
+    () => ShoppingRepositoryImpl(dio: getIt<DioClient>().dio),
+  );
+  getIt.registerLazySingleton(
+    () => ShoppingCubit(repository: getIt<ShoppingRepository>()),
+  );
 
   //post
-  getIt.registerLazySingleton<PostListCubit>(() => PostListCubit()..fetchPosts());
-  getIt.registerLazySingleton<PostRepository>(() => PostRepositoryImpl(dio: getIt<DioClient>().dio ));
-  getIt.registerLazySingleton<PostReactionRepository>(() => PostReactionRepositoryImpl(dio: getIt<DioClient>().dio ));
-  getIt.registerLazySingleton<CollectionRepository>(() => CollectionRepositoryImpl(dio: getIt<DioClient>().dio ));
-  getIt.registerLazySingleton<CommentRepository>(() => CommentRepositoryImpl(dio: getIt<DioClient>().dio ));
-  getIt.registerLazySingleton<CommentReactionRepository>(() => CommentReactionRepositoryImpl(dio: getIt<DioClient>().dio));
-  getIt.registerLazySingleton<ShareRepository>(() => ShareRepositoryImpl(dio: getIt<DioClient>().dio));
-  getIt.registerLazySingleton<FollowRepository>(() => FollowRepositoryImpl(dio: getIt<DioClient>().dio));
-  getIt.registerLazySingleton<StoryRepository>(() => StoryRepositoryImpl(dio: getIt<DioClient>().dio));
+  getIt.registerLazySingleton<PostListCubit>(
+    () => PostListCubit()..fetchPosts(),
+  );
+  getIt.registerLazySingleton<PostRepository>(
+    () => PostRepositoryImpl(dio: getIt<DioClient>().dio),
+  );
+  getIt.registerLazySingleton<PostReactionRepository>(
+    () => PostReactionRepositoryImpl(dio: getIt<DioClient>().dio),
+  );
+  getIt.registerLazySingleton<CollectionRepository>(
+    () => CollectionRepositoryImpl(dio: getIt<DioClient>().dio),
+  );
+  getIt.registerLazySingleton<CommentRepository>(
+    () => CommentRepositoryImpl(dio: getIt<DioClient>().dio),
+  );
+  getIt.registerLazySingleton<CommentReactionRepository>(
+    () => CommentReactionRepositoryImpl(dio: getIt<DioClient>().dio),
+  );
+  getIt.registerLazySingleton<ShareRepository>(
+    () => ShareRepositoryImpl(dio: getIt<DioClient>().dio),
+  );
+  getIt.registerLazySingleton<FollowRepository>(
+    () => FollowRepositoryImpl(dio: getIt<DioClient>().dio),
+  );
+  getIt.registerLazySingleton<StoryRepository>(
+    () => StoryRepositoryImpl(dio: getIt<DioClient>().dio),
+  );
   getIt.registerLazySingleton<FollowCubit>(() => FollowCubit());
   // story
   getIt.registerLazySingleton<StoryCubit>(() => StoryCubit());
   getIt.registerLazySingleton<StoryViewerCubit>(() => StoryViewerCubit());
   getIt.registerLazySingleton<StoryReactionCubit>(() => StoryReactionCubit());
-  getIt.registerLazySingleton<StoryReactionStatsCubit>(() => StoryReactionStatsCubit());
-  getIt.registerLazySingleton<StoryReactionRepository>(() => StoryReactionRepositoryImpl(dio: getIt<DioClient>().dio));
-  getIt.registerLazySingleton<StoryCommentRepository>(() => StoryCommentRepositoryImpl(dio: getIt<DioClient>().dio));
+  getIt.registerLazySingleton<StoryReactionStatsCubit>(
+    () => StoryReactionStatsCubit(),
+  );
+  getIt.registerLazySingleton<StoryReactionRepository>(
+    () => StoryReactionRepositoryImpl(dio: getIt<DioClient>().dio),
+  );
+  getIt.registerLazySingleton<StoryCommentRepository>(
+    () => StoryCommentRepositoryImpl(dio: getIt<DioClient>().dio),
+  );
   getIt.registerLazySingleton<StoryCommentCubit>(() => StoryCommentCubit());
-  getIt.registerLazySingleton<StorySettingRepository>(() => StorySettingRepositoryImpl(dio: getIt<DioClient>().dio));
+  getIt.registerLazySingleton<StorySettingRepository>(
+    () => StorySettingRepositoryImpl(dio: getIt<DioClient>().dio),
+  );
   getIt.registerFactory<StorySettingCubit>(() => StorySettingCubit());
   //search post
   getIt.registerLazySingleton<SearchRepository>(() => SearchRepository());
   // notification
-  getIt.registerLazySingleton<NotificationRepository>(() => NotificationRepositoryImpl(dio: getIt<DioClient>().dio ));
+  getIt.registerLazySingleton<NotificationRepository>(
+    () => NotificationRepositoryImpl(dio: getIt<DioClient>().dio),
+  );
 
   //collection
-  getIt.registerLazySingleton<CollectionCubit>(() => CollectionCubit()..fetchCollectionsByUser());
+  getIt.registerLazySingleton<CollectionCubit>(
+    () => CollectionCubit()..fetchCollectionsByUser(),
+  );
 
   //post in recipe
-  getIt.registerLazySingleton<PostPublishRepository>(() => PostPublishRepositoryImpl(dio: getIt<DioClient>().dio));
+  getIt.registerLazySingleton<PostPublishRepository>(
+    () => PostPublishRepositoryImpl(dio: getIt<DioClient>().dio),
+  );
   getIt.registerLazySingleton(() => PostCubit()..fetchPublishedPosts());
 
   //livestream
-  getIt.registerLazySingleton<LiveRepository>(()=> LiveRepositoryImpl(dio: getIt<DioClient>().dio));
-  getIt.registerLazySingleton<StartLiveCubit>(() => StartLiveCubit(getIt<LiveRepository>()));
-  getIt.registerFactory<WatchLiveCubit>(() => WatchLiveCubit(getIt<LiveRepository>()));
-  getIt.registerLazySingleton<UserLiveStatusCubit>(() => UserLiveStatusCubit(getIt<LiveRepository>()));
+  getIt.registerLazySingleton<LiveRepository>(
+    () => LiveRepositoryImpl(dio: getIt<DioClient>().dio),
+  );
+  getIt.registerLazySingleton<StartLiveCubit>(
+    () => StartLiveCubit(getIt<LiveRepository>()),
+  );
+  getIt.registerFactory<WatchLiveCubit>(
+    () => WatchLiveCubit(getIt<LiveRepository>()),
+  );
+  getIt.registerLazySingleton<UserLiveStatusCubit>(
+    () => UserLiveStatusCubit(getIt<LiveRepository>()),
+  );
 
-  getIt.registerLazySingleton<LiveCommentRepository>(() => LiveCommentRepositoryImpl(dio: getIt<DioClient>().dio));
-  getIt.registerFactory<LiveCommentCubit>(() => LiveCommentCubit(getIt<LiveCommentRepository>()));
+  getIt.registerLazySingleton<LiveCommentRepository>(
+    () => LiveCommentRepositoryImpl(dio: getIt<DioClient>().dio),
+  );
+  getIt.registerFactory<LiveCommentCubit>(
+    () => LiveCommentCubit(getIt<LiveCommentRepository>()),
+  );
+  //live reaction
+  getIt.registerLazySingleton<LiveReactionRepository>(
+    () => LiveReactionRepositoryImpl(dio: getIt<DioClient>().dio),
+  );
+  getIt.registerFactoryParam<LiveReactionCubit, int, void>(
+    (liveStreamId, _) => LiveReactionCubit(
+      getIt<LiveReactionRepository>(),
+      getIt<SharedPreferences>(),
+      liveStreamId,
+    ),
+  );
+  getIt.registerFactoryParam<StreamerReactionCubit, int, void>(
+        (liveStreamId, _) => StreamerReactionCubit(
+      getIt<SharedPreferences>(),
+      liveStreamId,
+    ),
+  );
+
+  getIt.registerFactory<StreamerCommentCubit>(
+        () => StreamerCommentCubit(getIt<LiveCommentRepository>()),
+  );
 }

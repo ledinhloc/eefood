@@ -6,7 +6,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:livekit_client/livekit_client.dart';
 
+import '../../../../core/di/injection.dart';
 import '../provider/start_live_cubit.dart';
+import '../provider/streamer_comment_cubit.dart';
+import '../provider/streamer_reaction_cubit.dart';
 import 'live_streaming_page.dart';
 
 class LivePrepScreen extends StatefulWidget {
@@ -282,10 +285,22 @@ class _LivePrepScreenState extends State<LivePrepScreen> {
             // Chuyển sang màn hình live
             Navigator.of(context).pushReplacement(
               MaterialPageRoute(
-                builder: (_) => LiveStreamScreen(
-                  stream: state.stream!,
-                  localVideoTrack: _localVideoTrack,
-                  localAudioTrack: _localAudioTrack,
+                builder: (_) => MultiBlocProvider(
+                  providers: [
+                    BlocProvider(
+                      create: (_) => getIt<StreamerReactionCubit>(
+                        param1: state.stream!.id, // Pass streamId
+                      ),
+                    ),
+                    BlocProvider(
+                      create: (_) => getIt<StreamerCommentCubit>()..loadComments(state.stream!.id),
+                    ),
+                  ],
+                  child: LiveStreamScreen(
+                    stream: state.stream!,
+                    localVideoTrack: _localVideoTrack,
+                    localAudioTrack: _localAudioTrack,
+                  ),
                 ),
               ),
             );
@@ -397,24 +412,6 @@ class _LivePrepScreenState extends State<LivePrepScreen> {
                         onPressed: _toggleFlash,
                       ),
                       const SizedBox(height: 20),
-                      // const SizedBox(height: 20),
-                      // _buildControlButton(
-                      //   icon: Icons.face,
-                      //   label: 'Nhãn dán',
-                      //   onPressed: () {},
-                      // ),
-                      // const SizedBox(height: 20),
-                      // _buildControlButton(
-                      //   icon: Icons.star,
-                      //   label: 'Tăng tính năng cá thiên',
-                      //   onPressed: () {},
-                      // ),
-                      // const SizedBox(height: 20),
-                      // _buildControlButton(
-                      //   icon: Icons.text_fields,
-                      //   label: 'Văn bản',
-                      //   onPressed: () {},
-                      // ),
                     ],
                   ),
                 ),

@@ -4,6 +4,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../../core/di/injection.dart';
 import '../../../../livestream/data/model/live_stream_response.dart';
 import '../../../../livestream/presentation/provider/live_comment_cubit.dart';
+import '../../../../livestream/presentation/provider/live_reaction_cubit.dart';
 import '../../../../livestream/presentation/provider/watch_live_cubit.dart';
 import '../../../../livestream/presentation/screens/live_viewer_screen.dart';
 class LiveStatusBadge extends StatelessWidget {
@@ -17,16 +18,7 @@ class LiveStatusBadge extends StatelessWidget {
 
     return GestureDetector(
       onTap: () {
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (_) => BlocProvider(
-              create: (_) => getIt<WatchLiveCubit>(),
-              child: LiveViewerScreen(streamId: stream!.id),
-            ),
-          ),
-        );
-        Navigator.push(
+        Navigator.pushReplacement(
           context,
           MaterialPageRoute(
             builder: (_) => MultiBlocProvider(
@@ -36,6 +28,9 @@ class LiveStatusBadge extends StatelessWidget {
                   ),
                   BlocProvider(
                     create: (_) => getIt<LiveCommentCubit>()..loadComments(stream!.id),
+                  ),
+                  BlocProvider(
+                    create: (_) => getIt<LiveReactionCubit>(param1: stream!.id)
                   ),
                 ],
                 child: LiveViewerScreen(streamId: stream!.id)),
