@@ -13,6 +13,7 @@ import '../../../../core/di/injection.dart';
 import '../../../../core/utils/food_emotion_helper.dart';
 import '../../data/model/live_reaction_response.dart';
 import '../../data/model/live_stream_response.dart';
+import '../provider/live_comment_cubit.dart';
 import '../provider/live_reaction_cubit.dart';
 import '../provider/watch_live_cubit.dart';
 import '../widgets/live_reaction_animation.dart';
@@ -46,6 +47,15 @@ class _LiveViewerScreenState extends State<LiveViewerScreen> {
   void initState() {
     super.initState();
     developer.log('[VIEWER] initState called', name: 'LiveViewer');
+    Future.microtask(() {
+      final reactionCubit = context.read<LiveReactionCubit>();
+      final commentCubit = context.read<LiveCommentCubit>();
+
+      // Set callback để LiveReactionCubit gửi comment cho LiveCommentCubit
+      reactionCubit.onCommentReceived = (comment) {
+        commentCubit.addCommentFromWebSocket(comment);
+      };
+    });
     _loadStream();
 
     _timer = Timer.periodic(const Duration(seconds: 1), (timer) {

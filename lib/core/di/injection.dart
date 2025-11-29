@@ -59,6 +59,8 @@ import '../../features/auth/data/repositories/auth_repository_impl.dart';
 import '../../features/auth/domain/repositories/auth_repository.dart';
 import '../../features/auth/domain/usecases/auth_usecases.dart';
 import '../../features/livestream/presentation/provider/live_reaction_cubit.dart';
+import '../../features/livestream/presentation/provider/streamer_comment_cubit.dart';
+import '../../features/livestream/presentation/provider/streamer_reaction_cubit.dart';
 import '../../features/livestream/presentation/provider/watch_live_cubit.dart';
 import '../../features/post/data/repositories/search_repository.dart';
 import '../../features/post/presentation/provider/post_list_cubit.dart';
@@ -257,5 +259,15 @@ Future<void> setupDependencies() async {
       getIt<SharedPreferences>(),
       liveStreamId,
     ),
+  );
+  getIt.registerFactoryParam<StreamerReactionCubit, int, void>(
+        (liveStreamId, _) => StreamerReactionCubit(
+      getIt<SharedPreferences>(),
+      liveStreamId,
+    ),
+  );
+
+  getIt.registerFactory<StreamerCommentCubit>(
+        () => StreamerCommentCubit(getIt<LiveCommentRepository>()),
   );
 }

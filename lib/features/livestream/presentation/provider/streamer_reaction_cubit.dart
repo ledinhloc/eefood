@@ -9,28 +9,26 @@ import 'package:stomp_dart_client/stomp.dart';
 import 'package:stomp_dart_client/stomp_config.dart';
 import 'package:stomp_dart_client/stomp_frame.dart';
 
-import '../../data/model/live_comment_response.dart';
 import '../../data/model/live_reaction_response.dart';
-import '../../domain/repository/live_reaction_repo.dart';
+import '../../data/model/live_comment_response.dart';
 
-// State
-class LiveReactionState extends Equatable {
+class StreamerReactionState extends Equatable {
   final List<LiveReactionResponse> reactions;
   final bool isLoading;
   final String? error;
 
-  const LiveReactionState({
+  const StreamerReactionState({
     this.reactions = const [],
     this.isLoading = false,
     this.error,
   });
 
-  LiveReactionState copyWith({
+  StreamerReactionState copyWith({
     List<LiveReactionResponse>? reactions,
     bool? isLoading,
     String? error,
   }) {
-    return LiveReactionState(
+    return StreamerReactionState(
       reactions: reactions ?? this.reactions,
       isLoading: isLoading ?? this.isLoading,
       error: error,
@@ -41,28 +39,30 @@ class LiveReactionState extends Equatable {
   List<Object?> get props => [reactions, isLoading, error];
 }
 
-// Cubit
-class LiveReactionCubit extends Cubit<LiveReactionState> {
-  final LiveReactionRepository _repository;
+// Cubit cho Streamer
+class StreamerReactionCubit extends Cubit<StreamerReactionState> {
   final SharedPreferences _prefs;
   final int liveStreamId;
+
   StompClient? _stompClient;
+
+  // Callback để StreamerCommentCubit nhận comment
   Function(LiveCommentResponse)? onCommentReceived;
-  LiveReactionCubit(this._repository, this._prefs, this.liveStreamId) : super(const LiveReactionState()){
+
+  StreamerReactionCubit(this._prefs, this.liveStreamId)
+      : super(const StreamerReactionState()) {
     developer.log(
-      'LiveReactionCubit created for stream $liveStreamId',
-      name: 'LiveReaction',
+      ' StreamerReactionCubit created for stream $liveStreamId',
+      name: 'StreamerReaction',
     );
-    // Auto connect WebSocket ngay khi khởi tạo
     connectWebSocket();
   }
 
   void connectWebSocket() {
-    // Check nếu đã connect rồi thì return
     if (_stompClient?.connected == true) {
       developer.log(
         'Already connected to stream $liveStreamId',
-        name: 'LiveReaction',
+        name: 'StreamerReaction',
       );
       return;
     }
@@ -70,8 +70,8 @@ class LiveReactionCubit extends Cubit<LiveReactionState> {
     final token = _prefs.getString(AppKeys.accessToken) ?? '';
 
     developer.log(
-      'Connecting to WebSocket for stream $liveStreamId',
-      name: 'LiveReaction',
+      ' Connecting to WebSocket for stream $liveStreamId',
+      name: 'StreamerReaction',
     );
 
     _stompClient = StompClient(
@@ -81,36 +81,35 @@ class LiveReactionCubit extends Cubit<LiveReactionState> {
         webSocketConnectHeaders: {'Authorization': 'Bearer $token'},
         onConnect: _onWebSocketConnected,
         onWebSocketError: (err) {
-          developer.log('WS error: $err', name: 'LiveReaction');
+          developer.log(' WS error: $err', name: 'StreamerReaction');
           emit(state.copyWith(error: 'WebSocket error: $err'));
         },
         onStompError: (frame) {
-          developer.log('STOMP error: ${frame.body}', name: 'LiveReaction');
+          developer.log(' STOMP error: ${frame.body}', name: 'StreamerReaction');
         },
         onDisconnect: (frame) {
           developer.log(
-            'Disconnected from stream $liveStreamId',
-            name: 'LiveReaction',
+            '️ Disconnected from stream $liveStreamId',
+            name: 'StreamerReaction',
           );
         },
       ),
     );
 
     _stompClient!.activate();
-
   }
 
   void _onWebSocketConnected(StompFrame frame) {
     developer.log(
-      '[WebSocket] Connected to stream $liveStreamId',
-      name: 'LiveReaction',
+      ' [WebSocket] Streamer connected to stream $liveStreamId',
+      name: 'StreamerReaction',
     );
 
-    // Subscribe vào topic reaction của livestream này
-    final destination = '/topic/live-reaction/$liveStreamId';
+    // Subscribe reactions
+    final reactionDestination = '/topic/live-reaction/$liveStreamId';
 
     _stompClient?.subscribe(
-      destination: destination,
+      destination: reactionDestination,
       callback: (StompFrame frame) {
         if (frame.body != null) {
           try {
@@ -120,25 +119,25 @@ class LiveReactionCubit extends Cubit<LiveReactionState> {
             );
 
             developer.log(
-              'Received reaction: ${reaction.emotion} from ${reaction.username}',
-              name: 'LiveReaction',
+              'Streamer received reaction: ${reaction.emotion} from ${reaction.username}',
+              name: 'StreamerReaction',
             );
 
-            // Emit reaction mới - chỉ giữ 1 reaction để trigger animation
             emit(state.copyWith(reactions: [reaction]));
 
           } catch (e) {
             developer.log(
               'Error parsing reaction: $e',
-              name: 'LiveReaction',
+              name: 'StreamerReaction',
             );
           }
         }
       },
     );
 
-    developer.log('Subscribed to: $destination', name: 'LiveReaction');
+    developer.log(' Subscribed to: $reactionDestination', name: 'StreamerReaction');
 
+    // Subscribe comments
     final commentDestination = '/topic/live-comment/$liveStreamId';
 
     _stompClient?.subscribe(
@@ -152,66 +151,30 @@ class LiveReactionCubit extends Cubit<LiveReactionState> {
             );
 
             developer.log(
-              'Received comment: "${comment.message}" from ${comment.username}',
-              name: 'LiveComment',
+              ' Streamer received comment: "${comment.message}" from ${comment.username}',
+              name: 'StreamerComment',
             );
 
-            // Gọi callback để LiveCommentCubit xử lý
             onCommentReceived?.call(comment);
 
           } catch (e) {
             developer.log(
               'Error parsing comment: $e',
-              name: 'LiveComment',
+              name: 'StreamerComment',
             );
           }
         }
       },
     );
 
-    developer.log('Subscribed to: $commentDestination', name: 'LiveComment');
-  }
-
-  // Load reactions ban đầu
-  Future<void> loadReactions(int liveStreamId) async {
-    try {
-      emit(state.copyWith(isLoading: true));
-      final reactions = await _repository.getReactions(liveStreamId);
-      emit(state.copyWith(reactions: reactions, isLoading: false));
-    } catch (e) {
-      developer.log('Error loading reactions: $e', name: 'LiveReaction');
-      emit(state.copyWith(error: e.toString(), isLoading: false));
-    }
-  }
-
-  // Tạo reaction mới
-  Future<void> createReaction(int liveStreamId, FoodEmotion emotion) async {
-    try {
-      final newReaction = await _repository.createReaction(
-        liveStreamId,
-        emotion.name,
-      );
-
-      // Thêm reaction mới vào danh sách
-      // final updatedReactions = [...state.reactions, newReaction];
-      // final updatedReactions = [newReaction];
-      // emit(state.copyWith(reactions: updatedReactions));
-
-      developer.log(
-        'Reaction created: ${emotion.name} by ${newReaction.username}',
-        name: 'LiveReaction',
-      );
-    } catch (e) {
-      developer.log('Error creating reaction: $e', name: 'LiveReaction');
-      emit(state.copyWith(error: e.toString()));
-    }
+    developer.log(' Subscribed to: $commentDestination', name: 'StreamerComment');
   }
 
   @override
   Future<void> close() {
     developer.log(
-      'Closing LiveReactionCubit for stream $liveStreamId',
-      name: 'LiveReaction',
+      'Closing StreamerReactionCubit for stream $liveStreamId',
+      name: 'StreamerReaction',
     );
     _stompClient?.deactivate();
     return super.close();

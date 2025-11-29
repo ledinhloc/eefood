@@ -1,3 +1,5 @@
+import 'package:equatable/equatable.dart';
+
 import '../../data/model/live_comment_response.dart';
 import 'package:bloc/bloc.dart';
 import '../../domain/repository/live_comment_repo.dart';
@@ -18,6 +20,12 @@ class LiveCommentCubit extends Cubit<LiveCommentState> {
     }
   }
 
+  void addCommentFromWebSocket(LiveCommentResponse comment) {
+    final updatedComments = List<LiveCommentResponse>.from(state.comments)
+      ..add(comment);
+    emit(state.copyWith(comments: updatedComments));
+  }
+
   /// Thêm comment mới
   Future<void> addComment(String message) async {
     final id = state.liveStreamId;
@@ -27,30 +35,17 @@ class LiveCommentCubit extends Cubit<LiveCommentState> {
     }
 
     try {
-      final comment = await repository.createComment(id, message);
-      final updatedComments = List<LiveCommentResponse>.from(state.comments)
-        ..add(comment);
-      emit(state.copyWith(comments: updatedComments));
-    } catch (e) {
-      emit(state.copyWith(error: e.toString()));
-    }
-  }
-
-  /// Xóa comment
-  Future<void> deleteComment(int commentId) async {
-    try {
-      await repository.deleteComment(commentId);
-      final updatedComments = state.comments
-          .where((c) => c.id != commentId)
-          .toList();
-      emit(state.copyWith(comments: updatedComments));
+      await repository.createComment(id, message);
+      // final updatedComments = List<LiveCommentResponse>.from(state.comments)
+      //   ..add(comment);
+      // emit(state.copyWith(comments: updatedComments));
     } catch (e) {
       emit(state.copyWith(error: e.toString()));
     }
   }
 }
 
-class LiveCommentState {
+class LiveCommentState extends Equatable{
   final bool loading;
   final List<LiveCommentResponse> comments;
   final int? liveStreamId;
