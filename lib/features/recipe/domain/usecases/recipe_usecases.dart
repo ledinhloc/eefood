@@ -40,6 +40,13 @@ class CreateRecipe {
   Future<Result<RecipeModel>> call(RecipeModel recipe) => repository.createRecipe(recipe);
 }
 
+class CreateRecipeFromUrl {
+  final RecipeRepository repository;
+  CreateRecipeFromUrl(this.repository);
+
+  Future<Result<RecipeModel>> call(String url) => repository.createRecipeFromUrl(url);
+}
+
 class UpdateRecipe {
   final RecipeRepository repository;
   UpdateRecipe(this.repository);

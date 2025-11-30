@@ -32,12 +32,12 @@ class _SearchPopupState extends State<SearchPopup> {
     'Khó': 'HARD',
   };
   final List<String> _categories = [
-    'Khai vị',
+    'Món tết',
     'Món chính',
-    'Tráng miệng',
-    'Đồ uống',
-    'Món chay',
-    'Món nhanh',
+    'Món ăn sáng',
+    'Món đường phố',
+    'Các loại bánh',
+    'Món ngon hàng ngày',
   ];
 
   // Các giá trị đã chọn (nullable - null = chưa chọn)
@@ -51,7 +51,7 @@ class _SearchPopupState extends State<SearchPopup> {
     'Dưới 15 phút': 15,
     'Dưới 30 phút': 30,
     'Dưới 1 giờ': 60,
-    'Trên 1 giờ': 999,
+    'Trên 1 giờ': 9999999,
   };
 
   @override
