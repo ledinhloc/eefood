@@ -348,38 +348,6 @@ class _SearchPopupState extends State<SearchPopup> {
                       (v) => setState(() => _selectedDiet = v),
                     ),
                     const SizedBox(height: 12),
-
-                    // sort
-                    const Text(
-                      'Sắp xếp theo',
-                      style: TextStyle(fontWeight: FontWeight.w600),
-                    ),
-                    const SizedBox(height: 8),
-                    Wrap(
-                      spacing: 8,
-                      children:
-                          [
-                            'Mới nhất',
-                            'Phổ biến',
-                            'Đánh giá cao',
-                            'Cũ nhất',
-                          ].map((s) {
-                            final sel = s == _selectedSort;
-                            return ChoiceChip(
-                              label: Text(
-                                s,
-                                style: TextStyle(
-                                  color: sel ? Colors.white : Colors.black87,
-                                ),
-                              ),
-                              selected: sel,
-                              onSelected: (_) =>
-                                  setState(() => _selectedSort = s),
-                              selectedColor: Colors.redAccent,
-                            );
-                          }).toList(),
-                    ),
-                    const SizedBox(height: 20),
                   ],
                 ),
               ),
@@ -392,6 +360,7 @@ class _SearchPopupState extends State<SearchPopup> {
                 children: [
                   TextButton(
                     onPressed: () {
+                      context.read<PostListCubit>().resetFilters();
                       setState(() {
                         _keywordCtl.text = '';
                         _selectedRegion = 'Tất cả';
@@ -427,7 +396,6 @@ class _SearchPopupState extends State<SearchPopup> {
                         'diet': _selectedDiet == 'Tất cả'
                             ? null
                             : _selectedDiet,
-                        'sort': _selectedSort,
                       };
                       Navigator.of(context).pop(filters);
                     },

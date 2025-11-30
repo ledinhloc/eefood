@@ -26,7 +26,6 @@ class PostListCubit extends Cubit<PostListState> {
           difficulty: null,
           category: null,
           maxCookTime: null,
-          sortBy: 'newest',
           recentKeywords: [],
         ),
       );
@@ -65,7 +64,6 @@ class PostListCubit extends Cubit<PostListState> {
         difficulty: null,
         category: null,
         maxCookTime: null,
-        sortBy: 'newest',
         recentKeywords: state.recentKeywords,
       ),
     );
@@ -99,7 +97,6 @@ class PostListCubit extends Cubit<PostListState> {
         difficulty: difficulty,
         category: category,
         maxCookTime: maxCookTime,
-        sortBy: sortBy ?? state.sortBy,
       ),
     );
 
@@ -163,7 +160,6 @@ class PostListCubit extends Cubit<PostListState> {
         difficulty: state.difficulty,
         category: state.category,
         maxCookTime: state.maxCookTime,
-        sortBy: state.sortBy,
       );
 
       print('Loaded page $nextPage with ${posts.length} posts');
@@ -228,7 +224,6 @@ class PostListState {
   final String? difficulty;
   final String? category;
   final int? maxCookTime;
-  final String sortBy;
   final List<String> recentKeywords;
 
   PostListState({
@@ -242,7 +237,6 @@ class PostListState {
     this.difficulty,
     this.category,
     this.maxCookTime,
-    this.sortBy = 'newest',
     this.recentKeywords = const [],
   });
 
@@ -271,7 +265,6 @@ class PostListState {
       difficulty: difficulty ?? this.difficulty,
       category: category ?? this.category,
       maxCookTime: maxCookTime ?? this.maxCookTime,
-      sortBy: sortBy ?? this.sortBy,
       recentKeywords: recentKeywords ?? this.recentKeywords,
     );
   }
