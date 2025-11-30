@@ -1,6 +1,7 @@
 import 'package:eefood/app_routes.dart';
 import 'package:eefood/core/utils/speech_helper.dart';
 import 'package:eefood/core/widgets/snack_bar.dart';
+import 'package:eefood/features/post/presentation/widgets/post/toggle_chips.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
@@ -17,47 +18,55 @@ class SearchPopup extends StatefulWidget {
 class _SearchPopupState extends State<SearchPopup> {
   final TextEditingController _keywordCtl = TextEditingController();
 
-  // sample options - bạn có thể lấy động từ backend
   final List<String> _regions = [
-    'Tất cả',
     'Hà Nội',
     'TP.HCM',
     'Đà Nẵng',
     'Việt Nam',
     'Nhật',
+    'Châu Âu',
   ];
   final Map<String, String> _difficultyMap = {
-    'Tất cả': '',
     'Dễ': 'EASY',
     'Trung bình': 'MEDIUM',
     'Khó': 'HARD',
   };
-  late final List<String> _difficulties;
-  final List<String> _mealTypes = [
-    'Tất cả',
+  final List<String> _categories = [
     'Khai vị',
     'Món chính',
     'Tráng miệng',
     'Đồ uống',
+    'Món chay',
+    'Món nhanh',
   ];
-  final List<String> _times = ['Tất cả', '<15p', '<30p', '<1h', '>1h'];
-  final List<String> _diets = ['Tất cả', 'Ăn chay', 'Giảm cân', 'Healthy'];
 
-  String _selectedRegion = 'Tất cả';
-  String _selectedDifficulty = 'Tất cả';
-  String _selectedMealType = 'Tất cả';
-  String _selectedTime = 'Tất cả';
-  String _selectedDiet = 'Tất cả';
-  String _selectedSort = 'Mới nhất';
+  // Các giá trị đã chọn (nullable - null = chưa chọn)
+  String? _selectedRegion;
+  String? _selectedDifficulty;
+  String? _selectedCategory;
+  int? _selectedMaxCookTime; // tính bằng phút
 
-  // recent searches sample (có thể bind với local storage)
-  final List<String> _recent = ['Cơm chiên', 'Món chay', 'Món nhanh'];
+  // Cooking time options với giá trị số
+  final Map<String, int> _cookTimeMap = {
+    'Dưới 15 phút': 15,
+    'Dưới 30 phút': 30,
+    'Dưới 1 giờ': 60,
+    'Trên 1 giờ': 999,
+  };
 
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
-    _difficulties = _difficultyMap.keys.toList();
+    final currentState = context.read<PostListCubit>().state;
+    _keywordCtl.text = currentState.keyword ?? '';
+    _selectedRegion = currentState.region;
+    _selectedDifficulty = currentState.difficulty == null
+        ? null
+        : _difficultyMap.entries
+              .firstWhere((e) => e.value == currentState.difficulty)
+              .key;
+    _selectedCategory = currentState.category;
+    _selectedMaxCookTime = currentState.maxCookTime;
   }
 
   @override
@@ -66,177 +75,139 @@ class _SearchPopupState extends State<SearchPopup> {
     super.dispose();
   }
 
-  Map<String, dynamic> _buildFilters(String keyword) {
-    String? v(String value) => value == 'Tất cả' ? null : value;
-
-    final diff = _difficultyMap[_selectedDifficulty];
-    return {
-      'keyword': keyword.trim().isEmpty ? null : keyword.trim(),
-      'region': v(_selectedRegion),
-      'difficulty': (diff == null || diff.isEmpty) ? null : diff,
-      'mealType': v(_selectedMealType),
-      'time': v(_selectedTime),
-      'diet': v(_selectedDiet),
-      'sort': _selectedSort,
-    }..removeWhere((_, v) => v == null); // xoá key null cho gọn
-  }
-
-  //toa nhom cac lua chon
-  Widget _buildChips(
-    List<String> options,
-    String selected,
-    ValueChanged<String> onTap,
-  ) {
-    return Wrap(
-      spacing: 5,
-      runSpacing: 5,
-      children: options.map((opt) {
-        final selectedFlag = opt == selected;
-        return ChoiceChip(
-          checkmarkColor: Colors.greenAccent,
-          materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
-          label: Text(
-            opt,
-            style: TextStyle(
-              color: selectedFlag ? Colors.white : Colors.black87,
-            ),
-          ),
-          selected: selectedFlag,
-          onSelected: (_) => onTap(opt),
-          selectedColor: Colors.redAccent,
-          backgroundColor: Colors.grey.shade100,
-        );
-      }).toList(),
-    );
+  // method để điền keyword vào ô tìm kiếm =====
+  void _fillKeywordFromHistory(String keyword) {
+    setState(() {
+      _keywordCtl.text = keyword;
+      _keywordCtl.selection = TextSelection.fromPosition(
+        TextPosition(offset: keyword.length),
+      );
+    });
   }
 
   @override
   Widget build(BuildContext context) {
     return Dialog(
       backgroundColor: Colors.white,
-      insetPadding: const EdgeInsets.symmetric(horizontal: 8, vertical: 10),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      insetPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 40),
       child: SizedBox(
         width: double.infinity,
-        height: MediaQuery.of(context).size.height * 0.8,
+        // ===== Giảm chiều cao để không bị overflow =====
+        height: MediaQuery.of(context).size.height * 0.7,
         child: Column(
           children: [
-            // header
-            Padding(
-              padding: const EdgeInsets.only(
-                top: 2,
-                left: 25,
-                right: 12,
-                bottom: 0,
+            // ===== HEADER (giữ nguyên) =====
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+              decoration: BoxDecoration(
+                color: Colors.orange.shade50,
+                borderRadius: const BorderRadius.vertical(
+                  top: Radius.circular(16),
+                ),
               ),
               child: Row(
                 children: [
+                  Icon(
+                    Icons.filter_list_rounded,
+                    color: Colors.orange.shade700,
+                  ),
+                  const SizedBox(width: 8),
                   const Expanded(
                     child: Text(
-                      'Tìm kiếm',
+                      'Bộ lọc tìm kiếm',
                       style: TextStyle(
                         fontSize: 20,
-                        fontWeight: FontWeight.w600,
+                        fontWeight: FontWeight.bold,
                       ),
                     ),
                   ),
                   IconButton(
                     onPressed: () => Navigator.of(context).pop(),
                     icon: const Icon(Icons.close),
+                    iconSize: 24,
                   ),
                 ],
               ),
             ),
-            const Divider(height: 1),
+
+            // ===== BODY =====
             Expanded(
               child: SingleChildScrollView(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 16,
-                  vertical: 12,
-                ),
+                padding: const EdgeInsets.all(16),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // keyword
-                    const Text(
-                      'Từ khoá',
-                      style: TextStyle(fontWeight: FontWeight.w600),
-                    ),
+                    // ===== KEYWORD =====
+                    _buildSectionTitle('🔍 Từ khóa'),
                     const SizedBox(height: 8),
                     TextField(
                       controller: _keywordCtl,
                       decoration: InputDecoration(
-                        prefixIcon: const Icon(Icons.search_rounded),
-                        suffixIcon: SizedBox(
-                          width: 60,
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.end,
-                            children: [
-                              GestureDetector(
-                                onTap: () async {
-                                  final helper = SpeechHelper();
-                                  final keyword = await helper.listenOnceWithUI(
-                                    context,
-                                  );
-
-                                  if (keyword != null && context.mounted) {
-                                    setState(() {
-                                      _keywordCtl.text = keyword;
-                                      _keywordCtl.selection =
-                                          TextSelection.fromPosition(
-                                            TextPosition(
-                                              offset: keyword.length,
-                                            ),
-                                          );
-                                    });
-
-                                    // Tự động áp dụng luôn filter
-                                    final filters = _buildFilters(keyword);
-                                    Navigator.of(context).pop(filters);
-                                  } else {
-                                    if (context.mounted) {
-                                      showCustomSnackBar(
-                                        context,
-                                        'Không nhận được từ khóa tìm kiếm',
-                                        isError: false
-                                      );
-                                    }
-                                  }
-                                },
-                                child: const Icon(
-                                  Icons.mic,
-                                  color: Colors.grey,
-                                  size: 20,
-                                ),
+                        prefixIcon: const Icon(Icons.search_rounded, size: 22),
+                        suffixIcon: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          mainAxisAlignment: MainAxisAlignment.end,
+                          children: [
+                            // Voice search
+                            IconButton(
+                              icon: const Icon(Icons.mic, size: 22),
+                              color: Colors.orange.shade700,
+                              onPressed: () async {
+                                final helper = SpeechHelper();
+                                final keyword = await helper.listenOnceWithUI(
+                                  context,
+                                );
+                                if (keyword != null && context.mounted) {
+                                  setState(() => _keywordCtl.text = keyword);
+                                }
+                              },
+                            ),
+                            // Image search
+                            IconButton(
+                              icon: const Icon(
+                                Icons.camera_alt_rounded,
+                                size: 22,
                               ),
-                              SizedBox(width: 8),
-                              GestureDetector(
-                                onTap: () async{
-                                  await Navigator.pushNamed(
-                                    context,
-                                    AppRoutes.imageSearchPage,
-                                  );
-                                  Navigator.of(context).pop();
-                                },
-                                child: Icon(
-                                  Icons.camera_alt_rounded,
-                                  size: 20,
-                                  color: Colors.grey,
-                                ),
-                              ),
-                              SizedBox(width: 6),
-                            ],
+                              color: Colors.orange.shade700,
+                              onPressed: () async {
+                                await Navigator.pushNamed(
+                                  context,
+                                  AppRoutes.imageSearchPage,
+                                );
+                                Navigator.of(context).pop();
+                              },
+                            ),
+                          ],
+                        ),
+                        hintText: 'Nhập tên món, nguyên liệu...',
+                        hintStyle: TextStyle(color: Colors.grey.shade400),
+                        filled: true,
+                        fillColor: Colors.grey.shade50,
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          borderSide: BorderSide(color: Colors.grey.shade300),
+                        ),
+                        enabledBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          borderSide: BorderSide(color: Colors.grey.shade300),
+                        ),
+                        focusedBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          borderSide: BorderSide(
+                            color: Colors.orange.shade400,
+                            width: 2,
                           ),
                         ),
-                        hintText: 'Nhập tên món / nguyên liệu',
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(10),
+                        contentPadding: const EdgeInsets.symmetric(
+                          vertical: 12,
+                          horizontal: 12,
                         ),
-                        isDense: true,
                       ),
                     ),
                     const SizedBox(height: 16),
 
-                    // recent
+                    // ===== RECENT SEARCHES =====
                     BlocBuilder<PostListCubit, PostListState>(
                       builder: (context, state) {
                         final recents = state.recentKeywords;
@@ -245,167 +216,226 @@ class _SearchPopupState extends State<SearchPopup> {
                         return Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            const Text(
-                              'Lịch sử tìm kiếm',
-                              style: TextStyle(fontWeight: FontWeight.w600),
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                _buildSectionTitle('🕒 Tìm kiếm gần đây'),
+                                TextButton(
+                                  onPressed: () {
+                                    getIt<PostListCubit>().clearAllKeywords();
+                                  },
+                                  style: TextButton.styleFrom(
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 8,
+                                      vertical: 4,
+                                    ),
+                                    minimumSize: Size.zero,
+                                    tapTargetSize:
+                                        MaterialTapTargetSize.shrinkWrap,
+                                  ),
+                                  child: Text(
+                                    'Xóa tất cả',
+                                    style: TextStyle(
+                                      color: Colors.red.shade400,
+                                      fontSize: 13,
+                                    ),
+                                  ),
+                                ),
+                              ],
                             ),
                             const SizedBox(height: 8),
                             Wrap(
-                              spacing: 8,
-                              runSpacing: 4,
-                              children: recents.map((r) {
+                              spacing: 6, // Giảm từ 8 → 6
+                              runSpacing: 6,
+                              children: recents.map((keyword) {
                                 return GestureDetector(
-                                  onTap: () {
-                                    setState(() {
-                                      _keywordCtl.text = r;
-                                      _keywordCtl.selection =
-                                          TextSelection.fromPosition(
-                                            TextPosition(
-                                              offset: _keywordCtl.text.length,
-                                            ),
-                                          );
-                                    });
-                                  },
+                                  // Thêm onTap để fill keyword =====
+                                  onTap: () => _fillKeywordFromHistory(keyword),
                                   child: Chip(
-                                    label: Text(r),
-                                    onDeleted: () =>
-                                        getIt<PostListCubit>().deleteKeyword(r),
+                                    label: Text(
+                                      keyword,
+                                      style: const TextStyle(fontSize: 13),
+                                    ),
+                                    onDeleted: () => getIt<PostListCubit>()
+                                        .deleteKeyword(keyword),
                                     deleteIcon: const Icon(
                                       Icons.close,
-                                      size: 16,
+                                      size: 14,
                                     ),
-                                    deleteIconColor: Colors.redAccent,
-                                    backgroundColor: Colors.grey.shade100,
+                                    deleteIconColor: Colors.red.shade400,
+                                    backgroundColor: Colors.blue.shade50,
+                                    side: BorderSide(
+                                      color: Colors.blue.shade200,
+                                    ),
+                                    labelStyle: TextStyle(
+                                      color: Colors.blue.shade900,
+                                    ),
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 8,
+                                      vertical: 4,
+                                    ),
+                                    materialTapTargetSize:
+                                        MaterialTapTargetSize.shrinkWrap,
                                   ),
                                 );
                               }).toList(),
                             ),
+                            const SizedBox(height: 16), // Giảm từ 24 → 16
                           ],
                         );
                       },
                     ),
-                    // region
-                    const Text(
-                      'Lọc theo khu vực',
-                      style: TextStyle(fontWeight: FontWeight.w600),
-                    ),
-                    const SizedBox(height: 8),
-                    _buildChips(
-                      _regions,
-                      _selectedRegion,
-                      (v) => setState(() => _selectedRegion = v),
-                    ),
-                    const SizedBox(height: 12),
 
-                    // difficulty
-                    const Text(
-                      'Lọc theo độ khó',
-                      style: TextStyle(fontWeight: FontWeight.w600),
+                    // ===== REGION =====
+                    _buildSectionTitle('🌍 Khu vực'),
+                    const SizedBox(height: 8), // Giảm từ 12 → 8
+                    ToggleChips(
+                      options: _regions,
+                      selected: _selectedRegion,
+                      onTap: (v) => setState(() => _selectedRegion = v),
                     ),
+                    const SizedBox(height: 16), // Giảm từ 24 → 16
+                    // ===== DIFFICULTY =====
+                    _buildSectionTitle(' Độ khó'),
                     const SizedBox(height: 8),
-                    _buildChips(
-                      _difficulties,
-                      _selectedDifficulty,
-                      (v) => setState(() => _selectedDifficulty = v),
+                    ToggleChips(
+                      options: _difficultyMap.keys.toList(),
+                      selected: _selectedDifficulty,
+                      onTap: (v) => setState(() => _selectedDifficulty = v),
                     ),
-                    const SizedBox(height: 12),
+                    const SizedBox(height: 16),
 
-                    // meal type
-                    const Text(
-                      'Loại bữa ăn',
-                      style: TextStyle(fontWeight: FontWeight.w600),
-                    ),
+                    // ===== CATEGORY =====
+                    _buildSectionTitle(' Danh mục'),
                     const SizedBox(height: 8),
-                    _buildChips(
-                      _mealTypes,
-                      _selectedMealType,
-                      (v) => setState(() => _selectedMealType = v),
+                    ToggleChips(
+                      options: _categories,
+                      selected: _selectedCategory,
+                      onTap: (v) => setState(() => _selectedCategory = v),
                     ),
-                    const SizedBox(height: 12),
+                    const SizedBox(height: 16),
 
-                    // time
-                    const Text(
-                      'Thời gian nấu',
-                      style: TextStyle(fontWeight: FontWeight.w600),
-                    ),
+                    // ===== COOK TIME =====
+                    _buildSectionTitle('⏱️ Thời gian nấu'),
                     const SizedBox(height: 8),
-                    _buildChips(
-                      _times,
-                      _selectedTime,
-                      (v) => setState(() => _selectedTime = v),
+                    ToggleChips(
+                      options: _cookTimeMap.keys.toList(),
+                      selected:
+                          _cookTimeMap.entries
+                              .firstWhere(
+                                (e) => e.value == _selectedMaxCookTime,
+                                orElse: () => const MapEntry('', 0),
+                              )
+                              .key
+                              .isNotEmpty
+                          ? _cookTimeMap.entries
+                                .firstWhere(
+                                  (e) => e.value == _selectedMaxCookTime,
+                                )
+                                .key
+                          : null,
+                      onTap: (label) {
+                        setState(() {
+                          _selectedMaxCookTime = label != null
+                              ? _cookTimeMap[label]
+                              : null;
+                        });
+                      },
                     ),
-                    const SizedBox(height: 12),
-
-                    // diet
-                    const Text(
-                      'Chế độ ăn',
-                      style: TextStyle(fontWeight: FontWeight.w600),
-                    ),
-                    const SizedBox(height: 8),
-                    _buildChips(
-                      _diets,
-                      _selectedDiet,
-                      (v) => setState(() => _selectedDiet = v),
-                    ),
-                    const SizedBox(height: 12),
+                    const SizedBox(height: 8), // Giảm từ 12 → 8
                   ],
                 ),
               ),
             ),
 
-            // footer buttons
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            // ===== FOOTER BUTTONS =====
+            Container(
+              padding: const EdgeInsets.all(12), // Giảm từ 16 → 12
+              decoration: BoxDecoration(
+                color: Colors.white,
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.grey.shade200,
+                    blurRadius: 3,
+                    offset: const Offset(0, -1),
+                  ),
+                ],
+              ),
               child: Row(
                 children: [
-                  TextButton(
-                    onPressed: () {
-                      context.read<PostListCubit>().resetFilters();
-                      setState(() {
-                        _keywordCtl.text = '';
-                        _selectedRegion = 'Tất cả';
-                        _selectedDifficulty = 'Tất cả';
-                        _selectedMealType = 'Tất cả';
-                        _selectedTime = 'Tất cả';
-                        _selectedDiet = 'Tất cả';
-                        _selectedSort = 'Mới nhất';
-                      });
-                    },
-                    child: const Text('Xoá bộ lọc'),
+                  // Reset button
+                  Expanded(
+                    child: OutlinedButton.icon(
+                      onPressed: () {
+                        setState(() {
+                          _keywordCtl.clear();
+                          _selectedRegion = null;
+                          _selectedDifficulty = null;
+                          _selectedCategory = null;
+                          _selectedMaxCookTime = null;
+                        });
+                        context.read<PostListCubit>().resetFilters();
+                      },
+                      icon: const Icon(Icons.refresh_rounded, size: 18),
+                      label: const Text('Đặt lại'),
+                      style: OutlinedButton.styleFrom(
+                        foregroundColor: Colors.grey.shade700,
+                        side: BorderSide(color: Colors.grey.shade400),
+                        padding: const EdgeInsets.symmetric(vertical: 12),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                    ),
                   ),
-                  const Spacer(),
-                  ElevatedButton(
-                    onPressed: () {
-                      final filters = <String, dynamic>{
-                        'keyword': _keywordCtl.text.trim().isEmpty
-                            ? null
-                            : _keywordCtl.text.trim(),
-                        'region': _selectedRegion == 'Tất cả'
-                            ? null
-                            : _selectedRegion,
-                        'difficulty':
-                            _difficultyMap[_selectedDifficulty]?.isEmpty ?? true
-                            ? null
-                            : _difficultyMap[_selectedDifficulty],
-                        'mealType': _selectedMealType == 'Tất cả'
-                            ? null
-                            : _selectedMealType,
-                        'time': _selectedTime == 'Tất cả'
-                            ? null
-                            : _selectedTime,
-                        'diet': _selectedDiet == 'Tất cả'
-                            ? null
-                            : _selectedDiet,
-                      };
-                      Navigator.of(context).pop(filters);
-                    },
-                    child: const Text('Áp dụng'),
+                  const SizedBox(width: 10),
+                  // Apply button
+                  Expanded(
+                    flex: 2,
+                    child: ElevatedButton.icon(
+                      onPressed: () {
+                        final filters = <String, dynamic>{
+                          'keyword': _keywordCtl.text.trim().isEmpty
+                              ? null
+                              : _keywordCtl.text.trim(),
+                          'region': _selectedRegion,
+                          'difficulty': _selectedDifficulty != null
+                              ? _difficultyMap[_selectedDifficulty]
+                              : null,
+                          'category': _selectedCategory,
+                          'maxCookTime': _selectedMaxCookTime,
+                        };
+                        Navigator.of(context).pop(filters);
+                      },
+                      icon: const Icon(Icons.check_rounded, size: 18),
+                      label: const Text('Áp dụng'),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.orange.shade600,
+                        foregroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(vertical: 12),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        elevation: 2,
+                      ),
+                    ),
                   ),
                 ],
               ),
             ),
           ],
         ),
+      ),
+    );
+  }
+
+  Widget _buildSectionTitle(String title) {
+    return Text(
+      title,
+      style: const TextStyle(
+        fontSize: 15, // Giảm từ 16 → 15
+        fontWeight: FontWeight.w600,
+        letterSpacing: 0.2,
       ),
     );
   }

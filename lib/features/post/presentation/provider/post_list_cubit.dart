@@ -79,10 +79,6 @@ class PostListCubit extends Cubit<PostListState> {
     String? difficulty,
     String? category,
     int? maxCookTime,
-    String? sortBy,
-
-    String? mealType,
-    String? diet,
   }) async {
     // Reset về trang 1 với filters mới
     emit(
@@ -225,6 +221,14 @@ class PostListState {
   final String? category;
   final int? maxCookTime;
   final List<String> recentKeywords;
+
+  bool hasFilters(){
+    return keyword != null ||
+    region != null ||
+    difficulty != null ||
+    category != null ||
+    maxCookTime != null;
+  }
 
   PostListState({
     required this.posts,
