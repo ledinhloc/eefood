@@ -58,8 +58,8 @@ class UserModel {
       allergies: List<String>.from(json['allergies'] ?? []),
       eatingPreferences: List<String>.from(json['eatingPreferences'] ?? []),
       dietaryPreferences: List<String>.from(json['dietaryPreferences'] ?? []),
-      accessToken: json['accessToken'] ?? json['access_token'],
-      refreshToken: json['refreshToken'] ?? json['refresh_token'],
+      accessToken: json['accessToken'],
+      refreshToken: json['refreshToken'],
     );
   }
 
