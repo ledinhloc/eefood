@@ -10,6 +10,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 
 class RecipeCrudCubit extends Cubit<RecipeCrudState> {
   final CreateRecipe _createRecipe = getIt<CreateRecipe>();
+  final CreateRecipeFromUrl _createRecipeFromUrl = getIt<CreateRecipeFromUrl>();
   final UpdateRecipe _updateRecipe = getIt<UpdateRecipe>();
   final DeleteRecipe _deleteRecipe = getIt<DeleteRecipe>();
   RecipeCrudCubit(RecipeModel? initialRecipe)

@@ -152,6 +152,7 @@ Future<void> setupDependencies() async {
 
   //recipe
   getIt.registerLazySingleton(() => CreateRecipe(getIt<RecipeRepository>()));
+  getIt.registerLazySingleton(() => CreateRecipeFromUrl(getIt<RecipeRepository>()));
   getIt.registerLazySingleton(() => UpdateRecipe(getIt<RecipeRepository>()));
   getIt.registerLazySingleton(() => GetMyRecipe(getIt<RecipeRepository>()));
   getIt.registerLazySingleton(() => DeleteRecipe(getIt<RecipeRepository>()));
