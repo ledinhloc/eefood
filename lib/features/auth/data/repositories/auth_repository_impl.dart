@@ -115,8 +115,15 @@ class AuthRepositoryImpl implements AuthRepository {
             extra: {'requireAuth': false},
           ),
         );
-        final userModel = UserModel.fromJson(response.data['data']);
-        await _saveUser(userModel);
+        final data = response.data['data'];
+        await sharedPreferences.setString(
+          AppKeys.accessToken,
+          data['access_token'],
+        );
+        await sharedPreferences.setString(
+          AppKeys.refreshToken,
+          data['refresh_token'],
+        );
       }
     } catch (e) {
       throw Exception('Refresh token failed: $e');

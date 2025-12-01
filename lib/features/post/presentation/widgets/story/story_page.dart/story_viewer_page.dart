@@ -68,7 +68,7 @@ class _StoryViewerPageState extends State<StoryViewerPage> {
     _reactionCubit = context.read<StoryReactionCubit>();
 
     // Initialize helpers
-    _progressHelper = StoryProgressHelper(
+     _progressHelper = StoryProgressHelper(
       onProgressUpdate: () {
         if (mounted) setState(() {});
       },
@@ -129,6 +129,7 @@ class _StoryViewerPageState extends State<StoryViewerPage> {
     _viewerLoaderHelper.dispose();
     super.dispose();
   }
+
 
   bool _isCurrentUserStory() {
     if (widget.currentUserId == null) return false;
@@ -265,19 +266,28 @@ class _StoryViewerPageState extends State<StoryViewerPage> {
         context: context,
         isScrollControlled: true,
         backgroundColor: Colors.transparent,
-        builder: (_) {
-          return MultiBlocProvider(
-            providers: [
-              BlocProvider.value(value: _storyViewerCubit),
-              BlocProvider.value(value: _reactionStatsCubit),
-              BlocProvider.value(value: _commentCubit),
-            ],
-            child: StoryViewerListSheet(
-              viewerCubit: _storyViewerCubit,
-              reactionCubit: _reactionStatsCubit,
-              commentCubit: _commentCubit,
-              storyId: storyId,
-              story: currentStory,
+        isDismissible: true,
+        enableDrag: true,
+        useSafeArea: true,
+        builder: (context) {
+          return Padding(
+            padding: EdgeInsets.only(
+              bottom: MediaQuery.of(context).viewInsets.bottom,
+            ),
+            child: MultiBlocProvider(
+              providers: [
+                BlocProvider.value(value: _storyViewerCubit),
+                BlocProvider.value(value: _reactionStatsCubit),
+                BlocProvider.value(value: _commentCubit),
+              ],
+              child: StoryViewerListSheet(
+                viewerCubit: _storyViewerCubit,
+                reactionCubit: _reactionStatsCubit,
+                commentCubit: _commentCubit,
+                storyId: storyId,
+                story: currentStory,
+                currentUserId: widget.currentUserId,
+              ),
             ),
           );
         },

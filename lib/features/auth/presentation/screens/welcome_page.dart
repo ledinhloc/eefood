@@ -105,7 +105,7 @@ class WelcomePage extends StatelessWidget {
                     'assets/images/google.png', // icon google tự add
                     height: 24,
                   ),
-                  label: const Text("Tiếp tuc Google"),
+                  label: const Text("Continue with Google"),
                 ),
                 const SizedBox(height: 15),
                 /*

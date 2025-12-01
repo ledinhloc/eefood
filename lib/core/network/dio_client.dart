@@ -55,30 +55,27 @@ class DioClient {
           if (e.response?.statusCode == 401 &&
               !e.requestOptions.path.contains('/auth/refresh')) {
             try {
-              final refreshToken = getIt<SharedPreferences>().getString(
-                AppKeys.refreshToken,
+              // Gọi use case refresh token
+              await getIt<RefreshToken>()();
+              final newAccessToken = getIt<SharedPreferences>().getString(
+                AppKeys.accessToken,
               );
-              if (refreshToken != null) {
-                // Gọi use case refresh token
-                await getIt<RefreshToken>()();
-                final newAccessToken = getIt<SharedPreferences>().getString(
-                  AppKeys.accessToken,
-                );
-                // Tạo lại request với token mới
-                final clonedRequest = await dio.request(
-                  e.requestOptions.path,
-                  options: Options(
-                    method: e.requestOptions.method,
-                    headers: {
-                      ...e.requestOptions.headers,
-                      "Authorization": "Bearer $newAccessToken",
-                    },
-                  ),
-                  data: e.requestOptions.data,
-                  queryParameters: e.requestOptions.queryParameters,
-                );
-                return handler.resolve(clonedRequest);
-              }
+              // Tạo lại request với token mới
+              final options = Options(
+                method: e.requestOptions.method,
+                headers: e.requestOptions.headers
+                  ..['Authorization'] = 'Bearer $newAccessToken',
+                contentType: e.requestOptions.contentType,
+                responseType: e.requestOptions.responseType,
+                followRedirects: e.requestOptions.followRedirects,
+              );
+              final clonedRequest = await dio.request(
+                e.requestOptions.path,
+                options: options,
+                data: e.requestOptions.data,
+                queryParameters: e.requestOptions.queryParameters,
+              );
+              return handler.resolve(clonedRequest);
             } catch (err) {
               if (context != null) {
                 showCustomSnackBar(
@@ -93,7 +90,7 @@ class DioClient {
               // Điều hướng về màn welcome
               navigatorKey.currentState?.pushNamedAndRemoveUntil(
                 AppRoutes.welcome,
-                (route) => true,
+                (route) => false,
               );
 
               return handler.reject(

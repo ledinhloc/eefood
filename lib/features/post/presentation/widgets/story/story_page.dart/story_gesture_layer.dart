@@ -35,6 +35,8 @@ class StoryGestureLayer extends StatelessWidget {
           details.primaryVelocity! < 0 ? onSwipeLeft() : onSwipeRight();
         }
       },
+      onVerticalDragUpdate: (_) {},
+      onVerticalDragEnd: (_) {},
       child: child,
     );
   }

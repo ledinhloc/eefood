@@ -50,27 +50,36 @@ class _StoryViewerListSheetState extends State<StoryViewerListSheet>
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      height: MediaQuery.of(context).size.height * 0.8,
-      decoration: const BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.vertical(top: Radius.circular(22)),
-      ),
-      child: Column(
-        children: [
-          _buildHandle(),
-          const SizedBox(height: 16),
-          _buildStoryPreview(),
-          const SizedBox(height: 20),
-          _buildTabBar(),
-          Expanded(child: _buildTabBarView()),
-        ],
-      ),
+    return DraggableScrollableSheet(
+      initialChildSize: 0.98,
+      minChildSize: 0.5,
+      maxChildSize: 0.98,
+      expand: false,
+      builder: (context, scrollController) {
+        return Container(
+          decoration: const BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.vertical(top: Radius.circular(22)),
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              _buildHandle(),
+              const SizedBox(height: 16),
+              _buildStoryPreview(),
+              const SizedBox(height: 20),
+              _buildTabBar(),
+              Expanded(child: _buildTabBarView()),
+            ],
+          ),
+        );
+      },
     );
   }
 
   Widget _buildHandle() {
     return Column(
+      mainAxisSize: MainAxisSize.min,
       children: [
         const SizedBox(height: 12),
         Container(
@@ -86,8 +95,11 @@ class _StoryViewerListSheetState extends State<StoryViewerListSheet>
   }
 
   Widget _buildStoryPreview() {
+    final bool isVideo = widget.story.type != 'image';
+    final String? url = widget.story.contentUrl;
+
     return Container(
-      height: 180,
+      height: 120,
       width: double.infinity,
       margin: const EdgeInsets.symmetric(horizontal: 12),
       decoration: BoxDecoration(
@@ -99,27 +111,70 @@ class _StoryViewerListSheetState extends State<StoryViewerListSheet>
           Navigator.pushNamed(
             context,
             AppRoutes.mediaView,
-            arguments: {
-              'url': widget.story.contentUrl,
-              'isVideo': widget.story.type == 'image' ? false : true,
-            },
+            arguments: {'url': url, 'isVideo': isVideo},
           );
         },
         child: ClipRRect(
           borderRadius: BorderRadius.circular(12),
-          child: widget.story.contentUrl != null
+          child: url == null
+              ? const Icon(Icons.image_outlined, size: 60, color: Colors.grey)
+              : !isVideo
               ? CachedNetworkImage(
-                  imageUrl: widget.story.contentUrl!,
+                  imageUrl: url,
                   fit: BoxFit.cover,
                   placeholder: (context, url) =>
                       const Center(child: CircularProgressIndicator()),
-                  errorWidget: (context, url, error) => const Icon(
-                    Icons.error_outline,
-                    size: 40,
-                    color: Colors.grey,
-                  ),
+                  errorWidget: (context, url, error) =>
+                      const Icon(Icons.error_outline, size: 40),
                 )
-              : const Icon(Icons.image_outlined, size: 60, color: Colors.grey),
+              : Stack(
+                  children: [
+                    // Thumbnail video
+                    CachedNetworkImage(
+                      imageUrl: url,
+                      fit: BoxFit.cover,
+                      width: double.infinity,
+                      height: double.infinity,
+                      placeholder: (context, url) =>
+                          Container(color: Colors.black12),
+                      errorWidget: (context, url, error) =>
+                          Container(color: Colors.black12),
+                    ),
+
+                    // Gradient overlay
+                    Container(
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          colors: [
+                            Colors.transparent,
+                            Colors.black26,
+                            Colors.black45,
+                          ],
+                          begin: Alignment.topCenter,
+                          end: Alignment.bottomCenter,
+                        ),
+                      ),
+                    ),
+
+                    // Icon Play lớn, có shadow
+                    Center(
+                      child: Container(
+                        decoration: BoxDecoration(
+                          color: Colors.black54,
+                          shape: BoxShape.circle,
+                        ),
+                        child: const Padding(
+                          padding: EdgeInsets.all(8.0),
+                          child: Icon(
+                            Icons.play_arrow_rounded,
+                            color: Colors.white,
+                            size: 36,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
         ),
       ),
     );

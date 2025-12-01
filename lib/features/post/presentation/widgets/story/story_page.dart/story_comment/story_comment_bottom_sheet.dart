@@ -24,6 +24,7 @@ class StoryCommentBottomSheet extends StatefulWidget {
 
 class _StoryCommentBottomSheetState extends State<StoryCommentBottomSheet> {
   late StoryCommentCubit _commentCubit;
+  final ScrollController _scrollController = ScrollController();
 
   StoryCommentModel? _replyingTo;
   StoryCommentModel? _editingComment;
@@ -37,6 +38,20 @@ class _StoryCommentBottomSheetState extends State<StoryCommentBottomSheet> {
     if (widget.storyId != null) {
       _commentCubit.loadComments(widget.storyId!);
     }
+
+    _inputFocusNode.addListener(() {
+      if (_inputFocusNode.hasFocus) {
+        Future.delayed(const Duration(milliseconds: 300), () {
+          if (mounted && _scrollController.hasClients) {
+            _scrollController.animateTo(
+              _scrollController.position.maxScrollExtent,
+              duration: const Duration(milliseconds: 300),
+              curve: Curves.easeOut,
+            );
+          }
+        });
+      }
+    });
   }
 
   Future<void> _deleteComment(int commentId, {int? parentId}) async {
@@ -96,70 +111,74 @@ class _StoryCommentBottomSheetState extends State<StoryCommentBottomSheet> {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      height: MediaQuery.of(context).size.height * 0.9,
-      decoration: const BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-      ),
-      child: Column(
-        mainAxisSize: MainAxisSize.max,
-        children: [
-          // Header
-          Container(
-            padding: const EdgeInsets.symmetric(vertical: 12),
-            decoration: BoxDecoration(
-              border: Border(
-                bottom: BorderSide(color: Colors.grey.shade300, width: 1),
+    return AnimatedPadding(
+      duration: const Duration(milliseconds: 200),
+      curve: Curves.easeOut,
+      padding: MediaQuery.of(context).viewInsets,
+      child: Container(
+        decoration: const BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.max,
+          children: [
+            // Header
+            Container(
+              padding: const EdgeInsets.symmetric(vertical: 12),
+              decoration: BoxDecoration(
+                border: Border(
+                  bottom: BorderSide(color: Colors.grey.shade300, width: 1),
+                ),
+              ),
+              child: Column(
+                children: [
+                  Container(
+                    width: 40,
+                    height: 4,
+                    margin: const EdgeInsets.only(bottom: 8),
+                    decoration: BoxDecoration(
+                      color: Colors.grey.shade300,
+                      borderRadius: BorderRadius.circular(2),
+                    ),
+                  ),
+                  BlocBuilder<StoryCommentCubit, StoryCommentState>(
+                    builder: (context, state) {
+                      return Text(
+                        'Bình luận (${state.totalElements})',
+                        style: const TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      );
+                    },
+                  ),
+                ],
               ),
             ),
-            child: Column(
-              children: [
-                Container(
-                  width: 40,
-                  height: 4,
-                  margin: const EdgeInsets.only(bottom: 8),
-                  decoration: BoxDecoration(
-                    color: Colors.grey.shade300,
-                    borderRadius: BorderRadius.circular(2),
-                  ),
-                ),
-                BlocBuilder<StoryCommentCubit, StoryCommentState>(
-                  builder: (context, state) {
-                    return Text(
-                      'Bình luận (${state.totalElements})',
-                      style: const TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    );
-                  },
-                ),
-              ],
+      
+            // Comment List
+            Expanded(
+              child: StoryCommentList(
+                currentUserId: widget.currentUserId,
+                onReply: _startReply,
+                onEdit: _startEdit,
+                onDelete: _deleteComment,
+                storyId: widget.storyId!,
+              ),
             ),
-          ),
-
-          // Comment List
-          Expanded(
-            child: StoryCommentList(
-              currentUserId: widget.currentUserId,
-              onReply: _startReply,
-              onEdit: _startEdit,
-              onDelete: _deleteComment,
-              storyId: widget.storyId!,
+      
+            // Comment Input
+            StoryCommentInput(
+              storyId: widget.storyId,
+              replyingTo: _replyingTo,
+              editingComment: _editingComment,
+              onCancelAction: _cancelAction,
+              onActionCompleted: _onActionCompleted,
+              focusNode: _inputFocusNode,
             ),
-          ),
-
-          // Comment Input
-          StoryCommentInput(
-            storyId: widget.storyId,
-            replyingTo: _replyingTo,
-            editingComment: _editingComment,
-            onCancelAction: _cancelAction,
-            onActionCompleted: _onActionCompleted,
-            focusNode: _inputFocusNode,
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }

@@ -194,10 +194,7 @@ class PostListCubit extends Cubit<PostListState> {
     final posts = await postRepo.getAllPosts(
       nextPage,
       10,
-      keyword: state.keyword,
       userId: userId,
-      region: state.region,
-      difficulty: state.difficulty,
     );
     print('next page la : $nextPage');
 
@@ -207,11 +204,7 @@ class PostListCubit extends Cubit<PostListState> {
         isLoading: false,
         hasMore: posts.length == 10,
         currentPage: nextPage,
-        keyword: state.keyword,
         userId: state.userId,
-        region: state.region,
-        difficulty: state.difficulty,
-        recentKeywords: state.recentKeywords,
       ),
     );
   }

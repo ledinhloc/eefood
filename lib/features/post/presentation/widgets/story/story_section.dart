@@ -161,10 +161,11 @@ class _StorySectionState extends State<StorySection> {
                           userName: isCurrentUserStory
                               ? "Tin của bạn"
                               : userStory.username ?? "Người dùng",
-                          imageUrl: previewStory.contentUrl ?? "",
+                          contentUrl: previewStory.contentUrl ?? "",
                           avatarUrl: userStory.avatarUrl ?? "",
                           hasStory: hasUnViewed,
                           isCreating: widget.isCreating && isCurrentUserStory,
+                          isVideo: previewStory.type == 'video' ? true : false,
                         ),
                       ),
                     );

@@ -73,6 +73,8 @@ dependencies:
   pro_image_editor: ^11.3.0
   path_provider: ^2.1.5
   video_editor: ^3.0.0
+  visibility_detector: ^0.4.0+2
+  better_player_plus: ^1.0.8 
 dev_dependencies:
   flutter_test:
     sdk: flutter
