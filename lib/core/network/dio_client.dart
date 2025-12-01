@@ -17,7 +17,7 @@ class DioClient {
     dio.options = BaseOptions(
       baseUrl: '${AppKeys.baseUrl}/api',
       connectTimeout: const Duration(seconds: 20), // Timeout kết nối
-      receiveTimeout: const Duration(seconds: 20), // Timeout nhận dữ liệu
+      receiveTimeout: const Duration(seconds: 120), // Timeout nhận dữ liệu
       contentType: 'application/json; charset=UTF-8', // Default content type
     );
 

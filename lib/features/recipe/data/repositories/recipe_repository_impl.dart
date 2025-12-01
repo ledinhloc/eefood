@@ -36,6 +36,24 @@ class RecipeRepositoryImpl implements RecipeRepository {
   }
 
   @override
+  Future<Result<RecipeModel>> createRecipeFromUrl(String url) async {
+    try {
+      final response = await dio.post(
+        '/v1/recipes/extract',
+        data: {'url': url},
+        options: Options(contentType: 'application/json'),
+      );
+
+      final recipeRes = RecipeModel.fromJson(response.data['data']);
+      print(recipeRes);
+      return Result.success(recipeRes);
+    } catch (err) {
+      print(err);
+      throw Exception('Create recipe from URL failed: $err');
+    }
+  }
+
+  @override
   Future<List<ProvinceModel>> getProvinces({
     String? keyword,
     int limit = 5,
