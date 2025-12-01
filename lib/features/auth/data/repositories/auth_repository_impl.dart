@@ -23,6 +23,26 @@ class AuthRepositoryImpl implements AuthRepository {
 
   AuthRepositoryImpl({required this.dio, required this.sharedPreferences});
 
+  Future<void> clearSavedPassword() async {
+    await sharedPreferences.remove(AppKeys.saveEmail);
+    await sharedPreferences.remove(AppKeys.savePass);
+  }
+
+  Future<void> savePassword(String email, String password) async {
+    await sharedPreferences.setString(AppKeys.saveEmail, email);
+    await sharedPreferences.setString(AppKeys.savePass, password);
+  }
+
+  Future<Map<String, String>?> loadPassword() async {
+    final email = sharedPreferences.getString(AppKeys.saveEmail);
+    final password = sharedPreferences.getString(AppKeys.savePass);
+    if (email != null && password != null) {
+      return {'email': email, 'password': password};
+    }
+    return null;
+  }
+
+
   @override
   Future<User> loginWithGoogle(String idToken) async {
     try {

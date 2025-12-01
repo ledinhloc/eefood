@@ -1,5 +1,4 @@
 import 'package:eefood/core/constants/app_constants.dart';
-import 'package:eefood/features/auth/data/models/UserModel.dart';
 import 'package:eefood/features/auth/domain/entities/user.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
