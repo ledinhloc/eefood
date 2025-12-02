@@ -50,7 +50,6 @@ class _MyAppState extends State<MyApp> {
      WidgetsBinding.instance.addPostFrameCallback((_) {
       DeepLinkService().initialize();
     });
-
   }
 
 

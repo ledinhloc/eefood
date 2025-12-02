@@ -14,6 +14,7 @@ class DeepLinkService {
 
   Uri? _pendingLink;
   bool _initialized = false;
+  bool _pendingLinkHandled = false;
 
   Future<void> initialize() async {
     if (_initialized) return;
@@ -38,10 +39,11 @@ class DeepLinkService {
   }
 
   void handlePendingLinkIfAny() {
-    if (_pendingLink != null) {
+    if (_pendingLink != null && !_pendingLinkHandled) {
       debugPrint('[DeepLinkService] Handling pending link: $_pendingLink');
       _handleIncomingLink(_pendingLink!);
       _pendingLink = null;
+      _pendingLinkHandled = true;
     }
   }
 
@@ -50,7 +52,16 @@ class DeepLinkService {
     debugPrint('[DeepLinkService] Processing: $url');
 
     // Thêm delay để đảm bảo Navigator đã sẵn sàng
-    Future.delayed(const Duration(milliseconds: 500), () {
+    // Future.delayed(const Duration(milliseconds: 500), () {
+    //   if (uri.host == 'eefoods.netlify.app' || uri.host == AppKeys.hostDeloy) {
+    //     DeepLinkHandler.handleWebUrl(url);
+    //   } else if (uri.scheme == 'eefood') {
+    //     DeepLinkHandler.handleDeepLink(url);
+    //   } else {
+    //     debugPrint('[DeepLinkService] Unknown link scheme: ${uri.scheme}');
+    //   }
+    // });
+    WidgetsBinding.instance.addPostFrameCallback((_) {
       if (uri.host == 'eefoods.netlify.app' || uri.host == AppKeys.hostDeloy) {
         DeepLinkHandler.handleWebUrl(url);
       } else if (uri.scheme == 'eefood') {
@@ -64,5 +75,6 @@ class DeepLinkService {
   void dispose() {
     _subscription?.cancel();
     _initialized = false;
+    _pendingLinkHandled = false;
   }
 }
