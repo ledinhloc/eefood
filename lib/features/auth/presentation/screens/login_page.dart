@@ -1,10 +1,12 @@
 import 'package:eefood/app_routes.dart';
+import 'package:eefood/core/constants/app_keys.dart';
 import 'package:eefood/core/widgets/loading_overlay.dart';
 import 'package:eefood/core/widgets/snack_bar.dart';
 import 'package:eefood/features/auth/domain/usecases/google_service.dart';
 import 'package:eefood/features/auth/presentation/widgets/custom_text_field.dart';
 import 'package:flutter/material.dart';
 import 'package:lottie/lottie.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../../../core/di/injection.dart';
 import '../../domain/entities/user.dart';
@@ -15,6 +17,7 @@ class LoginPage extends StatelessWidget {
   LoginPage({super.key});
 
   final LoginGoogle _loginGoogle = getIt<LoginGoogle>();
+  final SharedPreferences _sharedPreferences = getIt<SharedPreferences>();
   final Login _login = getIt<Login>();
   final emailController = TextEditingController(text: 'ledinhloc7@gmail.com');
   final passController = TextEditingController(text: '12345678');
@@ -153,6 +156,9 @@ class LoginPage extends StatelessWidget {
                   AuthButton(
                     text: 'Sign in',
                     onPressed: () async {
+                      final isFirstLogin = _sharedPreferences.getBool(
+                        AppKeys.isLoginedIn,
+                      );
                       try {
                         LoadingOverlay().show();
                         User user = await _login(
@@ -160,14 +166,16 @@ class LoginPage extends StatelessWidget {
                           passController.text,
                         );
 
-                        // Kiểm tra nếu user chưa có sở thích nào thì chuyển đến onBoardingFlow
-                        if (user.allergies!.isEmpty &&
-                            user.eatingPreferences!.isEmpty) {
-                          Navigator.pushReplacementNamed(
-                            context,
-                            AppRoutes.onBoardingFlow,
-                          );
-                          return;
+                        if (isFirstLogin != null) {
+                          if (user.allergies!.isEmpty &&
+                              user.eatingPreferences!.isEmpty &&
+                              isFirstLogin) {
+                            Navigator.pushReplacementNamed(
+                              context,
+                              AppRoutes.onBoardingFlow,
+                            );
+                            return;
+                          }
                         }
                         print(user);
                         Navigator.pushNamed(context, AppRoutes.main);

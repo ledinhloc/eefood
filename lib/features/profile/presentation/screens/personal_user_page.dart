@@ -22,6 +22,7 @@ class _PersonalUserPageState extends State<PersonalUserPage>
   @override
   void initState() {
     super.initState();
+    debugPrint('User id: ${widget.user?.id}');
     _tabController = TabController(length: 2, vsync: this);
     _scrollController = ScrollController()..addListener(_onScroll);
   }

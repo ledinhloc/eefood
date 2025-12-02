@@ -92,12 +92,15 @@ class _StoryCardState extends State<StoryCard>
             height: 160,
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(10),
-              image: widget.isVideo
-                  ? null
-                  : DecorationImage(
+              color: widget.contentUrl.isEmpty
+                  ? Colors.grey[300]
+                  : null,
+              image: (!widget.isVideo && widget.contentUrl.isNotEmpty)
+                  ? DecorationImage(
                       image: CachedNetworkImageProvider(widget.contentUrl),
                       fit: BoxFit.cover,
-                    ),
+                    )
+                  : null,
             ),
             child: ClipRRect(
               borderRadius: BorderRadius.circular(10),

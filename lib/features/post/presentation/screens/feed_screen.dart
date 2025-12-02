@@ -351,9 +351,15 @@ class _FeedViewState extends State<FeedView> {
                 children: [
                   Row(
                     children: [
-                      const Text(
-                        'Food Feed 🍽️',
-                        style: TextStyle(fontSize: 20, fontWeight: FontWeight.w600),
+                       Expanded(
+                        child: Text(
+                          'Food Feed 🍽️',
+                          style: TextStyle(
+                            fontSize: 20,
+                            fontWeight: FontWeight.w600,
+                          ),
+                          overflow: TextOverflow.ellipsis,
+                        ),
                       ),
                       BlocBuilder<PostListCubit, PostListState>(
                         builder: (context, state) {
@@ -534,6 +540,7 @@ class _FeedViewState extends State<FeedView> {
                                 );
                               }
                             },
+                            currentUserAvatar: user?.avatarUrl,
                           );
                         },
                       ),

@@ -3,9 +3,10 @@ import 'dart:io';
 import 'package:dio/dio.dart';
 import 'package:eefood/features/post/domain/repositories/post_repository.dart';
 import 'package:http_parser/http_parser.dart';
+
 import '../models/post_model.dart';
 
-class PostRepositoryImpl extends PostRepository {
+class PostRepositoryImpl extends PostRepository{
   final Dio dio;
   PostRepositoryImpl({required this.dio});
 
@@ -68,6 +69,33 @@ class PostRepositoryImpl extends PostRepository {
     if (response.statusCode == 200) {
       final data = response.data['data'];
       final content = data['content'] as List<dynamic>;
+      return content.map((json) => PostModel.fromJson(json)).toList();
+    } else {
+      throw Exception('Failed to load posts');
+    }
+  }
+
+  @override
+  Future<List<PostModel>> getOwnPosts(
+    int page,
+    int size,
+    int userId, {
+    String? sortBy,
+  }) async {
+    final response = await dio.get(
+      '/v1/posts/my',
+      queryParameters: {
+        'userId': userId,
+        'page': page,
+        'size': size,
+        if (sortBy != null) 'sortBy': sortBy,
+      },
+    );
+    print('OwnPosts Response data: ${response.data}'); // Debug full data
+    if (response.statusCode == 200) {
+      final data = response.data['data'];
+      final content = data['content'] as List<dynamic>;
+      print('OwnPosts Content length: ${content.length}');
       return content.map((json) => PostModel.fromJson(json)).toList();
     } else {
       throw Exception('Failed to load posts');

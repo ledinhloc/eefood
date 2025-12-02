@@ -116,6 +116,7 @@ Future<void> setupDependencies() async {
   getIt.registerLazySingleton(() => VerifyOtp(getIt<AuthRepository>()));
   getIt.registerLazySingleton(() => ForgotPassword(getIt<AuthRepository>()));
   getIt.registerLazySingleton(() => ResetPassword(getIt<AuthRepository>()));
+  getIt.registerLazySingleton(() => SetFirstLogin(getIt<AuthRepository>()));
 
   //use case profile
   getIt.registerLazySingleton(() => UpdateProfile(getIt<ProfileRepository>()));
@@ -167,7 +168,7 @@ Future<void> setupDependencies() async {
 
   //post
   getIt.registerLazySingleton<PostListCubit>(
-    () => PostListCubit()..fetchPosts(),
+    () => PostListCubit(),
   );
   getIt.registerLazySingleton<PostRepository>(
     () => PostRepositoryImpl(dio: getIt<DioClient>().dio),

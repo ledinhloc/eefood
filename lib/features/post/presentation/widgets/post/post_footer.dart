@@ -84,7 +84,7 @@ class _PostFooterState extends State<PostFooter>
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
       builder: (context) => ShareBottomSheet(
-        postId: widget.post.recipeId!,
+        postId: widget.post.id!,
         imageUrl: widget.post.imageUrl,
         contentPreview: widget.post.title,
       ),

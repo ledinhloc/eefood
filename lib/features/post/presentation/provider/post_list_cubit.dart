@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:eefood/features/post/data/models/reaction_type.dart';
 import 'package:eefood/features/post/domain/repositories/post_reaction_repository.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+
 import '../../../../core/di/injection.dart';
 import '../../data/models/post_model.dart';
 import '../../data/repositories/search_repository.dart';
@@ -29,10 +30,15 @@ class PostListCubit extends Cubit<PostListState> {
           recentKeywords: [],
         ),
       );
+  void _safeEmit(PostListState state) {
+    if (!isClosed) {
+      emit(state);
+    }
+  }
 
   Future<void> loadRecentKeywords() async {
     final recents = await searchRepo.getRecentSearches();
-    emit(state.copyWith(recentKeywords: recents));
+    _safeEmit(state.copyWith(recentKeywords: recents));
   }
 
   Future<void> saveKeyword(String keyword) async {
@@ -47,12 +53,12 @@ class PostListCubit extends Cubit<PostListState> {
 
   Future<void> clearAllKeywords() async {
     await searchRepo.clearAll();
-    emit(state.copyWith(recentKeywords: []));
+    _safeEmit(state.copyWith(recentKeywords: []));
   }
 
   /// Clear tất cả filters
   Future<void> resetFilters() async {
-    emit(
+    _safeEmit(
       PostListState(
         posts: [],
         isLoading: false,
@@ -81,7 +87,7 @@ class PostListCubit extends Cubit<PostListState> {
     int? maxCookTime,
   }) async {
     // Reset về trang 1 với filters mới
-    emit(
+    _safeEmit(
       state.copyWith(
         posts: [],
         isLoading: false,
@@ -111,7 +117,7 @@ class PostListCubit extends Cubit<PostListState> {
         if (p.id == postId) return updatePost;
         return p;
       }).toList();
-      emit(state.copyWith(posts: updatedPosts));
+      _safeEmit(state.copyWith(posts: updatedPosts));
     } catch (e) {
       print('Error when reaching to post: ');
     }
@@ -128,7 +134,7 @@ class PostListCubit extends Cubit<PostListState> {
         if (p.id == postId) return updatePost;
         return p;
       }).toList();
-      emit(state.copyWith(posts: updatedPosts));
+      _safeEmit(state.copyWith(posts: updatedPosts));
     } catch (e) {
       print('Error when reaching to post: ');
     }
@@ -137,7 +143,7 @@ class PostListCubit extends Cubit<PostListState> {
   Future<void> fetchPosts({bool loadMore = false, File? imageFile}) async {
     if (state.isLoading || (!state.hasMore && loadMore)) return;
 
-    emit(state.copyWith(isLoading: true));
+    _safeEmit(state.copyWith(isLoading: true));
 
     final nextPage = loadMore ? state.currentPage + 1 : 1;
     String? keyword = state.keyword;
@@ -160,7 +166,7 @@ class PostListCubit extends Cubit<PostListState> {
 
       print('Loaded page $nextPage with ${posts.length} posts');
 
-      emit(
+      _safeEmit(
         state.copyWith(
           posts: loadMore ? [...state.posts, ...posts] : posts,
           isLoading: false,
@@ -171,7 +177,7 @@ class PostListCubit extends Cubit<PostListState> {
       );
     } catch (e) {
       print('Error fetching posts: $e');
-      emit(state.copyWith(isLoading: false));
+      _safeEmit(state.copyWith(isLoading: false));
     }
   }
 
@@ -180,25 +186,28 @@ class PostListCubit extends Cubit<PostListState> {
     required int userId,
   }) async {
     if (state.isLoading || (!state.hasMore && loadMore)) return;
-    if(isClosed) return;
-    emit(state.copyWith(isLoading: true));
-    final nextPage = loadMore ? state.currentPage + 1 : 1;
-    final posts = await postRepo.getAllPosts(
-      nextPage,
-      10,
-      userId: userId,
-    );
-    print('next page la : $nextPage');
+    if (isClosed) return;
+    _safeEmit(state.copyWith(isLoading: true));
+    try {
+      final nextPage = loadMore ? state.currentPage + 1 : 1;
+      final posts = await postRepo.getOwnPosts(nextPage, 10, userId);
+      print('${userId}');
 
-    emit(
-      PostListState(
-        posts: loadMore ? [...state.posts, ...posts] : posts,
-        isLoading: false,
-        hasMore: posts.length == 10,
-        currentPage: nextPage,
-        userId: state.userId,
-      ),
-    );
+      print('Loaded own posts - Page: $nextPage, Count: ${posts.length}');
+
+      _safeEmit(
+        state.copyWith(
+          posts: loadMore ? [...state.posts, ...posts] : posts,
+          isLoading: false,
+          hasMore: posts.length == 10,
+          currentPage: nextPage,
+          userId: userId,
+        ),
+      );
+    } catch (e) {
+      print('Error fetching own posts: $e');
+      _safeEmit(state.copyWith(isLoading: false));
+    }
   }
 }
 
@@ -215,12 +224,12 @@ class PostListState {
   final int? maxCookTime;
   final List<String> recentKeywords;
 
-  bool hasFilters(){
+  bool hasFilters() {
     return keyword != null ||
-    region != null ||
-    difficulty != null ||
-    category != null ||
-    maxCookTime != null;
+        region != null ||
+        difficulty != null ||
+        category != null ||
+        maxCookTime != null;
   }
 
   PostListState({
