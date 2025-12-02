@@ -1,3 +1,5 @@
+import 'dart:developer' as develop;
+
 import 'package:eefood/app_routes.dart';
 import 'package:eefood/core/constants/app_keys.dart';
 import 'package:eefood/core/widgets/loading_overlay.dart';
@@ -10,17 +12,99 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../../../core/di/injection.dart';
 import '../../domain/entities/user.dart';
+import '../../domain/repositories/auth_repository.dart';
 import '../../domain/usecases/auth_usecases.dart';
 import '../widgets/auth_button.dart';
 
-class LoginPage extends StatelessWidget {
-  LoginPage({super.key});
+class LoginPage extends StatefulWidget {
+  const LoginPage({super.key});
 
+  @override
+  State<LoginPage> createState() => _LoginPageState();
+}
+
+class _LoginPageState extends State<LoginPage> {
   final LoginGoogle _loginGoogle = getIt<LoginGoogle>();
   final SharedPreferences _sharedPreferences = getIt<SharedPreferences>();
   final Login _login = getIt<Login>();
-  final emailController = TextEditingController(text: 'ledinhloc7@gmail.com');
-  final passController = TextEditingController(text: '12345678');
+
+  final emailController = TextEditingController();
+
+  final passController = TextEditingController();
+  final authorRepo = getIt<AuthRepository>();
+  bool rememberMe = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadSavedCredentials();
+  }
+
+  Future<void> _loadSavedCredentials() async {
+    final saved = await authorRepo.loadPassword();
+    if (saved != null) {
+      emailController.text = saved['email']!;
+      passController.text = saved['password']!;
+      setState(() => rememberMe = true);
+    }
+  }
+
+  Future<void> _handleLoginGoogle() async {
+    try {
+      final isFirstLogin = _sharedPreferences.getBool(AppKeys.isLoginedIn);
+      LoadingOverlay().show();
+      final idToken = await GoogleAuthService.signInWithGoogle();
+      if (idToken == null) {
+        showCustomSnackBar(context, "Bạn đã hủy đăng nhập");
+        return;
+      }
+      User user = await _loginGoogle(idToken);
+      if (user.allergies!.isEmpty &&
+          user.eatingPreferences!.isEmpty &&
+          isFirstLogin!) {
+        Navigator.pushReplacementNamed(context, AppRoutes.onBoardingFlow);
+        return;
+      }
+      print(user);
+      Navigator.pushNamed(context, AppRoutes.main);
+    } catch (err) {
+      print('Failed: $err');
+    } finally {
+      LoadingOverlay().hide();
+    }
+  }
+
+  Future<void> _handleLogin() async {
+    try {
+      final isFirstLogin = _sharedPreferences.getBool(AppKeys.isLoginedIn);
+      LoadingOverlay().show();
+      User user = await _login(emailController.text, passController.text);
+
+      if (rememberMe) {
+        await authorRepo.savePassword(
+          emailController.text,
+          passController.text,
+        );
+      } else {
+        await authorRepo.clearSavedPassword();
+      }
+
+      if (user.allergies!.isEmpty &&
+          user.eatingPreferences!.isEmpty &&
+          isFirstLogin!) {
+        Navigator.pushReplacementNamed(context, AppRoutes.onBoardingFlow);
+        return;
+      }
+
+      Navigator.pushNamed(context, AppRoutes.main);
+    } catch (e) {
+      showCustomSnackBar(context, 'Đăng nhập không thành công!', isError: true);
+      develop.log('Login failed: $e', name: 'Login Error');
+      // showCustomSnackBar(context, 'Login failed: $e', isError: true);
+    } finally {
+      LoadingOverlay().hide();
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -117,7 +201,14 @@ class LoginPage extends StatelessWidget {
                       Expanded(
                         child: Row(
                           children: [
-                            Checkbox(value: false, onChanged: (value) {}),
+                            Checkbox(
+                              value: rememberMe,
+                              onChanged: (value) {
+                                setState(() {
+                                  rememberMe = value ?? false;
+                                });
+                              },
+                            ),
                             const Text(
                               'Remember me',
                               style: TextStyle(
@@ -153,44 +244,7 @@ class LoginPage extends StatelessWidget {
                   const SizedBox(height: 20),
 
                   // Sign in button
-                  AuthButton(
-                    text: 'Sign in',
-                    onPressed: () async {
-                      final isFirstLogin = _sharedPreferences.getBool(
-                        AppKeys.isLoginedIn,
-                      );
-                      try {
-                        LoadingOverlay().show();
-                        User user = await _login(
-                          emailController.text,
-                          passController.text,
-                        );
-
-                        if (isFirstLogin != null) {
-                          if (user.allergies!.isEmpty &&
-                              user.eatingPreferences!.isEmpty &&
-                              isFirstLogin) {
-                            Navigator.pushReplacementNamed(
-                              context,
-                              AppRoutes.onBoardingFlow,
-                            );
-                            return;
-                          }
-                        }
-                        print(user);
-                        Navigator.pushNamed(context, AppRoutes.main);
-                      } catch (e) {
-                        showCustomSnackBar(
-                          context,
-                          'Login failed: $e',
-                          isError: true,
-                        );
-                        print(e);
-                      } finally {
-                        LoadingOverlay().hide();
-                      }
-                    },
-                  ),
+                  AuthButton(text: 'Sign in', onPressed: _handleLogin),
 
                   const SizedBox(height: 20),
 
@@ -242,32 +296,7 @@ class LoginPage extends StatelessWidget {
                     text: 'Continue with Google',
                     iconImage: const AssetImage('assets/images/google.png'),
                     iconSize: 20,
-                    onPressed: () async {
-                      try {
-                        LoadingOverlay().show();
-                        final idToken =
-                            await GoogleAuthService.signInWithGoogle();
-                        if (idToken == null) {
-                          showCustomSnackBar(context, "Bạn đã hủy đăng nhập");
-                          return;
-                        }
-                        User user = await _loginGoogle(idToken);
-                        if (user.allergies!.isEmpty &&
-                            user.eatingPreferences!.isEmpty) {
-                          Navigator.pushReplacementNamed(
-                            context,
-                            AppRoutes.onBoardingFlow,
-                          );
-                          return;
-                        }
-                        print(user);
-                        Navigator.pushNamed(context, AppRoutes.main);
-                      } catch (err) {
-                        print('Failed: $err');
-                      } finally {
-                        LoadingOverlay().hide();
-                      }
-                    },
+                    onPressed: _handleLoginGoogle,
                     color: Colors.white,
                     textColor: Colors.black,
                   ),

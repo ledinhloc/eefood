@@ -2,12 +2,13 @@ import 'package:eefood/app_routes.dart';
 import 'package:eefood/core/constants/app_constants.dart';
 import 'package:eefood/core/di/injection.dart';
 import 'package:eefood/core/widgets/snack_bar.dart';
-import 'package:eefood/features/auth/data/models/UserModel.dart';
 import 'package:eefood/features/auth/domain/entities/user.dart';
 import 'package:eefood/features/auth/domain/usecases/auth_usecases.dart';
 import 'package:eefood/features/auth/presentation/widgets/preference_grid_page.dart';
 import 'package:eefood/features/profile/domain/usecases/profile_usecase.dart';
 import 'package:flutter/material.dart';
+
+import '../../data/models/user_model.dart';
 
 
 class DietaryPreferencePage extends StatelessWidget {

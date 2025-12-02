@@ -21,6 +21,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../livestream/presentation/provider/start_live_cubit.dart';
 import '../../../livestream/presentation/screens/prepare_live_page.dart';
+import '../../data/models/nullable.dart';
 import '../../data/models/reaction_type.dart';
 import '../provider/post_list_cubit.dart';
 import '../widgets/post/post_card.dart';
@@ -113,28 +114,28 @@ class _FeedViewState extends State<FeedView> {
             children: [
               if (state.keyword != null)
                 _buildFilterChip('🔍 ${state.keyword}', () {
-                  context.read<PostListCubit>().setFilters(keyword: null);
+                  context.read<PostListCubit>().setFilters(keyword: Nullable(null));
                 }),
               if (state.region != null)
                 _buildFilterChip('🌍 ${state.region}', () {
-                  context.read<PostListCubit>().setFilters(region: null);
+                  context.read<PostListCubit>().setFilters(region: Nullable(null));
                 }),
               if (state.difficulty != null)
                 _buildFilterChip(
                   '⚡ ${_getDifficultyLabel(state.difficulty!)}',
                   () {
-                    context.read<PostListCubit>().setFilters(difficulty: null);
+                    context.read<PostListCubit>().setFilters(difficulty: Nullable(null));
                   },
                 ),
               if (state.category != null)
                 _buildFilterChip('🍽️ ${state.category}', () {
-                  context.read<PostListCubit>().setFilters(category: null);
+                  context.read<PostListCubit>().setFilters(category: Nullable(null));
                 }),
               if (state.maxCookTime != null)
                 _buildFilterChip(
                   '⏱️ ${_getCookTimeLabel(state.maxCookTime!)}',
                   () {
-                    context.read<PostListCubit>().setFilters(maxCookTime: null);
+                    context.read<PostListCubit>().setFilters(maxCookTime: Nullable(null));
                   },
                 ),
             ],

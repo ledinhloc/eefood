@@ -20,7 +20,7 @@ class _SplashPageState extends State<SplashPage> {
   @override
   void initState() {
     super.initState();
-    _initializeApp();
+    // _initializeApp();
     // Sau 3 giây chuyển sang WelcomePage
     // Timer(const Duration(seconds: 3), () {
     //   Navigator.pushReplacement(
@@ -46,9 +46,9 @@ class _SplashPageState extends State<SplashPage> {
       Navigator.pushReplacementNamed(context, AppRoutes.welcome);
     }
 
-    Future.delayed(const Duration(milliseconds: 500), () {
-      DeepLinkService().handlePendingLinkIfAny();
-    });
+    // Future.delayed(const Duration(milliseconds: 500), () {
+    //   DeepLinkService().handlePendingLinkIfAny();
+    // });
   }
 
   @override

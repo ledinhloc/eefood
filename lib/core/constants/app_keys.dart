@@ -7,6 +7,8 @@ import 'package:eefood/core/utils/helpers.dart';
 class AppKeys{
   //SharedPreferences
   static const isLoginedIn = 'isLoggedIn';
+  static const saveEmail = 'saveEmail';
+  static const savePass = 'savePass';
   static const accessToken = 'accessToken';
   static const refreshToken = 'refreshToken';
   static const user = 'user';
