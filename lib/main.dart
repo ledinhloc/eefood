@@ -50,7 +50,6 @@ class _MyAppState extends State<MyApp> {
      WidgetsBinding.instance.addPostFrameCallback((_) {
       DeepLinkService().initialize();
     });
-
   }
 
 
@@ -61,7 +60,6 @@ class _MyAppState extends State<MyApp> {
       debugShowCheckedModeBanner: false,
       title: 'eeFood',
       theme: appTheme(),
-      home: const MainScreen(),
       initialRoute: AppRoutes.splashPage,
       routes: AppRoutes.listRoute,
     );

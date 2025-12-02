@@ -1,7 +1,7 @@
 import 'dart:convert';
 
 import 'package:dio/dio.dart';
-import 'package:eefood/features/auth/data/models/UserModel.dart';
+import 'package:eefood/features/auth/data/models/user_model.dart';
 import 'package:eefood/features/auth/data/models/result_model.dart';
 import 'package:eefood/features/auth/domain/entities/user.dart';
 import 'package:eefood/features/profile/domain/repositories/profile_repository.dart';

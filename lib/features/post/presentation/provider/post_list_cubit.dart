@@ -4,6 +4,7 @@ import 'package:eefood/features/post/data/models/reaction_type.dart';
 import 'package:eefood/features/post/domain/repositories/post_reaction_repository.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../core/di/injection.dart';
+import '../../data/models/nullable.dart';
 import '../../data/models/post_model.dart';
 import '../../data/repositories/search_repository.dart';
 import '../../domain/repositories/post_repository.dart';
@@ -72,31 +73,70 @@ class PostListCubit extends Cubit<PostListState> {
   }
 
   /// Cập nhật filters cục bộ trong state rồi fetch lại từ trang 1
+  // Future<void> setFilters({
+  //   String? keyword,
+  //   int? userId,
+  //   String? region,
+  //   String? difficulty,
+  //   String? category,
+  //   int? maxCookTime,
+  // }) async {
+  //   // Reset về trang 1 với filters mới
+  //   emit(
+  //     state.copyWith(
+  //       posts: [],
+  //       isLoading: false,
+  //       hasMore: true,
+  //       currentPage: 1,
+  //       keyword: keyword,
+  //       userId: userId,
+  //       region: region,
+  //       difficulty: difficulty,
+  //       category: category,
+  //       maxCookTime: maxCookTime,
+  //     ),
+  //   );
+  //
+  //   // Fetch new data
+  //   await fetchPosts(loadMore: false);
+  // }
+
   Future<void> setFilters({
-    String? keyword,
-    int? userId,
-    String? region,
-    String? difficulty,
-    String? category,
-    int? maxCookTime,
+    dynamic keyword,
+    dynamic userId,
+    dynamic region,
+    dynamic difficulty,
+    dynamic category,
+    dynamic maxCookTime,
   }) async {
-    // Reset về trang 1 với filters mới
     emit(
-      state.copyWith(
+      PostListState(
         posts: [],
         isLoading: false,
         hasMore: true,
         currentPage: 1,
-        keyword: keyword,
-        userId: userId,
-        region: region,
-        difficulty: difficulty,
-        category: category,
-        maxCookTime: maxCookTime,
+        keyword: keyword is Nullable
+            ? keyword.value
+            : (keyword ?? state.keyword),
+        userId: userId is Nullable
+            ? userId.value
+            : (userId ?? state.userId),
+        region: region is Nullable
+            ? region.value
+            : (region ?? state.region),
+        difficulty: difficulty is Nullable
+            ? difficulty.value
+            : (difficulty ?? state.difficulty),
+        category: category is Nullable
+            ? category.value
+            : (category ?? state.category),
+        maxCookTime: maxCookTime is Nullable
+            ? maxCookTime.value
+            : (maxCookTime ?? state.maxCookTime),
+        recentKeywords: state.recentKeywords,
       ),
     );
 
-    // Fetch new data
     await fetchPosts(loadMore: false);
   }
 

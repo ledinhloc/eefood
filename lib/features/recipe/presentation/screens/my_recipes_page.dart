@@ -180,5 +180,4 @@ class MyRecipesPage extends StatelessWidget {
       ),
     );
   }
-
 }

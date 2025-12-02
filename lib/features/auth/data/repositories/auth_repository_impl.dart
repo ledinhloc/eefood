@@ -6,6 +6,7 @@ import 'package:eefood/core/constants/app_keys.dart';
 import 'package:eefood/features/auth/data/models/otp_model.dart';
 import 'package:eefood/features/auth/data/models/register_response_model.dart';
 import 'package:eefood/features/auth/data/models/result_model.dart';
+import 'package:eefood/features/auth/data/models/simple_token_response.dart';
 import 'package:eefood/features/auth/domain/usecases/google_service.dart';
 import 'package:flutter/widgets.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -13,7 +14,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../../../../core/di/injection.dart';
 import '../../domain/entities/user.dart';
 import '../../domain/repositories/auth_repository.dart';
-import '../models/UserModel.dart';
+import '../models/user_model.dart';
 
 class AuthRepositoryImpl implements AuthRepository {
   final Dio dio;
@@ -21,6 +22,26 @@ class AuthRepositoryImpl implements AuthRepository {
   User? _userCache;
 
   AuthRepositoryImpl({required this.dio, required this.sharedPreferences});
+
+  Future<void> clearSavedPassword() async {
+    await sharedPreferences.remove(AppKeys.saveEmail);
+    await sharedPreferences.remove(AppKeys.savePass);
+  }
+
+  Future<void> savePassword(String email, String password) async {
+    await sharedPreferences.setString(AppKeys.saveEmail, email);
+    await sharedPreferences.setString(AppKeys.savePass, password);
+  }
+
+  Future<Map<String, String>?> loadPassword() async {
+    final email = sharedPreferences.getString(AppKeys.saveEmail);
+    final password = sharedPreferences.getString(AppKeys.savePass);
+    if (email != null && password != null) {
+      return {'email': email, 'password': password};
+    }
+    return null;
+  }
+
 
   @override
   Future<User> loginWithGoogle(String idToken) async {
@@ -115,8 +136,16 @@ class AuthRepositoryImpl implements AuthRepository {
             extra: {'requireAuth': false},
           ),
         );
-        final userModel = UserModel.fromJson(response.data['data']);
-        await _saveUser(userModel);
+        final simpleToken = SimpleTokenResponse.fromJson(response.data['data']);
+        await sharedPreferences.setString(
+          AppKeys.accessToken,
+          simpleToken.accessToken ?? '',
+        );
+        await sharedPreferences.setString(
+          AppKeys.refreshToken,
+          simpleToken.refreshToken ?? '',
+        );
+
       }
     } catch (e) {
       throw Exception('Refresh token failed: $e');

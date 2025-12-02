@@ -1,5 +1,5 @@
 import 'package:dio/dio.dart';
-import 'package:eefood/features/auth/data/models/UserModel.dart';
+import 'package:eefood/features/auth/data/models/user_model.dart';
 import 'package:eefood/features/post/data/models/follow_model.dart';
 import 'package:eefood/features/post/domain/repositories/follow_repository.dart';
 

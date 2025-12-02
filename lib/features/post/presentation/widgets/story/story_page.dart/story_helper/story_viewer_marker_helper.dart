@@ -1,7 +1,7 @@
 import 'dart:convert';
 import 'package:eefood/core/constants/app_keys.dart';
 import 'package:eefood/core/di/injection.dart';
-import 'package:eefood/features/auth/data/models/UserModel.dart';
+import 'package:eefood/features/auth/data/models/user_model.dart';
 import 'package:eefood/features/post/data/models/user_story_model.dart';
 import 'package:eefood/features/post/presentation/provider/story_list_cubit.dart';
 import 'package:flutter/cupertino.dart';
