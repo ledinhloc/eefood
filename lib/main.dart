@@ -60,7 +60,6 @@ class _MyAppState extends State<MyApp> {
       debugShowCheckedModeBanner: false,
       title: 'eeFood',
       theme: appTheme(),
-      home: const MainScreen(),
       initialRoute: AppRoutes.splashPage,
       routes: AppRoutes.listRoute,
     );
