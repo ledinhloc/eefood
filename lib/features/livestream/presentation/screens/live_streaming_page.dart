@@ -395,9 +395,6 @@ class _LiveStreamScreenState extends State<LiveStreamScreen> {
             // Top bar
             _buildTopBar(participantCount),
 
-            // User info
-            _buildUserInfo(participantCount),
-
             // Comments list
             Positioned(
               bottom: 30,
@@ -419,36 +416,24 @@ class _LiveStreamScreenState extends State<LiveStreamScreen> {
   }
 
   Widget _buildUserInfo(int participantCount) {
-    return Positioned(
-      bottom: 120,
-      left: 16,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              const CircleAvatar(
-                radius: 20,
-                backgroundColor: Colors.blue,
-                child: Icon(Icons.person, color: Colors.white),
-              ),
-              const SizedBox(width: 8),
-              Text(
-                widget.stream.title,
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontWeight: FontWeight.bold,
-                  fontSize: 16,
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 8),
-          Text(
-            '$participantCount người đang xem',
-            style: const TextStyle(color: Colors.white70, fontSize: 14),
-          ),
-        ],
+    return GestureDetector(
+      onTap: _showViewerList,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+        decoration: BoxDecoration(
+          color: Colors.black45,
+          borderRadius: BorderRadius.circular(20),
+        ),
+        child: Row(
+          children: [
+            const Icon(Icons.remove_red_eye, color: Colors.white, size: 18),
+            const SizedBox(width: 6),
+            Text(
+              '$participantCount',
+              style: const TextStyle(color: Colors.white, fontSize: 14),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -492,6 +477,7 @@ class _LiveStreamScreenState extends State<LiveStreamScreen> {
                   ],
                 ),
               ),
+              _buildUserInfo(participantCount),
               const Spacer(),
               IconButton(
                 icon: const Icon(Icons.close, color: Colors.white),
@@ -503,6 +489,54 @@ class _LiveStreamScreenState extends State<LiveStreamScreen> {
       ),
     );
   }
+
+  void _showViewerList() {
+    final viewers = _room?.remoteParticipants.values.toList() ?? [];
+
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.black87,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(18)),
+      ),
+      builder: (context) {
+        return SizedBox(
+          height: 350,
+          child: Column(
+            children: [
+              const Padding(
+                padding: EdgeInsets.all(12),
+                child: Text(
+                  "Người đang xem",
+                  style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold),
+                ),
+              ),
+              Expanded(
+                child: ListView.builder(
+                  itemCount: viewers.length,
+                  itemBuilder: (context, index) {
+                    final p = viewers[index];
+
+                    return ListTile(
+                      leading: const CircleAvatar(
+                        backgroundColor: Colors.blue,
+                        child: Icon(Icons.person, color: Colors.white),
+                      ),
+                      title: Text(
+                        p.identity ?? "User",
+                        style: const TextStyle(color: Colors.white),
+                      ),
+                    );
+                  },
+                ),
+              )
+            ],
+          ),
+        );
+      },
+    );
+  }
+
 
   Widget _buildRoundButton({
     required IconData icon,
