@@ -69,3 +69,9 @@ class ResetPassword {
   ResetPassword(this.repository);
   Future<Result<bool>> call(String email, String otpCode, String newPassword) => repository.resetPassword(email, otpCode, newPassword);
 }
+
+class SetFirstLogin {
+  final AuthRepository repository;
+  SetFirstLogin(this.repository);
+  Future<void> call(bool firstLogin) => repository.saveFirstLogin(firstLogin);
+}

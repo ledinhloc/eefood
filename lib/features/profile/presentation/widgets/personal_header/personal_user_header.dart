@@ -12,8 +12,6 @@ import 'package:eefood/features/auth/domain/usecases/auth_usecases.dart';
 import 'package:eefood/features/profile/domain/usecases/profile_usecase.dart';
 import 'package:eefood/features/profile/presentation/provider/profile_cubit.dart';
 import 'package:eefood/features/profile/presentation/widgets/personal_header/live_status_badge.dart';
-import 'package:flutter/material.dart';
-import 'package:eefood/features/auth/domain/entities/user.dart';
 import 'package:eefood/features/profile/presentation/widgets/personal_header/personal_user_info.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -43,7 +41,8 @@ class _PersonalUserHeaderState extends State<PersonalUserHeader> {
     super.initState();
     _cubit = ProfileCubit(getIt<GetCurrentUser>())..loadProfile();
 
-    _liveStatusCubit = getIt<UserLiveStatusCubit>()..checkUserLiveStatus(widget.user.id);
+    _liveStatusCubit = getIt<UserLiveStatusCubit>()
+      ..checkUserLiveStatus(widget.user.id);
   }
 
   Future<void> _handleChangeBackground(BuildContext context) async {
@@ -188,22 +187,13 @@ class _PersonalUserHeaderState extends State<PersonalUserHeader> {
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       PersonalUserInfo(user: widget.user),
-                      // BlocProvider(
-                      //   create: (_) => _liveStatusCubit,
-                      //   child: BlocBuilder<UserLiveStatusCubit, UserLiveStatusState>(
-                      //     builder: (context, state) {
-                      //       return LiveStatusBadge(stream: state.stream);
-                      //     },
-                      //   ),
-                      // ),
-
                       BlocBuilder<UserLiveStatusCubit, UserLiveStatusState>(
-                          bloc: _liveStatusCubit,
-                          builder: (context, state){
-                            return LiveStatusBadge(stream: state.stream,);
-                          },
+                        bloc: _liveStatusCubit,
+                        builder: (context, state) {
+                          return LiveStatusBadge(stream: state.stream);
+                        },
                       ),
-                      const SizedBox(height: 3,),
+                      const SizedBox(height: 3),
                     ],
                   ),
                 ),

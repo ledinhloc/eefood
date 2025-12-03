@@ -1,12 +1,14 @@
 import 'dart:developer' as develop;
 
 import 'package:eefood/app_routes.dart';
+import 'package:eefood/core/constants/app_keys.dart';
 import 'package:eefood/core/widgets/loading_overlay.dart';
 import 'package:eefood/core/widgets/snack_bar.dart';
 import 'package:eefood/features/auth/domain/usecases/google_service.dart';
 import 'package:eefood/features/auth/presentation/widgets/custom_text_field.dart';
 import 'package:flutter/material.dart';
 import 'package:lottie/lottie.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../../../core/di/injection.dart';
 import '../../domain/entities/user.dart';
@@ -23,7 +25,7 @@ class LoginPage extends StatefulWidget {
 
 class _LoginPageState extends State<LoginPage> {
   final LoginGoogle _loginGoogle = getIt<LoginGoogle>();
-
+  final SharedPreferences _sharedPreferences = getIt<SharedPreferences>();
   final Login _login = getIt<Login>();
 
   final emailController = TextEditingController();
@@ -34,7 +36,6 @@ class _LoginPageState extends State<LoginPage> {
 
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
     _loadSavedCredentials();
   }
@@ -48,18 +49,49 @@ class _LoginPageState extends State<LoginPage> {
     }
   }
 
+  Future<void> _handleLoginGoogle() async {
+    try {
+      final isFirstLogin = _sharedPreferences.getBool(AppKeys.isLoginedIn);
+      LoadingOverlay().show();
+      final idToken = await GoogleAuthService.signInWithGoogle();
+      if (idToken == null) {
+        showCustomSnackBar(context, "Bạn đã hủy đăng nhập");
+        return;
+      }
+      User user = await _loginGoogle(idToken);
+      if (user.allergies!.isEmpty &&
+          user.eatingPreferences!.isEmpty &&
+          isFirstLogin!) {
+        Navigator.pushReplacementNamed(context, AppRoutes.onBoardingFlow);
+        return;
+      }
+      print(user);
+      Navigator.pushNamed(context, AppRoutes.main);
+    } catch (err) {
+      print('Failed: $err');
+    } finally {
+      LoadingOverlay().hide();
+    }
+  }
+
   Future<void> _handleLogin() async {
     try {
+      final isFirstLogin = _sharedPreferences.getBool(AppKeys.isLoginedIn);
       LoadingOverlay().show();
       User user = await _login(emailController.text, passController.text);
 
       if (rememberMe) {
-        await authorRepo.savePassword(emailController.text, passController.text);
-      }else{
+        await authorRepo.savePassword(
+          emailController.text,
+          passController.text,
+        );
+      } else {
         await authorRepo.clearSavedPassword();
       }
 
-      if (user.allergies!.isEmpty && user.eatingPreferences!.isEmpty) {
+      if (user.allergies!.isEmpty &&
+          user.eatingPreferences!.isEmpty &&
+          isFirstLogin!) {
         Navigator.pushReplacementNamed(context, AppRoutes.onBoardingFlow);
         return;
       }
@@ -169,11 +201,14 @@ class _LoginPageState extends State<LoginPage> {
                       Expanded(
                         child: Row(
                           children: [
-                            Checkbox(value: rememberMe, onChanged: (value) {
-                              setState(() {
-                                rememberMe = value ?? false;
-                              });
-                            }),
+                            Checkbox(
+                              value: rememberMe,
+                              onChanged: (value) {
+                                setState(() {
+                                  rememberMe = value ?? false;
+                                });
+                              },
+                            ),
                             const Text(
                               'Remember me',
                               style: TextStyle(
@@ -209,10 +244,7 @@ class _LoginPageState extends State<LoginPage> {
                   const SizedBox(height: 20),
 
                   // Sign in button
-                  AuthButton(
-                    text: 'Sign in',
-                    onPressed: _handleLogin,
-                  ),
+                  AuthButton(text: 'Sign in', onPressed: _handleLogin),
 
                   const SizedBox(height: 20),
 
@@ -264,32 +296,7 @@ class _LoginPageState extends State<LoginPage> {
                     text: 'Continue with Google',
                     iconImage: const AssetImage('assets/images/google.png'),
                     iconSize: 20,
-                    onPressed: () async {
-                      try {
-                        LoadingOverlay().show();
-                        final idToken =
-                            await GoogleAuthService.signInWithGoogle();
-                        if (idToken == null) {
-                          showCustomSnackBar(context, "Bạn đã hủy đăng nhập");
-                          return;
-                        }
-                        User user = await _loginGoogle(idToken);
-                        if (user.allergies!.isEmpty &&
-                            user.eatingPreferences!.isEmpty) {
-                          Navigator.pushReplacementNamed(
-                            context,
-                            AppRoutes.onBoardingFlow,
-                          );
-                          return;
-                        }
-                        print(user);
-                        Navigator.pushNamed(context, AppRoutes.main);
-                      } catch (err) {
-                        print('Failed: $err');
-                      } finally {
-                        LoadingOverlay().hide();
-                      }
-                    },
+                    onPressed: _handleLoginGoogle,
                     color: Colors.white,
                     textColor: Colors.black,
                   ),

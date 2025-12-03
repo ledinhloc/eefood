@@ -13,6 +13,7 @@ class PostModel{
   final DateTime updatedAt;
   final int totalFavorites;
   final int totalShares;
+  final int totalComments;
   final Map<ReactionType, int> reactionCounts;
   final List<CommentModel> comments;
 
@@ -42,6 +43,7 @@ class PostModel{
     required this.updatedAt,
     required this.totalFavorites,
     required this.totalShares,
+    required this.totalComments,
     required this.reactionCounts,
     required this.comments,
     this.description,
@@ -78,6 +80,7 @@ class PostModel{
       updatedAt: DateTime.parse(json['updatedAt']),
       totalFavorites: json['totalFavorites'] ?? 0,
       totalShares: json['totalShares'] ?? 0,
+      totalComments: json['totalComments'] ?? 0,
       reactionCounts: mappedReactions,
       comments: (json['comments'] as List<dynamic>?)
           ?.map((c) => CommentModel.fromJson(c))

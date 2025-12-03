@@ -22,7 +22,6 @@ class StoryProgressHelper {
 
   void start({Duration? videoDuration}) {
     if (videoDuration == null || videoDuration == Duration.zero) {
-      // Nếu không có duration, dùng 8 giây mặc định
       videoDuration = const Duration(seconds: 8);
     }
 
@@ -59,13 +58,13 @@ class StoryProgressHelper {
   void pause() {
     if (_isPaused) return;
     _isPaused = true;
-    // Don't cancel the timer, just stop updating
+    debugPrint("Progress paused");
   }
 
   void resume() {
     if (!_isPaused) return;
     _isPaused = false;
-    // Timer continues running, just set isPaused to false
+    debugPrint("Progress resumed");
   }
 
   void reset() {

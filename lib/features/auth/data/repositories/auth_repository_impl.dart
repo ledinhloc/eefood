@@ -145,7 +145,6 @@ class AuthRepositoryImpl implements AuthRepository {
           AppKeys.refreshToken,
           simpleToken.refreshToken ?? '',
         );
-
       }
     } catch (e) {
       throw Exception('Refresh token failed: $e');
@@ -190,6 +189,7 @@ class AuthRepositoryImpl implements AuthRepository {
         final model = RegisterResponseModel.fromJson(
           json['data'] as Map<String, dynamic>,
         );
+        await saveFirstLogin(false);
         return Result.success(model);
       } else {
         return Result.failure(message);
@@ -294,6 +294,14 @@ class AuthRepositoryImpl implements AuthRepository {
     await sharedPreferences.setString(
       AppKeys.refreshToken,
       userModel.refreshToken ?? '',
+    );
+  }
+
+  @override
+  Future<void> saveFirstLogin(bool firstLogin) async {
+    await sharedPreferences.setBool(
+      AppKeys.isLoginedIn,
+      firstLogin,
     );
   }
 

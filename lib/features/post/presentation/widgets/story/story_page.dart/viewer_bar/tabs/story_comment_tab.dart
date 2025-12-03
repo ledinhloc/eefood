@@ -21,6 +21,8 @@ class StoryCommentTab extends StatefulWidget {
 class _StoryCommentTabState extends State<StoryCommentTab>
     with AutomaticKeepAliveClientMixin {
   late StoryCommentCubit _commentCubit;
+  final ScrollController _scrollController = ScrollController();
+  final FocusNode _inputFocusNode = FocusNode();
 
   StoryCommentModel? _replyingTo;
   StoryCommentModel? _editingComment;
@@ -33,17 +35,35 @@ class _StoryCommentTabState extends State<StoryCommentTab>
     super.initState();
     _commentCubit = getIt<StoryCommentCubit>();
 
-    // Load comments when tab is initialized
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _commentCubit.loadComments(widget.storyId);
     });
+
+    _inputFocusNode.addListener(() {
+      if (_inputFocusNode.hasFocus) {
+        Future.delayed(const Duration(milliseconds: 300), () {
+          if (mounted && _scrollController.hasClients) {
+            _scrollController.animateTo(
+              _scrollController.position.maxScrollExtent,
+              duration: const Duration(milliseconds: 300),
+              curve: Curves.easeOut,
+            );
+          }
+        });
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    super.dispose();
   }
 
   Future<void> _deleteComment(int commentId, {int? parentId}) async {
     try {
       await _commentCubit.deleteComment(commentId);
 
-      // If it's a reply, reload parent replies to update count
       if (parentId != null) {
         await _commentCubit.reloadReplies(parentId);
       }
@@ -84,7 +104,7 @@ class _StoryCommentTabState extends State<StoryCommentTab>
 
   @override
   Widget build(BuildContext context) {
-    super.build(context); // Required for AutomaticKeepAliveClientMixin
+    super.build(context);
 
     return BlocProvider.value(
       value: _commentCubit,
@@ -98,10 +118,11 @@ class _StoryCommentTabState extends State<StoryCommentTab>
               onEdit: _startEdit,
               onDelete: _deleteComment,
               storyId: widget.storyId,
+              scrollController: _scrollController,
             ),
           ),
 
-          // Comment Input
+          // Comment Input 
           StoryCommentInput(
             storyId: widget.storyId,
             replyingTo: _replyingTo,

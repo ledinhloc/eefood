@@ -43,9 +43,9 @@ class _MyAppState extends State<MyApp> {
   void initState() {
     super.initState();
 
-    Future.microtask(() {
-      di.getIt<NotificationCubit>(); 
-    });
+    // Future.microtask(() {
+    //   di.getIt<NotificationCubit>(); 
+    // });
 
      WidgetsBinding.instance.addPostFrameCallback((_) {
       DeepLinkService().initialize();

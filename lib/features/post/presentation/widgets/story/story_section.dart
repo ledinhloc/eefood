@@ -17,6 +17,7 @@ class StorySection extends StatefulWidget {
   final List<UserStoryModel> userStories;
   final int currentUserId;
   final bool isCreating;
+  final String? currentUserAvatar;
 
   const StorySection({
     super.key,
@@ -25,6 +26,7 @@ class StorySection extends StatefulWidget {
     required this.userStories,
     required this.currentUserId,
     required this.isCreating,
+    this.currentUserAvatar,
   });
 
   @override
@@ -74,7 +76,6 @@ class _StorySectionState extends State<StorySection> {
           height: 150,
           child: NotificationListener<ScrollNotification>(
             onNotification: (ScrollNotification notification) {
-              // Chỉ xử lý khi scroll đến đầu và đang kéo về bên trái
               if (notification is ScrollUpdateNotification) {
                 if (_scrollController.position.pixels <= 0) {
                   setState(() {
@@ -99,7 +100,8 @@ class _StorySectionState extends State<StorySection> {
                   physics: const BouncingScrollPhysics(),
                   scrollDirection: Axis.horizontal,
                   padding: const EdgeInsets.symmetric(horizontal: 10),
-                  itemCount: widget.userStories.length + 1,
+                  itemCount:
+                      widget.userStories.length + 1 + (widget.isCreating ? 1 : 0),
                   itemBuilder: (context, index) {
                     // Ô tạo story
                     if (index == 0) {
@@ -109,14 +111,31 @@ class _StorySectionState extends State<StorySection> {
                       );
                     }
 
-                    final userStory = widget.userStories[index - 1];
+                    // Card loading khi đang tạo story
+                    if (index == 1 && widget.isCreating) {
+                      return Padding(
+                        padding: const EdgeInsets.only(right: 8),
+                        child: StoryCard(
+                          userName: "Đang tạo...",
+                          contentUrl: "",
+                          isVideo: false,
+                          isCreating: true,
+                          avatarUrl: widget.currentUserAvatar, 
+                        ),
+                      );
+                    }
+
+                    // Tính toán index đúng cho userStories
+                    final adjustedIndex = widget.isCreating
+                        ? index - 2
+                        : index - 1;
+                    final userStory = widget.userStories[adjustedIndex];
                     final stories = userStory.stories;
 
                     if (stories.isEmpty) {
                       return const SizedBox();
                     }
 
-                    // story đầu tiên sẽ lấy làm thumbnail card
                     final previewStory = stories.first;
 
                     bool hasUnViewed = userStory.stories.any(
@@ -130,6 +149,10 @@ class _StorySectionState extends State<StorySection> {
                       padding: const EdgeInsets.only(right: 8),
                       child: GestureDetector(
                         onTap: () {
+                          final correctUserIndex = widget.isCreating
+                              ? index - 2
+                              : index - 1;
+
                           Navigator.push(
                             context,
                             MaterialPageRoute(
@@ -146,11 +169,11 @@ class _StorySectionState extends State<StorySection> {
                                   ),
                                   BlocProvider.value(
                                     value: getIt<StoryReactionStatsCubit>(),
-                                  )
+                                  ),
                                 ],
                                 child: StoryViewerPage(
                                   allUsers: widget.userStories,
-                                  userIndex: index - 1,
+                                  userIndex: correctUserIndex,
                                   currentUserId: widget.currentUserId,
                                 ),
                               ),
@@ -161,10 +184,11 @@ class _StorySectionState extends State<StorySection> {
                           userName: isCurrentUserStory
                               ? "Tin của bạn"
                               : userStory.username ?? "Người dùng",
-                          imageUrl: previewStory.contentUrl ?? "",
+                          contentUrl: previewStory.contentUrl ?? "",
                           avatarUrl: userStory.avatarUrl ?? "",
                           hasStory: hasUnViewed,
                           isCreating: widget.isCreating && isCurrentUserStory,
+                          isVideo: previewStory.type == 'video' ? true : false,
                         ),
                       ),
                     );

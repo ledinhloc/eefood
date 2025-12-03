@@ -1,10 +1,9 @@
 import 'package:eefood/features/auth/domain/entities/user.dart';
-import 'package:flutter/material.dart';
-
 import 'package:eefood/features/profile/presentation/widgets/personal_header/personal_user_header.dart';
-import 'package:eefood/features/profile/presentation/widgets/personal_tab_content/profile_tab_bar.dart';
 import 'package:eefood/features/profile/presentation/widgets/personal_tab_content/info_user/about_tab.dart';
 import 'package:eefood/features/profile/presentation/widgets/personal_tab_content/personal_recipe_tab.dart';
+import 'package:eefood/features/profile/presentation/widgets/personal_tab_content/profile_tab_bar.dart';
+import 'package:flutter/material.dart';
 
 class PersonalUserPage extends StatefulWidget {
   final User? user;
@@ -23,6 +22,7 @@ class _PersonalUserPageState extends State<PersonalUserPage>
   @override
   void initState() {
     super.initState();
+    debugPrint('User id: ${widget.user?.id}');
     _tabController = TabController(length: 2, vsync: this);
     _scrollController = ScrollController()..addListener(_onScroll);
   }
@@ -62,7 +62,10 @@ class _PersonalUserPageState extends State<PersonalUserPage>
         ],
         body: TabBarView(
           controller: _tabController,
-          children: [PersonalRecipeTab(user: widget.user!,), AboutTab(user: widget.user!,)],
+          children: [
+            PersonalRecipeTab(user: widget.user!),
+            AboutTab(user: widget.user!),
+          ],
         ),
       ),
     );
