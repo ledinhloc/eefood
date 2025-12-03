@@ -18,4 +18,5 @@ abstract class StoryCollectionRepository {
   Future<List<StoryModel>> getAllStoryCollections(int collectionId);
   Future<void> addStoryToCollection(int collectionId, int storyId);
   Future<void> removeStoryToCollection(int collectionId, int storyId);
+  Future<List<StoryCollectionModel>> getCollectionsContainingStory(int storyId);
 }

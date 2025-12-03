@@ -19,6 +19,7 @@ import 'package:eefood/features/post/data/repositories/follow_repository_impl.da
 import 'package:eefood/features/post/data/repositories/post_reaction_repository_impl.dart';
 import 'package:eefood/features/post/data/repositories/post_repository_impl.dart';
 import 'package:eefood/features/post/data/repositories/share_repository_impl.dart';
+import 'package:eefood/features/post/data/repositories/story_collection_repository_impl.dart';
 import 'package:eefood/features/post/data/repositories/story_comment_repository_impl.dart';
 import 'package:eefood/features/post/data/repositories/story_reaction_repository_impl.dart';
 import 'package:eefood/features/post/data/repositories/story_repository_impl.dart';
@@ -30,6 +31,7 @@ import 'package:eefood/features/post/domain/repositories/follow_repository.dart'
 import 'package:eefood/features/post/domain/repositories/post_reaction_repository.dart';
 import 'package:eefood/features/post/domain/repositories/post_repository.dart';
 import 'package:eefood/features/post/domain/repositories/share_repository.dart';
+import 'package:eefood/features/post/domain/repositories/story_collection_repository.dart';
 import 'package:eefood/features/post/domain/repositories/story_comment_repository.dart';
 import 'package:eefood/features/post/domain/repositories/story_reaction_repository.dart';
 import 'package:eefood/features/post/domain/repositories/story_repository.dart';
@@ -38,6 +40,7 @@ import 'package:eefood/features/post/presentation/provider/collection_cubit.dart
 import 'package:eefood/features/post/presentation/provider/comment_list_cubit.dart';
 import 'package:eefood/features/post/presentation/provider/comment_reaction_cubit.dart';
 import 'package:eefood/features/post/presentation/provider/follow_cubit.dart';
+import 'package:eefood/features/post/presentation/provider/story_collection_cubit.dart';
 import 'package:eefood/features/post/presentation/provider/story_comment_cubit.dart';
 import 'package:eefood/features/post/presentation/provider/story_list_cubit.dart';
 import 'package:eefood/features/post/presentation/provider/story_reaction_cubit.dart';
@@ -153,7 +156,9 @@ Future<void> setupDependencies() async {
 
   //recipe
   getIt.registerLazySingleton(() => CreateRecipe(getIt<RecipeRepository>()));
-  getIt.registerLazySingleton(() => CreateRecipeFromUrl(getIt<RecipeRepository>()));
+  getIt.registerLazySingleton(
+    () => CreateRecipeFromUrl(getIt<RecipeRepository>()),
+  );
   getIt.registerLazySingleton(() => UpdateRecipe(getIt<RecipeRepository>()));
   getIt.registerLazySingleton(() => GetMyRecipe(getIt<RecipeRepository>()));
   getIt.registerLazySingleton(() => DeleteRecipe(getIt<RecipeRepository>()));
@@ -167,9 +172,7 @@ Future<void> setupDependencies() async {
   );
 
   //post
-  getIt.registerLazySingleton<PostListCubit>(
-    () => PostListCubit(),
-  );
+  getIt.registerLazySingleton<PostListCubit>(() => PostListCubit());
   getIt.registerLazySingleton<PostRepository>(
     () => PostRepositoryImpl(dio: getIt<DioClient>().dio),
   );
@@ -196,6 +199,12 @@ Future<void> setupDependencies() async {
   );
   getIt.registerLazySingleton<FollowCubit>(() => FollowCubit());
   // story
+  getIt.registerLazySingleton<StoryCollectionRepository>(
+    () => StoryCollectionRepositoryImpl(dio: getIt<DioClient>().dio),
+  );
+  getIt.registerLazySingleton<StoryCollectionCubit>(
+    () => StoryCollectionCubit(),
+  );
   getIt.registerLazySingleton<StoryCubit>(() => StoryCubit());
   getIt.registerLazySingleton<StoryViewerCubit>(() => StoryViewerCubit());
   getIt.registerLazySingleton<StoryReactionCubit>(() => StoryReactionCubit());
@@ -263,13 +272,11 @@ Future<void> setupDependencies() async {
     ),
   );
   getIt.registerFactoryParam<StreamerReactionCubit, int, void>(
-        (liveStreamId, _) => StreamerReactionCubit(
-      getIt<SharedPreferences>(),
-      liveStreamId,
-    ),
+    (liveStreamId, _) =>
+        StreamerReactionCubit(getIt<SharedPreferences>(), liveStreamId),
   );
 
   getIt.registerFactory<StreamerCommentCubit>(
-        () => StreamerCommentCubit(getIt<LiveCommentRepository>()),
+    () => StreamerCommentCubit(getIt<LiveCommentRepository>()),
   );
 }

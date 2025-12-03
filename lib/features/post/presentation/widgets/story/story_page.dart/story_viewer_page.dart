@@ -3,11 +3,13 @@ import 'package:eefood/core/widgets/custom_bottom_sheet.dart';
 import 'package:eefood/core/widgets/snack_bar.dart';
 import 'package:eefood/features/post/data/models/user_story_model.dart';
 import 'package:eefood/features/post/domain/repositories/story_repository.dart';
+import 'package:eefood/features/post/presentation/provider/story_collection_cubit.dart';
 import 'package:eefood/features/post/presentation/provider/story_comment_cubit.dart';
 import 'package:eefood/features/post/presentation/provider/story_list_cubit.dart';
 import 'package:eefood/features/post/presentation/provider/story_reaction_cubit.dart';
 import 'package:eefood/features/post/presentation/provider/story_reaction_list_cubit.dart';
 import 'package:eefood/features/post/presentation/provider/story_viewer_cubit.dart';
+import 'package:eefood/features/post/presentation/widgets/story/story_collection/story_collection_page.dart';
 import 'package:eefood/features/post/presentation/widgets/story/story_page.dart/story_action_bar.dart';
 import 'package:eefood/features/post/presentation/widgets/story/story_page.dart/story_content.dart';
 import 'package:eefood/features/post/presentation/widgets/story/story_page.dart/story_gesture_layer.dart';
@@ -68,7 +70,7 @@ class _StoryViewerPageState extends State<StoryViewerPage> {
     _reactionCubit = context.read<StoryReactionCubit>();
 
     // Initialize helpers
-     _progressHelper = StoryProgressHelper(
+    _progressHelper = StoryProgressHelper(
       onProgressUpdate: () {
         if (mounted) setState(() {});
       },
@@ -130,7 +132,6 @@ class _StoryViewerPageState extends State<StoryViewerPage> {
     super.dispose();
   }
 
-
   bool _isCurrentUserStory() {
     if (widget.currentUserId == null) return false;
     final currentUser = _navigationHelper.currentUser;
@@ -183,46 +184,66 @@ class _StoryViewerPageState extends State<StoryViewerPage> {
     }
   }
 
-  void _openStoryOptions() async {
+  void _openStoryOptions(int userId) async {
     final cubit = context.read<StoryCubit>();
     _progressHelper.pause();
 
     await showCustomBottomSheet(context, [
-      BottomSheetOption(
-        icon: const Icon(Icons.delete_outlined, color: Colors.redAccent),
-        title: 'Xóa story này',
-        onTap: () async {
-          final currentStory = _navigationHelper
-              .currentUser
-              .stories[_navigationHelper.storyIndex];
-          await cubit.deleteStory(currentStory.id!);
-          Navigator.pop(context);
-          await showCustomSnackBar(context, "Đã xóa story");
-        },
-      ),
+      if (userId == widget.currentUserId) ...[
+        BottomSheetOption(
+          icon: const Icon(Icons.link, color: Colors.blue),
+          title: 'Thêm vào danh mục tin',
+          onTap: () async {
+            Navigator.pop(context);
+            final currentStory = _navigationHelper
+                .currentUser
+                .stories[_navigationHelper.storyIndex];
+
+            if (currentStory.id != null && widget.currentUserId != null) {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => BlocProvider(
+                    create: (context) =>
+                        getIt<StoryCollectionCubit>()
+                          ..loadCollections(widget.currentUserId!),
+                    child: StoryCollectionPage(
+                      userId: widget.currentUserId!,
+                      storyId: currentStory.id!,
+                    ),
+                  ),
+                ),
+              );
+            }
+          },
+        ),
+        BottomSheetOption(
+          icon: const Icon(Icons.delete_outlined, color: Colors.redAccent),
+          title: 'Xóa story này',
+          onTap: () async {
+            final currentStory = _navigationHelper
+                .currentUser
+                .stories[_navigationHelper.storyIndex];
+            await cubit.deleteStory(currentStory.id!);
+            Navigator.pop(context);
+            await showCustomSnackBar(context, "Đã xóa story");
+          },
+        ),
+      ] else ...[
+        BottomSheetOption(
+          icon: const Icon(Icons.report_gmailerrorred, color: Colors.yellow),
+          title: 'Báo cáo story',
+          onTap: () {
+            Navigator.pop(context);
+            ScaffoldMessenger.of(
+              context,
+            ).showSnackBar(const SnackBar(content: Text('Đã báo cáo story')));
+          },
+        ),
+      ],
       BottomSheetOption(
         icon: const Icon(Icons.download, color: Colors.greenAccent),
         title: 'Tải xuống',
-        onTap: () async {
-          Navigator.pop(context);
-          ScaffoldMessenger.of(
-            context,
-          ).showSnackBar(const SnackBar(content: Text('Đã sao chép liên kết')));
-        },
-      ),
-      BottomSheetOption(
-        icon: const Icon(Icons.report_gmailerrorred, color: Colors.yellow),
-        title: 'Báo cáo story',
-        onTap: () {
-          Navigator.pop(context);
-          ScaffoldMessenger.of(
-            context,
-          ).showSnackBar(const SnackBar(content: Text('Đã báo cáo story')));
-        },
-      ),
-      BottomSheetOption(
-        icon: const Icon(Icons.link, color: Colors.blue),
-        title: 'Sao chép liên kết story',
         onTap: () async {
           Navigator.pop(context);
           ScaffoldMessenger.of(
@@ -355,7 +376,9 @@ class _StoryViewerPageState extends State<StoryViewerPage> {
                     StoryTopBar(
                       user: user,
                       story: user.stories[storyIndex],
-                      onMorePressed: _openStoryOptions,
+                      onMorePressed: () {
+                        _openStoryOptions(user.userId);
+                      },
                     ),
                   ],
                 ),

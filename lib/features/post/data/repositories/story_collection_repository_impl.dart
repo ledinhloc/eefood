@@ -2,6 +2,7 @@ import 'package:dio/dio.dart';
 import 'package:eefood/features/post/data/models/story_collection_model.dart';
 import 'package:eefood/features/post/data/models/story_model.dart';
 import 'package:eefood/features/post/domain/repositories/story_collection_repository.dart';
+import 'package:flutter/material.dart';
 
 class StoryCollectionRepositoryImpl extends StoryCollectionRepository {
   final Dio dio;
@@ -86,10 +87,10 @@ class StoryCollectionRepositoryImpl extends StoryCollectionRepository {
         throw new Exception('Failed to get user collection');
       } else {
         final data = response.data['data'];
-        final collection = data['content'];
-        return StoryCollectionPageModel.fromJson(collection);
+        return StoryCollectionPageModel.fromJson(data);
       }
     } catch (e) {
+      debugPrint('Failed to get user collection $e');
       throw new Exception('Failed to get user collection $e');
     }
   }
@@ -135,7 +136,29 @@ class StoryCollectionRepositoryImpl extends StoryCollectionRepository {
         throw new Exception('Failed to remove story to collection');
       }
     } catch (e) {
+      debugPrint('Failed to remove story to collection $e');
       throw new Exception('Failed to remove story to collection $e');
+    }
+  }
+
+   @override
+  Future<List<StoryCollectionModel>> getCollectionsContainingStory(
+    int storyId,
+  ) async {
+    try {
+      final response = await dio.get(
+        '/v1/story-collection/containing/$storyId',
+      );
+
+      if (response.statusCode != 200) {
+        throw Exception('Failed to get collections containing story');
+      } else {
+        final data = response.data['data'] as List;
+        return data.map((json) => StoryCollectionModel.fromJson(json)).toList();
+      }
+    } catch (e) {
+      debugPrint('Failed to get collections containing story $e');
+      throw Exception('Failed to get collections containing story $e');
     }
   }
 }
