@@ -1,11 +1,11 @@
 import 'package:eefood/core/di/injection.dart';
-import 'package:eefood/core/utils/share_utils.dart';
 import 'package:eefood/features/post/presentation/provider/comment_list_cubit.dart';
 import 'package:eefood/features/post/presentation/provider/post_list_cubit.dart';
 import 'package:eefood/features/post/presentation/widgets/comment/comment_sheet.dart';
 import 'package:eefood/features/post/presentation/widgets/share/share_bottom_sheet.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+
 import '../../../data/models/post_model.dart';
 import '../../../data/models/reaction_type.dart';
 import 'footer_button.dart';
@@ -79,13 +79,12 @@ class _PostFooterState extends State<PostFooter>
   }
 
   void _openShareSheet() {
-    
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
       builder: (context) => ShareBottomSheet(
-        postId: widget.post.recipeId!,
+        postId: widget.post.id!,
         imageUrl: widget.post.imageUrl,
         contentPreview: widget.post.title,
       ),

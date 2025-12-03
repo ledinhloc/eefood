@@ -1,4 +1,5 @@
 import 'package:eefood/app_routes.dart';
+import 'package:eefood/core/constants/app_keys.dart';
 import 'package:eefood/core/di/injection.dart';
 import 'package:eefood/core/utils/deep_link_handler.dart';
 import 'package:eefood/core/widgets/overlay_menu.dart';
@@ -9,6 +10,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:lottie/lottie.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class NotificationScreen extends StatefulWidget {
   const NotificationScreen({super.key});
@@ -18,21 +20,25 @@ class NotificationScreen extends StatefulWidget {
 }
 
 class _NotificationScreenState extends State<NotificationScreen> {
+  final SharedPreferences _sharedPreferences = getIt<SharedPreferences>();
   final _scrollController = ScrollController();
   final LayerLink _layerLink = LayerLink();
   late NotificationCubit cubit;
   OverlayEntry? _overlayEntry;
-  bool _showLottieHint = true;
+  late bool _showLottieHint;
 
   @override
   void initState() {
     super.initState();
     cubit = context.read<NotificationCubit>();
-    print('🔔 NotificationScreen init cubit hash=${cubit.hashCode}');
+    print('NotificationScreen init cubit hash=${cubit.hashCode}');
     cubit.fetchNotifications();
     cubit.fetchUnreadCount();
     _scrollController.addListener(_onScroll);
-    _showLottieHintTemporarily();
+    _showLottieHint = _sharedPreferences.getBool(AppKeys.isLoginedIn) ?? false;
+    if (_showLottieHint) {
+      _showLottieHintTemporarily();
+    }
   }
 
   void _onScroll() {
@@ -174,19 +180,17 @@ class _NotificationScreenState extends State<NotificationScreen> {
                           child: const Icon(Icons.delete, color: Colors.white),
                         ),
                         onDismissed: (_) {
-                          if(noti.id != null) {
+                          if (noti.id != null) {
                             cubit.deleteNotification(noti.id!);
                           }
-                          
                         },
                         child: NotificationItem(
                           notification: noti,
                           onTap: () {
                             if (noti.isRead == false) {
-                              if(noti.id != null) {
+                              if (noti.id != null) {
                                 cubit.markAsRead(noti.id!);
                               }
-                              
                             }
                             if (noti.path != null) {
                               DeepLinkHandler.handleDeepLink(noti.path!);

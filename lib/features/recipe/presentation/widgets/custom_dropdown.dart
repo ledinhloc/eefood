@@ -161,6 +161,7 @@ class _CustomDropdownSearchState<T> extends State<CustomDropdownSearch<T>> {
         if (widget.selectedItems != null) {
           for (final s in widget.selectedItems!) {
             if (!_containsItem(_allItems, s)) {
+              if (!mounted) return;
               setState(() => _allItems.add(s));
             }
           }
@@ -179,6 +180,7 @@ class _CustomDropdownSearchState<T> extends State<CustomDropdownSearch<T>> {
     if (_isLoading || widget.onFind == null) return;
 
     setState(() {
+      if (!mounted) return;
       _isLoading = true;
       if (reset) {
         _page = 1;
@@ -197,6 +199,7 @@ class _CustomDropdownSearchState<T> extends State<CustomDropdownSearch<T>> {
         10,
       );
 
+      if (!mounted) return;
       setState(() {
         for (final ni in newItems) {
           if (!_containsItem(_allItems, ni)) _allItems.add(ni);
@@ -221,6 +224,7 @@ class _CustomDropdownSearchState<T> extends State<CustomDropdownSearch<T>> {
   }
 
   void _toggleSelection(T item) {
+    if (!mounted) return;
     setState(() {
       final idx = _selectedItems.indexWhere((e) => _equals(e, item));
       if (idx == -1) {

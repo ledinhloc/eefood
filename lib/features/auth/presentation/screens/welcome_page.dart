@@ -1,4 +1,5 @@
 import 'package:eefood/app_routes.dart';
+import 'package:eefood/core/constants/app_keys.dart';
 import 'package:eefood/core/di/injection.dart';
 import 'package:eefood/core/widgets/loading_overlay.dart';
 import 'package:eefood/core/widgets/snack_bar.dart';
@@ -7,14 +8,13 @@ import 'package:eefood/features/auth/domain/usecases/auth_usecases.dart';
 import 'package:eefood/features/auth/domain/usecases/google_service.dart';
 import 'package:eefood/features/auth/presentation/screens/login_page.dart';
 import 'package:flutter/material.dart';
-
-import '../../../../core/constants/app_colors.dart';
-import '../widgets/auth_button.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class WelcomePage extends StatelessWidget {
   WelcomePage({super.key});
 
   final LoginGoogle _loginGoogle = getIt<LoginGoogle>();
+  final SharedPreferences _sharedPreferences = getIt<SharedPreferences>();
 
   @override
   Widget build(BuildContext context) {
@@ -68,6 +68,9 @@ class WelcomePage extends StatelessWidget {
                 /*Google button*/
                 ElevatedButton.icon(
                   onPressed: () async {
+                    final isFirstLogin = _sharedPreferences.getBool(
+                      AppKeys.isLoginedIn,
+                    );
                     try {
                       LoadingOverlay().show();
                       final idToken =
@@ -77,13 +80,16 @@ class WelcomePage extends StatelessWidget {
                         return;
                       }
                       User user = await _loginGoogle(idToken);
-                      if (user.allergies!.isEmpty &&
-                          user.eatingPreferences!.isEmpty) {
-                        Navigator.pushReplacementNamed(
-                          context,
-                          AppRoutes.onBoardingFlow,
-                        );
-                        return;
+                      if (isFirstLogin != null) {
+                        if (user.allergies!.isEmpty &&
+                            user.eatingPreferences!.isEmpty &&
+                            isFirstLogin) {
+                          Navigator.pushReplacementNamed(
+                            context,
+                            AppRoutes.onBoardingFlow,
+                          );
+                          return;
+                        }
                       }
                       print(user);
                       Navigator.pushNamed(context, AppRoutes.main);
@@ -105,7 +111,7 @@ class WelcomePage extends StatelessWidget {
                     'assets/images/google.png', // icon google tự add
                     height: 24,
                   ),
-                  label: const Text("Tiếp tuc Google"),
+                  label: const Text("Continue with Google"),
                 ),
                 const SizedBox(height: 15),
                 /*

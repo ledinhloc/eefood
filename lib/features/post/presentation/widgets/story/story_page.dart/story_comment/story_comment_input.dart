@@ -162,8 +162,6 @@ class _StoryCommentInputState extends State<StoryCommentInput> {
 
   @override
   Widget build(BuildContext context) {
-    final keyboardHeight = MediaQuery.of(context).viewInsets.bottom;
-
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
@@ -200,12 +198,7 @@ class _StoryCommentInputState extends State<StoryCommentInput> {
 
         // Input Section
         Container(
-          padding: EdgeInsets.only(
-            left: 12,
-            right: 12,
-            top: 12,
-            bottom: 12 + keyboardHeight,
-          ),
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
           decoration: BoxDecoration(
             color: Colors.white,
             border: Border(
@@ -213,8 +206,9 @@ class _StoryCommentInputState extends State<StoryCommentInput> {
             ),
           ),
           child: SafeArea(
-            bottom: true,
+            top: false,
             child: Row(
+              crossAxisAlignment: CrossAxisAlignment.end,
               children: [
                 // Avatar
                 CircleAvatar(
@@ -232,7 +226,11 @@ class _StoryCommentInputState extends State<StoryCommentInput> {
                 // Input Field
                 Expanded(
                   child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    constraints: const BoxConstraints(maxHeight: 100),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 8,
+                    ),
                     decoration: BoxDecoration(
                       color: Colors.grey.shade100,
                       borderRadius: BorderRadius.circular(24),
@@ -251,6 +249,8 @@ class _StoryCommentInputState extends State<StoryCommentInput> {
                           fontSize: 14,
                           color: Colors.grey,
                         ),
+                        isDense: true,
+                        contentPadding: EdgeInsets.zero,
                         focusedBorder: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(24),
                           borderSide: BorderSide(color: Colors.transparent),

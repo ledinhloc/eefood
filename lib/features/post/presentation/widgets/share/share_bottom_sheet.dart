@@ -1,12 +1,11 @@
-import 'package:eefood/core/constants/app_keys.dart';
 import 'package:eefood/core/di/injection.dart';
+import 'package:eefood/core/utils/share_utils.dart';
+import 'package:eefood/core/widgets/snack_bar.dart';
 import 'package:eefood/features/auth/domain/usecases/auth_usecases.dart';
 import 'package:eefood/features/post/data/models/share_model.dart';
 import 'package:eefood/features/post/domain/repositories/share_repository.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:eefood/core/utils/share_utils.dart';
-import 'package:eefood/core/widgets/snack_bar.dart';
 
 class ShareBottomSheet extends StatelessWidget {
   final ShareRepository _repository = getIt<ShareRepository>();
@@ -24,7 +23,6 @@ class ShareBottomSheet extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-
     final items = [
       {
         'icon': FontAwesomeIcons.facebookF,

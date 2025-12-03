@@ -1,10 +1,10 @@
-import 'package:eefood/features/recipe/presentation/provider/post_state.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter/material.dart';
 import 'package:eefood/core/widgets/snack_bar.dart';
-import '../../domain/repositories/post_publish_repository.dart';
+import 'package:eefood/features/recipe/presentation/provider/post_state.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+
 import '../../../../core/di/injection.dart';
-import '../../data/models/post_publish_model.dart';
+import '../../domain/repositories/post_publish_repository.dart';
 
 class PostCubit extends Cubit<PostState> {
   final PostPublishRepository _postRepository = getIt<PostPublishRepository>();
@@ -24,7 +24,10 @@ class PostCubit extends Cubit<PostState> {
 
   /// Tạo post mới
   Future<void> createPost(
-      BuildContext context, int recipeId, String content) async {
+    BuildContext context,
+    int recipeId,
+    String content,
+  ) async {
     emit(state.copyWith(isLoading: true, error: null));
     try {
       final post = await _postRepository.createPost(recipeId, content);
@@ -42,7 +45,10 @@ class PostCubit extends Cubit<PostState> {
 
   /// Cập nhật post
   Future<void> updatePost(
-      BuildContext context, int postId, String content) async {
+    BuildContext context,
+    int postId,
+    String content,
+  ) async {
     emit(state.copyWith(isLoading: true, error: null));
     try {
       final updatedPost = await _postRepository.updatePost(postId, content);

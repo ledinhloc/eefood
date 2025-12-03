@@ -189,7 +189,7 @@ class _FeedViewState extends State<FeedView> {
     );
     print(filters);
 
-    if (filters != null) {
+    if (filters != null && mounted) {
       final keyword = filters['keyword'] as String?;
       if (keyword != null && keyword.isNotEmpty) {
         await cubit.saveKeyword(keyword);
@@ -246,24 +246,40 @@ class _FeedViewState extends State<FeedView> {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) async {
+      if (!mounted) return;
+
       final user = await _getCurrentUser();
+      if (!mounted) return;
+
       if (user != null) {
         await context.read<StoryCubit>().loadStories(user.id);
       }
+
+      if (!mounted) return;
       await context.read<PostListCubit>().fetchPosts();
     });
-    final cubit = context.read<NotificationCubit>();
-    cubit.fetchUnreadCount();
 
-    _scrollController.addListener(() {
-      if (_scrollController.position.pixels >=
-          _scrollController.position.maxScrollExtent - 200) {
-        context.read<PostListCubit>().fetchPosts(loadMore: true);
-      }
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      final cubit = context.read<NotificationCubit>();
+      cubit.fetchUnreadCount();
     });
+
+    _scrollController.addListener(_onScroll);
+  }
+
+  void _onScroll() {
+    if (!mounted) return;
+
+    if (_scrollController.position.pixels >=
+        _scrollController.position.maxScrollExtent - 200) {
+      context.read<PostListCubit>().fetchPosts(loadMore: true);
+    }
   }
 
   Future<void> handleCreateStory(BuildContext context, int? userId) async {
+    if (!mounted) return;
+
     final storyCubit = context.read<StoryCubit>();
     final result = await Navigator.pushNamed(
       context,
@@ -271,7 +287,7 @@ class _FeedViewState extends State<FeedView> {
       arguments: {'userId': userId, 'storyCubit': storyCubit},
     );
 
-    if (result == null) return;
+    if (!mounted || result == null) return;
 
     final files = result is List ? result : [result];
     if (files.isEmpty) return;
@@ -295,11 +311,11 @@ class _FeedViewState extends State<FeedView> {
       // Reload danh sách story
       await storyCubit.loadStories(userId ?? 0);
 
-      if (context.mounted) {
+      if (mounted) {
         showCustomSnackBar(context, "Đã tạo story thành công!");
       }
     } catch (e) {
-      if (context.mounted) {
+      if (mounted) {
         showCustomSnackBar(context, "Lỗi khi tạo story", isError: true);
       }
     }
@@ -308,6 +324,7 @@ class _FeedViewState extends State<FeedView> {
   @override
   void dispose() {
     hideReactionPopup();
+    _scrollController.removeListener(_onScroll);
     _scrollController.dispose();
     super.dispose();
   }
@@ -335,9 +352,15 @@ class _FeedViewState extends State<FeedView> {
                 children: [
                   Row(
                     children: [
-                      const Text(
-                        'Food Feed 🍽️',
-                        style: TextStyle(fontSize: 20, fontWeight: FontWeight.w600),
+                       Expanded(
+                        child: Text(
+                          'Food Feed 🍽️',
+                          style: TextStyle(
+                            fontSize: 20,
+                            fontWeight: FontWeight.w600,
+                          ),
+                          overflow: TextOverflow.ellipsis,
+                        ),
                       ),
                       BlocBuilder<PostListCubit, PostListState>(
                         builder: (context, state) {
@@ -463,13 +486,20 @@ class _FeedViewState extends State<FeedView> {
                         return StorySection(
                           onCreateStory: () async {
                             final user = await _getCurrentUser();
-                            await handleCreateStory(context, user?.id);
+                            if (mounted) {
+                              await handleCreateStory(context, user?.id);
+                            }
                           },
                           userStories: storyState.stories,
                           currentUserId: user?.id ?? 0,
                           isCreating: storyState.isCreating,
-                          onRefresh: () =>
-                              context.read<StoryCubit>().loadStories(user!.id),
+                          onRefresh: () async {
+                            if (mounted && user?.id != null) {
+                              await context.read<StoryCubit>().loadStories(
+                                user!.id,
+                              );
+                            }
+                          },
                         );
                       },
                     ),
@@ -480,9 +510,10 @@ class _FeedViewState extends State<FeedView> {
 
               return RefreshIndicator(
                 onRefresh: () async {
+                  if (!mounted) return;
                   await context.read<PostListCubit>().fetchPosts();
+                  if (!mounted || user?.id == null) return;
                   await context.read<StoryCubit>().loadStories(user!.id);
-                  return;
                 },
                 child: CustomScrollView(
                   controller: _scrollController,
@@ -491,24 +522,29 @@ class _FeedViewState extends State<FeedView> {
                     SliverToBoxAdapter(child: _buildActiveFilters(postState)),
                     // Story Section (an khi co loc)
                     SliverToBoxAdapter(
-                      child: postState.hasFilters()
-                          ? const SizedBox.shrink()
-                          : BlocBuilder<StoryCubit, StoryState>(
-                              builder: (context, storyState) {
-                                return StorySection(
-                                  onCreateStory: () async {
-                                    final user = await _getCurrentUser();
-                                    await handleCreateStory(context, user?.id);
-                                  },
-                                  userStories: storyState.stories,
-                                  currentUserId: user?.id ?? 0,
-                                  isCreating: storyState.isCreating,
-                                  onRefresh: () => context
-                                      .read<StoryCubit>()
-                                      .loadStories(user!.id),
+                      child: BlocBuilder<StoryCubit, StoryState>(
+                        builder: (context, storyState) {
+                          return StorySection(
+                            onCreateStory: () async {
+                              final user = await _getCurrentUser();
+                              if (mounted) {
+                                await handleCreateStory(context, user?.id);
+                              }
+                            },
+                            userStories: storyState.stories,
+                            currentUserId: user?.id ?? 0,
+                            isCreating: storyState.isCreating,
+                            onRefresh: () async {
+                              if (mounted && user?.id != null) {
+                                await context.read<StoryCubit>().loadStories(
+                                  user!.id,
                                 );
-                              },
-                            ),
+                              }
+                            },
+                            currentUserAvatar: user?.avatarUrl,
+                          );
+                        },
+                      ),
                     ),
 
                     // Posts Section

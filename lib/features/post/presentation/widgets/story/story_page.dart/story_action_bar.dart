@@ -77,6 +77,9 @@ class _StoryActionBarState extends State<StoryActionBar> {
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
+      isDismissible: true,
+      enableDrag: true,
+      useSafeArea: true,
       builder: (context) {
         final commentCubit = getIt<StoryCommentCubit>();
 
@@ -137,9 +140,10 @@ class _StoryActionBarState extends State<StoryActionBar> {
       builder: (context, reactionState) {
         final currentReaction =
             reactionState.reaction?.reactionType ?? ReactionType.LOVE;
-        debugPrint('Reaction hiện tại: ${reactionState.reaction?.reactionType}');
-        final hasReacted =
-            reactionState.reaction != null;
+        debugPrint(
+          'Reaction hiện tại: ${reactionState.reaction?.reactionType}',
+        );
+        final hasReacted = reactionState.reaction != null;
 
         return BlocBuilder<StoryReactionStatsCubit, StoryReactionStatsState>(
           builder: (context, statsState) {

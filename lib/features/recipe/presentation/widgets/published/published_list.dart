@@ -193,7 +193,7 @@ class _PostCard extends StatelessWidget {
     );
   }
 
-  /// ✅ Hàm hiển thị dialog chỉnh sửa content
+  /// Hàm hiển thị dialog chỉnh sửa content
   void _showEditDialog(
       BuildContext context, PostCubit postCubit, PostPublishModel post) {
     final controller = TextEditingController(text: post.content ?? "");

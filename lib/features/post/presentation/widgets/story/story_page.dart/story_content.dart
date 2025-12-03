@@ -1,8 +1,9 @@
+import 'package:better_player_plus/better_player_plus.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:eefood/core/utils/better_player_utils.dart';
 import 'package:eefood/features/post/data/models/story_model.dart';
 import 'package:eefood/features/post/data/models/user_story_model.dart';
 import 'package:flutter/material.dart';
-import 'package:video_player/video_player.dart';
 
 class StoryContent extends StatefulWidget {
   final PageController pageController;
@@ -23,9 +24,8 @@ class StoryContent extends StatefulWidget {
 }
 
 class _StoryContentState extends State<StoryContent> {
-  VideoPlayerController? _videoController;
+  BetterPlayerController? _videoController;
   int _currentIndex = 0;
-  bool _hasNotifiedVideoEnd = false;
 
   @override
   void initState() {
@@ -39,29 +39,15 @@ class _StoryContentState extends State<StoryContent> {
 
   @override
   void dispose() {
-    _videoController?.removeListener(_videoListener);
+     _videoController?.pause();
     _videoController?.dispose();
+    _videoController = null;
     super.dispose();
   }
 
-  void _videoListener() {
-    if (_videoController == null || !_videoController!.value.isInitialized) {
-      return;
-    }
-
-    final position = _videoController!.value.position;
-    final duration = _videoController!.value.duration;
-
-    // Kiểm tra video đã kết thúc (với buffer 100ms)
-    if (!_hasNotifiedVideoEnd &&
-        position >= duration - const Duration(milliseconds: 100)) {
-      _hasNotifiedVideoEnd = true;
-      debugPrint("Video ended, notifying completion");
-    }
-  }
-
   void _initStory(StoryModel story) {
-    _hasNotifiedVideoEnd = false;
+    _videoController?.dispose();
+    _videoController = null;
 
     if (story.type == "video" &&
         story.contentUrl != null &&
@@ -73,35 +59,27 @@ class _StoryContentState extends State<StoryContent> {
   }
 
   void _initVideo(StoryModel story) {
-    _videoController?.removeListener(_videoListener);
-    _videoController?.dispose();
-    _videoController = null;
 
-    _videoController =
-        VideoPlayerController.networkUrl(Uri.parse(story.contentUrl!))
-          ..initialize()
-              .then((_) {
-                if (!mounted) return;
+    if (story.contentUrl == null || story.contentUrl!.isEmpty) return;
 
-                setState(() {});
+    _videoController = BetterPlayerUtils.create(
+      url: story.contentUrl!,
+      autoPlay: true,
+      looping: false,
+      mute: false,
+    );
 
-                final duration = _videoController!.value.duration;
-                debugPrint("Video initialized: ${duration.inSeconds}s");
+    _videoController!.addEventsListener((event) {
+      if (event.betterPlayerEventType == BetterPlayerEventType.initialized) {
+        final duration =
+            _videoController!.videoPlayerController?.value.duration;
+        widget.onVideoProgress(duration);
+      }
 
-                // Start progress với duration của video
-                widget.onVideoProgress(duration);
-
-                // Add listener để track video end
-                _videoController!.addListener(_videoListener);
-
-                // Play video
-                _videoController!.play();
-              })
-              .catchError((error) {
-                debugPrint("Video initialization error: $error");
-                // Nếu video lỗi, fallback về image với 5 giây
-                _initImage();
-              });
+      if (event.betterPlayerEventType == BetterPlayerEventType.finished) {
+        debugPrint("Video ended");
+      }
+    });
   }
 
   void _initImage() {
@@ -127,18 +105,8 @@ class _StoryContentState extends State<StoryContent> {
         final story = widget.user.stories[i];
 
         if (story.type == "video") {
-          if (_videoController != null &&
-              _videoController!.value.isInitialized) {
-            return SizedBox.expand(
-              child: FittedBox(
-                fit: BoxFit.cover,
-                child: SizedBox(
-                  width: _videoController!.value.size.width,
-                  height: _videoController!.value.size.height,
-                  child: VideoPlayer(_videoController!),
-                ),
-              ),
-            );
+          if (_videoController != null) {
+            return BetterPlayer(controller: _videoController!);
           } else {
             return Container(
               color: Colors.black,

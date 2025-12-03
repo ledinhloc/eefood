@@ -1,4 +1,7 @@
 import 'package:eefood/app_routes.dart';
+import 'package:eefood/core/di/injection.dart';
+import 'package:eefood/features/auth/domain/repositories/auth_repository.dart';
+import 'package:eefood/features/auth/domain/usecases/auth_usecases.dart';
 import 'package:eefood/features/auth/presentation/bloc/on_boarding_bloc/on_boarding_cubit.dart';
 import 'package:eefood/features/auth/presentation/screens/allergy_page.dart';
 import 'package:eefood/features/auth/presentation/screens/cuisine_preference_page.dart';
@@ -16,6 +19,7 @@ class OnBoardingFlowPage extends StatefulWidget {
 class _OnBoardingFlowPageState extends State<OnBoardingFlowPage> {
   Set<String> selectedCuisines = {};
   Set<String> selectedAllergies = {};
+  final SetFirstLogin _setFirstLogin = getIt<SetFirstLogin>();
 
   @override
   Widget build(BuildContext context) {
@@ -41,6 +45,7 @@ class _OnBoardingFlowPageState extends State<OnBoardingFlowPage> {
             selectedCuisines: selectedCuisines,
             selectedAllergies: selectedAllergies,
             onComplete: () {
+              _setFirstLogin(true);
               Navigator.pushReplacementNamed(context, AppRoutes.main);
             },
           );

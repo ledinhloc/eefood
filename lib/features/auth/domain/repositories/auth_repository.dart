@@ -8,6 +8,7 @@ abstract class AuthRepository {
   Future<void> clearSavedPassword();
   Future<void> savePassword(String email, String password);
   Future<Map<String, String>?> loadPassword();
+  Future<void> saveFirstLogin(bool firstLogin);
   Future<User> loginWithGoogle(String idToken);
   Future<User> login(String email, String password);
   Future<void> logout({String? provider});

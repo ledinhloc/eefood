@@ -1,12 +1,12 @@
 import 'package:eefood/core/widgets/post_skeletion_loading.dart';
+import 'package:eefood/features/auth/domain/entities/user.dart';
 import 'package:eefood/features/post/data/models/reaction_type.dart';
+import 'package:eefood/features/post/presentation/provider/post_list_cubit.dart';
+import 'package:eefood/features/post/presentation/widgets/post/post_card.dart';
 import 'package:eefood/features/post/presentation/widgets/post/reaction_popup.dart';
+import 'package:eefood/features/recipe/presentation/screens/recipe_detail_page.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:eefood/features/auth/domain/entities/user.dart';
-import 'package:eefood/features/post/presentation/provider/post_list_cubit.dart';
-import 'package:eefood/features/recipe/presentation/screens/recipe_detail_page.dart';
-import 'package:eefood/features/post/presentation/widgets/post/post_card.dart';
 
 class PersonalRecipeTab extends StatefulWidget {
   final User user;
@@ -16,15 +16,36 @@ class PersonalRecipeTab extends StatefulWidget {
   State<PersonalRecipeTab> createState() => _PersonalRecipeTabState();
 }
 
-class _PersonalRecipeTabState extends State<PersonalRecipeTab> {
-  late final PostListCubit _cubit;
+class _PersonalRecipeTabState extends State<PersonalRecipeTab>
+    with AutomaticKeepAliveClientMixin {
+  late PostListCubit _cubit;
+  late ScrollController _scrollController;
   OverlayEntry? _activePopup;
+
+  @override
+  bool get wantKeepAlive => true;
 
   @override
   void initState() {
     super.initState();
-    // Tạo instance riêng cho tab này, không dùng chung với FeedScreen
-    _cubit = PostListCubit()..fetchOwnPost(userId: widget.user.id);
+    _cubit = PostListCubit();
+
+    _cubit.fetchOwnPost(userId: widget.user.id);
+
+    _scrollController = ScrollController()..addListener(_onScroll);
+  }
+
+  void _onScroll() {
+    if (_isBottom && !_cubit.state.isLoading && _cubit.state.hasMore) {
+      _cubit.fetchOwnPost(userId: widget.user.id, loadMore: true);
+    }
+  }
+
+  bool get _isBottom {
+    if (!_scrollController.hasClients) return false;
+    final maxScroll = _scrollController.position.maxScrollExtent;
+    final currentScroll = _scrollController.offset;
+    return currentScroll >= (maxScroll * 0.9);
   }
 
   void hideReactionPopup() {
@@ -72,12 +93,16 @@ class _PersonalRecipeTabState extends State<PersonalRecipeTab> {
 
   @override
   void dispose() {
-    _cubit.close(); // Đóng cubit khi dispose
+    _scrollController.dispose();
+    _cubit.close();
+    hideReactionPopup();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
+    super.build(context); // Cần cho AutomaticKeepAliveClientMixin
+
     return BlocProvider.value(
       value: _cubit,
       child: BlocBuilder<PostListCubit, PostListState>(
@@ -86,14 +111,16 @@ class _PersonalRecipeTabState extends State<PersonalRecipeTab> {
             return const PostSkeletonList(itemCount: 10);
           }
 
-          if (state.posts.isEmpty) {
+          if (state.posts.isEmpty && !state.isLoading) {
             return const Center(child: Text('Người dùng chưa đăng bài nào.'));
           }
 
           return RefreshIndicator(
-            onRefresh: () async =>
-                _cubit.fetchOwnPost(userId: widget.user.id, loadMore: false),
+            onRefresh: () async {
+              await _cubit.fetchOwnPost(userId: widget.user.id);
+            },
             child: CustomScrollView(
+              controller: _scrollController,
               slivers: [
                 SliverPadding(
                   padding: const EdgeInsets.all(8),
@@ -121,7 +148,7 @@ class _PersonalRecipeTabState extends State<PersonalRecipeTab> {
                             );
                           },
                           onShowReactions: (offset, callback) =>
-                          showReactionPopup(context, offset, callback),
+                              showReactionPopup(context, offset, callback),
                         );
                       },
                       childCount:
