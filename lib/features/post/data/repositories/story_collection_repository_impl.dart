@@ -96,16 +96,17 @@ class StoryCollectionRepositoryImpl extends StoryCollectionRepository {
   }
 
   @override
-  Future<List<StoryModel>> getAllStoryCollections(int collectionId) async {
+  Future<List<StoryModel>> getAllStoryCollections(int collectionId, int userId) async {
     try {
-      final response = await dio.get('/v1/story-collection/$collectionId');
-
-      if (response.statusCode != 200) {
+      final response = await dio.get('/v1/story-collection/$collectionId/user/$userId');
+      final data = response.data['data'];
+      if (response.statusCode != 200 && data!=null) {
         throw new Exception('Failed to get user collection');
-      } else {
-        final data = response.data['data'];
-        return data.map((json) => StoryModel.fromJson(json)).toList();
+      } 
+      if (data == null || data is! List || data.isEmpty) {
+        return [];
       }
+      return data.map((json) => StoryModel.fromJson(json)).toList();
     } catch (e) {
       throw new Exception('Failed to get user collection $e');
     }

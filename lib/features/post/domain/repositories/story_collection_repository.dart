@@ -15,7 +15,7 @@ abstract class StoryCollectionRepository {
     int page = 1,
     int limit = 5,
   });
-  Future<List<StoryModel>> getAllStoryCollections(int collectionId);
+  Future<List<StoryModel>> getAllStoryCollections(int collectionId, int userId);
   Future<void> addStoryToCollection(int collectionId, int storyId);
   Future<void> removeStoryToCollection(int collectionId, int storyId);
   Future<List<StoryCollectionModel>> getCollectionsContainingStory(int storyId);

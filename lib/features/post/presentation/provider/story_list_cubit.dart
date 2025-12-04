@@ -14,9 +14,15 @@ class StoryCubit extends Cubit<StoryState> {
 
   StoryCubit() : super(StoryState.initial());
 
+  void _safeEmit(StoryState state) {
+    if (!isClosed) {
+      emit(state);
+    }
+  }
+
   Future<void> createStory(File file, {int? userId, String? type}) async {
     try {
-      emit(state.copyWith(isCreating: true));
+      _safeEmit(state.copyWith(isCreating: true));
 
       final savePath = await SaveFileMedia.saveFileToGallery(
         file,
@@ -34,7 +40,7 @@ class StoryCubit extends Cubit<StoryState> {
 
       await repository.createStory(story);
 
-      emit(
+      _safeEmit(
         state.copyWith(
           isCreating: false,
           createdStory: story,
@@ -43,17 +49,17 @@ class StoryCubit extends Cubit<StoryState> {
         ),
       );
     } catch (e) {
-      emit(state.copyWith(isCreating: false, error: e.toString()));
+      _safeEmit(state.copyWith(isCreating: false, error: e.toString()));
     }
   }
 
   Future<void> updateStory(StoryModel story) async {
     try {
-      emit(state.copyWith(isLoading: true));
+      _safeEmit(state.copyWith(isLoading: true));
 
       final updated = await repository.updateStory(story);
 
-      emit(
+      _safeEmit(
         state.copyWith(
           isLoading: false,
           isSuccess: true,
@@ -61,7 +67,7 @@ class StoryCubit extends Cubit<StoryState> {
         ),
       );
     } catch (e) {
-      emit(
+      _safeEmit(
         state.copyWith(isLoading: false, isSuccess: false, error: e.toString()),
       );
     }
@@ -69,15 +75,15 @@ class StoryCubit extends Cubit<StoryState> {
 
   Future<void> deleteStory(int id) async {
     try {
-      emit(state.copyWith(isLoading: true));
+      _safeEmit(state.copyWith(isLoading: true));
 
       await repository.deleteStory(id);
 
-      emit(
+      _safeEmit(
         state.copyWith(isLoading: false, isSuccess: true, deletedStoryId: id),
       );
     } catch (e) {
-      emit(
+      _safeEmit(
         state.copyWith(isLoading: false, isSuccess: false, error: e.toString()),
       );
     }
@@ -85,7 +91,7 @@ class StoryCubit extends Cubit<StoryState> {
 
   Future<void> loadStories(int viewerId) async {
     try {
-      emit(state.copyWith(isLoading: true));
+      _safeEmit(state.copyWith(isLoading: true));
 
       // Lấy own story
       UserStoryModel? ownStories;
@@ -112,11 +118,11 @@ class StoryCubit extends Cubit<StoryState> {
         return list;
       });
 
-      emit(
+      _safeEmit(
         state.copyWith(isLoading: false, ownStory: ownStories, stories: merged),
       );
     } catch (e) {
-      emit(state.copyWith(isLoading: false, error: e.toString()));
+      _safeEmit(state.copyWith(isLoading: false, error: e.toString()));
     }
   }
 
