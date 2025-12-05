@@ -25,9 +25,11 @@ class CollectionCubit extends Cubit<CollectionState> {
   }
 
   Future<void> fetchCollectionsByUser() async {
+    if (isClosed) return;
     emit(state.copyWith(status: CollectionStatus.loading));
     try {
       final collections = await repository.getCollectionsByUser();
+      if (isClosed) return;
       emit(
         state.copyWith(
           status: CollectionStatus.success,
@@ -35,6 +37,7 @@ class CollectionCubit extends Cubit<CollectionState> {
         ),
       );
     } catch (e) {
+      if(isClosed) return;
       emit(
         state.copyWith(status: CollectionStatus.failure, error: e.toString()),
       );

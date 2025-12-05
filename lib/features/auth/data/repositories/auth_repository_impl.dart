@@ -311,4 +311,6 @@ class AuthRepositoryImpl implements AuthRepository {
     await sharedPreferences.remove(AppKeys.accessToken);
     await sharedPreferences.remove(AppKeys.refreshToken);
   }
+
+  User? get currentUser => _userCache;
 }
