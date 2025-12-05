@@ -21,8 +21,18 @@ class ProfileTabBar extends StatelessWidget implements PreferredSizeWidget {
           fontWeight: FontWeight.w500,
         ),
         tabs: const [
-          Tab(text: 'Bài viết cá nhân'),
-          Tab(text: 'Thông tin cá nhân'),
+          Tab(
+            icon: Icon(Icons.grid_on, size: 20), 
+            text: 'Bài viết'
+          ),
+          Tab(
+            icon: Icon(Icons.collections_bookmark, size: 20),
+            text: 'Bảng tin',
+          ),
+          Tab(
+            icon: Icon(Icons.info_outline, size: 20),
+            text: 'Thông tin',
+          ),
         ],
       ),
     );

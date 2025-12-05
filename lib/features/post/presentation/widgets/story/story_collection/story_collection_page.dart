@@ -1,8 +1,8 @@
 import 'package:eefood/core/widgets/snack_bar.dart';
 import 'package:eefood/features/post/data/models/story_collection_model.dart';
 import 'package:eefood/features/post/presentation/provider/story_collection_cubit.dart';
-import 'package:eefood/features/post/presentation/widgets/story/story_collection/confirm_dialog.dart';
-import 'package:eefood/features/post/presentation/widgets/story/story_collection/create_collection_dialog.dart';
+import 'package:eefood/features/post/presentation/widgets/story/story_collection/dialog/confirm_dialog.dart';
+import 'package:eefood/features/post/presentation/widgets/story/story_collection/dialog/create_update_collection_dialog.dart';
 import 'package:eefood/features/post/presentation/widgets/story/story_collection/empty_collection.dart';
 import 'package:eefood/features/post/presentation/widgets/story/story_collection/story_collection_card/story_collection_card.dart';
 import 'package:flutter/material.dart';
@@ -60,7 +60,7 @@ class _StoryCollectionPageState extends State<StoryCollectionPage> {
       context: context,
       builder: (context) => BlocProvider.value(
         value: _cubit,
-        child: CreateCollectionDialog(userId: widget.userId),
+        child: CreateAndUpdateCollectionDialog(userId: widget.userId),
       ),
     );
   }

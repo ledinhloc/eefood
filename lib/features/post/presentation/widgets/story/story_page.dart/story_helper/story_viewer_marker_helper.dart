@@ -35,7 +35,7 @@ class StoryViewMarkerHelper {
       updatedUser,
       ...storyCubit.state.stories.sublist(userIndex + 1),
     ];
-
+    if(storyCubit.isClosed) return;
     storyCubit.emit(storyCubit.state.copyWith(stories: updatedList));
 
     try {
@@ -49,6 +49,27 @@ class StoryViewMarkerHelper {
       }
     } catch (e) {
       throw Exception('Mark viewed failed $e');
+    }
+  }
+
+  Future<void> markStoryAsViewedNoneState(int userIndex, int storyIndex) async {
+    if (storyIndex < 0 || userIndex < 0 || userIndex >= allUsers.length) return;
+
+    final currentUser = allUsers[userIndex];
+    if (storyIndex >= currentUser.stories.length) return;
+
+    final currentStory = currentUser.stories[storyIndex];
+    if (currentStory.isViewed == true) return;
+    try {
+      final user = await _getCurrentUser();
+      final storyId = currentStory.id;
+
+      if (user != null && storyId != null) {
+        debugPrint('Marking story $storyId as viewed by user ${user.id}');
+        await storyCubit.markView(storyId: storyId, viewerId: user.id);
+      }
+    } catch (e) {
+      debugPrint('Mark viewed failed: $e');
     }
   }
 

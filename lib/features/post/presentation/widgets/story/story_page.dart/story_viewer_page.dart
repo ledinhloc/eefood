@@ -30,6 +30,7 @@ class StoryViewerPage extends StatefulWidget {
   final int userIndex;
   final int initialStoryIndex;
   final int? currentUserId;
+  final bool? isCollection;
 
   const StoryViewerPage({
     super.key,
@@ -37,6 +38,7 @@ class StoryViewerPage extends StatefulWidget {
     required this.userIndex,
     this.initialStoryIndex = 0,
     this.currentUserId,
+    this.isCollection,
   });
 
   @override
@@ -111,10 +113,17 @@ class _StoryViewerPageState extends State<StoryViewerPage> {
     );
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      _viewMarkerHelper.markStoryAsViewed(
-        widget.userIndex,
-        widget.initialStoryIndex,
-      );
+      if (widget.isCollection!) {
+        _viewMarkerHelper.markStoryAsViewedNoneState(
+          widget.userIndex,
+          widget.initialStoryIndex,
+        );
+      } else {
+        _viewMarkerHelper.markStoryAsViewed(
+          widget.userIndex,
+          widget.initialStoryIndex,
+        );
+      }
       if (_isCurrentUserStory()) {
         _loadViewersForCurrentStory();
       } else {
@@ -139,10 +148,17 @@ class _StoryViewerPageState extends State<StoryViewerPage> {
   }
 
   void _onStoryChanged() {
-    _viewMarkerHelper.markStoryAsViewed(
-      _navigationHelper.userIndex,
-      _navigationHelper.storyIndex,
-    );
+    if (widget.isCollection!) {
+      _viewMarkerHelper.markStoryAsViewedNoneState(
+        widget.userIndex,
+        widget.initialStoryIndex,
+      );
+    } else {
+      _viewMarkerHelper.markStoryAsViewed(
+        widget.userIndex,
+        widget.initialStoryIndex,
+      );
+    }
 
     _progressHelper.reset();
 
