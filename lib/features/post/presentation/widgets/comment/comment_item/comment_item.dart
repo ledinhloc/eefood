@@ -9,6 +9,7 @@ import 'package:eefood/features/post/presentation/provider/comment_list_cubit.da
 import 'package:eefood/features/post/presentation/provider/comment_list_state.dart';
 import 'package:eefood/features/post/presentation/widgets/comment/comment_item/reaction_animation.dart';
 import 'package:eefood/features/post/presentation/widgets/post/reaction_popup.dart';
+import 'package:eefood/features/report/presentation/widgets/report_bottom_sheet.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -165,7 +166,22 @@ class _CommentItemState extends State<CommentItem> {
             },
           ),
       ],
-
+      BottomSheetOption(
+        icon: const Icon(Icons.report, color: Colors.yellowAccent),
+        title: "Báo cáo bài viết",
+        onTap: () {
+          showModalBottomSheet(
+            context: context,
+            isScrollControlled: true,
+            backgroundColor: Colors.transparent,
+            builder: (_) => ReportBottomSheet(
+              targerId: widget.comment.id!,
+              targetTitle: widget.comment.username,
+              type: 'COMMENT',
+            ),
+          );
+        },
+      ),
       // Tùy chọn sao chép nội dung (luôn có)
       BottomSheetOption(
         icon: const Icon(Icons.copy, color: Colors.grey),

@@ -22,6 +22,7 @@ import 'package:eefood/features/post/presentation/widgets/story/story_page.dart/
 import 'package:eefood/features/post/presentation/widgets/story/story_page.dart/story_top_bar.dart';
 import 'package:eefood/features/post/presentation/widgets/story/story_page.dart/viewer_bar/story_viewer_bar.dart';
 import 'package:eefood/features/post/presentation/widgets/story/story_page.dart/viewer_bar/story_viewer_bottom_sheet.dart';
+import 'package:eefood/features/report/presentation/widgets/report_bottom_sheet.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
@@ -250,10 +251,19 @@ class _StoryViewerPageState extends State<StoryViewerPage> {
           icon: const Icon(Icons.report_gmailerrorred, color: Colors.yellow),
           title: 'Báo cáo story',
           onTap: () {
-            Navigator.pop(context);
-            ScaffoldMessenger.of(
-              context,
-            ).showSnackBar(const SnackBar(content: Text('Đã báo cáo story')));
+            final currentStory = _navigationHelper
+                .currentUser
+                .stories[_navigationHelper.storyIndex];
+            showModalBottomSheet(
+              context: context,
+              isScrollControlled: true,
+              backgroundColor: Colors.transparent,
+              builder: (_) => ReportBottomSheet(
+                targerId: currentStory.id!,
+                targetTitle: currentStory.username,
+                type: 'STORY',
+              ),
+            );
           },
         ),
       ],

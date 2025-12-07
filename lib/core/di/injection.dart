@@ -55,6 +55,8 @@ import 'package:eefood/features/recipe/domain/repositories/recipe_repository.dar
 import 'package:eefood/features/recipe/domain/usecases/recipe_usecases.dart';
 import 'package:eefood/features/recipe/presentation/provider/recipe_cubit.dart';
 import 'package:eefood/features/recipe/presentation/provider/recipe_refresh_cubit.dart';
+import 'package:eefood/features/report/data/repositories/report_repository_impl.dart';
+import 'package:eefood/features/report/domain/repositories/report_repository.dart';
 import 'package:get_it/get_it.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -278,5 +280,10 @@ Future<void> setupDependencies() async {
 
   getIt.registerFactory<StreamerCommentCubit>(
     () => StreamerCommentCubit(getIt<LiveCommentRepository>()),
+  );
+
+  // report
+  getIt.registerLazySingleton<ReportRepository>(
+    () => ReportRepositoryImpl(dio: getIt<DioClient>().dio),
   );
 }

@@ -3,6 +3,14 @@ import 'package:eefood/features/post/data/models/user_story_model.dart';
 import 'package:eefood/features/recipe/domain/entities/recipe.dart';
 
 class AppConstants {
+  static final List<String> reasons = [
+    "Nội dung không phù hợp",
+    "Spam hoặc quảng cáo",
+    "Ngôn từ gây thù ghét",
+    "Nội dung phản cảm",
+    "Thông tin sai lệch",
+    "Khác"
+  ];
   static final List<UserStoryModel> userStories = [
     UserStoryModel(
       userId: 2,
