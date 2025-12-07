@@ -1,19 +1,18 @@
-import 'dart:async';
 import 'package:eefood/app_routes.dart';
 import 'package:eefood/core/utils/deep_link_service.dart';
 import 'package:eefood/features/noti/domain/usecases/notification_service.dart';
-import 'package:eefood/features/noti/presentation/provider/notification_cubit.dart';
-import 'package:eefood/main_screen.dart';
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
-import 'core/constants/app_themes.dart';
-import 'core/di/injection.dart' as di;
 import 'package:flutter/services.dart';
 
-
+import 'core/constants/app_themes.dart';
+import 'core/di/injection.dart' as di;
 
 final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  await Firebase.initializeApp();
 
   await NotificationService.initialize();
 
@@ -38,20 +37,18 @@ class MyApp extends StatefulWidget {
 }
 
 class _MyAppState extends State<MyApp> {
-
   @override
   void initState() {
     super.initState();
 
     // Future.microtask(() {
-    //   di.getIt<NotificationCubit>(); 
+    //   di.getIt<NotificationCubit>();
     // });
 
-     WidgetsBinding.instance.addPostFrameCallback((_) {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
       DeepLinkService().initialize();
     });
   }
-
 
   @override
   Widget build(BuildContext context) {

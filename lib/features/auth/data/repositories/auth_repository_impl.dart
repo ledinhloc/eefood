@@ -8,6 +8,7 @@ import 'package:eefood/features/auth/data/models/register_response_model.dart';
 import 'package:eefood/features/auth/data/models/result_model.dart';
 import 'package:eefood/features/auth/data/models/simple_token_response.dart';
 import 'package:eefood/features/auth/domain/usecases/google_service.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/widgets.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -42,10 +43,10 @@ class AuthRepositoryImpl implements AuthRepository {
     return null;
   }
 
-
   @override
   Future<User> loginWithGoogle(String idToken) async {
     try {
+      final fcmToken = await FirebaseMessaging.instance.getToken();
       debugPrint("TOKEN ID: $idToken");
       final response = await dio.post(
         '/v1/auth/google-login',
@@ -56,7 +57,7 @@ class AuthRepositoryImpl implements AuthRepository {
         ),
       );
       final userModel = UserModel.fromJson(response.data['data']);
-      await _saveUser(userModel);
+      await _saveUser(userModel, fcmToken: fcmToken);
       return userModel.toEntity();
     } catch (e) {
       print(e);
@@ -67,16 +68,17 @@ class AuthRepositoryImpl implements AuthRepository {
   @override
   Future<User> login(String email, String password) async {
     try {
+      final fcmToken = await FirebaseMessaging.instance.getToken();
       final response = await dio.post(
         '/v1/auth/login',
-        data: {'email': email, 'password': password},
+        data: {'email': email, 'password': password, 'fcmToken': fcmToken},
         options: Options(
           contentType: 'application/json',
           extra: {'requireAuth': false},
         ),
       );
       final userModel = UserModel.fromJson(response.data['data']);
-      await _saveUser(userModel);
+      await _saveUser(userModel, fcmToken: fcmToken);
       return userModel.toEntity();
     } catch (e) {
       print(e);
@@ -281,7 +283,7 @@ class AuthRepositoryImpl implements AuthRepository {
     }
   }
 
-  Future<void> _saveUser(UserModel userModel) async {
+  Future<void> _saveUser(UserModel userModel, {String? fcmToken}) async {
     _userCache = userModel.toEntity();
     await sharedPreferences.setString(
       AppKeys.user,
@@ -295,14 +297,14 @@ class AuthRepositoryImpl implements AuthRepository {
       AppKeys.refreshToken,
       userModel.refreshToken ?? '',
     );
+    if (fcmToken != null) {
+      await sharedPreferences.setString(AppKeys.fcmToken, fcmToken ?? '');
+    }
   }
 
   @override
   Future<void> saveFirstLogin(bool firstLogin) async {
-    await sharedPreferences.setBool(
-      AppKeys.isLoginedIn,
-      firstLogin,
-    );
+    await sharedPreferences.setBool(AppKeys.isLoginedIn, firstLogin);
   }
 
   Future<void> _clearUser() async {

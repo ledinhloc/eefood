@@ -74,7 +74,9 @@ dependencies:
   path_provider: ^2.1.5
   video_editor: ^3.0.0
   visibility_detector: ^0.4.0+2
-  better_player_plus: ^1.0.8 
+  better_player_plus: ^1.0.8
+  firebase_messaging: ^15.0.0
+  firebase_core: ^3.0.0 
 dev_dependencies:
   flutter_test:
     sdk: flutter

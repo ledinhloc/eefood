@@ -22,6 +22,7 @@ class UserModel {
   final String? accessToken;
 
   final String? refreshToken;
+  final String? fcmToken;
   UserModel({
     required this.id,
     required this.username,
@@ -38,6 +39,7 @@ class UserModel {
     this.dietaryPreferences,
     this.accessToken,
     this.refreshToken,
+    this.fcmToken
   });
 
   // factory UserModel.fromJson(Map<String, dynamic> json) => _$UserModelFromJson(json);
@@ -60,6 +62,7 @@ class UserModel {
       dietaryPreferences: List<String>.from(json['dietaryPreferences'] ?? []),
       accessToken: json['accessToken'],
       refreshToken: json['refreshToken'],
+      fcmToken: json['fcmToken']
     );
   }
 
@@ -81,6 +84,7 @@ class UserModel {
       'dietaryPreferences': dietaryPreferences,
       'accessToken': accessToken,
       'refreshToken': refreshToken,
+      'fcmToken': fcmToken
     };
   }
 
