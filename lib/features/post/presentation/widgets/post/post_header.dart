@@ -4,13 +4,14 @@ import 'package:eefood/core/utils/convert_time.dart';
 import 'package:eefood/core/utils/share_utils.dart';
 import 'package:eefood/features/post/presentation/provider/post_list_cubit.dart';
 import 'package:eefood/features/post/presentation/widgets/share/share_bottom_sheet.dart';
-import 'package:eefood/features/profile/domain/repositories/profile_repository.dart';
+import 'package:eefood/features/report/presentation/widgets/report_bottom_sheet.dart';
 import 'package:flutter/material.dart';
+
+import '../../../../../core/widgets/custom_bottom_sheet.dart';
 import '../../../../../core/widgets/user_avatar.dart';
 import '../../../../auth/domain/entities/user.dart';
 import '../../../../profile/domain/usecases/profile_usecase.dart';
 import '../../../data/models/post_model.dart';
-import '../../../../../core/widgets/custom_bottom_sheet.dart';
 import '../collection/add_to_collection_sheet.dart';
 
 class PostHeader extends StatelessWidget {
@@ -44,7 +45,7 @@ class PostHeader extends StatelessWidget {
       ),
       title: GestureDetector(
         onTap: () async {
-          User? userStory = await  getIt<GetUserById>().call(userId);
+          User? userStory = await getIt<GetUserById>().call(userId);
           await Navigator.pushNamed(
             context,
             AppRoutes.personalUser,
@@ -69,18 +70,6 @@ class PostHeader extends StatelessWidget {
         onPressed: () async {
           await showCustomBottomSheet(context, [
             BottomSheetOption(
-              icon: const Icon(
-                Icons.visibility_off_outlined,
-                color: Colors.grey,
-              ),
-              title: 'Ẩn bài viết này',
-              onTap: () {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Đã ẩn bài viết này')),
-                );
-              },
-            ),
-            BottomSheetOption(
               icon: const Icon(Icons.bookmark_add, color: Colors.blue),
               title: 'Lưu vào bộ sưu tập',
               onTap: () {
@@ -92,8 +81,7 @@ class PostHeader extends StatelessWidget {
                       top: Radius.circular(20),
                     ),
                   ),
-                  builder: (_) =>
-                      AddToCollectionSheet(postId: post.id),
+                  builder: (_) => AddToCollectionSheet(postId: post.id),
                 );
               },
             ),
@@ -101,8 +89,15 @@ class PostHeader extends StatelessWidget {
               icon: const Icon(Icons.flag_outlined, color: Colors.red),
               title: 'Báo cáo bài viết',
               onTap: () {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Báo cáo bài viết')),
+                showModalBottomSheet(
+                  context: context,
+                  isScrollControlled: true,
+                  backgroundColor: Colors.transparent,
+                  builder: (_) => ReportBottomSheet(
+                    targerId: post.id,
+                    targetTitle: post.title,
+                    type: 'POST',
+                  ),
                 );
               },
             ),

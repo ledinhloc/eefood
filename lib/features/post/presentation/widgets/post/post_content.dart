@@ -73,7 +73,7 @@ class PostContent extends StatelessWidget {
           ],
 
           // Reaction Summary
-          _buildReactionSummary(post.reactionCounts),
+          _buildEngagementStats(),
         ],
       ),
     );
@@ -270,15 +270,12 @@ class PostContent extends StatelessWidget {
     );
   }
 
-  Widget _buildReactionSummary(Map<ReactionType, int> reactionCounts) {
-    // Lọc bỏ reaction có count = 0
-    final filtered = reactionCounts.entries
-        .where((e) => e.value > 0)
-        .toList();
+  Widget _buildEngagementStats() {
+    final hasReactions = post.reactionCounts.entries.any((e) => e.value > 0);
+    final hasEngagement =
+        hasReactions || post.totalComments > 0 || post.totalShares > 0;
 
-    filtered.sort((a, b) => b.value.compareTo(a.value));
-
-    if (filtered.isEmpty) {
+    if (!hasEngagement) {
       return const SizedBox.shrink();
     }
 
@@ -290,34 +287,87 @@ class PostContent extends StatelessWidget {
         borderRadius: BorderRadius.circular(12),
       ),
       child: Row(
-        children: filtered.map((entry) {
-          // Tìm emoji theo ReactionType
-          final reaction = reactions.firstWhere(
-                (r) => r.type == entry.key,
-            orElse: () => ReactionOption(
-              type: entry.key,
-              emoji: '❓',
-              color: Colors.grey,
+        children: [
+          // Reaction Summary
+          if (hasReactions) ...[
+            Expanded(child: _buildReactionList()),
+          ] else ...[
+            const Spacer(),
+          ],
+
+          // Comments
+          if (post.totalComments > 0) ...[
+            _buildStatItem(
+              icon: Icons.comment_outlined,
+              count: post.totalComments,
+              color: kPrimaryColor,
             ),
-          );
-          return Padding(
-            padding: const EdgeInsets.only(right: 12),
-            child: Row(
-              children: [
-                Text(reaction.emoji, style: const TextStyle(fontSize: 18)),
-                const SizedBox(width: 4),
-                Text(
-                  entry.value.toString(),
-                  style: const TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-              ],
+            const SizedBox(width: 12),
+          ],
+
+          // Shares
+          if (post.totalShares > 0) ...[
+            _buildStatItem(
+              icon: Icons.share_outlined,
+              count: post.totalShares,
+              color: kSecondaryColor,
             ),
-          );
-        }).toList(),
+          ],
+        ],
       ),
+    );
+  }
+
+  Widget _buildReactionList() {
+    final filtered = post.reactionCounts.entries
+        .where((e) => e.value > 0)
+        .toList();
+
+    filtered.sort((a, b) => b.value.compareTo(a.value));
+
+    return Wrap(
+      spacing: 12,
+      runSpacing: 4,
+      children: filtered.map((entry) {
+        final reaction = reactions.firstWhere(
+          (r) => r.type == entry.key,
+          orElse: () =>
+              ReactionOption(type: entry.key, emoji: '❓', color: Colors.grey),
+        );
+        return Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(reaction.emoji, style: const TextStyle(fontSize: 18)),
+            const SizedBox(width: 4),
+            Text(
+              entry.value.toString(),
+              style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
+            ),
+          ],
+        );
+      }).toList(),
+    );
+  }
+
+  Widget _buildStatItem({
+    required IconData icon,
+    required int count,
+    required Color color,
+  }) {
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Icon(icon, size: 18, color: color),
+        const SizedBox(width: 4),
+        Text(
+          count.toString(),
+          style: TextStyle(
+            fontSize: 14,
+            fontWeight: FontWeight.w600,
+            color: Colors.grey.shade700,
+          ),
+        ),
+      ],
     );
   }
 }
