@@ -8,6 +8,22 @@ class NotificationRepositoryImpl extends NotificationRepository {
   NotificationRepositoryImpl({required this.dio});
 
   @override
+  Future<void> unregisterToken(int userId) async {
+    try {
+      final response = await dio.post('/v1/notifications/unregister/$userId');
+
+      if(response.statusCode!=200) {
+        throw new Exception('Failed to unregister token');
+      }
+    }
+    catch(e) {
+      throw new Exception('Failed to unregister token $e');
+    }
+
+
+  }
+
+  @override
   Future<List<NotificationModel>> getAllNotifications(
     int page,
     int limit,

@@ -262,6 +262,7 @@ class _StoryViewerPageState extends State<StoryViewerPage> {
                 targerId: currentStory.id!,
                 targetTitle: currentStory.username,
                 type: 'STORY',
+                imageUrl: currentStory.contentUrl,
               ),
             );
           },

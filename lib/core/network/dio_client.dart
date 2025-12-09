@@ -1,6 +1,9 @@
+import 'dart:convert';
+
 import 'package:dio/dio.dart';
 import 'package:eefood/app_routes.dart';
 import 'package:eefood/core/constants/app_keys.dart';
+import 'package:eefood/features/auth/data/models/user_model.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../features/auth/domain/usecases/auth_usecases.dart';
@@ -85,7 +88,19 @@ class DioClient {
                 );
               }
 
-              await getIt<Logout>()();
+              final prefs = getIt<SharedPreferences>();
+              final jsonString = prefs.getString(AppKeys.user);
+
+              if (jsonString != null) {
+                final map = jsonDecode(jsonString);
+                final user = UserModel.fromJson(map).toEntity();
+                if (user.provider != null) {
+                  await getIt<Logout>()(
+                    provider: user.provider,
+                    userId: user.id,
+                  );
+                }
+              }
 
               // Điều hướng về màn welcome
               navigatorKey.currentState?.pushNamedAndRemoveUntil(

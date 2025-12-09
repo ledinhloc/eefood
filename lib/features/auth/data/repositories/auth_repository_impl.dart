@@ -8,6 +8,7 @@ import 'package:eefood/features/auth/data/models/register_response_model.dart';
 import 'package:eefood/features/auth/data/models/result_model.dart';
 import 'package:eefood/features/auth/data/models/simple_token_response.dart';
 import 'package:eefood/features/auth/domain/usecases/google_service.dart';
+import 'package:eefood/features/noti/domain/repositories/notification_repository.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/widgets.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -21,6 +22,7 @@ class AuthRepositoryImpl implements AuthRepository {
   final Dio dio;
   final SharedPreferences sharedPreferences;
   User? _userCache;
+  final NotificationRepository _repository = getIt<NotificationRepository>();
 
   AuthRepositoryImpl({required this.dio, required this.sharedPreferences});
 
@@ -87,7 +89,7 @@ class AuthRepositoryImpl implements AuthRepository {
   }
 
   @override
-  Future<void> logout({String? provider}) async {
+  Future<void> logout({String? provider, int? userId}) async {
     try {
       // final refreshToken = sharedPreferences.getString(AppKeys.refreshToken);
       // if (refreshToken != null) {
@@ -97,6 +99,7 @@ class AuthRepositoryImpl implements AuthRepository {
       //     options: Options(contentType: 'application/json', extra: {'requireAuth': false}),
       //   );
       // }
+      await _repository.unregisterToken(userId!);
       await _clearUser();
       await getIt.reset();
       if (provider == 'GOOGLE') {

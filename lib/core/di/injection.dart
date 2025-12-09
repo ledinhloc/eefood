@@ -149,6 +149,9 @@ Future<void> setupDependencies() async {
   getIt.registerLazySingleton<NotificationSettingsCubit>(
     () => NotificationSettingsCubit(),
   );
+  getIt.registerLazySingleton<NotificationRepository>(
+    () => NotificationRepositoryImpl(dio: getIt<DioClient>().dio),
+  );
 
   // post
   getIt.registerFactory<CommentListCubit>(() => CommentListCubit());
@@ -227,9 +230,6 @@ Future<void> setupDependencies() async {
   //search post
   getIt.registerLazySingleton<SearchRepository>(() => SearchRepository());
   // notification
-  getIt.registerLazySingleton<NotificationRepository>(
-    () => NotificationRepositoryImpl(dio: getIt<DioClient>().dio),
-  );
 
   //collection
   getIt.registerLazySingleton<CollectionCubit>(

@@ -4,5 +4,6 @@ abstract class ReportRepository {
     String targetType,
     String reason,
     int targetId,
+    String imageUrl
   );
 }

@@ -12,12 +12,14 @@ class ReportBottomSheet extends StatefulWidget {
   final int targerId;
   final String type;
   final String? targetTitle;
+  final String? imageUrl;
 
   const ReportBottomSheet({
     super.key,
     required this.targerId,
     required this.type,
     this.targetTitle,
+    this.imageUrl
   });
 
   @override
@@ -86,6 +88,7 @@ class _ReportBottomSheetState extends State<ReportBottomSheet> {
       widget.type,
       reportReason!,
       widget.targerId,
+      widget.imageUrl!,
     );
 
     _loadingOverlay.hide();
