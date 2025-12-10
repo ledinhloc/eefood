@@ -7,7 +7,7 @@ class RecipeCrudState {
   final List<RecipeIngredientModel> ingredients;
   final List<RecipeStepModel> steps;
   final List<int> categoryIds;
-
+  final List<String> categories;
   final bool isLoading;
   final String? message;
   
@@ -17,6 +17,7 @@ class RecipeCrudState {
     required this.ingredients,
     required this.steps,
     required this.categoryIds,
+    required this.categories,
     this.isLoading = false,
     this.message,
   });
@@ -27,6 +28,7 @@ class RecipeCrudState {
       ingredients: initialRecipe?.ingredients ?? [],
       steps: initialRecipe?.steps ?? [],
       categoryIds: initialRecipe?.categoryIds ?? [],
+      categories: const [],
       isLoading: false,
       message: null,
     );
@@ -37,6 +39,7 @@ class RecipeCrudState {
     List<RecipeIngredientModel>? ingredients,
     List<RecipeStepModel>? steps,
     List<int>? categoryIds,
+    List<String>? categories,
     bool? isLoading,
     String? message,
   }) {
@@ -45,6 +48,7 @@ class RecipeCrudState {
       ingredients: ingredients ?? this.ingredients,
       steps: steps ?? this.steps,
       categoryIds: categoryIds ?? this.categoryIds,
+      categories: categories ?? this.categories,
       isLoading: isLoading ?? this.isLoading,
       message: message,
     );

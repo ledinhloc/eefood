@@ -2,6 +2,7 @@ import 'package:eefood/core/di/injection.dart';
 import 'package:eefood/core/utils/share_utils.dart';
 import 'package:eefood/core/widgets/snack_bar.dart';
 import 'package:eefood/features/auth/domain/usecases/auth_usecases.dart';
+import 'package:eefood/features/post/data/models/post_model.dart';
 import 'package:eefood/features/post/data/models/share_model.dart';
 import 'package:eefood/features/post/domain/repositories/share_repository.dart';
 import 'package:flutter/material.dart';
@@ -10,13 +11,13 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 class ShareBottomSheet extends StatelessWidget {
   final ShareRepository _repository = getIt<ShareRepository>();
   final GetCurrentUser _getCurrentUser = getIt<GetCurrentUser>();
-  final int postId;
+  final PostModel post;
   final String? imageUrl;
   final String? contentPreview;
 
   ShareBottomSheet({
     Key? key,
-    required this.postId,
+    required this.post,
     this.imageUrl,
     this.contentPreview,
   }) : super(key: key);
@@ -96,7 +97,7 @@ class ShareBottomSheet extends StatelessWidget {
                     final user = await _getCurrentUser();
                     await _repository.sharePost(
                       ShareModel(
-                        postId: postId,
+                        postId: post.id,
                         platform: item['platform'] as String,
                         content: contentPreview,
                         imageUrl: imageUrl,
@@ -105,7 +106,7 @@ class ShareBottomSheet extends StatelessWidget {
                     );
                     await ShareUtils.shareToPlatform(
                       platform: item['platform'] as String,
-                      postId: postId,
+                      recipeId: post.recipeId,
                       title: contentPreview!,
                       imageUrl: imageUrl!,
                       desc: 'Xem thêm ở đây',

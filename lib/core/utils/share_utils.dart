@@ -23,7 +23,7 @@ class ShareUtils {
   /// Chia sẻ bài viết với OG preview + auto deep link redirect
   static Future<void> shareToPlatform({
     required String platform,
-    required int postId,
+    required int recipeId,
     required String title,
     required String desc,
     required String imageUrl,
@@ -33,7 +33,7 @@ class ShareUtils {
       final shareUri = Uri(
         scheme: 'https',
         host: AppKeys.hostDeloy,
-        path: '/posts/$postId',
+        path: '/posts/$recipeId',
         queryParameters: {'title': title, 'desc': desc, 'img': imageUrl},
       );
       final shareUrl = shareUri.toString(); // Không cần encodeFull nữa
@@ -77,7 +77,7 @@ class ShareUtils {
     } catch (e) {
       log("Error sharing to $platform: $e");
       // Fallback: share thông thường
-      await Share.share("$title\n\n$baseUrl/posts/$postId");
+      await Share.share("$title\n\n$baseUrl/posts/$recipeId");
     }
   }
 

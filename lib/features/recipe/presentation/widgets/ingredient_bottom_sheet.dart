@@ -27,7 +27,10 @@ class _IngredientBottomSheetState extends State<IngredientBottomSheet> {
   final TextEditingController _quantityController = TextEditingController();
   final TextEditingController _unitController = TextEditingController();
   final Ingredients _ingredientsUsecase = getIt<Ingredients>();
+
   IngredientModel? _selectedIngredient;
+  bool _isManualInput = false; // Để track xem user đang nhập tay hay không
+
   @override
   void initState() {
     super.initState();
@@ -35,13 +38,20 @@ class _IngredientBottomSheetState extends State<IngredientBottomSheet> {
       _nameController.text = widget.editingIngredient!.ingredient!.name;
       _selectedIngredient = widget.editingIngredient!.ingredient;
       if (widget.editingIngredient!.quantity != null) {
-        _quantityController.text = widget.editingIngredient!.quantity!
-            .toString();
+        _quantityController.text = widget.editingIngredient!.quantity!.toString();
       }
       if (widget.editingIngredient!.unit != null) {
         _unitController.text = widget.editingIngredient!.unit!;
       }
     }
+  }
+
+  @override
+  void dispose() {
+    _nameController.dispose();
+    _quantityController.dispose();
+    _unitController.dispose();
+    super.dispose();
   }
 
   /// Hàm chuyển đổi nếu người dùng nhập text phân số
@@ -86,6 +96,74 @@ class _IngredientBottomSheetState extends State<IngredientBottomSheet> {
     }
   }
 
+  void _showAddIngredientDialog(BuildContext context) {
+    final TextEditingController newIngredientController = TextEditingController();
+
+    showDialog(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: const Text('Add New Ingredient'),
+        content: TextField(
+          controller: newIngredientController,
+          decoration: InputDecoration(
+            labelText: 'Ingredient Name',
+            hintText: 'Enter ingredient name',
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(8),
+            ),
+            focusedBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(8),
+              borderSide: BorderSide(
+                color: Colors.green.shade300,
+                width: 2,
+              ),
+            ),
+            prefixIcon: const Icon(Icons.restaurant),
+          ),
+          autofocus: true,
+          textInputAction: TextInputAction.done,
+          onSubmitted: (value) {
+            if (value.trim().isNotEmpty) {
+              setState(() {
+                _selectedIngredient = IngredientModel(name: value.trim());
+                _nameController.text = value.trim();
+                _isManualInput = true;
+              });
+              Navigator.of(dialogContext).pop();
+            }
+          },
+        ),
+        actions: [
+          TextButton(
+            onPressed: () {
+              newIngredientController.clear();
+              Navigator.of(dialogContext).pop();
+            },
+            child: const Text('Cancel'),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              final value = newIngredientController.text.trim();
+              if (value.isNotEmpty) {
+                setState(() {
+                  _selectedIngredient = IngredientModel(name: value);
+                  _nameController.text = value;
+                  _isManualInput = true;
+                });
+                Navigator.of(dialogContext).pop();
+              }
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.green,
+              foregroundColor: Colors.white,
+            ),
+            child: const Text('Add'),
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final isEditing = widget.editingIngredient != null;
@@ -106,31 +184,51 @@ class _IngredientBottomSheetState extends State<IngredientBottomSheet> {
           ),
           const SizedBox(height: 16),
 
-          // Name field (autocomplete)
-          CustomDropdownSearch<IngredientModel>(
-            label: 'Ingredient name',
-            onFind: (String? filter, int page, int limit) async {
-              // call usecase and map to names
-              final List<IngredientModel> ingredients =
-                  await _ingredientsUsecase(filter ?? '', page, limit);
-              return ingredients;
-            },
-            type: DropdownType.menu,
-            // selectedItem must be null if empty
-            selectedItem: _selectedIngredient,
-            showSearchBox: true,
-            searchHint: 'Search ingredient...',
-            itemAsString: (ingredient) =>
-                ingredient.name, // QUAN TRỌNG: Thêm dòng này
-            onChanged: (value) {
-              setState(() {
-                _selectedIngredient =
-                    value; // QUAN TRỌNG: Cập nhật selectedItem
-                if (value != null) {
-                  _nameController.text = value.name;
-                }
-              });
-            },
+          // Name field with Add button
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Expanded(
+                child: CustomDropdownSearch<IngredientModel>(
+                  label: 'Ingredient name',
+                  onFind: (String? filter, int page, int limit) async {
+                    final List<IngredientModel> ingredients =
+                    await _ingredientsUsecase(filter ?? '', page, limit);
+                    return ingredients;
+                  },
+                  type: DropdownType.menu,
+                  selectedItem: _selectedIngredient,
+                  showSearchBox: true,
+                  searchHint: 'Search ingredient...',
+                  itemAsString: (ingredient) => ingredient.name,
+                  onChanged: (value) {
+                    setState(() {
+                      _selectedIngredient = value;
+                      _isManualInput = false;
+                      if (value != null) {
+                        _nameController.text = value.name;
+                      }
+                    });
+                  },
+                ),
+              ),
+              const SizedBox(width: 8),
+              // Nút Add ingredient mới
+              Container(
+                margin: const EdgeInsets.only(top: 8),
+                child: IconButton(
+                  onPressed: () => _showAddIngredientDialog(context),
+                  icon: Icon(
+                    Icons.add_circle,
+                    color: Colors.green.shade600,
+                    size: 32,
+                  ),
+                  tooltip: 'Add new ingredient',
+                  padding: EdgeInsets.zero,
+                  constraints: const BoxConstraints(),
+                ),
+              ),
+            ],
           ),
           const SizedBox(height: 16),
 
@@ -142,7 +240,7 @@ class _IngredientBottomSheetState extends State<IngredientBottomSheet> {
                 child: TextFormField(
                   controller: _quantityController,
                   textAlign: TextAlign.center,
-                  keyboardType: TextInputType.numberWithOptions(decimal: true),
+                  keyboardType: const TextInputType.numberWithOptions(decimal: true),
                   decoration: InputDecoration(
                     hintText: '1/2',
                     labelText: "Quantity",
@@ -188,33 +286,30 @@ class _IngredientBottomSheetState extends State<IngredientBottomSheet> {
               const SizedBox(width: 16),
               ElevatedButton(
                 onPressed: () {
-                  if (_nameController.text.isNotEmpty) {
-                    if (_selectedIngredient == null) {
-                      // Nếu không có ingredient được chọn, hiển thị lỗi
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text(
-                            'Please select an ingredient from the list',
-                          ),
+                  if (_selectedIngredient == null) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content: Text(
+                          'Please select or add an ingredient',
                         ),
-                      );
-                      return;
-                    }
-                    final IngredientModel ingredient = _selectedIngredient!;
-                    widget.onSaveIngredient(
-                      RecipeIngredientModel(
-                        ingredient: ingredient,
-                        quantity: _parseQuantity(
-                          _quantityController.text.trim(),
-                        ),
-                        unit: _unitController.text.trim().isEmpty
-                            ? null
-                            : _unitController.text.trim(),
                       ),
-                      index: widget.editingIndex,
                     );
-                    Navigator.pop(context);
+                    return;
                   }
+
+                  widget.onSaveIngredient(
+                    RecipeIngredientModel(
+                      ingredient: _selectedIngredient!,
+                      quantity: _parseQuantity(
+                        _quantityController.text.trim(),
+                      ),
+                      unit: _unitController.text.trim().isEmpty
+                          ? null
+                          : _unitController.text.trim(),
+                    ),
+                    index: widget.editingIndex,
+                  );
+                  Navigator.pop(context);
                 },
                 child: Text(isEditing ? 'Save' : 'Add'),
               ),

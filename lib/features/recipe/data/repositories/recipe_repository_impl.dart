@@ -7,6 +7,7 @@ import 'package:eefood/features/recipe/data/models/region_model.dart';
 import 'package:eefood/features/recipe/domain/repositories/recipe_repository.dart';
 import 'package:flutter/foundation.dart';
 
+import '../models/recipe_create_request.dart';
 import '../models/recipe_detail_model.dart';
 
 class RecipeRepositoryImpl implements RecipeRepository {
@@ -111,7 +112,7 @@ class RecipeRepositoryImpl implements RecipeRepository {
   }
 
   @override
-  Future<Result<RecipeModel>> createRecipe(RecipeModel request) async {
+  Future<Result<RecipeModel>> createRecipe(RecipeCreateRequest request) async {
     print(request.toJson());
     try {
       final response = await dio.post(

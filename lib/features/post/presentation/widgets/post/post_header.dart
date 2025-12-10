@@ -17,7 +17,6 @@ import '../collection/add_to_collection_sheet.dart';
 class PostHeader extends StatelessWidget {
   final int userId;
   final PostModel post;
-
   const PostHeader({super.key, required this.userId, required this.post});
 
   void _openShareSheet(BuildContext context) {
@@ -26,7 +25,7 @@ class PostHeader extends StatelessWidget {
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
       builder: (context) => ShareBottomSheet(
-        postId: post.recipeId!,
+        post: post,
         imageUrl: post.imageUrl,
         contentPreview: post.title,
       ),
@@ -108,7 +107,7 @@ class PostHeader extends StatelessWidget {
               onTap: () async {
                 await ShareUtils.shareToPlatform(
                   platform: 'copy',
-                  postId: post.id,
+                  recipeId: post.recipeId,
                   title: post.title,
                   imageUrl: post.imageUrl,
                   desc: 'Xem thêm ở đây',
