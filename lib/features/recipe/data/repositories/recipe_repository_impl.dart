@@ -4,7 +4,6 @@ import 'package:eefood/features/recipe/data/models/category_model.dart';
 import 'package:eefood/features/recipe/data/models/ingredient_model.dart';
 import 'package:eefood/features/recipe/data/models/recipe_model.dart';
 import 'package:eefood/features/recipe/data/models/region_model.dart';
-import 'package:eefood/features/recipe/domain/entities/recipe.dart';
 import 'package:eefood/features/recipe/domain/repositories/recipe_repository.dart';
 import 'package:flutter/foundation.dart';
 
@@ -222,7 +221,7 @@ class RecipeRepositoryImpl implements RecipeRepository {
         if (recipeRes.ingredients?.length != request.ingredients?.length) {
           recipeRes.ingredients = request.ingredients;
         }
-      
+
         return Result.success(recipeRes);
       } else {
         throw Exception('Invalid response format: missing data field');

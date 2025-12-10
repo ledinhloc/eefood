@@ -5,7 +5,6 @@ import 'package:eefood/features/recipe/data/models/recipe_model.dart';
 import 'package:eefood/features/recipe/presentation/provider/recipe_cubit.dart';
 import 'package:eefood/features/recipe/presentation/provider/recipe_refresh_cubit.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../provider/post_cubit.dart';
 
@@ -47,6 +46,7 @@ class _RecipeGridCardState extends State<RecipeGridCard> {
       _removeDropdown();
     }
   }
+
   Future<void> _publishRecipe() async {
     _removeDropdown();
     final recipe = widget.recipe;
@@ -184,7 +184,7 @@ class _RecipeGridCardState extends State<RecipeGridCard> {
                   icon: Icons.publish,
                   title: "Đăng công thức",
                   color: Colors.blue,
-                  onTap: _publishRecipe
+                  onTap: _publishRecipe,
                 ),
               ],
             ),

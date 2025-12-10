@@ -54,6 +54,7 @@ import 'package:eefood/features/recipe/data/repositories/recipe_repository_impl.
 import 'package:eefood/features/recipe/domain/repositories/recipe_repository.dart';
 import 'package:eefood/features/recipe/domain/usecases/recipe_usecases.dart';
 import 'package:eefood/features/recipe/presentation/provider/recipe_cubit.dart';
+import 'package:eefood/features/recipe/presentation/provider/recipe_list_cubit.dart';
 import 'package:eefood/features/recipe/presentation/provider/recipe_refresh_cubit.dart';
 import 'package:eefood/features/report/data/repositories/report_repository_impl.dart';
 import 'package:eefood/features/report/domain/repositories/report_repository.dart';
@@ -143,6 +144,8 @@ Future<void> setupDependencies() async {
   );
   // recipe refresh cubit
   getIt.registerLazySingleton<RecipeRefreshCubit>(() => RecipeRefreshCubit());
+  // recipe list cubit
+  getIt.registerLazySingleton<RecipeListCubit>(() => RecipeListCubit());
 
   //notification cubit
   getIt.registerLazySingleton<NotificationCubit>(() => NotificationCubit());
