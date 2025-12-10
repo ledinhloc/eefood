@@ -1,10 +1,11 @@
+import 'package:eefood/app_routes.dart';
+import 'package:eefood/core/di/injection.dart';
 import 'package:eefood/core/widgets/snack_bar.dart';
+import 'package:eefood/features/recipe/domain/usecases/recipe_usecases.dart';
+import 'package:eefood/features/recipe/presentation/provider/recipe_list_cubit.dart';
 import 'package:eefood/features/recipe/presentation/provider/recipe_refresh_cubit.dart';
 import 'package:eefood/features/recipe/presentation/widgets/recipe_tab.dart';
 import 'package:flutter/material.dart';
-import 'package:eefood/app_routes.dart';
-import 'package:eefood/core/di/injection.dart';
-import 'package:eefood/features/recipe/domain/usecases/recipe_usecases.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../../core/widgets/custom_bottom_sheet.dart';
@@ -15,7 +16,7 @@ import '../widgets/published/published_list.dart';
 class MyRecipesPage extends StatelessWidget {
   MyRecipesPage({super.key});
 
-  final GetMyRecipe _getMyRecipe = getIt<GetMyRecipe>();
+  final RecipeListCubit _recipeListCubit = getIt<RecipeListCubit>();
   final RecipeRefreshCubit _refreshCubit = getIt<RecipeRefreshCubit>();
   final PostCubit _postCubit = getIt<PostCubit>();
 
@@ -25,6 +26,7 @@ class MyRecipesPage extends StatelessWidget {
 
     return MultiBlocProvider(
       providers: [
+        BlocProvider.value(value: _recipeListCubit),
         BlocProvider.value(value: _refreshCubit),
         BlocProvider.value(value: _postCubit),
       ],
@@ -50,8 +52,7 @@ class MyRecipesPage extends StatelessWidget {
             children: [
               // Tab 1: Draft
               RecipeTab(
-                getMyRecipe: _getMyRecipe,
-                status: "DRAFT",
+                recipeListCubit: _recipeListCubit,
                 refreshCubit: _refreshCubit,
               ),
 
@@ -63,7 +64,9 @@ class MyRecipesPage extends StatelessWidget {
                   } else if (state.posts.isNotEmpty) {
                     return PublishedList(posts: state.posts);
                   } else {
-                    return const Center(child: Text("Chưa có công thức đã đăng"));
+                    return const Center(
+                      child: Text("Chưa có công thức đã đăng"),
+                    );
                   }
                 },
               ),
@@ -75,29 +78,26 @@ class MyRecipesPage extends StatelessWidget {
             backgroundColor: Colors.red,
             child: const Icon(Icons.add, color: Colors.white),
             onPressed: () {
-              showCustomBottomSheet(
-                context,
-                [
-                  BottomSheetOption(
-                    icon: const Icon(Icons.create, color: Colors.black),
-                    title: "Tạo công thức mới",
-                    onTap: () {
-                      Navigator.pushNamed(
-                        context,
-                        AppRoutes.recipeCrudPage,
-                        arguments: {"isCreate": true, "initialRecipe": null},
-                      );
-                    },
-                  ),
-                  BottomSheetOption(
-                    icon: const Icon(Icons.link, color: Colors.black),
-                    title: "Nhập từ URL",
-                    onTap: () {
-                      _importRecipeFromUrl(context);
-                    },
-                  ),
-                ],
-              );
+              showCustomBottomSheet(context, [
+                BottomSheetOption(
+                  icon: const Icon(Icons.create, color: Colors.black),
+                  title: "Tạo công thức mới",
+                  onTap: () {
+                    Navigator.pushNamed(
+                      context,
+                      AppRoutes.recipeCrudPage,
+                      arguments: {"isCreate": true, "initialRecipe": null},
+                    );
+                  },
+                ),
+                BottomSheetOption(
+                  icon: const Icon(Icons.link, color: Colors.black),
+                  title: "Nhập từ URL",
+                  onTap: () {
+                    _importRecipeFromUrl(context);
+                  },
+                ),
+              ]);
             },
           ),
         ),
@@ -139,40 +139,43 @@ class MyRecipesPage extends StatelessWidget {
               onPressed: isLoading
                   ? null
                   : () async {
-                final url = urlController.text.trim();
-                if (url.isEmpty) return;
+                      final url = urlController.text.trim();
+                      if (url.isEmpty) return;
 
-                setState(() => isLoading = true);
+                      setState(() => isLoading = true);
 
-                try {
-                  final result =
-                  await getIt<CreateRecipeFromUrl>().call(url);
+                      try {
+                        final result = await getIt<CreateRecipeFromUrl>().call(
+                          url,
+                        );
 
-                  setState(() => isLoading = false);
+                        setState(() => isLoading = false);
 
-                  if (result.isSuccess && result.data != null) {
-                    Navigator.pop(context); // đóng dialog
-                    Navigator.pushNamed(
-                      context,
-                      AppRoutes.recipeCrudPage,
-                      arguments: {
-                        "isCreate": false,
-                        "initialRecipe": result.data
-                      },
-                    );
-                  } else {
-                    setState(() => isLoading = false);
-                    showCustomSnackBar(context, 'Nhập công thức thất bại', isError: true);
-                  }
-                } catch (e) {
-                  setState(() => isLoading = false);
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text("Lỗi: $e"),
-                    ),
-                  );
-                }
-              },
+                        if (result.isSuccess && result.data != null) {
+                          Navigator.pop(context); // đóng dialog
+                          Navigator.pushNamed(
+                            context,
+                            AppRoutes.recipeCrudPage,
+                            arguments: {
+                              "isCreate": false,
+                              "initialRecipe": result.data,
+                            },
+                          );
+                        } else {
+                          setState(() => isLoading = false);
+                          showCustomSnackBar(
+                            context,
+                            'Nhập công thức thất bại',
+                            isError: true,
+                          );
+                        }
+                      } catch (e) {
+                        setState(() => isLoading = false);
+                        ScaffoldMessenger.of(
+                          context,
+                        ).showSnackBar(SnackBar(content: Text("Lỗi: $e")));
+                      }
+                    },
               child: const Text("Nhập"),
             ),
           ],

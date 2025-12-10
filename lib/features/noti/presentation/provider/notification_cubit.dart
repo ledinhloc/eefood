@@ -1,21 +1,18 @@
-import 'dart:convert' show jsonDecode;
-
-import 'package:eefood/core/constants/app_keys.dart';
 import 'package:eefood/core/di/injection.dart';
 import 'package:eefood/features/noti/data/models/notification_model.dart';
 import 'package:eefood/features/noti/domain/repositories/notification_repository.dart';
 import 'package:eefood/features/noti/domain/usecases/notification_service.dart';
 import 'package:eefood/features/noti/presentation/provider/notification_state.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:stomp_dart_client/stomp.dart';
-import 'package:stomp_dart_client/stomp_frame.dart' show StompFrame;
-import 'package:stomp_dart_client/stomp_config.dart';
 
 class NotificationCubit extends Cubit<NotificationState> {
   final NotificationRepository repository = getIt<NotificationRepository>();
   final SharedPreferences prefs = getIt<SharedPreferences>();
   StompClient? _stompClient;
+  final FirebaseMessaging _messaging = FirebaseMessaging.instance;
 
   NotificationCubit()
     : super(
@@ -27,8 +24,8 @@ class NotificationCubit extends Cubit<NotificationState> {
           currentPage: 1,
         ),
       ) {
-    print('🔔 NotificationCubit created: $hashCode');
-    initWebSocket();
+    print('NotificationCubit created: $hashCode');
+    initFCM();
   }
 
   Future<void> fetchNotifications({bool loadMore = false}) async {
@@ -36,10 +33,10 @@ class NotificationCubit extends Cubit<NotificationState> {
     emit(state.copyWith(isLoading: true));
 
     final nextPage = loadMore ? state.currentPage + 1 : 1;
-    print('➡️ fetchNotifications nextPage=$nextPage, loadMore=$loadMore');
+    print('fetchNotifications nextPage=$nextPage, loadMore=$loadMore');
     try {
       final notifications = await repository.getAllNotifications(nextPage, 10);
-      print('➡️ fetched ${notifications.length} notifications');
+      print('fetched ${notifications.length} notifications');
       emit(
         state.copyWith(
           notifications: loadMore
@@ -132,56 +129,50 @@ class NotificationCubit extends Cubit<NotificationState> {
     }
   }
 
-  void initWebSocket() {
-    if (_stompClient?.connected == true) return;
-    final token = prefs.getString(AppKeys.accessToken) ?? '';
-    _stompClient = StompClient(
-      config: StompConfig.sockJS(
-        url: '${AppKeys.baseUrl}/ws?token=$token',
-        stompConnectHeaders: {'Authorization': 'Bearer $token'},
-        webSocketConnectHeaders: {'Authorization': 'Bearer $token'},
-        onConnect:_onWebSocketConnected,
-        onWebSocketError: (err) => print('WS error: $err'),
-        onStompError: (frame) => print('STOMP error: ${frame.body}'),
-        onDisconnect: (frame) => print('Disconnected'),
-      ),
-    );
-    _stompClient!.activate();
-  }
+  Future<void> initFCM() async {
+    // Request Permission (foreground)
+    await NotificationService.requestNotificationPermission();
+    // Lắng nghe thông báo foreground
+    FirebaseMessaging.onMessage.listen((RemoteMessage msg) {
+      print('FCM Received in foreground: ${msg.data}');
 
-  void _onWebSocketConnected(StompFrame frame) {
-    print('[WebSocket] Connected');
-    _stompClient?.subscribe(
-      destination: '/user/queue/notifications',
-      callback: (StompFrame frame) {
-        if (frame.body != null) {
-          final json = NotificationModel.fromJson(
-            Map<String, dynamic>.from(jsonDecode(frame.body!)),
-          );
+      final json = NotificationModel.fromJson(msg.data);
 
-          NotificationService.showNotification(
-            title: json.title ?? 'Thông báo mới',
-            body: json.body ?? '',
-            type: json.type,
-            avatarUrl: json.avatarUrl,
-            path: json.path,
-          );
+      NotificationService.showNotification(
+        title: json.title ?? "Thông báo mới",
+        body: json.body ?? "",
+        type: json.type,
+        avatarUrl: json.avatarUrl,
+        path: json.path,
+      );
 
-          emit(
-            state.copyWith(
-              notifications: [json, ...state.notifications],
-              unreadCount: state.unreadCount + 1,
-            ),
-          );
-        }
-      },
-    );
+      emit(
+        state.copyWith(
+          notifications: [json, ...state.notifications],
+          unreadCount: state.unreadCount + 1,
+        ),
+      );
+    });
+
+    // Khi user bấm vào thông báo và mở app
+    FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage msg) {
+      print("User opened notification");
+      if (msg.data["path"] != null) {
+        NotificationService.handleClick(msg.data["path"]);
+      }
+    });
+
+    // Khi app bị kill sau đó mở từ notification
+    final initialMsg = await _messaging.getInitialMessage();
+    if (initialMsg != null) {
+      final path = initialMsg.data["path"];
+      if (path != null) NotificationService.handleClick(path);
+    }
   }
 
   @override
   Future<void> close() {
     print('NotificationCubit closed: $hashCode');
-    _stompClient?.deactivate();
     return super.close();
   }
 }

@@ -12,7 +12,9 @@ class ReportRepositoryImpl extends ReportRepository {
     String targetType,
     String reason,
     int targetId,
+    String imageUrl,
   ) async {
+    debugPrint('Hinh anh: ${imageUrl}');
     final response = await dio.post(
       '/v1/reports',
       data: {
@@ -20,6 +22,7 @@ class ReportRepositoryImpl extends ReportRepository {
         'targetType': targetType,
         'reason': reason,
         'targetId': targetId,
+        'imageUrl': imageUrl
       },
     );
 

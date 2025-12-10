@@ -25,7 +25,7 @@ class Login {
 class Logout {
   final AuthRepository repository;
   Logout(this.repository);
-  Future<void> call({String? provider}) => repository.logout(provider: provider);
+  Future<void> call({String? provider, int? userId}) => repository.logout(provider: provider, userId: userId);
 }
 
 class GetCurrentUser {
