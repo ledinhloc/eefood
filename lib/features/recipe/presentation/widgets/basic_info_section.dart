@@ -56,7 +56,11 @@ class _BasicInfoSectionState extends State<BasicInfoSection> {
         _currentPage = _pageController.page?.round() ?? 0;
       });
     });
+    _initializeCubit();
+  }
 
+  Future<void> _initializeCubit() async {
+    await _cubit.init(_cubit.state.recipe);
   }
 
   @override
@@ -187,7 +191,7 @@ class _BasicInfoSectionState extends State<BasicInfoSection> {
               },
               textInputAction: TextInputAction.done,
               onFocusLost: (value) {
-                 _cubit.updateRecipe(recipe.copyWith(title: value));
+                _cubit.updateRecipe(recipe.copyWith(title: value));
               },
             ),
             const SizedBox(height: 16),
@@ -202,7 +206,7 @@ class _BasicInfoSectionState extends State<BasicInfoSection> {
               textInputAction: TextInputAction.done,
               onFocusLost: (value) {
                 print(value);
-                 _cubit.updateRecipe(recipe.copyWith(description: value));
+                _cubit.updateRecipe(recipe.copyWith(description: value));
               },
             ),
             const SizedBox(height: 16),
@@ -266,15 +270,21 @@ class _BasicInfoSectionState extends State<BasicInfoSection> {
                     Expanded(
                       child: CustomDropdownSearch<CategoryModel>.multiSelection(
                         label: 'Categories',
+                        compareFn: (a, b) => a?.id == b?.id,
                         onFind: (String? filter, int page, int limit) async {
                           filter = filter ?? '';
                           return await _categories(filter, page, limit);
                         },
                         type: DropdownType.bottomSheet,
-                        selectedItems: _listCategories
-                            ?.where((cat) =>
-                            state.categories.contains(cat.description))
-                            .toList() ?? [],
+                        selectedItems:
+                            _listCategories
+                                ?.where(
+                                  (cat) => state.categories.contains(
+                                    cat.description,
+                                  ),
+                                )
+                                .toList() ??
+                            [],
                         itemAsString: (cat) => cat.description ?? '',
                         onChangedMulti: (selectedList) {
                           final selectedDescriptions = selectedList
@@ -283,10 +293,6 @@ class _BasicInfoSectionState extends State<BasicInfoSection> {
                               .toList();
 
                           _cubit.setCategories(selectedDescriptions);
-
-                          setState(() {
-                            _listCategories = selectedList;
-                          });
                         },
                       ),
                     ),
@@ -308,7 +314,7 @@ class _BasicInfoSectionState extends State<BasicInfoSection> {
                     ),
                   ],
                 ),
-                const SizedBox(height: 12,),
+                const SizedBox(height: 12),
                 SingleChildScrollView(
                   scrollDirection: Axis.horizontal,
                   child: Row(
@@ -321,29 +327,11 @@ class _BasicInfoSectionState extends State<BasicInfoSection> {
                         child: Wrap(
                           spacing: 8,
                           runSpacing: 6,
-                          children: state.categories.map((categoryName) {
-                            return FutureBuilder<List<CategoryModel>>(
-                              future: _categories(
-                                "",
-                                1,
-                                100,
-                              ), // lấy list từ backend
-                              builder: (context, snapshot) {
-                                // if (snapshot.connectionState ==
-                                //     ConnectionState.waiting) {
-                                //   return const Chip(label: Text("Loading..."));
-                                // }
-
-                                if (snapshot.hasError) {
-                                  return Chip(label: Text("Error $categoryName"));
-                                }
-
-                                final listFromApi = snapshot.data ?? [];
-                                final c = listFromApi.firstWhere(
-                                  (cat) => cat.description == categoryName,
-                                  orElse: () => CategoryModel(description: categoryName),
-                                );
-
+                          children: (_listCategories ?? [])
+                              .where(
+                                (c) => state.categories.contains(c.description),
+                              )
+                              .map((c) {
                                 final description = c.description ?? "Unknown";
                                 final iconUrl = c.iconUrl;
 
@@ -365,7 +353,7 @@ class _BasicInfoSectionState extends State<BasicInfoSection> {
                                         ),
                                   deleteIcon: const Icon(Icons.close, size: 16),
                                   onDeleted: () {
-                                    _cubit.removeCategory(categoryName);
+                                    _cubit.removeCategory(description);
                                   },
                                   backgroundColor: Colors.grey.shade100,
                                   padding: const EdgeInsets.symmetric(
@@ -373,9 +361,8 @@ class _BasicInfoSectionState extends State<BasicInfoSection> {
                                     vertical: 0,
                                   ),
                                 );
-                              },
-                            );
-                          }).toList(),
+                              })
+                              .toList(),
                         ),
                       ),
                     ],
@@ -457,9 +444,9 @@ class _BasicInfoSectionState extends State<BasicInfoSection> {
             // Title
             Text(
               'Add New Category',
-              style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                fontWeight: FontWeight.bold,
-              ),
+              style: Theme.of(
+                context,
+              ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 16),
 

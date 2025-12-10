@@ -19,12 +19,36 @@ class RecipeCrudCubit extends Cubit<RecipeCrudState> {
   RecipeCrudCubit(RecipeModel? initialRecipe)
     : super(RecipeCrudState.initial(initialRecipe));
 
-  void init(RecipeModel? initial) {
+  Future<void> init(RecipeModel? initial) async {
     if (initial != null) {
+      // Nếu có categoryIds, convert sang List<String> categories
+      List<String> categoryNames = [];
+      if (initial.categoryIds != null && initial.categoryIds!.isNotEmpty) {
+        try {
+          // Gọi API lấy toàn bộ categories
+          final Categories _categories = getIt<Categories>();
+          final allCategories = await _categories('', 1, 100);
+
+          // Map categoryIds -> category descriptions
+          categoryNames = initial.categoryIds!
+              .map((id) {
+            final cat = allCategories.firstWhere(
+                  (c) => c.id == id,
+              orElse: () => CategoryModel(id: id, description: 'Unknown'),
+            );
+            return cat.description ?? 'Unknown';
+          })
+              .toList();
+        } catch (e) {
+          print('Error loading categories: $e');
+        }
+      }
+
       emit(
         state.copyWith(
           recipe: initial,
           categoryIds: initial.categoryIds ?? [],
+          categories: categoryNames,
           ingredients: initial.ingredients ?? [],
           steps: initial.steps ?? [],
         ),
