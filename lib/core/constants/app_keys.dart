@@ -11,6 +11,7 @@ class AppKeys{
   static const savePass = 'savePass';
   static const accessToken = 'accessToken';
   static const refreshToken = 'refreshToken';
+  static const fcmToken = 'fcmToken';
   static const user = 'user';
   static const baseUrl = String.fromEnvironment('BASE_URL', defaultValue: 'http://192.168.1.16:8222');
   static final livekitUrl = getLiveKitWsUrl(baseUrl, wsPort: 7880);

@@ -11,7 +11,7 @@ abstract class AuthRepository {
   Future<void> saveFirstLogin(bool firstLogin);
   Future<User> loginWithGoogle(String idToken);
   Future<User> login(String email, String password);
-  Future<void> logout({String? provider});
+  Future<void> logout({String? provider, int? userId});
   Future<User?> getCurrentUser();
   Future<void> refreshToken();
   Future<User> getProfile();

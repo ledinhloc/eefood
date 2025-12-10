@@ -60,12 +60,16 @@ class RecipeListState {
   final List<RecipeModel> publishedRecipes;
   final bool isLoading;
   final String? error;
+  final bool hasDraftMore;
+  final int draftCurrentPage;
 
   RecipeListState({
     this.draftRecipes = const [],
     this.publishedRecipes = const [],
     this.isLoading = false,
     this.error,
+    this.hasDraftMore = true,
+    this.draftCurrentPage = 1,
   });
 
   RecipeListState copyWith({
@@ -73,12 +77,16 @@ class RecipeListState {
     List<RecipeModel>? publishedRecipes,
     bool? isLoading,
     String? error,
+    bool? hasDraftMore,
+    int? draftCurrentPage,
   }) {
     return RecipeListState(
       draftRecipes: draftRecipes ?? this.draftRecipes,
       publishedRecipes: publishedRecipes ?? this.publishedRecipes,
       isLoading: isLoading ?? this.isLoading,
       error: error ?? this.error,
+      hasDraftMore: hasDraftMore ?? this.hasDraftMore,
+      draftCurrentPage: draftCurrentPage ?? this.draftCurrentPage,
     );
   }
 }

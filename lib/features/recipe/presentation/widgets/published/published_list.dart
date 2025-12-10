@@ -1,10 +1,9 @@
-import 'package:eefood/core/widgets/snack_bar.dart';
-import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:eefood/core/di/injection.dart';
+import 'package:flutter/material.dart';
+
 import '../../../../../core/widgets/custom_bottom_sheet.dart';
-import '../../provider/post_cubit.dart';
 import '../../../../recipe/data/models/post_publish_model.dart';
+import '../../provider/post_cubit.dart';
 import '../../screens/recipe_detail_page.dart';
 
 class PublishedList extends StatelessWidget {
@@ -14,7 +13,6 @@ class PublishedList extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-
     return RefreshIndicator(
       color: Colors.red,
       onRefresh: () async {
@@ -23,7 +21,8 @@ class PublishedList extends StatelessWidget {
       },
       child: GridView.builder(
         padding: const EdgeInsets.all(12),
-        physics: const AlwaysScrollableScrollPhysics(), // bắt buộc để refresh hoạt động
+        physics:
+            const AlwaysScrollableScrollPhysics(), // bắt buộc để refresh hoạt động
         gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
           crossAxisCount: 2,
           crossAxisSpacing: 12,
@@ -56,7 +55,7 @@ class _PostCard extends StatelessWidget {
             builder: (_) => RecipeDetailPage(recipeId: post.recipeId!),
           ),
         );
-            },
+      },
       child: Card(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         elevation: 2,
@@ -71,8 +70,9 @@ class _PostCard extends StatelessWidget {
                   height: 120,
                   width: double.infinity,
                   child: ClipRRect(
-                    borderRadius:
-                    const BorderRadius.vertical(top: Radius.circular(16)),
+                    borderRadius: const BorderRadius.vertical(
+                      top: Radius.circular(16),
+                    ),
                     child: Image.network(
                       post.imageUrl ??
                           'https://cdn-icons-png.flaticon.com/512/147/147144.png',
@@ -80,8 +80,11 @@ class _PostCard extends StatelessWidget {
                       errorBuilder: (context, error, stackTrace) => Container(
                         color: Colors.grey[200],
                         child: const Center(
-                          child: Icon(Icons.broken_image_outlined,
-                              size: 48, color: Colors.grey),
+                          child: Icon(
+                            Icons.broken_image_outlined,
+                            size: 48,
+                            color: Colors.grey,
+                          ),
                         ),
                       ),
                     ),
@@ -93,7 +96,7 @@ class _PostCard extends StatelessWidget {
                   right: 4,
                   child: IconButton(
                     icon: const Icon(Icons.more_vert, size: 20),
-                    onPressed: () async{
+                    onPressed: () async {
                       await showCustomBottomSheet(context, [
                         BottomSheetOption(
                           icon: const Icon(Icons.edit, color: Colors.blue),
@@ -126,7 +129,9 @@ class _PostCard extends StatelessWidget {
                     Text(
                       post.title ?? "Không có tiêu đề",
                       style: const TextStyle(
-                          fontWeight: FontWeight.bold, fontSize: 14),
+                        fontWeight: FontWeight.bold,
+                        fontSize: 14,
+                      ),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                     ),
@@ -140,7 +145,6 @@ class _PostCard extends StatelessWidget {
                     //     maxLines: 2,
                     //     overflow: TextOverflow.ellipsis,
                     //   ),
-
                     const SizedBox(height: 6),
                     Text(
                       "Chuẩn bị: ${post.prepTime ?? 'N/A'} | Nấu: ${post.cookTime ?? 'N/A'}",
@@ -151,7 +155,9 @@ class _PostCard extends StatelessWidget {
                       children: [
                         Container(
                           padding: const EdgeInsets.symmetric(
-                              horizontal: 6, vertical: 2),
+                            horizontal: 6,
+                            vertical: 2,
+                          ),
                           decoration: BoxDecoration(
                             color: Colors.green[100],
                             borderRadius: BorderRadius.circular(4),
@@ -159,28 +165,38 @@ class _PostCard extends StatelessWidget {
                           child: Text(
                             post.difficulty?.toUpperCase() ?? "EASY",
                             style: const TextStyle(
-                                fontSize: 10, color: Colors.green),
+                              fontSize: 10,
+                              color: Colors.green,
+                            ),
                           ),
                         ),
                         const SizedBox(width: 6),
-                        Text(post.location ?? "Không xác định",
-                            style: const TextStyle(fontSize: 12)),
+                        Text(
+                          post.location ?? "Không xác định",
+                          style: const TextStyle(fontSize: 12),
+                        ),
                       ],
                     ),
                     const Spacer(),
                     Row(
                       children: [
-                        const Icon(Icons.favorite_border,
-                            size: 16, color: Colors.grey),
+                        const Icon(
+                          Icons.favorite_border,
+                          size: 16,
+                          color: Colors.grey,
+                        ),
                         const SizedBox(width: 4),
-                        Text('${post.countReaction ?? 0}',
-                            style: const TextStyle(fontSize: 12)),
+                        Text(
+                          '${post.countReaction ?? 0}',
+                          style: const TextStyle(fontSize: 12),
+                        ),
                         const SizedBox(width: 12),
-                        const Icon(Icons.comment,
-                            size: 16, color: Colors.grey),
+                        const Icon(Icons.comment, size: 16, color: Colors.grey),
                         const SizedBox(width: 4),
-                        Text('${post.countComment ?? 0}',
-                            style: const TextStyle(fontSize: 12)),
+                        Text(
+                          '${post.countComment ?? 0}',
+                          style: const TextStyle(fontSize: 12),
+                        ),
                       ],
                     ),
                   ],
@@ -195,7 +211,10 @@ class _PostCard extends StatelessWidget {
 
   /// Hàm hiển thị dialog chỉnh sửa content
   void _showEditDialog(
-      BuildContext context, PostCubit postCubit, PostPublishModel post) {
+    BuildContext context,
+    PostCubit postCubit,
+    PostPublishModel post,
+  ) {
     final controller = TextEditingController(text: post.content ?? "");
 
     showDialog(
@@ -216,9 +235,7 @@ class _PostCard extends StatelessWidget {
             onPressed: () => Navigator.pop(context),
           ),
           ElevatedButton(
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.blue,
-            ),
+            style: ElevatedButton.styleFrom(backgroundColor: Colors.blue),
             child: const Text("Lưu"),
             onPressed: () {
               final newContent = controller.text.trim();

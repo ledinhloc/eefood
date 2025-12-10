@@ -1,6 +1,6 @@
-import 'dart:io';
-
 import 'package:eefood/core/utils/deep_link_handler.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 
 class NotificationService {
@@ -28,6 +28,8 @@ class NotificationService {
 
     // Request permissions
     await requestNotificationPermission();
+
+    FirebaseMessaging.onBackgroundMessage(firebaseMessagingBackgroundHandler);
   }
 
   static Future<void> showNotification({
@@ -73,6 +75,7 @@ class NotificationService {
       case 'FOLLOW':
       case 'SAVE_RECIPE':
       case 'SHARE_RECIPE':
+      case 'REPORT':
         return 'interaction_channel';
       case 'SYSTEM':
       default:
@@ -81,13 +84,15 @@ class NotificationService {
   }
 
   static Future<void> requestNotificationPermission() async {
-    if (Platform.isIOS) {
-      await _notiPlugin
-          .resolvePlatformSpecificImplementation<
-            IOSFlutterLocalNotificationsPlugin
-          >()
-          ?.requestPermissions(alert: true, badge: true, sound: true);
-    }
+    await FirebaseMessaging.instance.requestPermission(
+      alert: true,
+      sound: true,
+      badge: true,
+    );
+  }
+
+  static void handleClick(String path) {
+    DeepLinkHandler.handleDeepLink(path);
   }
 }
 
@@ -98,4 +103,23 @@ void onActionReceived(NotificationResponse response) {
   if (path != null && path.isNotEmpty) {
     DeepLinkHandler.handleDeepLink(path);
   }
+}
+
+@pragma('vm:entry-point')
+Future<void> firebaseMessagingBackgroundHandler(RemoteMessage message) async {
+  // Initialize Firebase if not already initialized
+  await Firebase.initializeApp();
+
+  print('Handling background message: ${message.messageId}');
+  print('Message data: ${message.data}');
+
+  // Show notification when app is in background
+  await NotificationService.showNotification(
+    title:
+        message.data['title'] ?? message.notification?.title ?? 'Thông báo mới',
+    body: message.data['body'] ?? message.notification?.body ?? '',
+    type: message.data['type'] ?? 'SYSTEM',
+    avatarUrl: message.data['avatarUrl'],
+    path: message.data['path'],
+  );
 }

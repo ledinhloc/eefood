@@ -10,4 +10,5 @@ abstract class NotificationRepository {
   Future<void> deleteAllNotifications();
   Future<List<NotificationSettingsModel>> getNotificationSettings();
   Future<List<NotificationSettingsModel>> updatedNotificationSettings(Map<String,bool> settings);
+  Future<void> unregisterToken(int userId);
 }

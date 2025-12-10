@@ -1,6 +1,4 @@
 import 'package:eefood/core/di/injection.dart';
-import 'package:eefood/features/recipe/data/models/category_model.dart';
-import 'package:eefood/features/recipe/data/models/ingredient_model.dart';
 import 'package:eefood/features/recipe/data/models/recipe_Ingredient_model.dart';
 import 'package:eefood/features/recipe/data/models/recipe_model.dart';
 import 'package:eefood/features/recipe/data/models/recipe_step_model.dart';
@@ -94,9 +92,6 @@ class RecipeCrudCubit extends Cubit<RecipeCrudState> {
       ..removeAt(index);
     final updatedRecipe = state.recipe.copyWith(ingredients: newIngredients);
     emit(state.copyWith(ingredients: newIngredients, recipe: updatedRecipe));
-    print('🗑️ Ingredient removed at index $index');
-    print('📊 Total ingredients after removal: ${newIngredients.length}');
-    print('🔍 Recipe ingredients count: ${updatedRecipe.ingredients?.length}');
   }
 
   void reorderIngredients(int oldIndex, int newIndex) {
@@ -185,10 +180,11 @@ class RecipeCrudCubit extends Cubit<RecipeCrudState> {
       steps: state.steps,
     );
 
-    print("=== DTO JSON SEND ===");
+
     print(request.toJson());
 
     final result = await _createRecipe(request);
+    //final result = await _createRecipe(savedRecipe);
 
     if (result.isSuccess && result.data != null) {
       emit(
@@ -271,7 +267,7 @@ class RecipeCrudCubit extends Cubit<RecipeCrudState> {
       // Nếu server trả về ingredients không khớp, sử dụng local ingredients
       if (serverRecipe.ingredients?.length != state.ingredients.length) {
         print(
-          '⚠️ Server returned wrong ingredients count. Using local ingredients.',
+          'Server returned wrong ingredients count. Using local ingredients.',
         );
         serverRecipe.ingredients = state.ingredients;
       }
@@ -284,9 +280,6 @@ class RecipeCrudCubit extends Cubit<RecipeCrudState> {
         ),
       );
 
-      print(
-        '✅ Update successful. Final ingredients count: ${serverRecipe.ingredients?.length}',
-      );
     } else {
       emit(
         state.copyWith(

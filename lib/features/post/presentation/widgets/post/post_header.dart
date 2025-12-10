@@ -96,6 +96,7 @@ class PostHeader extends StatelessWidget {
                     targerId: post.id,
                     targetTitle: post.title,
                     type: 'POST',
+                    imageUrl: post.imageUrl,
                   ),
                 );
               },

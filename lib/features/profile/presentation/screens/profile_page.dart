@@ -35,7 +35,7 @@ class ProfilePage extends StatelessWidget {
     );
 
     if (confirm == true) {
-      await _logout(provider: user.provider);
+      await _logout(provider: user.provider, userId: user.id);
       if (!context.mounted) return;
       Navigator.pushNamedAndRemoveUntil(
         context,

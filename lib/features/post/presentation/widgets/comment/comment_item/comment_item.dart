@@ -178,6 +178,7 @@ class _CommentItemState extends State<CommentItem> {
               targerId: widget.comment.id!,
               targetTitle: widget.comment.username,
               type: 'COMMENT',
+              imageUrl: widget.comment.images!.first.toString(),
             ),
           );
         },
