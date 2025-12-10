@@ -60,6 +60,7 @@ class _BasicInfoSectionState extends State<BasicInfoSection> {
   }
 
   Future<void> _initializeCubit() async {
+     _listCategories =await _categories( "", 1, 100, );
     await _cubit.init(_cubit.state.recipe);
   }
 
@@ -317,57 +318,62 @@ class _BasicInfoSectionState extends State<BasicInfoSection> {
                 const SizedBox(height: 12),
                 SingleChildScrollView(
                   scrollDirection: Axis.horizontal,
-                  child: Row(
-                    children: [
-                      Padding(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 8,
-                          vertical: 6,
-                        ),
-                        child: Wrap(
-                          spacing: 8,
-                          runSpacing: 6,
-                          children: (_listCategories ?? [])
-                              .where(
-                                (c) => state.categories.contains(c.description),
-                              )
-                              .map((c) {
-                                final description = c.description ?? "Unknown";
-                                final iconUrl = c.iconUrl;
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 8,
+                      vertical: 6,
+                    ),
+                    child: Wrap(
+                      spacing: 8,
+                      runSpacing: 6,
+                      children: state.categories.map((categoryName) {
+                        // Tìm category trong list đã load
+                        final c = _listCategories?.firstWhere(
+                              (cat) => cat.description == categoryName,
+                          orElse: () => CategoryModel(description: categoryName),
+                        );
 
-                                return Chip(
-                                  label: Text(
-                                    description,
-                                    style: const TextStyle(fontSize: 13),
-                                  ),
-                                  avatar: (iconUrl ?? '').isNotEmpty
-                                      ? CircleAvatar(
-                                          backgroundImage: NetworkImage(
-                                            iconUrl!,
-                                          ),
-                                          radius: 14,
-                                        )
-                                      : const CircleAvatar(
-                                          radius: 14,
-                                          child: Icon(Icons.category, size: 16),
-                                        ),
-                                  deleteIcon: const Icon(Icons.close, size: 16),
-                                  onDeleted: () {
-                                    _cubit.removeCategory(description);
-                                  },
-                                  backgroundColor: Colors.grey.shade100,
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: 6,
-                                    vertical: 0,
-                                  ),
-                                );
-                              })
-                              .toList(),
-                        ),
-                      ),
-                    ],
+                        final description = c?.description ?? "Unknown";
+                        final iconUrl = c?.iconUrl;
+                        final isNewCategory = c?.id == null;
+
+                        return Chip(
+                          label: Text(
+                            description,
+                            style: const TextStyle(fontSize: 13),
+                          ),
+                          avatar: (iconUrl ?? '').isNotEmpty
+                              ? CircleAvatar(
+                            backgroundImage: NetworkImage(iconUrl!),
+                            radius: 14,
+                          )
+                              : CircleAvatar(
+                            radius: 14,
+                            backgroundColor: isNewCategory
+                                ? Colors.orange.shade200
+                                : null,
+                            child: Icon(
+                              Icons.category,
+                              size: 16,
+                              color: isNewCategory ? Colors.white : null,
+                            ),
+                          ),
+                          deleteIcon: const Icon(Icons.close, size: 16),
+                          onDeleted: () {
+                            _cubit.removeCategory(categoryName);
+                          },
+                          backgroundColor: isNewCategory
+                              ? Colors.orange.shade50
+                              : Colors.grey.shade100,
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 6,
+                            vertical: 0,
+                          ),
+                        );
+                      }).toList(),
+                    ),
                   ),
-                ),
+                )
               ],
             ),
 
