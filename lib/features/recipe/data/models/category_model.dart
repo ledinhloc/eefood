@@ -1,10 +1,10 @@
 import 'package:flutter/foundation.dart';
 import 'package:eefood/features/recipe/domain/entities/category.dart';
 class CategoryModel {
-  final int id;
+  final int? id;
   final String? description;
   final String? iconUrl;
-  CategoryModel({required this.id, this.description,this.iconUrl});
+  CategoryModel({this.id, this.description,this.iconUrl});
   factory CategoryModel.fromJson(Map<String,dynamic> json) {
     return CategoryModel(
       id: json['id'],
@@ -19,9 +19,4 @@ class CategoryModel {
       'iconUrl': iconUrl,
     };
   }
-  CategoryPreference toEntity() => CategoryPreference(
-    id: id,
-    description: description,
-    iconUrl: iconUrl
-  );
 }

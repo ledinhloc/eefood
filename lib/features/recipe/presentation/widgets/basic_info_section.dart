@@ -26,6 +26,7 @@ class BasicInfoSection extends StatefulWidget {
 class _BasicInfoSectionState extends State<BasicInfoSection> {
   late TextEditingController _titleController;
   late TextEditingController _descriptionController;
+  late TextEditingController _categoryController;
   final PageController _pageController = PageController(viewportFraction: 0.9);
 
   late final _cubit;
@@ -48,6 +49,7 @@ class _BasicInfoSectionState extends State<BasicInfoSection> {
     _descriptionController = TextEditingController(
       text: _cubit.state.recipe.description,
     );
+    _categoryController = TextEditingController();
 
     _pageController.addListener(() {
       setState(() {
@@ -62,6 +64,7 @@ class _BasicInfoSectionState extends State<BasicInfoSection> {
     _titleController.dispose();
     _descriptionController.dispose();
     _pageController.dispose();
+    _categoryController = TextEditingController();
     super.dispose();
   }
 
@@ -257,35 +260,55 @@ class _BasicInfoSectionState extends State<BasicInfoSection> {
             Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                CustomDropdownSearch<CategoryModel>.multiSelection(
-                  label: 'Categories',
-                  onFind: (String? filter, int page, int limit) async {
-                    final result;
-                    filter = filter == null ? '' : filter;
-                    debugPrint('Loading page: $page, limit: $limit');
-                    result = await _categories(filter, page, limit);
-                    return result;
-                  },
-                  type: DropdownType.bottomSheet,
-                  selectedItems:
-                      _listCategories
-                          ?.where((cat) => state.categoryIds.contains(cat.id))
-                          .toList() ??
-                      [],
-                  itemAsString: (cat) => cat.description ?? '',
-                  onChangedMulti: (selectedList) {
-                    // selectedList là List<CategoryModel>
-                    final selectedIds = selectedList
-                        .map((c) => c.id)
-                        .whereType<int>()
-                        .toList();
-                    _cubit.setCategories(selectedIds);
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Expanded(
+                      child: CustomDropdownSearch<CategoryModel>.multiSelection(
+                        label: 'Categories',
+                        onFind: (String? filter, int page, int limit) async {
+                          filter = filter ?? '';
+                          return await _categories(filter, page, limit);
+                        },
+                        type: DropdownType.bottomSheet,
+                        selectedItems: _listCategories
+                            ?.where((cat) =>
+                            state.categories.contains(cat.description))
+                            .toList() ?? [],
+                        itemAsString: (cat) => cat.description ?? '',
+                        onChangedMulti: (selectedList) {
+                          final selectedDescriptions = selectedList
+                              .map((c) => c.description)
+                              .whereType<String>()
+                              .toList();
 
-                    setState(() {
-                      _listCategories = selectedList;
-                    });
-                  },
+                          _cubit.setCategories(selectedDescriptions);
+
+                          setState(() {
+                            _listCategories = selectedList;
+                          });
+                        },
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    // Nút Add category mới
+                    Container(
+                      margin: const EdgeInsets.only(top: 8),
+                      child: IconButton(
+                        onPressed: () => _showAddCategoryBottomSheet(context),
+                        icon: Icon(
+                          Icons.add_circle,
+                          color: Colors.green.shade600,
+                          size: 32,
+                        ),
+                        tooltip: 'Add new category',
+                        padding: EdgeInsets.zero,
+                        constraints: const BoxConstraints(),
+                      ),
+                    ),
+                  ],
                 ),
+                const SizedBox(height: 12,),
                 SingleChildScrollView(
                   scrollDirection: Axis.horizontal,
                   child: Row(
@@ -298,7 +321,7 @@ class _BasicInfoSectionState extends State<BasicInfoSection> {
                         child: Wrap(
                           spacing: 8,
                           runSpacing: 6,
-                          children: state.categoryIds.map((id) {
+                          children: state.categories.map((categoryName) {
                             return FutureBuilder<List<CategoryModel>>(
                               future: _categories(
                                 "",
@@ -306,19 +329,19 @@ class _BasicInfoSectionState extends State<BasicInfoSection> {
                                 100,
                               ), // lấy list từ backend
                               builder: (context, snapshot) {
-                                if (snapshot.connectionState ==
-                                    ConnectionState.waiting) {
-                                  return const Chip(label: Text("Loading..."));
-                                }
+                                // if (snapshot.connectionState ==
+                                //     ConnectionState.waiting) {
+                                //   return const Chip(label: Text("Loading..."));
+                                // }
 
                                 if (snapshot.hasError) {
-                                  return Chip(label: Text("Error $id"));
+                                  return Chip(label: Text("Error $categoryName"));
                                 }
 
                                 final listFromApi = snapshot.data ?? [];
                                 final c = listFromApi.firstWhere(
-                                  (cat) => cat.id == id,
-                                  orElse: () => CategoryModel(id: id),
+                                  (cat) => cat.description == categoryName,
+                                  orElse: () => CategoryModel(description: categoryName),
                                 );
 
                                 final description = c.description ?? "Unknown";
@@ -342,7 +365,7 @@ class _BasicInfoSectionState extends State<BasicInfoSection> {
                                         ),
                                   deleteIcon: const Icon(Icons.close, size: 16),
                                   onDeleted: () {
-                                    _cubit.removeCategory(id);
+                                    _cubit.removeCategory(categoryName);
                                   },
                                   backgroundColor: Colors.grey.shade100,
                                   padding: const EdgeInsets.symmetric(
@@ -397,6 +420,125 @@ class _BasicInfoSectionState extends State<BasicInfoSection> {
           ],
         );
       },
+    );
+  }
+
+  void _showAddCategoryBottomSheet(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (sheetContext) => Padding(
+        padding: EdgeInsets.only(
+          bottom: MediaQuery.of(sheetContext).viewInsets.bottom,
+          left: 16,
+          right: 16,
+          top: 16,
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            // Handle bar
+            Center(
+              child: Container(
+                width: 40,
+                height: 4,
+                decoration: BoxDecoration(
+                  color: Colors.grey.shade300,
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+            ),
+            const SizedBox(height: 16),
+
+            // Title
+            Text(
+              'Add New Category',
+              style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            const SizedBox(height: 16),
+
+            // TextField
+            TextField(
+              controller: _categoryController,
+              decoration: InputDecoration(
+                labelText: 'Category Name',
+                hintText: 'Enter category name',
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(8),
+                  borderSide: BorderSide(
+                    color: Colors.green.shade300,
+                    width: 2,
+                  ),
+                ),
+                prefixIcon: const Icon(Icons.category),
+              ),
+              autofocus: true,
+              textInputAction: TextInputAction.done,
+              onSubmitted: (value) {
+                if (value.trim().isNotEmpty) {
+                  _cubit.addCategory(value.trim());
+                  _categoryController.clear();
+                  Navigator.of(sheetContext).pop();
+                }
+              },
+            ),
+            const SizedBox(height: 16),
+
+            // Buttons
+            Row(
+              children: [
+                Expanded(
+                  child: OutlinedButton(
+                    onPressed: () {
+                      _categoryController.clear();
+                      Navigator.of(sheetContext).pop();
+                    },
+                    style: OutlinedButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(vertical: 12),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                    ),
+                    child: const Text('Cancel'),
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: ElevatedButton(
+                    onPressed: () {
+                      final value = _categoryController.text.trim();
+                      if (value.isNotEmpty) {
+                        _cubit.addCategory(value);
+                        _categoryController.clear();
+                        Navigator.of(sheetContext).pop();
+                      }
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.green,
+                      foregroundColor: Colors.white,
+                      padding: const EdgeInsets.symmetric(vertical: 12),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                    ),
+                    child: const Text('Add'),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 16),
+          ],
+        ),
+      ),
     );
   }
 }

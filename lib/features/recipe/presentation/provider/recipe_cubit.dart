@@ -8,6 +8,9 @@ import 'package:eefood/features/recipe/domain/usecases/recipe_usecases.dart';
 import 'package:eefood/features/recipe/presentation/provider/recipe_state.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
+import '../../data/models/ingredient_create_request.dart';
+import '../../data/models/recipe_create_request.dart';
+
 class RecipeCrudCubit extends Cubit<RecipeCrudState> {
   final CreateRecipe _createRecipe = getIt<CreateRecipe>();
   final CreateRecipeFromUrl _createRecipeFromUrl = getIt<CreateRecipeFromUrl>();
@@ -27,6 +30,23 @@ class RecipeCrudCubit extends Cubit<RecipeCrudState> {
         ),
       );
     }
+  }
+
+  void setCategories(List<String> categories) {
+    emit(state.copyWith(categories: List<String>.from(categories)));
+  }
+
+  void addCategory(String value) {
+    final newList = List<String>.from(state.categories);
+    if (!newList.contains(value)) {
+      newList.add(value);
+      emit(state.copyWith(categories: newList));
+    }
+  }
+
+  void removeCategory(String value) {
+    final newList = List<String>.from(state.categories)..remove(value);
+    emit(state.copyWith(categories: newList));
   }
 
   void updateRecipe(RecipeModel updatedRecipe) {
@@ -95,9 +115,9 @@ class RecipeCrudCubit extends Cubit<RecipeCrudState> {
     emit(state.copyWith(steps: newSteps));
   }
 
-  void setCategories(List<int> categoryIds) {
-    emit(state.copyWith(categoryIds: List<int>.from(categoryIds)));
-  }
+  // void setCategories(List<int> categoryIds) {
+  //   emit(state.copyWith(categoryIds: List<int>.from(categoryIds)));
+  // }
 
   void updateCategory(int index, int updatedId) {
     final newCategories = List<int>.from(state.categoryIds);
@@ -105,21 +125,46 @@ class RecipeCrudCubit extends Cubit<RecipeCrudState> {
     emit(state.copyWith(categoryIds: newCategories));
   }
 
-  void removeCategory(int categoryId) {
-    final newCategories = List<int>.from(state.categoryIds)..remove(categoryId);
-    emit(state.copyWith(categoryIds: newCategories));
+  // void removeCategory(int categoryId) {
+  //   final newCategories = List<int>.from(state.categoryIds)..remove(categoryId);
+  //   emit(state.copyWith(categoryIds: newCategories));
+  // }
+
+  List<IngredientCreateRequest> _mapIngredients() {
+    return state.ingredients
+        .map(
+          (e) => IngredientCreateRequest(
+        name: e.ingredient!.name,
+        quantity: e.quantity,
+        unit: e.unit,
+      ),
+    )
+        .toList();
   }
 
+
   void saveRecipe() async {
-    final savedRecipe = state.recipe.copyWith(
-      ingredients: state.ingredients,
+    emit(state.copyWith(isLoading: true));
+
+    final request = RecipeCreateRequest(
+      title: state.recipe.title,
+      description: state.recipe.description,
+      imageUrl: state.recipe.imageUrl,
+      videoUrl: state.recipe.videoUrl,
+      region: state.recipe.region,
+      cookTime: state.recipe.cookTime ?? 0,
+      prepTime: state.recipe.prepTime ?? 0,
+      difficulty: state.recipe.difficulty?.name,
+
+      categories: state.categories,
+      ingredients: _mapIngredients(),
       steps: state.steps,
-      categoryIds: state.categoryIds,
     );
 
-    print('=== FINAL JSON TO SEND ===');
-    print(savedRecipe.toJson());
-    final result = await _createRecipe(savedRecipe);
+    print("=== DTO JSON SEND ===");
+    print(request.toJson());
+
+    final result = await _createRecipe(request);
 
     if (result.isSuccess && result.data != null) {
       emit(
@@ -134,11 +179,42 @@ class RecipeCrudCubit extends Cubit<RecipeCrudState> {
         state.copyWith(
           isLoading: false,
           message:
-              "Failed to create recipe: ${result.error ?? "Unknown error"}",
+          "Failed to create recipe: ${result.error ?? "Unknown error"}",
         ),
       );
     }
   }
+
+
+  // void saveRecipe() async {
+  //   final savedRecipe = state.recipe.copyWith(
+  //     ingredients: state.ingredients,
+  //     steps: state.steps,
+  //     categoryIds: state.categoryIds,
+  //   );
+  //
+  //   print('=== FINAL JSON TO SEND ===');
+  //   print(savedRecipe.toJson());
+  //   final result = await _createRecipe(savedRecipe);
+  //
+  //   if (result.isSuccess && result.data != null) {
+  //     emit(
+  //       state.copyWith(
+  //         recipe: result.data!,
+  //         isLoading: false,
+  //         message: "Recipe created successfully",
+  //       ),
+  //     );
+  //   } else {
+  //     emit(
+  //       state.copyWith(
+  //         isLoading: false,
+  //         message:
+  //             "Failed to create recipe: ${result.error ?? "Unknown error"}",
+  //       ),
+  //     );
+  //   }
+  // }
 
   void updateExistingRecipe(int id) async {
     emit(state.copyWith(isLoading: true));

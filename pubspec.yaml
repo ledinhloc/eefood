@@ -80,8 +80,8 @@ dev_dependencies:
     sdk: flutter
 #  api
 #  retrofit_generator: ^8.2.0
-#  build_runner: ^2.4.6
-#  json_serializable: ^6.7.0
+  build_runner: ^2.4.9
+  json_serializable: ^6.8.0
 
   # The "flutter_lints" package below contains a set of recommended lints to
   # encourage good coding practices. The lint set provided by the package is

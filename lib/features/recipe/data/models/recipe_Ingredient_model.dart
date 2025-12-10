@@ -8,7 +8,6 @@ class RecipeIngredientModel {
   final int? id;
   final double? quantity;
   final String? unit;
-
   final IngredientModel? ingredient;
 
   RecipeIngredientModel({this.id, this.quantity, this.unit, this.ingredient});
