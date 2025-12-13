@@ -1,3 +1,17 @@
+import 'package:json_annotation/json_annotation.dart';
+part 'post_publish_model.g.dart';
+enum PostStatus {
+  @JsonValue('PENDING')
+  pending,
+
+  @JsonValue('APPROVED')
+  approved,
+
+  @JsonValue('REJECTED')
+  rejected,
+}
+
+@JsonSerializable()
 class PostPublishModel {
   final int id;
   final int recipeId;
@@ -14,6 +28,7 @@ class PostPublishModel {
   final String? cookTime;
   final int? countReaction;
   final int? countComment;
+  final PostStatus status;
 
   PostPublishModel({
     required this.id,
@@ -29,39 +44,10 @@ class PostPublishModel {
     this.cookTime,
     this.countReaction,
     this.countComment,
+    required this.status
   });
 
-  factory PostPublishModel.fromJson(Map<String, dynamic> json) => PostPublishModel(
-    id: json['id'],
-    recipeId: json['recipeId'],
-    userId: json['userId'],
-    title: json['title'] ?? '',
-    content: json['content'] ?? '',
-    imageUrl: json['imageUrl'],
-    createdAt: json['createdAt'] != null
-        ? DateTime.parse(json['createdAt'])
-        : null,
-    difficulty: json['difficulty'],
-    location: json['location'],
-    prepTime: json['prepTime'],
-    cookTime: json['cookTime'],
-    countReaction: json['countReaction'],
-    countComment: json['countComment'],
-  );
-
-  Map<String, dynamic> toJson() => {
-    'id': id,
-    'recipeId': recipeId,
-    'userId': userId,
-    'title': title,
-    'content': content,
-    'imageUrl': imageUrl,
-    'createdAt': createdAt?.toIso8601String(),
-    'difficulty': difficulty,
-    'location': location,
-    'prepTime': prepTime,
-    'cookTime': cookTime,
-    'countReaction': countReaction,
-    'countComment': countComment,
-  };
+  factory PostPublishModel.fromJson(Map<String, dynamic> json) =>
+      _$PostPublishModelFromJson(json);
+  Map<String, dynamic> toJson() => _$PostPublishModelToJson(this);
 }

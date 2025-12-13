@@ -6,6 +6,7 @@ import 'package:eefood/features/recipe/domain/usecases/recipe_usecases.dart';
 import 'package:eefood/features/recipe/presentation/provider/recipe_state.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
+import '../../data/models/category_model.dart';
 import '../../data/models/ingredient_create_request.dart';
 import '../../data/models/recipe_create_request.dart';
 

@@ -36,10 +36,10 @@ class PostCubit extends Cubit<PostState> {
       // final updated = List<PostPublishModel>.from(state.posts)..insert(0, post);
       await fetchPublishedPosts();
       // emit(state.copyWith(isLoading: false, posts: updated));
-      showCustomSnackBar(context, "✅ Published successfully");
+      showCustomSnackBar(context, " Published successfully");
     } catch (e) {
       emit(state.copyWith(isLoading: false, error: e.toString()));
-      showCustomSnackBar(context, "❌ Publish failed: $e", isError: true);
+      showCustomSnackBar(context, " Publish failed: $e", isError: true);
     }
   }
 
@@ -58,10 +58,10 @@ class PostCubit extends Cubit<PostState> {
       }).toList();
 
       emit(state.copyWith(isLoading: false, posts: updatedList));
-      showCustomSnackBar(context, "✅ Post updated");
+      showCustomSnackBar(context, " Post updated");
     } catch (e) {
       emit(state.copyWith(isLoading: false, error: e.toString()));
-      showCustomSnackBar(context, "❌ Update failed: $e", isError: true);
+      showCustomSnackBar(context, " Update failed: $e", isError: true);
     }
   }
 
@@ -73,10 +73,10 @@ class PostCubit extends Cubit<PostState> {
       final remaining = state.posts.where((p) => p.id != postId).toList();
 
       emit(state.copyWith(isLoading: false, posts: remaining, deleted: true));
-      showCustomSnackBar(context, "✅ Post deleted");
+      showCustomSnackBar(context, " Post deleted");
     } catch (e) {
       emit(state.copyWith(isLoading: false, error: e.toString()));
-      showCustomSnackBar(context, "❌ Delete failed: $e", isError: true);
+      showCustomSnackBar(context, " Delete failed: $e", isError: true);
     }
   }
 
