@@ -37,6 +37,7 @@ import 'features/auth/domain/entities/user.dart';
 import 'features/post/presentation/provider/collection_cubit.dart';
 import 'features/profile/presentation/screens/profile_page.dart';
 import 'features/recipe/presentation/screens/my_recipes_page.dart';
+import 'features/recipe/presentation/screens/recipe_approval_detail_page.dart';
 import 'features/recipe/presentation/screens/shopping_page.dart';
 
 class AppRoutes {
@@ -82,6 +83,7 @@ class AppRoutes {
   static const mediaEditPage = '/mediaEditPage';
 
   static const storySettingPage = '/storySettingPage';
+  static const recipeApprovalDetail = '/recipe-approval-detail';
 
   // Danh sách các widget cho BottomNavigationBar trong main page
   static List<Widget> widgetOptions = <Widget>[
@@ -218,5 +220,15 @@ class AppRoutes {
         child: StorySettingPage(userId: userId),
       );
     },
+    recipeApprovalDetail: (context){
+      final args =  ModalRoute.of(context)!.settings.arguments as Map<String, dynamic>;
+      return RecipeApprovalDetailPage(
+        recipeId: args['recipeId'],
+        recipeName: args['recipeName'],
+        message: args['message'],
+        imageUrl: args['imageUrl'],
+        approvedAt: args['approvedAt'],
+      );
+    }
   };
 }

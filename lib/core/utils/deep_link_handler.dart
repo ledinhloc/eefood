@@ -36,7 +36,13 @@ class DeepLinkHandler {
       }
 
       final first = uri.pathSegments.first;
+      final second = uri.pathSegments.length > 1 ? uri.pathSegments[1] : null;
       final id = uri.pathSegments.length > 1 ? uri.pathSegments[1] : null;
+
+      if (first == 'recipe-approve') {
+        _handleRecipeApprove(uri);
+        return;
+      }
 
       if (id == null) {
         _navigateSafely(AppRoutes.splashPage);
@@ -90,5 +96,40 @@ class DeepLinkHandler {
       debugPrint('Web URL parse error: $e');
       _navigateSafely(AppRoutes.errorPage);
     }
+  }
+
+   static void _handleRecipeApprove(Uri uri){
+    final recipeId = uri.queryParameters['recipeId'] ??
+        (uri.pathSegments.length > 2 ? uri.pathSegments[2] : null);
+    final recipeName = uri.queryParameters['recipeName'];
+    final message = uri.queryParameters['message'];
+    final imageUrl = uri.queryParameters['imageUrl'];
+    final approvedAtStr = uri.queryParameters['approvedAt'];
+
+    DateTime? approvedAt;
+    if (approvedAtStr != null) {
+      try {
+        approvedAt = DateTime.parse(approvedAtStr);
+      } catch (e) {
+        debugPrint('Error parsing approvedAt: $e');
+      }
+    }
+
+    int? recipeIdInt;
+    if (recipeId != null) {
+      recipeIdInt = int.tryParse(recipeId);
+    }
+
+    _navigateSafely(
+      AppRoutes.recipeApprovalDetail,
+      arguments: {
+        'recipeId': recipeIdInt,
+        'recipeName': recipeName,
+        'message': message,
+        'imageUrl': imageUrl,
+        'approvedAt': approvedAt,
+      },
+    );
+    return;
   }
 }
