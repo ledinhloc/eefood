@@ -49,4 +49,4 @@ app.*.map.json
 .vscode/
 .flutter-plugins-dependencies
 
-/android/app/google-services.json
+**/google-services.json

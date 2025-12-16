@@ -205,10 +205,15 @@ class _BasicInfoSectionState extends State<BasicInfoSection> {
               enableClear: true,
               maxLines: 3,
               textInputAction: TextInputAction.done,
-              onFocusLost: (value) {
-                print(value);
-                _cubit.updateRecipe(recipe.copyWith(description: value));
+              onChanged: (value) {
+                _cubit.updateRecipe(
+                  recipe.copyWith(description: value),
+                );
               },
+              // onFocusLost: (value) {
+              //   print(value);
+              //   _cubit.updateRecipe(recipe.copyWith(description: value));
+              // },
             ),
             const SizedBox(height: 16),
             CustomDropdownSearch<String>(

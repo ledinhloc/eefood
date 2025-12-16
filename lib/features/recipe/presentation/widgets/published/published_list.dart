@@ -4,15 +4,20 @@ import 'package:eefood/features/recipe/presentation/widgets/published/edit_post_
 import 'package:flutter/material.dart';
 import 'package:timeago/timeago.dart' as timeago;
 
+import '../../../../../app_routes.dart';
 import '../../../../../core/di/injection.dart';
+import '../../../../../core/widgets/snack_bar.dart';
 import '../../../data/models/post_publish_model.dart';
 
 import '../../../data/models/post_publish_model.dart';
+import '../../../domain/repositories/recipe_repository.dart';
 
 extension PostStatusUI on PostStatus {
   Color get color {
     switch (this) {
       case PostStatus.pending:
+        return const Color(0xFFFFA726);
+      case PostStatus.editedPending:
         return const Color(0xFFFFA726);
       case PostStatus.approved:
         return const Color(0xFF66BB6A);
@@ -25,6 +30,8 @@ extension PostStatusUI on PostStatus {
     switch (this) {
       case PostStatus.pending:
         return const Color(0xFFFFF3E0);
+      case PostStatus.editedPending:
+        return const Color(0xFFFFF3E0);
       case PostStatus.approved:
         return const Color(0xFFE8F5E9);
       case PostStatus.rejected:
@@ -36,6 +43,8 @@ extension PostStatusUI on PostStatus {
     switch (this) {
       case PostStatus.pending:
         return Icons.schedule;
+      case PostStatus.editedPending:
+        return Icons.edit;
       case PostStatus.approved:
         return Icons.check_circle;
       case PostStatus.rejected:
@@ -47,6 +56,8 @@ extension PostStatusUI on PostStatus {
     switch (this) {
       case PostStatus.pending:
         return 'Đang chờ duyệt';
+      case PostStatus.editedPending:
+        return 'Đang chờ duyệt lại';
       case PostStatus.approved:
         return 'Đã duyệt';
       case PostStatus.rejected:
@@ -59,6 +70,7 @@ class PublishedList extends StatelessWidget {
   final List<PostPublishModel> posts;
 
   const PublishedList({super.key, required this.posts});
+
 
   @override
   Widget build(BuildContext context) {
@@ -82,6 +94,44 @@ class PublishedPostCard extends StatelessWidget {
   final postCubit = getIt<PostCubit>();
 
   PublishedPostCard({super.key, required this.post});
+
+  Future<void> _onEditRecipe(BuildContext context) async {
+    if (post.recipeId == null) {
+      showCustomSnackBar(
+        context,
+        "Công thức không hợp lệ",
+        isError: true,
+      );
+      return;
+    }
+
+    try {
+      final recipeRepo = getIt<RecipeRepository>();
+      final recipe = await recipeRepo.getRecipeById(post.recipeId!);
+
+      final result = await Navigator.pushNamed(
+        context,
+        AppRoutes.recipeCrudPage,
+        arguments: {
+          'initialRecipe': recipe,
+          'isCreate': false,
+        },
+      );
+
+      // Edit xong → refresh list post
+      if (result == true) {
+        postCubit.fetchPublishedPosts();
+      }
+    } catch (e, stack) {
+      debugPrint('Edit recipe error: $e');
+      debugPrintStack(stackTrace: stack);
+      showCustomSnackBar(
+        context,
+        "Không thể tải công thức",
+        isError: true,
+      );
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -158,10 +208,15 @@ class PublishedPostCard extends StatelessWidget {
                     await showCustomBottomSheet(context, [
                       BottomSheetOption(
                         icon: const Icon(Icons.edit, color: Colors.blue),
-                        title: "Sửa nội dung",
+                        title: "Chỉnh sửa bài viết",
                         onTap: () {
                           _showEditDialog(context, postCubit, post);
                         },
+                      ),
+                      BottomSheetOption(
+                        icon: const Icon(Icons.restaurant_menu, color: Colors.orange),
+                        title: "Sửa công thức",
+                        onTap: () => _onEditRecipe(context),
                       ),
                       BottomSheetOption(
                         icon: const Icon(Icons.delete, color: Colors.red),

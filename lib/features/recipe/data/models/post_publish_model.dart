@@ -4,6 +4,9 @@ enum PostStatus {
   @JsonValue('PENDING')
   pending,
 
+  @JsonValue('EDITED_PENDING')
+  editedPending,
+
   @JsonValue('APPROVED')
   approved,
 
