@@ -39,6 +39,7 @@ class _SplashPageState extends State<SplashPage> {
     final user = await _getCurrentUser();
     print('User: $user');
     // kiểm tra widget còn tồn tại
+    // Navigator.pushReplacementNamed(context, AppRoutes.main);
     if (!mounted) return;
     if (user != null) {
       Navigator.pushReplacementNamed(context, AppRoutes.main);
