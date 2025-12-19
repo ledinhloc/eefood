@@ -2,6 +2,7 @@ import 'package:eefood/app_routes.dart';
 import 'package:eefood/core/di/injection.dart';
 import 'package:eefood/core/utils/convert_time.dart';
 import 'package:eefood/core/utils/share_utils.dart';
+import 'package:eefood/core/widgets/show_login_required.dart';
 import 'package:eefood/features/post/presentation/provider/post_list_cubit.dart';
 import 'package:eefood/features/post/presentation/widgets/share/share_bottom_sheet.dart';
 import 'package:eefood/features/report/presentation/widgets/report_bottom_sheet.dart';
@@ -17,7 +18,8 @@ import '../collection/add_to_collection_sheet.dart';
 class PostHeader extends StatelessWidget {
   final int userId;
   final PostModel post;
-  const PostHeader({super.key, required this.userId, required this.post});
+  final bool isGuest;
+  const PostHeader({super.key, required this.userId, required this.post, required this.isGuest});
 
   void _openShareSheet(BuildContext context) {
     showModalBottomSheet(
@@ -44,6 +46,11 @@ class PostHeader extends StatelessWidget {
       ),
       title: GestureDetector(
         onTap: () async {
+          if(isGuest){
+            showLoginRequired(context);
+            return;
+          }
+
           User? userStory = await getIt<GetUserById>().call(userId);
           await Navigator.pushNamed(
             context,
@@ -67,6 +74,11 @@ class PostHeader extends StatelessWidget {
       trailing: IconButton(
         icon: const Icon(Icons.more_horiz, color: Colors.grey),
         onPressed: () async {
+          if(isGuest){
+            showLoginRequired(context);
+            return;
+          }
+
           await showCustomBottomSheet(context, [
             BottomSheetOption(
               icon: const Icon(Icons.bookmark_add, color: Colors.blue),

@@ -19,6 +19,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
+import '../../../../core/widgets/show_login_required.dart';
 import '../../../livestream/presentation/provider/start_live_cubit.dart';
 import '../../../livestream/presentation/screens/prepare_live_page.dart';
 import '../../data/models/nullable.dart';
@@ -410,6 +411,11 @@ class _FeedViewState extends State<FeedView> {
               ),
               IconButton(
                 onPressed: () {
+                  if(isGuest){
+                    showLoginRequired(context);
+                    return;
+                  }
+
                   Navigator.push(
                     context,
                     MaterialPageRoute(
@@ -424,12 +430,18 @@ class _FeedViewState extends State<FeedView> {
               ),
 
               // ==== Notification badge fixed ====
-              BlocBuilder<NotificationCubit, NotificationState>(
+
+                BlocBuilder<NotificationCubit, NotificationState>(
                 builder: (context, state) {
                   return Padding(
                     padding: const EdgeInsets.only(right: 12.0),
                     child: GestureDetector(
                       onTap: () {
+                        if (isGuest) {
+                          showLoginRequired(context);
+                          return;
+                        }
+
                         final cubit = context.read<NotificationCubit>();
                         Navigator.push(
                           context,
@@ -468,6 +480,12 @@ class _FeedViewState extends State<FeedView> {
                 padding: const EdgeInsets.only(right: 10.0),
                 child: GestureDetector(
                   onTap: () {
+                    if (isGuest) {
+                      showLoginRequired(context);
+                      return;
+                    }
+
+                    // User đã login
                     Navigator.pushNamed(
                       context,
                       AppRoutes.personalUser,
@@ -476,8 +494,16 @@ class _FeedViewState extends State<FeedView> {
                   },
                   child: CircleAvatar(
                     radius: 17,
+                    backgroundColor: Colors.orange.shade200,
                     backgroundImage: avatarUrl != null
                         ? CachedNetworkImageProvider(avatarUrl)
+                        : null,
+                    child: avatarUrl == null
+                        ? Icon(
+                      Icons.person,
+                      size: 20,
+                      color: Colors.orange.shade700,
+                    )
                         : null,
                   ),
                 ),
@@ -492,11 +518,15 @@ class _FeedViewState extends State<FeedView> {
                   children: [
                     if (isGuest) _buildGuestBanner(context),
                     // Story section luôn hiển thị
-                    if (user != null)
                     BlocBuilder<StoryCubit, StoryState>(
                       builder: (context, storyState) {
                         return StorySection(
                           onCreateStory: () async {
+                            if(isGuest){
+                              showLoginRequired(context);
+                              return;
+                            }
+
                             final user = await _getCurrentUser();
                             if (mounted) {
                               await handleCreateStory(context, user?.id);
@@ -544,6 +574,11 @@ class _FeedViewState extends State<FeedView> {
                         builder: (context, storyState) {
                           return StorySection(
                             onCreateStory: () async {
+                              if(isGuest){
+                                showLoginRequired(context);
+                                return;
+                              }
+
                               final user = await _getCurrentUser();
                               if (mounted) {
                                 await handleCreateStory(context, user?.id);
@@ -610,6 +645,7 @@ class _FeedViewState extends State<FeedView> {
                           final post = postState.posts[index];
                           return PostCard(
                             userId: post.userId,
+                            isGuest: isGuest,
                             post: post,
                             onTap: () => Navigator.push(
                               context,
@@ -713,7 +749,7 @@ class _FeedViewState extends State<FeedView> {
             ),
             child: const Text(
               'Đăng nhập',
-              style: TextStyle(fontWeight: FontWeight.w600),
+              style: TextStyle(fontWeight: FontWeight.w600, color: Colors.deepOrange),
             ),
           ),
         ],

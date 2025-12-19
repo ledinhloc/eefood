@@ -9,6 +9,11 @@ import 'package:eefood/features/recipe/domain/entities/recipe.dart';
 import '../../data/models/recipe_create_request.dart';
 
 abstract class RecipeRepository {
+  Future<void> logPostView({
+    required int postId,
+    required int viewDuration, // seconds
+    required DateTime viewedAt,
+  });
   Future<Result<RecipeModel>> createRecipeFromUrl(String url);
   Future<List<ProvinceModel>> getProvinces({String? keyword, int limit = 5, int page = 1});
   Future<List<IngredientModel>> getAllIngredient(String? name, int page, int limit);

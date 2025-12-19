@@ -15,6 +15,21 @@ class RecipeRepositoryImpl implements RecipeRepository {
 
   RecipeRepositoryImpl({required this.dio});
   @override
+  Future<void> logPostView({required int postId, required int viewDuration, required DateTime viewedAt}) async {
+    try{
+      await dio.post(
+        '/v1/post-views',
+        queryParameters: {
+          'postId': postId,
+          'viewDuration': viewDuration,
+          'viewedAt': viewedAt.toIso8601String()
+        }
+      );
+    }catch(err){
+      print('post log view failed: $err');
+    }
+  }
+  @override
   Future<RecipeDetailModel> fetchRecipeDetail(int recipeId) async {
     try {
       final response = await dio.get(

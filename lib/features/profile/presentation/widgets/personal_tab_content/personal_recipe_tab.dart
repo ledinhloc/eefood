@@ -138,6 +138,7 @@ class _PersonalRecipeTabState extends State<PersonalRecipeTab>
                         return PostCard(
                           userId: widget.user.id,
                           post: post,
+                          isGuest: false,
                           onTap: () {
                             Navigator.push(
                               context,
