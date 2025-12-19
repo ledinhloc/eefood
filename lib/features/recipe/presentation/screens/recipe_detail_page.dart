@@ -9,6 +9,7 @@ import '../../../../core/widgets/custom_bottom_sheet.dart';
 import '../../../post/presentation/widgets/collection/add_to_collection_sheet.dart';
 import '../../domain/repositories/shopping_repository.dart';
 import '../provider/recipe_detail_cubit.dart';
+import '../widgets/category_list_widget.dart';
 import '../widgets/instructions_tab.dart';
 import '../widgets/steps_tab.dart';
 
@@ -252,21 +253,13 @@ class _RecipeDetailPageState extends State<RecipeDetailPage> {
                         ],
                       ),
 
-                      // const SizedBox(height: 16),
+                      const SizedBox(height: 16),
 
                       // --- Categories ---
-                      // if (recipe.categoryIds != null && recipe.categoryIds!.isNotEmpty)
-                      //   Wrap(
-                      //     spacing: 6,
-                      //     children: recipe.categoryIds!
-                      //         .map((id) => Chip(
-                      //       label: Text("Category $id"),
-                      //       backgroundColor: Colors.orange.shade50,
-                      //     ))
-                      //         .toList(),
-                      //   ),
+                      if (recipe.categories != null && recipe.categories!.isNotEmpty)
+                        CategoryListWidget(categories: recipe.categories!),
 
-                      // const SizedBox(height: 16),
+                      const SizedBox(height: 16),
 
                       // --- Video Preview ---
                       if (recipe.videoUrl != null && recipe.videoUrl!.isNotEmpty)
