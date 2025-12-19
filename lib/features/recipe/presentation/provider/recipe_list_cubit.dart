@@ -59,8 +59,14 @@ class RecipeListCubit extends Cubit<RecipeListState> {
     }
   }
 
-  void refresh() {
-    _safeEmit(RecipeListState());
-    fetchDraftRecipes();
+  Future<void> refresh() async  {
+    _safeEmit(state.copyWith(
+      draftRecipes: [],
+      draftCurrentPage: 0,
+      hasDraftMore: true,
+      isLoading: false,
+      error: null,
+    ));
+    await fetchDraftRecipes();
   }
 }
