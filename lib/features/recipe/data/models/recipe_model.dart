@@ -1,9 +1,6 @@
-import 'package:eefood/features/recipe/data/models/category_model.dart';
-import 'package:eefood/features/recipe/data/models/ingredient_model.dart';
 import 'package:eefood/features/recipe/data/models/recipe_Ingredient_model.dart';
 import 'package:eefood/features/recipe/data/models/recipe_step_model.dart';
 import 'package:eefood/features/recipe/domain/entities/recipe.dart';
-import 'package:eefood/features/recipe/domain/entities/recipe_ingredient.dart';
 
 class RecipeModel {
   int? id;
@@ -35,7 +32,7 @@ class RecipeModel {
 
   factory RecipeModel.fromJson(Map<String, dynamic> json) {
     return RecipeModel(
-      id: json['id'] !=null ? json['id'] as int : 0,
+      id: json['id'] != null ? json['id'] as int : 0,
       title: json['title'],
       description: json['description'],
       imageUrl: json['imageUrl'],

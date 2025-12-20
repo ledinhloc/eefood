@@ -107,7 +107,7 @@ class DioClient {
                 AppRoutes.welcome,
                 (route) => false,
               );
-
+          
               return handler.reject(
                 DioException(
                   requestOptions: e.requestOptions,

@@ -52,7 +52,7 @@ class AuthRepositoryImpl implements AuthRepository {
       debugPrint("TOKEN ID: $idToken");
       final response = await dio.post(
         '/v1/auth/google-login',
-        data: {'idToken': idToken},
+        data: {'idToken': idToken, 'fcmToken': fcmToken},
         options: Options(
           contentType: 'application/json',
           extra: {'requireAuth': false},
