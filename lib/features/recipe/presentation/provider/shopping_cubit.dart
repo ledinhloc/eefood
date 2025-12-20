@@ -103,9 +103,9 @@ class ShoppingCubit extends Cubit<ShoppingState> {
     }
   }
 
-  Future<void> updateServings(int recipeId, int servings) async {
+  Future<void> updateServings(int itemId, int servings) async {
     try {
-      await repository.updateServings(recipeId, servings);
+      await repository.updateServings(itemId, servings);
       await load();
     } catch (e) {
       emit(state.copyWith(error: e.toString()));

@@ -1,39 +1,16 @@
 import '../../data/models/shopping_item_model.dart';
+import 'package:freezed_annotation/freezed_annotation.dart';
 import '../../data/models/shopping_ingredient_model.dart';
+part 'shopping_state.freezed.dart';
 
 enum ShoppingViewMode { byRecipe, byIngredient }
-
-class ShoppingState {
-  final bool isLoading;
-  final String? error;
-  final List<ShoppingItemModel> recipes;
-  final List<ShoppingIngredientModel> ingredients;
-  final ShoppingViewMode viewMode;
-
-  const ShoppingState({
-    this.isLoading = false,
-    this.error,
-    this.recipes = const [],
-    this.ingredients = const [],
-    this.viewMode = ShoppingViewMode.byRecipe,
-  });
-
-  ShoppingState copyWith({
-    bool? isLoading,
+@freezed
+class ShoppingState with _$ShoppingState {
+  const factory ShoppingState({
+    @Default(false) bool isLoading,
     String? error,
-    List<ShoppingItemModel>? recipes,
-    List<ShoppingIngredientModel>? ingredients,
-    ShoppingViewMode? viewMode,
-  }) {
-    return ShoppingState(
-      isLoading: isLoading ?? this.isLoading,
-      error: error,
-      recipes: recipes ?? this.recipes,
-      ingredients: ingredients ?? this.ingredients,
-      viewMode: viewMode ?? this.viewMode,
-    );
-  }
-
-  @override
-  List<Object?> get props => [isLoading, error, recipes, ingredients, viewMode];
+    @Default(<ShoppingItemModel>[]) List<ShoppingItemModel> recipes,
+    @Default(<ShoppingIngredientModel>[]) List<ShoppingIngredientModel> ingredients,
+    @Default(ShoppingViewMode.byRecipe) ShoppingViewMode viewMode,
+  }) = _ShoppingState;
 }
