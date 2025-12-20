@@ -2,9 +2,13 @@ import 'package:eefood/features/recipe/data/models/category_model.dart';
 import 'package:eefood/features/recipe/data/models/recipe_Ingredient_model.dart';
 import 'package:eefood/features/recipe/data/models/recipe_model.dart';
 import 'package:eefood/features/recipe/data/models/recipe_step_model.dart';
+import 'package:json_annotation/json_annotation.dart';
 
 import '../../domain/entities/recipe.dart';
 
+part 'recipe_detail_model.g.dart';
+
+@JsonSerializable(explicitToJson: true)
 class RecipeDetailModel{
   final int userId;
   final String username;
@@ -42,37 +46,9 @@ class RecipeDetailModel{
     this.steps,
     this.ingredients,
   });
+  factory RecipeDetailModel.fromJson(Map<String, dynamic> json) =>
+      _$RecipeDetailModelFromJson(json);
 
-  factory RecipeDetailModel.fromJson(Map<String, dynamic> json) {
-    return RecipeDetailModel(
-      id: json['id'],
-      userId: json['userId'],
-      title: json['title'],
-      description: json['description'],
-      imageUrl: json['imageUrl'],
-      videoUrl: json['videoUrl'],
-      difficulty: RecipeModel.difficultyFromString(json['difficulty']),
-      region: json['region'],
-      cookTime: json['cookTime'],
-      prepTime: json['prepTime'],
-      categories: json['categories'] != null
-          ? (json['categories'] as List)
-          .map((e) => CategoryModel.fromJson(e))
-          .toList()
-          : [],
-      ingredients: json['ingredients'] != null
-          ? (json['ingredients'] as List)
-          .map((e) => RecipeIngredientModel.fromJson(e))
-          .toList()
-          : [],
-      steps: json['steps'] != null
-          ? (json['steps'] as List)
-          .map((e) => RecipeStepModel.fromJson(e))
-          .toList()
-          : [],
-      username: json['username'] ?? '',
-      email: json['email'] ?? '',
-      avatarUrl: json['avatarUrl'],
-    );
-  }
+  Map<String, dynamic> toJson() => _$RecipeDetailModelToJson(this);
+
 }

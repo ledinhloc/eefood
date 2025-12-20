@@ -242,7 +242,7 @@ class _IngredientBottomSheetState extends State<IngredientBottomSheet> {
                   textAlign: TextAlign.center,
                   keyboardType: const TextInputType.numberWithOptions(decimal: true),
                   decoration: InputDecoration(
-                    hintText: '1/2',
+                    hintText: '1',
                     labelText: "Quantity",
                     border: const OutlineInputBorder(),
                     suffixIcon: Column(

@@ -7,6 +7,8 @@ import 'package:eefood/features/recipe/data/models/region_model.dart';
 import 'package:eefood/features/recipe/domain/entities/recipe.dart';
 import 'package:eefood/features/recipe/domain/repositories/recipe_repository.dart';
 
+import '../../data/models/recipe_update_request.dart';
+
 class Province {
   final RecipeRepository repository;
   Province(this.repository);
@@ -52,7 +54,7 @@ class UpdateRecipe {
   final RecipeRepository repository;
   UpdateRecipe(this.repository);
 
-  Future<Result<RecipeModel>> call(int id, RecipeModel recipe) => repository.updateRecipe(id,recipe);
+  Future<Result<RecipeModel>> call(int id, RecipeUpdateRequest recipe) => repository.updateRecipe(id,recipe);
 }
 
 class DeleteRecipe {

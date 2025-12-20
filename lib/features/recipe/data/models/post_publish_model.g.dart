@@ -46,6 +46,7 @@ Map<String, dynamic> _$PostPublishModelToJson(PostPublishModel instance) =>
 
 const _$PostStatusEnumMap = {
   PostStatus.pending: 'PENDING',
+  PostStatus.editedPending: 'EDITED_PENDING',
   PostStatus.approved: 'APPROVED',
   PostStatus.rejected: 'REJECTED',
 };

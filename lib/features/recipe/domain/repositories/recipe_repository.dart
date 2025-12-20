@@ -7,6 +7,7 @@ import 'package:eefood/features/recipe/data/models/region_model.dart';
 import 'package:eefood/features/recipe/domain/entities/recipe.dart';
 
 import '../../data/models/recipe_create_request.dart';
+import '../../data/models/recipe_update_request.dart';
 
 abstract class RecipeRepository {
   Future<void> logPostView({
@@ -30,7 +31,7 @@ abstract class RecipeRepository {
     int size,
     String sortBy,
     String direction); 
-  Future<Result<RecipeModel>> updateRecipe(int id,RecipeModel recipe);
+  Future<Result<RecipeModel>> updateRecipe(int id,RecipeUpdateRequest recipe);
   Future<RecipeModel> getRecipeById(int recipeId);
   Future<RecipeDetailModel> fetchRecipeDetail(int recipeId);
 }

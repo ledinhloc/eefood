@@ -34,13 +34,6 @@ class RecipeIngredientModel {
     };
   }
 
-  RecipeIngredient toEntity() => RecipeIngredient(
-    id: id!,
-    quantity: quantity,
-    unit: unit,
-    ingredient: ingredient!.toEntity(),
-  );
-
   RecipeIngredientModel copyWith({
     int? id,
     double? quantity,
