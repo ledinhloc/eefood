@@ -54,9 +54,13 @@ class DioClient {
             return handler.next(e);
           }
 
+          final prefs = getIt<SharedPreferences>();
+          final refreshToken = prefs.getString(AppKeys.refreshToken);
+
           // Xử lý lỗi 401 (Unauthorized) bằng cách refresh token
-          if (e.response?.statusCode == 401 &&
-              !e.requestOptions.path.contains('/auth/refresh')) {
+          if (e.response?.statusCode == 401
+            && refreshToken != null
+              && !e.requestOptions.path.contains('/auth/refresh')) {
             try {
               // Gọi use case refresh token
               await getIt<RefreshToken>()();

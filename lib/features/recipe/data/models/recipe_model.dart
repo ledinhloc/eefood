@@ -1,20 +1,25 @@
 import 'package:eefood/features/recipe/data/models/recipe_Ingredient_model.dart';
 import 'package:eefood/features/recipe/data/models/recipe_step_model.dart';
 import 'package:eefood/features/recipe/domain/entities/recipe.dart';
+import 'package:json_annotation/json_annotation.dart';
 
+part 'recipe_model.g.dart';
+
+@JsonSerializable(explicitToJson: true)
 class RecipeModel {
-  int? id;
-  String title;
-  String? description;
-  String? imageUrl;
-  String? videoUrl;
-  Difficulty? difficulty;
-  String? region;
-  int? cookTime; // in minutes
-  int? prepTime; // in minutes
-  List<int>? categoryIds;
-  List<RecipeIngredientModel>? ingredients;
-  List<RecipeStepModel>? steps;
+  final int? id;
+  final String title;
+  final String? description;
+  final String? region;
+  final String? imageUrl;
+  final String? videoUrl;
+  final int? prepTime;
+  final int? cookTime;
+  final Difficulty? difficulty;
+
+  final List<CategoryModel>? categories;
+  final List<RecipeStepModel>? steps;
+  final List<RecipeIngredientModel>? ingredients;
   RecipeModel({
     this.id,
     required this.title,
@@ -22,110 +27,46 @@ class RecipeModel {
     this.region,
     this.imageUrl,
     this.videoUrl,
-    this.difficulty,
     this.prepTime,
     this.cookTime,
-    this.categoryIds,
+    this.difficulty,
+    this.categories,
     this.steps,
     this.ingredients,
   });
 
-  factory RecipeModel.fromJson(Map<String, dynamic> json) {
-    return RecipeModel(
-      id: json['id'] != null ? json['id'] as int : 0,
-      title: json['title'],
-      description: json['description'],
-      imageUrl: json['imageUrl'],
-      videoUrl: json['videoUrl'],
-      difficulty: difficultyFromString(json['difficulty']),
-      region: json['region'],
-      cookTime: json['cookTime'],
-      prepTime: json['prepTime'],
-      categoryIds: (json['categories'] as List<dynamic>?)
-          ?.map((e) => e['id'] as int)
-          .toList(),
-      ingredients: json['ingredients'] != null
-          ? (json['ingredients'] as List)
-                .map(
-                  (e) =>
-                      RecipeIngredientModel.fromJson(e as Map<String, dynamic>),
-                )
-                .toList()
-          : null,
-      steps: json['steps'] != null
-          ? (json['steps'] as List)
-                .map((e) => RecipeStepModel.fromJson(e as Map<String, dynamic>))
-                .toList()
-          : null,
-    );
-  }
+  factory RecipeModel.fromJson(Map<String, dynamic> json) =>
+      _$RecipeModelFromJson(json);
 
-  Map<String, dynamic> toJson() {
-    return {
-      'title': title,
-      'description': description,
-      'imageUrl': imageUrl,
-      'videoUrl': videoUrl,
-      'difficulty': difficulty?.name,
-      'region': region,
-      'cookTime': cookTime,
-      'prepTime': prepTime,
-      'categoryIds': categoryIds,
-      'ingredients': ingredients?.map((ing) => ing.toJson()).toList(),
-      'steps': steps?.map((step) => step.toJson()).toList(),
-    };
-  }
-
-  Recipe toEntity() => Recipe(
-    id: id,
-    title: title,
-    description: description,
-    imageUrl: imageUrl,
-    videoUrl: videoUrl,
-    difficulty: difficulty,
-    region: region,
-    cookTime: cookTime,
-    prepTime: prepTime,
-    categoryIds: categoryIds,
-    ingredients: ingredients,
-    steps: steps,
-  );
-
-  static Difficulty? difficultyFromString(String? value) {
-    if (value == null) return null;
-    return Difficulty.values.firstWhere(
-      (e) => e.name.toUpperCase() == value.toUpperCase(),
-      orElse: () => Difficulty.EASY,
-    );
-  }
+  Map<String, dynamic> toJson() => _$RecipeModelToJson(this);
 
   RecipeModel copyWith({
     int? id,
     String? title,
     String? description,
+    String? region,
     String? imageUrl,
     String? videoUrl,
-    Difficulty? difficulty,
-    String? region,
-    int? cookTime,
     int? prepTime,
-    List<int>? categoryIds,
-    List<RecipeIngredientModel>? ingredients,
+    int? cookTime,
+    Difficulty? difficulty,
+    List<CategoryModel>? categories,
     List<RecipeStepModel>? steps,
+    List<RecipeIngredientModel>? ingredients,
   }) {
     return RecipeModel(
       id: id ?? this.id,
       title: title ?? this.title,
       description: description ?? this.description,
+      region: region ?? this.region,
       imageUrl: imageUrl ?? this.imageUrl,
       videoUrl: videoUrl ?? this.videoUrl,
-      difficulty: difficulty ?? this.difficulty,
-      region: region ?? this.region,
-      cookTime: cookTime ?? this.cookTime,
       prepTime: prepTime ?? this.prepTime,
-      categoryIds: categoryIds ?? this.categoryIds,
-      ingredients: ingredients ?? this.ingredients,
+      cookTime: cookTime ?? this.cookTime,
+      difficulty: difficulty ?? this.difficulty,
+      categories: categories ?? this.categories,
       steps: steps ?? this.steps,
+      ingredients: ingredients ?? this.ingredients,
     );
   }
 }

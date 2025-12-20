@@ -8,6 +8,9 @@ import 'package:eefood/features/recipe/presentation/screens/recipe_detail_page.d
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
+import '../../../../../../core/di/injection.dart';
+import '../../../../../auth/domain/usecases/auth_usecases.dart';
+
 class ImageSearchResultsSheet extends StatefulWidget {
   final File imageFile;
   final String? keyword;
@@ -27,11 +30,14 @@ class _ImageSearchResultsSheetState extends State<ImageSearchResultsSheet> {
   final ScrollController _scrollController = ScrollController();
   late final PostListCubit _cubit;
   OverlayEntry? _activePopup;
+  final GetCurrentUser _getCurrentUser = getIt<GetCurrentUser>();
+  bool _isGuest = true;
 
   void hideReactionPopup() {
     _activePopup?.remove();
     _activePopup = null;
   }
+
 
   void showReactionPopup(
     BuildContext context,
@@ -80,11 +86,21 @@ class _ImageSearchResultsSheetState extends State<ImageSearchResultsSheet> {
   @override
   void initState() {
     super.initState();
+    _checkGuest();
+
     _scrollController.addListener(() {
       if (_scrollController.position.pixels >=
           _scrollController.position.maxScrollExtent - 200) {
         _cubit.fetchPosts(loadMore: true);
       }
+    });
+  }
+
+  Future<void> _checkGuest() async {
+    final user = await _getCurrentUser();
+    if (!mounted) return;
+    setState(() {
+      _isGuest = user == null;
     });
   }
 
@@ -199,6 +215,7 @@ class _ImageSearchResultsSheetState extends State<ImageSearchResultsSheet> {
                           return PostCard(
                             userId: post.userId,
                             post: post,
+                            isGuest: _isGuest,
                             onTap: () {
                               Navigator.push(
                                 context,

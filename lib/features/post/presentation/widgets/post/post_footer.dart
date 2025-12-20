@@ -1,5 +1,6 @@
 import 'package:eefood/core/di/injection.dart';
 import 'package:eefood/core/utils/share_utils.dart';
+import 'package:eefood/core/widgets/show_login_required.dart';
 import 'package:eefood/features/post/presentation/provider/comment_list_cubit.dart';
 import 'package:eefood/features/post/presentation/provider/post_list_cubit.dart';
 import 'package:eefood/features/post/presentation/widgets/comment/comment_sheet.dart';
@@ -12,9 +13,15 @@ import 'footer_button.dart';
 
 class PostFooter extends StatefulWidget {
   final PostModel post;
+  final bool isGuest;
   final void Function(Offset offset, Function(ReactionType) onSelect)?
   onShowReactions;
-  const PostFooter({super.key, required this.post, this.onShowReactions});
+  const PostFooter({
+    super.key,
+    required this.post,
+    required this.isGuest,
+    this.onShowReactions
+  });
 
   @override
   State<PostFooter> createState() => _PostFooterState();
@@ -47,6 +54,10 @@ class _PostFooterState extends State<PostFooter>
   }
 
   void _handleReact(ReactionType? newReaction) async {
+    if(widget.isGuest){
+      showLoginRequired(context);
+      return;
+    }
     final cubit = getIt<PostListCubit>();
 
     if (_selectedReaction == newReaction || newReaction == null) {
@@ -64,6 +75,11 @@ class _PostFooterState extends State<PostFooter>
   }
 
   void _openCommentSheet() {
+    if(widget.isGuest){
+      showLoginRequired(context);
+      return;
+    }
+
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
@@ -79,7 +95,11 @@ class _PostFooterState extends State<PostFooter>
   }
 
   void _openShareSheet() {
-    
+    if (widget.isGuest) {
+      showLoginRequired(context);
+      return;
+    }
+
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,

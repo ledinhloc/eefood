@@ -17,7 +17,7 @@ class CollectionListPage extends StatefulWidget {
 class _CollectionListPageState extends State<CollectionListPage> {
   String searchQuery = '';
   bool isExpanded = false;
-  final cubit = getIt<CollectionCubit>();
+  final cubit = getIt<CollectionCubit>()..fetchCollectionsByUser();
   @override
   void initState() {
     super.initState();

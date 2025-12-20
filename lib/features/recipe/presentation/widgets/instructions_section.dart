@@ -267,52 +267,44 @@ class _InstructionsSectionState extends State<InstructionsSection> {
     final state = context.watch<RecipeCrudCubit>().state;
     final instructions = state.steps;
 
-    return SingleChildScrollView(
-      physics: const ClampingScrollPhysics(),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Text(
-            'Instructions',
-            style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-          ),
-          const SizedBox(height: 16),
-          if (instructions.isEmpty)
-            const Center(
-              child: Text(
-                'No instructions added yet',
-                style: TextStyle(color: Colors.grey),
-              ),
-            )
-          else
-            ConstrainedBox(
-              constraints: BoxConstraints(
-                maxHeight: MediaQuery.of(context).size.height * 0.8,
-              ),
-              child: ReorderableListView.builder(
-                shrinkWrap: true,
-                physics: const ClampingScrollPhysics(),
-                onReorder: _reorderInstructions,
-                itemCount: instructions.length,
-                itemBuilder: (context, index) {
-                  final step = instructions[index];
-                  return _buildInstructionCard(step, index);
-                },
-              ),
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Text(
+          'Instructions',
+          style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+        ),
+        const SizedBox(height: 16),
+        if (instructions.isEmpty)
+          const Center(
+            child: Text(
+              'No instructions added yet',
+              style: TextStyle(color: Colors.grey),
             ),
-          const SizedBox(height: 16),
-          Center(
-            child: ElevatedButton.icon(
-              onPressed: _addInstruction,
-              icon: const Icon(Icons.add, color: Colors.white),
-              label: const Text(
-                'Add Instruction',
-                style: TextStyle(color: Colors.white),
-              ),
+          )
+        else
+          ReorderableListView.builder(
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            onReorder: _reorderInstructions,
+            itemCount: instructions.length,
+            itemBuilder: (context, index) {
+              final step = instructions[index];
+              return _buildInstructionCard(step, index);
+            },
+          ),
+        const SizedBox(height: 16),
+        Center(
+          child: ElevatedButton.icon(
+            onPressed: _addInstruction,
+            icon: const Icon(Icons.add, color: Colors.white),
+            label: const Text(
+              'Add Instruction',
+              style: TextStyle(color: Colors.white),
             ),
           ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 }

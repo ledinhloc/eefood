@@ -41,15 +41,6 @@ class RecipeStepModel {
     'stepTime': stepTime,
   };
 
-  RecipeStep toEntity() => RecipeStep(
-    id: id ?? 0,
-    stepNumber: stepNumber,
-    instruction: instruction ?? "",
-    imageUrls: imageUrls ?? [],
-    videoUrls: videoUrls ?? [],
-    stepTime: stepTime,
-  );
-
   RecipeStepModel copyWith({
     int? id,
     int? stepNumber,

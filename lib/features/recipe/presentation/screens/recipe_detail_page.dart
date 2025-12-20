@@ -1,5 +1,7 @@
 import 'package:eefood/core/di/injection.dart';
+import 'package:eefood/core/widgets/show_login_required.dart';
 import 'package:eefood/core/widgets/snack_bar.dart';
+import 'package:eefood/features/auth/domain/usecases/auth_usecases.dart';
 import 'package:eefood/features/recipe/presentation/provider/shopping_cubit.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -7,17 +9,36 @@ import '../../../../core/widgets/custom_bottom_sheet.dart';
 import '../../../post/presentation/widgets/collection/add_to_collection_sheet.dart';
 import '../../domain/repositories/shopping_repository.dart';
 import '../provider/recipe_detail_cubit.dart';
+import '../widgets/category_list_widget.dart';
 import '../widgets/instructions_tab.dart';
 import '../widgets/steps_tab.dart';
 
-class RecipeDetailPage extends StatelessWidget {
+class RecipeDetailPage extends StatefulWidget {
   final int recipeId;
   const RecipeDetailPage({super.key, required this.recipeId});
 
   @override
+  State<RecipeDetailPage> createState() => _RecipeDetailPageState();
+}
+
+class _RecipeDetailPageState extends State<RecipeDetailPage> {
+  late final RecipeDetailCubit _cubit;
+
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+    _cubit = RecipeDetailCubit()..loadRecipe(widget.recipeId);
+  }
+  @override
+  void dispose() {
+    _cubit.stopTracking();
+    super.dispose();
+  }
+  @override
   Widget build(BuildContext context) {
-    return BlocProvider(
-      create: (_) => RecipeDetailCubit()..loadRecipe(recipeId),
+    return BlocProvider.value(
+      value: _cubit,
       child: BlocBuilder<RecipeDetailCubit, RecipeDetailState>(
         builder: (context, state) {
           if (state.isLoading) {
@@ -232,21 +253,13 @@ class RecipeDetailPage extends StatelessWidget {
                         ],
                       ),
 
-                      // const SizedBox(height: 16),
+                      const SizedBox(height: 16),
 
                       // --- Categories ---
-                      // if (recipe.categoryIds != null && recipe.categoryIds!.isNotEmpty)
-                      //   Wrap(
-                      //     spacing: 6,
-                      //     children: recipe.categoryIds!
-                      //         .map((id) => Chip(
-                      //       label: Text("Category $id"),
-                      //       backgroundColor: Colors.orange.shade50,
-                      //     ))
-                      //         .toList(),
-                      //   ),
+                      if (recipe.categories != null && recipe.categories!.isNotEmpty)
+                        CategoryListWidget(categories: recipe.categories!),
 
-                      // const SizedBox(height: 16),
+                      const SizedBox(height: 16),
 
                       // --- Video Preview ---
                       if (recipe.videoUrl != null && recipe.videoUrl!.isNotEmpty)
@@ -312,7 +325,6 @@ class RecipeDetailPage extends StatelessWidget {
   }
 
   // --- Helper widgets ---
-
   Widget _iconText(IconData icon, String text) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
@@ -343,6 +355,11 @@ class RecipeDetailPage extends StatelessWidget {
   }
 
   void _showRecipeOption(BuildContext context, int recipeId, {bool isAuthor = false}) async {
+    final user = await getIt<GetCurrentUser>().call();
+    if(user == null){
+      showLoginRequired(context);
+    }
+
     final opts = <BottomSheetOption>[
       BottomSheetOption(
         icon: const Icon(Icons.add_shopping_cart_rounded, color: Colors.orange),

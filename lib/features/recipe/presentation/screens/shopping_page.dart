@@ -3,14 +3,14 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../core/widgets/custom_bottom_sheet.dart';
 import '../../../../core/widgets/snack_bar.dart';
-import '../../data/models/shopping_item_model.dart';
 import '../provider/shopping_cubit.dart';
 import '../provider/shopping_state.dart';
-import '../widgets/ingredient_tile.dart';
-import '../widgets/recipe_card.dart';
+import '../widgets/shopping/ingredient_list_view.dart';
+import '../widgets/shopping/recipe_list_view.dart';
 
 class ShoppingPage extends StatelessWidget {
   const ShoppingPage({super.key});
+
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
@@ -22,42 +22,95 @@ class ShoppingPage extends StatelessWidget {
 
 class ShoppingView extends StatelessWidget {
   const ShoppingView({super.key});
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.grey.shade50,
       appBar: AppBar(
-        title: const Text(
-          'Shopping List',
-          style: TextStyle(fontWeight: FontWeight.bold),
-        ),
+        elevation: 0,
+        backgroundColor: Colors.white,
         automaticallyImplyLeading: false,
+        title: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [Colors.orange.shade400, Colors.deepOrange.shade500],
+                ),
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: const Icon(
+                Icons.shopping_cart,
+                color: Colors.white,
+                size: 20,
+              ),
+            ),
+            const SizedBox(width: 12),
+            const Text(
+              'Danh sách mua sắm',
+              style: TextStyle(
+                fontWeight: FontWeight.bold,
+                color: Colors.black87,
+              ),
+            ),
+          ],
+        ),
         actions: [
           BlocBuilder<ShoppingCubit, ShoppingState>(
-            builder: (context, state){
-              return TextButton.icon(
-                icon: const Icon(Icons.arrow_drop_down_circle_outlined),
-                label: Text(
-                  state.viewMode == ShoppingViewMode.byRecipe ? 'Món ăn' : 'Nguyên liệu',
-                  style: const TextStyle(color: Colors.black, fontSize: 18),
+            builder: (context, state) {
+              final isByRecipe = state.viewMode == ShoppingViewMode.byRecipe;
+              return Container(
+                margin: const EdgeInsets.only(right: 8, top: 8, bottom: 8),
+                decoration: BoxDecoration(
+                  color: Colors.orange.shade50,
+                  borderRadius: BorderRadius.circular(20),
+                  border: Border.all(color: Colors.orange.shade200),
                 ),
-                onPressed: () async{
-                  await showCustomBottomSheet(context, [
-                    BottomSheetOption(
-                      icon: Icon(Icons.list),
-                      title: "Xem theo món ăn",
-                      onTap: () {
-                        context.read<ShoppingCubit>().toggleView(ShoppingViewMode.byRecipe);
-                      },
+                child: TextButton.icon(
+                  icon: Icon(
+                    isByRecipe ? Icons.restaurant_menu : Icons.shopping_basket,
+                    size: 18,
+                    color: Colors.orange.shade700,
+                  ),
+                  label: Text(
+                    isByRecipe ? 'Món ăn' : 'Nguyên liệu',
+                    style: TextStyle(
+                      color: Colors.orange.shade700,
+                      fontSize: 14,
+                      fontWeight: FontWeight.w600,
                     ),
-                    BottomSheetOption(
-                      icon: Icon(Icons.shopping_cart),
-                      title: "Xem theo nguyên liệu",
-                      onTap: () {
-                        context.read<ShoppingCubit>().toggleView(ShoppingViewMode.byIngredient);
-                      },
-                    ),
-                  ]);
-                },
+                  ),
+                  onPressed: () async {
+                    await showCustomBottomSheet(context, [
+                      BottomSheetOption(
+                        icon: Icon(
+                          Icons.restaurant_menu,
+                          color: Colors.orange.shade700,
+                        ),
+                        title: "Xem theo món ăn",
+                        onTap: () {
+                          context
+                              .read<ShoppingCubit>()
+                              .toggleView(ShoppingViewMode.byRecipe);
+                        },
+                      ),
+                      BottomSheetOption(
+                        icon: Icon(
+                          Icons.shopping_basket,
+                          color: Colors.orange.shade700,
+                        ),
+                        title: "Xem theo nguyên liệu",
+                        onTap: () {
+                          context
+                              .read<ShoppingCubit>()
+                              .toggleView(ShoppingViewMode.byIngredient);
+                        },
+                      ),
+                    ]);
+                  },
+                ),
               );
             },
           ),
@@ -65,86 +118,20 @@ class ShoppingView extends StatelessWidget {
       ),
       body: SafeArea(
         child: BlocListener<ShoppingCubit, ShoppingState>(
-          listenWhen: (prev, curr) => curr.error !=null , /* khi khac null*/
-          listener: (context, state){
-            if(state.error != null){
+          listenWhen: (prev, curr) => curr.error != null,
+          listener: (context, state) {
+            if (state.error != null) {
               showCustomSnackBar(context, state.error!, isError: true);
-              // showCustomSnackBar(context, 'Mất kết nối vui lòng thử lại!', isError: true);
             }
           },
           child: BlocBuilder<ShoppingCubit, ShoppingState>(
             builder: (context, state) {
-              // if (state.isLoading) {
-              //   return const Center(child: CircularProgressIndicator());
-              // }
-              // if (state.error != null) {
-              //   return Center(child: Text('Error: ${state.error}'));
-              // }
               final isByRecipe = state.viewMode == ShoppingViewMode.byRecipe;
               return isByRecipe
-                  ? _buildRecipeList(state.recipes, context)
-                  : _buildIngredientList(state.ingredients, context);
+                  ? RecipeListWidget(recipes: state.recipes)
+                  : IngredientListWidget(ingredients: state.ingredients);
             },
           ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildRecipeList(
-    List<ShoppingItemModel> recipes,
-    BuildContext context,
-  ) {
-    if (recipes.isEmpty) {
-      return const Center(
-        child: Text('Hãy thêm món ăn'),
-      );
-    }
-    return RefreshIndicator(
-      onRefresh: () => context.read<ShoppingCubit>().load(),
-      child: ListView.builder(
-        itemCount: recipes.length,
-        itemBuilder: (context, index) {
-          final item = recipes[index];
-          return Dismissible(
-            key: ValueKey(item.id),
-            direction: DismissDirection.endToStart,
-            background: Container(
-              color: Colors.red,
-              alignment: Alignment.centerRight,
-              padding: const EdgeInsets.symmetric(horizontal: 5),
-              child: const Icon(Icons.delete, color: Colors.white),
-            ),
-            onDismissed: (_) {
-              context.read<ShoppingCubit>().removeItem(item.id ?? 0);
-            },
-            child: RecipeCard(item: item),
-          );
-        },
-      ),
-    );
-  }
-
-  Widget _buildIngredientList(List ingredients, BuildContext context) {
-    if (ingredients.isEmpty) {
-      return const Center(child: Text('Không có nguyên liệu'));
-    }
-    return RefreshIndicator(
-      onRefresh: () => context.read<ShoppingCubit>().load(),
-      child: Padding(
-        padding: const EdgeInsets.all(12.0),
-        child: ListView.builder(
-          itemCount: ingredients.length,
-          itemBuilder: (context, index) {
-            final ing = ingredients[index];
-            return IngredientTile(
-              ingredient: ing,
-              onToggle: (val) => context.read<ShoppingCubit>().togglePurchased(
-                ing,
-                val ?? false,
-              ),
-            );
-          },
         ),
       ),
     );

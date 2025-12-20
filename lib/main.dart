@@ -49,7 +49,6 @@ class _MyAppState extends State<MyApp> {
       DeepLinkService().initialize();
     });
   }
-
   @override
   Widget build(BuildContext context) {
     return MaterialApp(

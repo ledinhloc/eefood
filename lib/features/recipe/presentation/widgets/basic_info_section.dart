@@ -205,10 +205,15 @@ class _BasicInfoSectionState extends State<BasicInfoSection> {
               enableClear: true,
               maxLines: 3,
               textInputAction: TextInputAction.done,
-              onFocusLost: (value) {
-                print(value);
-                _cubit.updateRecipe(recipe.copyWith(description: value));
+              onChanged: (value) {
+                _cubit.updateRecipe(
+                  recipe.copyWith(description: value),
+                );
               },
+              // onFocusLost: (value) {
+              //   print(value);
+              //   _cubit.updateRecipe(recipe.copyWith(description: value));
+              // },
             ),
             const SizedBox(height: 16),
             CustomDropdownSearch<String>(
@@ -266,7 +271,7 @@ class _BasicInfoSectionState extends State<BasicInfoSection> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+                  crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
                     Expanded(
                       child: CustomDropdownSearch<CategoryModel>.multiSelection(
@@ -305,7 +310,7 @@ class _BasicInfoSectionState extends State<BasicInfoSection> {
                         onPressed: () => _showAddCategoryBottomSheet(context),
                         icon: Icon(
                           Icons.add_circle,
-                          color: Colors.green.shade600,
+                          color: Colors.deepOrange.shade600,
                           size: 32,
                         ),
                         tooltip: 'Add new category',
@@ -468,7 +473,7 @@ class _BasicInfoSectionState extends State<BasicInfoSection> {
                 focusedBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(8),
                   borderSide: BorderSide(
-                    color: Colors.green.shade300,
+                    color: Colors.orange.shade300,
                     width: 2,
                   ),
                 ),
@@ -516,7 +521,7 @@ class _BasicInfoSectionState extends State<BasicInfoSection> {
                       }
                     },
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.green,
+                      backgroundColor: Colors.deepOrangeAccent,
                       foregroundColor: Colors.white,
                       padding: const EdgeInsets.symmetric(vertical: 12),
                       shape: RoundedRectangleBorder(

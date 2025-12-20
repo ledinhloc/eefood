@@ -9,11 +9,27 @@ import 'package:flutter/foundation.dart';
 
 import '../models/recipe_create_request.dart';
 import '../models/recipe_detail_model.dart';
+import '../models/recipe_update_request.dart';
 
 class RecipeRepositoryImpl implements RecipeRepository {
   final Dio dio;
 
   RecipeRepositoryImpl({required this.dio});
+  @override
+  Future<void> logPostView({required int postId, required int viewDuration, required DateTime viewedAt}) async {
+    try{
+      await dio.post(
+        '/v1/post-views',
+        queryParameters: {
+          'postId': postId,
+          'viewDuration': viewDuration,
+          'viewedAt': viewedAt.toIso8601String()
+        }
+      );
+    }catch(err){
+      print('post log view failed: $err');
+    }
+  }
   @override
   Future<RecipeDetailModel> fetchRecipeDetail(int recipeId) async {
     try {
@@ -205,7 +221,7 @@ class RecipeRepositoryImpl implements RecipeRepository {
   }
 
   @override
-  Future<Result<RecipeModel>> updateRecipe(int id, RecipeModel request) async {
+  Future<Result<RecipeModel>> updateRecipe(int id, RecipeUpdateRequest request) async {
     try {
       final response = await dio.put(
         '/v1/recipes/$id',
@@ -218,10 +234,6 @@ class RecipeRepositoryImpl implements RecipeRepository {
       // Kiểm tra cấu trúc response và đảm bảo lấy đúng dữ liệu
       if (responseData.containsKey('data')) {
         final recipeRes = RecipeModel.fromJson(responseData['data']);
-
-        if (recipeRes.ingredients?.length != request.ingredients?.length) {
-          recipeRes.ingredients = request.ingredients;
-        }
 
         return Result.success(recipeRes);
       } else {
