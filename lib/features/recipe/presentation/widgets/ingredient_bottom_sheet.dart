@@ -114,7 +114,7 @@ class _IngredientBottomSheetState extends State<IngredientBottomSheet> {
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(8),
               borderSide: BorderSide(
-                color: Colors.green.shade300,
+                color: Colors.deepOrangeAccent,
                 width: 2,
               ),
             ),
@@ -154,7 +154,7 @@ class _IngredientBottomSheetState extends State<IngredientBottomSheet> {
               }
             },
             style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.green,
+              backgroundColor: Colors.orange,
               foregroundColor: Colors.white,
             ),
             child: const Text('Add'),
@@ -220,7 +220,7 @@ class _IngredientBottomSheetState extends State<IngredientBottomSheet> {
                   onPressed: () => _showAddIngredientDialog(context),
                   icon: Icon(
                     Icons.add_circle,
-                    color: Colors.green.shade600,
+                    color: Colors.red.shade600,
                     size: 32,
                   ),
                   tooltip: 'Add new ingredient',
@@ -242,7 +242,7 @@ class _IngredientBottomSheetState extends State<IngredientBottomSheet> {
                   textAlign: TextAlign.center,
                   keyboardType: const TextInputType.numberWithOptions(decimal: true),
                   decoration: InputDecoration(
-                    hintText: '1',
+                    hintText: '1/2',
                     labelText: "Quantity",
                     border: const OutlineInputBorder(),
                     suffixIcon: Column(
