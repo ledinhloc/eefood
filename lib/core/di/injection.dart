@@ -236,7 +236,7 @@ Future<void> setupDependencies() async {
 
   //collection
   getIt.registerLazySingleton<CollectionCubit>(
-    () => CollectionCubit()..fetchCollectionsByUser(),
+    () => CollectionCubit(),
   );
 
   //post in recipe

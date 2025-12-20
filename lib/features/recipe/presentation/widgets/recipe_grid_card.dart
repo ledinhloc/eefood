@@ -4,6 +4,7 @@ import 'package:eefood/core/widgets/snack_bar.dart';
 import 'package:eefood/features/recipe/data/models/recipe_model.dart';
 import 'package:eefood/features/recipe/presentation/provider/recipe_cubit.dart';
 import 'package:eefood/features/recipe/presentation/provider/recipe_refresh_cubit.dart';
+import 'package:eefood/features/recipe/presentation/widgets/published/publish_recipe_dialog.dart';
 import 'package:flutter/material.dart';
 
 import '../provider/post_cubit.dart';
@@ -56,80 +57,33 @@ class _RecipeGridCardState extends State<RecipeGridCard> {
       return;
     }
 
-    final TextEditingController contentController = TextEditingController();
-    final PostCubit postCubit = getIt<PostCubit>(); // ✅ Lấy PostCubit từ getIt
+    final PostCubit postCubit = getIt<PostCubit>();
 
-    showModalBottomSheet(
+    showDialog(
       context: context,
-      isScrollControlled: true,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
-      ),
+      barrierDismissible: false,
       builder: (context) {
-        return Padding(
-          padding: EdgeInsets.only(
-            bottom: MediaQuery.of(context).viewInsets.bottom,
-            left: 16,
-            right: 16,
-            top: 20,
-          ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const Text(
-                "Đăng công thức",
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-              ),
-              const SizedBox(height: 12),
+        return PublishRecipeDialog(
+          recipeTitle: recipe.title ?? "Công thức",
+          recipeImage: recipe.imageUrl,
+          onCancel: () => Navigator.pop(context),
+          onPublish: (content) async {
+            Navigator.pop(context);
 
-              TextField(
-                controller: contentController,
-                maxLines: 3,
-                decoration: const InputDecoration(
-                  labelText: "Nội dung bài đăng",
-                  hintText: "Hãy chia sẻ đôi điều về công thức này...",
-                  border: OutlineInputBorder(),
-                ),
-              ),
+            await postCubit.createPost(
+              context,
+              recipe.id!,
+              content.isEmpty ? "" : content,
+            );
+            showCustomSnackBar(context, "Bài viết đã gửi thành công và đang xem xét!");
 
-              const SizedBox(height: 16),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.end,
-                children: [
-                  TextButton(
-                    onPressed: () => Navigator.pop(context),
-                    child: const Text("Hủy"),
-                  ),
-                  const SizedBox(width: 8),
-                  ElevatedButton(
-                    onPressed: () async {
-                      Navigator.pop(context); // đóng bottom sheet
-
-                      final content = contentController.text.trim();
-
-                      // ✅ Gọi cubit lấy từ getIt, không phụ thuộc context
-                      await postCubit.createPost(
-                        context,
-                        recipe.id!,
-                        content.isEmpty ? "" : content,
-                      );
-
-                      widget.onRefresh?.call();
-                      _refreshCubit.refresh();
-                    },
-                    child: const Text("Đăng bài"),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 12),
-            ],
-          ),
+            widget.onRefresh?.call();
+            _refreshCubit.refresh();
+          },
         );
       },
     );
   }
-
   void _removeDropdown() {
     _overlayEntry?.remove();
     _overlayEntry = null;

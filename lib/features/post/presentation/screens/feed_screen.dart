@@ -19,6 +19,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
+import '../../../../core/widgets/show_login_required.dart';
 import '../../../livestream/presentation/provider/start_live_cubit.dart';
 import '../../../livestream/presentation/screens/prepare_live_page.dart';
 import '../../data/models/nullable.dart';
@@ -114,28 +115,38 @@ class _FeedViewState extends State<FeedView> {
             children: [
               if (state.keyword != null)
                 _buildFilterChip('🔍 ${state.keyword}', () {
-                  context.read<PostListCubit>().setFilters(keyword: Nullable(null));
+                  context.read<PostListCubit>().setFilters(
+                    keyword: Nullable(null),
+                  );
                 }),
               if (state.region != null)
                 _buildFilterChip('🌍 ${state.region}', () {
-                  context.read<PostListCubit>().setFilters(region: Nullable(null));
+                  context.read<PostListCubit>().setFilters(
+                    region: Nullable(null),
+                  );
                 }),
               if (state.difficulty != null)
                 _buildFilterChip(
                   '⚡ ${_getDifficultyLabel(state.difficulty!)}',
                   () {
-                    context.read<PostListCubit>().setFilters(difficulty: Nullable(null));
+                    context.read<PostListCubit>().setFilters(
+                      difficulty: Nullable(null),
+                    );
                   },
                 ),
               if (state.category != null)
                 _buildFilterChip('🍽️ ${state.category}', () {
-                  context.read<PostListCubit>().setFilters(category: Nullable(null));
+                  context.read<PostListCubit>().setFilters(
+                    category: Nullable(null),
+                  );
                 }),
               if (state.maxCookTime != null)
                 _buildFilterChip(
                   '⏱️ ${_getCookTimeLabel(state.maxCookTime!)}',
                   () {
-                    context.read<PostListCubit>().setFilters(maxCookTime: Nullable(null));
+                    context.read<PostListCubit>().setFilters(
+                      maxCookTime: Nullable(null),
+                    );
                   },
                 ),
             ],
@@ -252,17 +263,15 @@ class _FeedViewState extends State<FeedView> {
       if (!mounted) return;
 
       if (user != null) {
+
         await context.read<StoryCubit>().loadStories(user.id);
+        if (!mounted) return;
+        await context.read<NotificationCubit>().fetchUnreadCount();
+
       }
 
       if (!mounted) return;
       await context.read<PostListCubit>().fetchPosts();
-    });
-
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (!mounted) return;
-      final cubit = context.read<NotificationCubit>();
-      cubit.fetchUnreadCount();
     });
 
     _scrollController.addListener(_onScroll);
@@ -339,6 +348,8 @@ class _FeedViewState extends State<FeedView> {
         final avatarUrl = user?.avatarUrl;
         final greeting = GreetingHelper.getGreeting(userName: userName);
 
+        final isGuest = user == null;
+
         return Scaffold(
           appBar: AppBar(
             automaticallyImplyLeading: false,
@@ -352,7 +363,7 @@ class _FeedViewState extends State<FeedView> {
                 children: [
                   Row(
                     children: [
-                       Expanded(
+                      Expanded(
                         child: Text(
                           'Food Feed 🍽️',
                           style: TextStyle(
@@ -384,7 +395,7 @@ class _FeedViewState extends State<FeedView> {
                     ],
                   ),
                   Text(
-                    greeting,
+                    isGuest ? 'Đăng nhập để trải nghiệm đầy đủ' : greeting,
                     style: const TextStyle(
                       fontSize: 14,
                       fontWeight: FontWeight.w400,
@@ -400,6 +411,11 @@ class _FeedViewState extends State<FeedView> {
               ),
               IconButton(
                 onPressed: () {
+                  if(isGuest){
+                    showLoginRequired(context);
+                    return;
+                  }
+
                   Navigator.push(
                     context,
                     MaterialPageRoute(
@@ -414,12 +430,18 @@ class _FeedViewState extends State<FeedView> {
               ),
 
               // ==== Notification badge fixed ====
-              BlocBuilder<NotificationCubit, NotificationState>(
+
+                BlocBuilder<NotificationCubit, NotificationState>(
                 builder: (context, state) {
                   return Padding(
                     padding: const EdgeInsets.only(right: 12.0),
                     child: GestureDetector(
                       onTap: () {
+                        if (isGuest) {
+                          showLoginRequired(context);
+                          return;
+                        }
+
                         final cubit = context.read<NotificationCubit>();
                         Navigator.push(
                           context,
@@ -458,6 +480,12 @@ class _FeedViewState extends State<FeedView> {
                 padding: const EdgeInsets.only(right: 10.0),
                 child: GestureDetector(
                   onTap: () {
+                    if (isGuest) {
+                      showLoginRequired(context);
+                      return;
+                    }
+
+                    // User đã login
                     Navigator.pushNamed(
                       context,
                       AppRoutes.personalUser,
@@ -466,8 +494,16 @@ class _FeedViewState extends State<FeedView> {
                   },
                   child: CircleAvatar(
                     radius: 17,
+                    backgroundColor: Colors.orange.shade200,
                     backgroundImage: avatarUrl != null
                         ? CachedNetworkImageProvider(avatarUrl)
+                        : null,
+                    child: avatarUrl == null
+                        ? Icon(
+                      Icons.person,
+                      size: 20,
+                      color: Colors.orange.shade700,
+                    )
                         : null,
                   ),
                 ),
@@ -480,11 +516,17 @@ class _FeedViewState extends State<FeedView> {
               if (postState.isLoading && postState.posts.isEmpty) {
                 return Column(
                   children: [
+                    if (isGuest) _buildGuestBanner(context),
                     // Story section luôn hiển thị
                     BlocBuilder<StoryCubit, StoryState>(
                       builder: (context, storyState) {
                         return StorySection(
                           onCreateStory: () async {
+                            if(isGuest){
+                              showLoginRequired(context);
+                              return;
+                            }
+
                             final user = await _getCurrentUser();
                             if (mounted) {
                               await handleCreateStory(context, user?.id);
@@ -520,12 +562,23 @@ class _FeedViewState extends State<FeedView> {
                   physics: const AlwaysScrollableScrollPhysics(),
                   slivers: [
                     SliverToBoxAdapter(child: _buildActiveFilters(postState)),
+
+                    if(isGuest)
+                      SliverToBoxAdapter(
+                        child: _buildGuestBanner(context),
+                      ),
+
                     // Story Section (an khi co loc)
                     SliverToBoxAdapter(
                       child: BlocBuilder<StoryCubit, StoryState>(
                         builder: (context, storyState) {
                           return StorySection(
                             onCreateStory: () async {
+                              if(isGuest){
+                                showLoginRequired(context);
+                                return;
+                              }
+
                               final user = await _getCurrentUser();
                               if (mounted) {
                                 await handleCreateStory(context, user?.id);
@@ -592,6 +645,7 @@ class _FeedViewState extends State<FeedView> {
                           final post = postState.posts[index];
                           return PostCard(
                             userId: post.userId,
+                            isGuest: isGuest,
                             post: post,
                             onTap: () => Navigator.push(
                               context,
@@ -664,5 +718,42 @@ class _FeedViewState extends State<FeedView> {
         showCustomSnackBar(context, "Lỗi khi tải lại", isError: true);
       }
     }
+  }
+
+  Widget _buildGuestBanner(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: [Colors.orange.shade100, Colors.orange.shade50],
+        ),
+        border: Border(bottom: BorderSide(color: Colors.orange.shade300)),
+      ),
+      child: Row(
+        children: [
+          Icon(Icons.info_outline, color: Colors.orange.shade800, size: 20),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Text(
+              'Bạn đang ở chế độ Khách. Đăng nhập để lưu món yêu thích!',
+              style: TextStyle(fontSize: 13, color: Colors.orange.shade900),
+            ),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pushNamed(context, AppRoutes.welcome),
+            style: TextButton.styleFrom(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+              minimumSize: Size.zero,
+              tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+            ),
+            child: const Text(
+              'Đăng nhập',
+              style: TextStyle(fontWeight: FontWeight.w600, color: Colors.deepOrange),
+            ),
+          ),
+        ],
+      ),
+    );
   }
 }

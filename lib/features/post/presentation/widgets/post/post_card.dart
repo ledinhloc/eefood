@@ -17,6 +17,7 @@ const kNeutralGray = Color(0xFFE0E0E0);
 class PostCard extends StatelessWidget {
   final int userId;
   final PostModel post;
+  final bool isGuest;
   final VoidCallback? onTap;
   final void Function(Offset offset, Function(ReactionType) onSelect)? onShowReactions;
 
@@ -24,6 +25,7 @@ class PostCard extends StatelessWidget {
     super.key,
     required this.userId,
     required this.post,
+    required this.isGuest,
     this.onTap,
     this.onShowReactions,
   });
@@ -42,7 +44,7 @@ class PostCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          PostHeader(userId: userId,post: post),
+          PostHeader(userId: userId,post: post, isGuest: isGuest),
           GestureDetector(
             onTap: onTap,
             child: Hero(
@@ -70,7 +72,7 @@ class PostCard extends StatelessWidget {
           ),
           PostContent(post: post),
           const Divider(height: 1, color: kNeutralGray),
-          PostFooter(post: post, onShowReactions: onShowReactions),
+          PostFooter(post: post, onShowReactions: onShowReactions, isGuest: isGuest,),
         ],
       ),
     );

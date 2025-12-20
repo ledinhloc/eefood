@@ -119,15 +119,7 @@ class WelcomePage extends StatelessWidget {
                  */
                 ElevatedButton(
                   onPressed: () {
-                    // Navigator.pushNamed(context, '/');\
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) {
-                          return LoginPage();
-                        },
-                      ),
-                    );
+                    Navigator.pushReplacementNamed(context, AppRoutes.main);
                   },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.red,

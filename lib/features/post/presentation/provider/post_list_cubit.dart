@@ -78,35 +78,6 @@ class PostListCubit extends Cubit<PostListState> {
     await fetchPosts(loadMore: false);
   }
 
-  /// Cập nhật filters cục bộ trong state rồi fetch lại từ trang 1
-  // Future<void> setFilters({
-  //   String? keyword,
-  //   int? userId,
-  //   String? region,
-  //   String? difficulty,
-  //   String? category,
-  //   int? maxCookTime,
-  // }) async {
-  //   // Reset về trang 1 với filters mới
-  //   emit(
-  //     state.copyWith(
-  //       posts: [],
-  //       isLoading: false,
-  //       hasMore: true,
-  //       currentPage: 1,
-  //       keyword: keyword,
-  //       userId: userId,
-  //       region: region,
-  //       difficulty: difficulty,
-  //       category: category,
-  //       maxCookTime: maxCookTime,
-  //     ),
-  //   );
-  //
-  //   // Fetch new data
-  //   await fetchPosts(loadMore: false);
-  // }
-
   Future<void> setFilters({
     dynamic keyword,
     dynamic userId,

@@ -6,8 +6,10 @@ import 'package:eefood/features/recipe/domain/usecases/recipe_usecases.dart';
 import 'package:eefood/features/recipe/presentation/provider/recipe_state.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
+import '../../data/models/category_model.dart';
 import '../../data/models/ingredient_create_request.dart';
 import '../../data/models/recipe_create_request.dart';
+import '../../data/models/recipe_update_request.dart';
 
 class RecipeCrudCubit extends Cubit<RecipeCrudState> {
   final CreateRecipe _createRecipe = getIt<CreateRecipe>();
@@ -20,32 +22,19 @@ class RecipeCrudCubit extends Cubit<RecipeCrudState> {
   Future<void> init(RecipeModel? initial) async {
     if (initial != null) {
       // Nếu có categoryIds, convert sang List<String> categories
-      List<String> categoryNames = [];
-      if (initial.categoryIds != null && initial.categoryIds!.isNotEmpty) {
-        try {
-          // Gọi API lấy toàn bộ categories
-          final Categories _categories = getIt<Categories>();
-          final allCategories = await _categories('', 1, 100);
-
-          // Map categoryIds -> category descriptions
-          categoryNames = initial.categoryIds!
-              .map((id) {
-            final cat = allCategories.firstWhere(
-                  (c) => c.id == id,
-              orElse: () => CategoryModel(id: id, description: 'Unknown'),
-            );
-            return cat.description ?? 'Unknown';
-          })
-              .toList();
-        } catch (e) {
-          print('Error loading categories: $e');
-        }
-      }
+    List<String> categoryNames = [];
+    if(initial.categories != null && initial.categories!.isNotEmpty){
+      categoryNames = initial.categories!
+          .map((cat)=> cat.description ?? '')
+          .where((des) => des.isNotEmpty)
+          .toList();
+      print('Init: Extracted ${categoryNames.length} categories: $categoryNames');
+    }
 
       emit(
         state.copyWith(
           recipe: initial,
-          categoryIds: initial.categoryIds ?? [],
+          // categoryIds: initial.categoryIds ?? [],
           categories: categoryNames,
           ingredients: initial.ingredients ?? [],
           steps: initial.steps ?? [],
@@ -134,21 +123,6 @@ class RecipeCrudCubit extends Cubit<RecipeCrudState> {
     emit(state.copyWith(steps: newSteps));
   }
 
-  // void setCategories(List<int> categoryIds) {
-  //   emit(state.copyWith(categoryIds: List<int>.from(categoryIds)));
-  // }
-
-  void updateCategory(int index, int updatedId) {
-    final newCategories = List<int>.from(state.categoryIds);
-    newCategories[index] = updatedId;
-    emit(state.copyWith(categoryIds: newCategories));
-  }
-
-  // void removeCategory(int categoryId) {
-  //   final newCategories = List<int>.from(state.categoryIds)..remove(categoryId);
-  //   emit(state.copyWith(categoryIds: newCategories));
-  // }
-
   List<IngredientCreateRequest> _mapIngredients() {
     return state.ingredients
         .map(
@@ -205,53 +179,22 @@ class RecipeCrudCubit extends Cubit<RecipeCrudState> {
     }
   }
 
-
-  // void saveRecipe() async {
-  //   final savedRecipe = state.recipe.copyWith(
-  //     ingredients: state.ingredients,
-  //     steps: state.steps,
-  //     categoryIds: state.categoryIds,
-  //   );
-  //
-  //   print('=== FINAL JSON TO SEND ===');
-  //   print(savedRecipe.toJson());
-  //   final result = await _createRecipe(savedRecipe);
-  //
-  //   if (result.isSuccess && result.data != null) {
-  //     emit(
-  //       state.copyWith(
-  //         recipe: result.data!,
-  //         isLoading: false,
-  //         message: "Recipe created successfully",
-  //       ),
-  //     );
-  //   } else {
-  //     emit(
-  //       state.copyWith(
-  //         isLoading: false,
-  //         message:
-  //             "Failed to create recipe: ${result.error ?? "Unknown error"}",
-  //       ),
-  //     );
-  //   }
-  // }
-
   void updateExistingRecipe(int id) async {
     emit(state.copyWith(isLoading: true));
 
     // Tạo recipe mới từ state hiện tại
-    final updatedRecipe = state.recipe.copyWith(
+    final updatedRecipe = RecipeUpdateRequest(
       title: state.recipe.title,
       description: state.recipe.description,
-      cookTime: state.recipe.cookTime,
-      prepTime: state.recipe.prepTime,
-      difficulty: state.recipe.difficulty,
+      region: state.recipe.region,
       imageUrl: state.recipe.imageUrl,
       videoUrl: state.recipe.videoUrl,
-      region: state.recipe.region,
-      ingredients: state.ingredients, // Sử dụng ingredients từ state
+      prepTime: state.recipe.prepTime,
+      cookTime: state.recipe.cookTime,
+      difficulty: state.recipe.difficulty?.name,
+      categories: state.categories,
+      ingredients: _mapIngredients(),
       steps: state.steps,
-      categoryIds: state.categoryIds,
     );
 
     print('=== UPDATING RECIPE ===');
@@ -262,15 +205,6 @@ class RecipeCrudCubit extends Cubit<RecipeCrudState> {
 
     if (result.isSuccess && result.data != null) {
       final serverRecipe = result.data!;
-
-      // QUAN TRỌNG: Đảm bảo dữ liệu từ server khớp với local state
-      // Nếu server trả về ingredients không khớp, sử dụng local ingredients
-      if (serverRecipe.ingredients?.length != state.ingredients.length) {
-        print(
-          'Server returned wrong ingredients count. Using local ingredients.',
-        );
-        serverRecipe.ingredients = state.ingredients;
-      }
 
       emit(
         state.copyWith(

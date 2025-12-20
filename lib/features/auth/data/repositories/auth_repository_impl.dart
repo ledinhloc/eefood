@@ -99,7 +99,8 @@ class AuthRepositoryImpl implements AuthRepository {
       //     options: Options(contentType: 'application/json', extra: {'requireAuth': false}),
       //   );
       // }
-      await _repository.unregisterToken(userId!);
+      // await _repository.unregisterToken(userId!);
+      await sharedPreferences.remove(AppKeys.recentKey);
       await _clearUser();
       await getIt.reset();
       if (provider == 'GOOGLE') {

@@ -33,21 +33,131 @@ class MyRecipesPage extends StatelessWidget {
       child: DefaultTabController(
         length: tabTitles.length,
         child: Scaffold(
-          appBar: AppBar(
-            backgroundColor: Colors.transparent,
-            automaticallyImplyLeading: false,
-            title: const Text("My Recipes"),
-            actions: [
-              IconButton(icon: const Icon(Icons.search), onPressed: () {}),
-              IconButton(icon: const Icon(Icons.more_vert), onPressed: () {}),
-            ],
-            bottom: TabBar(
-              indicatorColor: Colors.red,
-              labelColor: Colors.red,
-              unselectedLabelColor: Colors.grey,
-              tabs: tabTitles.map((t) => Tab(text: t)).toList(),
+          //  Gradient AppBar
+          appBar: PreferredSize(
+            preferredSize: const Size.fromHeight(120),
+            child: Container(
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                  colors: [
+                    Colors.orange.shade400,
+                    Colors.deepOrange.shade500,
+                  ],
+                ),
+              ),
+              child: SafeArea(
+                child: Column(
+                  children: [
+                    // Header Row
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+                      child: Row(
+                        children: [
+                          const SizedBox(width: 8),
+                          // Title với icon
+                          Row(
+                            children: [
+                              Container(
+                                padding: const EdgeInsets.all(8),
+                                decoration: BoxDecoration(
+                                  color: Colors.white.withOpacity(0.2),
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                                child: const Icon(
+                                  Icons.menu_book,
+                                  color: Colors.white,
+                                  size: 24,
+                                ),
+                              ),
+                              const SizedBox(width: 12),
+                              const Text(
+                                "Công thức của tôi",
+                                style: TextStyle(
+                                  fontSize: 22,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.white,
+                                  letterSpacing: 0.5,
+                                ),
+                              ),
+                            ],
+                          ),
+                          const Spacer(),
+                          // Action buttons
+                          IconButton(
+                            icon: const Icon(Icons.search, color: Colors.white),
+                            onPressed: () {},
+                          ),
+                          IconButton(
+                            icon: const Icon(Icons.more_vert, color: Colors.white),
+                            onPressed: () {},
+                          ),
+                        ],
+                      ),
+                    ),
+                    // TabBar
+                    Container(
+                      margin: const EdgeInsets.symmetric(horizontal: 16),
+                      decoration: BoxDecoration(
+                        color: Colors.white.withOpacity(0.2),
+                        borderRadius: BorderRadius.circular(25),
+                      ),
+                      child: TabBar(
+                        indicator: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(25),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withOpacity(0.1),
+                              blurRadius: 8,
+                              offset: const Offset(0, 2),
+                            ),
+                          ],
+                        ),
+                        indicatorSize: TabBarIndicatorSize.tab,
+                        indicatorPadding: const EdgeInsets.all(4),
+                        labelColor: Colors.orange.shade700,
+                        unselectedLabelColor: Colors.white,
+                        labelStyle: const TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 15,
+                        ),
+                        unselectedLabelStyle: const TextStyle(
+                          fontWeight: FontWeight.w500,
+                          fontSize: 15,
+                        ),
+                        tabs: [
+                          Tab(
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: const [
+                                Icon(Icons.edit_note, size: 18),
+                                SizedBox(width: 6),
+                                Text("Nháp"),
+                              ],
+                            ),
+                          ),
+                          Tab(
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: const [
+                                Icon(Icons.check_circle_outline, size: 18),
+                                SizedBox(width: 6),
+                                Text("Đã đăng"),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                  ],
+                ),
+              ),
             ),
           ),
+
           body: TabBarView(
             children: [
               // Tab 1: Draft
@@ -72,33 +182,55 @@ class MyRecipesPage extends StatelessWidget {
               ),
             ],
           ),
-          floatingActionButton: FloatingActionButton(
-            heroTag: "create_recipe",
-            shape: const CircleBorder(),
-            backgroundColor: Colors.red,
-            child: const Icon(Icons.add, color: Colors.white),
-            onPressed: () {
-              showCustomBottomSheet(context, [
-                BottomSheetOption(
-                  icon: const Icon(Icons.create, color: Colors.black),
-                  title: "Tạo công thức mới",
-                  onTap: () {
-                    Navigator.pushNamed(
-                      context,
-                      AppRoutes.recipeCrudPage,
-                      arguments: {"isCreate": true, "initialRecipe": null},
-                    );
-                  },
+
+          // Gradient FloatingActionButton
+          floatingActionButton: Container(
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [
+                  Colors.orange.shade400,
+                  Colors.deepOrange.shade500,
+                ],
+              ),
+              shape: BoxShape.circle,
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.orange.withOpacity(0.4),
+                  blurRadius: 12,
+                  offset: const Offset(0, 6),
                 ),
-                BottomSheetOption(
-                  icon: const Icon(Icons.link, color: Colors.black),
-                  title: "Nhập từ URL",
-                  onTap: () {
-                    _importRecipeFromUrl(context);
-                  },
-                ),
-              ]);
-            },
+              ],
+            ),
+            child: FloatingActionButton(
+              heroTag: "create_recipe",
+              backgroundColor: Colors.transparent,
+              elevation: 0,
+              child: const Icon(Icons.add, color: Colors.white, size: 32),
+              onPressed: () {
+                showCustomBottomSheet(context, [
+                  BottomSheetOption(
+                    icon: Icon(Icons.create, color: Colors.orange.shade700),
+                    title: "Tạo công thức mới",
+                    onTap: () {
+                      Navigator.pushNamed(
+                        context,
+                        AppRoutes.recipeCrudPage,
+                        arguments: {"isCreate": true, "initialRecipe": null},
+                      );
+                    },
+                  ),
+                  BottomSheetOption(
+                    icon: Icon(Icons.link, color: Colors.orange.shade700),
+                    title: "Nhập từ URL",
+                    onTap: () {
+                      _importRecipeFromUrl(context);
+                    },
+                  ),
+                ]);
+              },
+            ),
           ),
         ),
       ),

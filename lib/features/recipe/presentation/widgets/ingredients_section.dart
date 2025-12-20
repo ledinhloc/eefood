@@ -79,9 +79,6 @@ class _IngredientsSectionState extends State<IngredientsSection> {
   }
 
   Widget _buildIngredientCard(RecipeIngredientModel ingredient, int index) {
-    final displayText =
-        '${ingredient.ingredient!.name} ${ingredient.quantity ?? ''}${ingredient.unit ?? ''}';
-
     return Card(
       key: ValueKey('ingredient_${index}_${ingredient.ingredient!.name}'),
       margin: const EdgeInsets.only(bottom: 8),
