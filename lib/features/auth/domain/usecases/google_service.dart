@@ -36,6 +36,12 @@ class GoogleAuthService {
 
   /// Đăng xuất Google
   static Future<void> signOut() async {
-    await _googleSignIn.signOut();
+    try {
+      await _googleSignIn.disconnect();
+      await _googleSignIn.signOut();
+    }
+    catch(err) {
+      print("Failed log out google $e");
+    }
   }
 }
