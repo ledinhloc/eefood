@@ -358,6 +358,7 @@ class _RecipeDetailPageState extends State<RecipeDetailPage> {
     final user = await getIt<GetCurrentUser>().call();
     if(user == null){
       showLoginRequired(context);
+      return;
     }
 
     final opts = <BottomSheetOption>[

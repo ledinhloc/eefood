@@ -48,11 +48,14 @@ class ShoppingView extends StatelessWidget {
               ),
             ),
             const SizedBox(width: 12),
-            const Text(
-              'Danh sách mua sắm',
-              style: TextStyle(
-                fontWeight: FontWeight.bold,
-                color: Colors.black87,
+            Expanded(
+              child: const Text(
+                'Danh sách mua sắm',
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  color: Colors.black87,
+                ),
               ),
             ),
           ],

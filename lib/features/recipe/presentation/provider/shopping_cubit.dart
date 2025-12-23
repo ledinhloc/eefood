@@ -1,3 +1,4 @@
+import 'package:dio/dio.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../data/models/shopping_ingredient_model.dart';
 import '../../domain/repositories/shopping_repository.dart';
@@ -20,6 +21,11 @@ class ShoppingCubit extends Cubit<ShoppingState> {
         ),
       );
     } catch (e) {
+      if (e is DioError && e.response?.statusCode == 401) {
+        // Guest: ignore unauthorized errors (don't show snack bar)
+        emit(state.copyWith(isLoading: false));
+        return;
+      }
       emit(state.copyWith(isLoading: false, error: e.toString()));
     }
   }
@@ -36,6 +42,10 @@ class ShoppingCubit extends Cubit<ShoppingState> {
         ),
       );
     } catch (e) {
+      if (e is DioError && e.response?.statusCode == 401) {
+        emit(state.copyWith(isLoading: false));
+        return;
+      }
       emit(state.copyWith(isLoading: false, error: e.toString()));
     }
   }
@@ -53,6 +63,10 @@ class ShoppingCubit extends Cubit<ShoppingState> {
         ),
       );
     } catch (e) {
+      if (e is DioError && e.response?.statusCode == 401) {
+        emit(state.copyWith(isLoading: false));
+        return;
+      }
       emit(state.copyWith(isLoading: false, error: e.toString()));
     }
   }
@@ -98,6 +112,11 @@ class ShoppingCubit extends Cubit<ShoppingState> {
     try {
       await repository.togglePurchased(shoppingIds, purchased);
     } catch (e) {
+      if (e is DioError && e.response?.statusCode == 401) {
+        // Guest: rollback silently
+        emit(prevState);
+        return;
+      }
       // rollback lại nếu call API thất bại
       emit(prevState.copyWith(error: e.toString()));
     }
@@ -126,6 +145,9 @@ class ShoppingCubit extends Cubit<ShoppingState> {
       await repository.addRecipe(recipeId);
       await load();
     } catch (e) {
+      if (e is DioError && e.response?.statusCode == 401) {
+        return;
+      }
       emit(state.copyWith(error: e.toString()));
     }
   }
