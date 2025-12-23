@@ -1,3 +1,4 @@
+import 'package:dio/dio.dart';
 import 'package:eefood/core/di/injection.dart';
 import 'package:eefood/features/recipe/domain/usecases/recipe_usecases.dart';
 import 'package:eefood/features/recipe/presentation/provider/recipe_state.dart';
@@ -55,6 +56,10 @@ class RecipeListCubit extends Cubit<RecipeListState> {
       }
     } catch (e) {
       print('Error fetching draft recipes: $e');
+      if (e is DioError && e.response?.statusCode == 401) {
+        _safeEmit(state.copyWith(isLoading: false));
+        return;
+      }
       _safeEmit(state.copyWith(isLoading: false, error: e.toString()));
     }
   }
