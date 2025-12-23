@@ -1,9 +1,7 @@
 import 'package:eefood/features/recipe/data/models/category_model.dart';
-import 'package:eefood/features/recipe/data/models/ingredient_model.dart';
 import 'package:eefood/features/recipe/data/models/recipe_Ingredient_model.dart';
 import 'package:eefood/features/recipe/data/models/recipe_step_model.dart';
 import 'package:eefood/features/recipe/domain/entities/recipe.dart';
-import 'package:eefood/features/recipe/domain/entities/recipe_ingredient.dart';
 import 'package:json_annotation/json_annotation.dart';
 
 part 'recipe_model.g.dart';

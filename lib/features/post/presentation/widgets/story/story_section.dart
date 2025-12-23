@@ -175,6 +175,7 @@ class _StorySectionState extends State<StorySection> {
                                   allUsers: widget.userStories,
                                   userIndex: correctUserIndex,
                                   currentUserId: widget.currentUserId,
+                                  isCollection: false,
                                 ),
                               ),
                             ),

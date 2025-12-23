@@ -6,7 +6,6 @@ import 'package:eefood/features/recipe/domain/usecases/recipe_usecases.dart';
 import 'package:eefood/features/recipe/presentation/provider/recipe_state.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
-import '../../data/models/category_model.dart';
 import '../../data/models/ingredient_create_request.dart';
 import '../../data/models/recipe_create_request.dart';
 import '../../data/models/recipe_update_request.dart';
@@ -22,14 +21,16 @@ class RecipeCrudCubit extends Cubit<RecipeCrudState> {
   Future<void> init(RecipeModel? initial) async {
     if (initial != null) {
       // Nếu có categoryIds, convert sang List<String> categories
-    List<String> categoryNames = [];
-    if(initial.categories != null && initial.categories!.isNotEmpty){
-      categoryNames = initial.categories!
-          .map((cat)=> cat.description ?? '')
-          .where((des) => des.isNotEmpty)
-          .toList();
-      print('Init: Extracted ${categoryNames.length} categories: $categoryNames');
-    }
+      List<String> categoryNames = [];
+      if (initial.categories != null && initial.categories!.isNotEmpty) {
+        categoryNames = initial.categories!
+            .map((cat) => cat.description ?? '')
+            .where((des) => des.isNotEmpty)
+            .toList();
+        print(
+          'Init: Extracted ${categoryNames.length} categories: $categoryNames',
+        );
+      }
 
       emit(
         state.copyWith(
@@ -127,14 +128,13 @@ class RecipeCrudCubit extends Cubit<RecipeCrudState> {
     return state.ingredients
         .map(
           (e) => IngredientCreateRequest(
-        name: e.ingredient!.name,
-        quantity: e.quantity,
-        unit: e.unit,
-      ),
-    )
+            name: e.ingredient!.name,
+            quantity: e.quantity,
+            unit: e.unit,
+          ),
+        )
         .toList();
   }
-
 
   void saveRecipe() async {
     emit(state.copyWith(isLoading: true));
@@ -154,7 +154,6 @@ class RecipeCrudCubit extends Cubit<RecipeCrudState> {
       steps: state.steps,
     );
 
-
     print(request.toJson());
 
     final result = await _createRecipe(request);
@@ -173,7 +172,7 @@ class RecipeCrudCubit extends Cubit<RecipeCrudState> {
         state.copyWith(
           isLoading: false,
           message:
-          "Failed to create recipe: ${result.error ?? "Unknown error"}",
+              "Failed to create recipe: ${result.error ?? "Unknown error"}",
         ),
       );
     }
@@ -213,7 +212,6 @@ class RecipeCrudCubit extends Cubit<RecipeCrudState> {
           message: "Recipe updated successfully",
         ),
       );
-
     } else {
       emit(
         state.copyWith(
