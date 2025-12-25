@@ -364,7 +364,7 @@ class _RecipeDetailPageState extends State<RecipeDetailPage> {
     final opts = <BottomSheetOption>[
       BottomSheetOption(
         icon: const Icon(Icons.add_shopping_cart_rounded, color: Colors.orange),
-        title: 'Thêm vào danh sách mua sắm',
+        title: 'Thêm vào danh sách nguyên liệu',
         onTap: () {
           getIt<ShoppingCubit>().addRecipe(recipeId);
           showCustomSnackBar(context, "Thêm thành công");

@@ -118,7 +118,7 @@ class PostSummaryCard extends StatelessWidget {
                   await showCustomBottomSheet(context, [
                     BottomSheetOption(
                       icon: const Icon(Icons.add_shopping_cart_rounded, color: Colors.orange),
-                      title: 'Thêm vào danh sách mua sắm',
+                      title: 'Thêm vào danh sách nguyên liệu',
                       onTap: () => getIt<ShoppingCubit>().addRecipe(recipe.recipeId),
                     ),
                     BottomSheetOption(

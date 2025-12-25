@@ -41,7 +41,7 @@ class _MainScreenState extends State<MainScreen> {
               BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Posts'),
               BottomNavigationBarItem(icon: Icon(Icons.bookmark_border), label: 'Saved'),
               BottomNavigationBarItem(icon: Icon(Icons.menu_book_outlined), label: 'MyRecipes'),
-              BottomNavigationBarItem(icon: Icon(Icons.shopping_cart), label: 'Shopping List'),
+              BottomNavigationBarItem(icon: Icon(Icons.shopping_cart), label: 'Ingredients'),
               BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Profile'),
             ],
             currentIndex: _selectedIndex,

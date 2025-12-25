@@ -50,7 +50,7 @@ class ShoppingView extends StatelessWidget {
             const SizedBox(width: 12),
             Expanded(
               child: const Text(
-                'Danh sách mua sắm',
+                'Danh sách nguyên liệu',
                 overflow: TextOverflow.ellipsis,
                 style: TextStyle(
                   fontWeight: FontWeight.bold,
