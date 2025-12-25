@@ -172,7 +172,7 @@ class MyRecipesPage extends StatelessWidget {
                   if (state.isLoading) {
                     return const Center(child: CircularProgressIndicator());
                   } else if (state.posts.isNotEmpty) {
-                    return PublishedList(posts: state.posts);
+                    return PublishedList();
                   } else {
                     return const Center(
                       child: Text("Chưa có công thức đã đăng"),
