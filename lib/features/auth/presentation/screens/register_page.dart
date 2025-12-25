@@ -21,7 +21,7 @@ class RegisterPage extends StatelessWidget {
   final Register _register = getIt<Register>();
   final nameController = TextEditingController(text: 'khoa');
   final emailController = TextEditingController(
-    text: 'anhkhoadevtool2109@gmail.com',
+    text: 'anhkhoaxn11@gmail.com',
   );
   final passController = TextEditingController(text: '12345678');
 
