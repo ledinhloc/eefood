@@ -68,7 +68,7 @@ class _NotificationSettingsScreenState
                   ),
                   _buildSettingRow(
                     'SAVE_RECIPE',
-                    'Khi công thức được lưu vào danh sách mua sắm',
+                    'Khi công thức được lưu vào danh sách nguyên liệu',
                   ),
                   _buildSettingRow('SHARE_RECIPE', 'Khi công thức được chia sẻ'),
                   const SizedBox(height: 16),
