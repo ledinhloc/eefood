@@ -10,6 +10,8 @@ import 'package:eefood/features/auth/presentation/screens/login_page.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../../../../core/utils/logger.dart';
+
 class WelcomePage extends StatelessWidget {
   WelcomePage({super.key});
 
@@ -119,6 +121,7 @@ class WelcomePage extends StatelessWidget {
                  */
                 ElevatedButton(
                   onPressed: () {
+                    logger.i("Guest vao app!!");
                     Navigator.pushReplacementNamed(context, AppRoutes.main);
                   },
                   style: ElevatedButton.styleFrom(

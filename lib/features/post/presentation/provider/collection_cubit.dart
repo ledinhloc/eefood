@@ -1,3 +1,4 @@
+import 'package:dio/dio.dart';
 import 'package:eefood/core/di/injection.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../domain/repositories/collection_repository.dart';
@@ -38,6 +39,13 @@ class CollectionCubit extends Cubit<CollectionState> {
       );
     } catch (e) {
       if(isClosed) return;
+      if (e is DioError && e.response?.statusCode == 401) {
+        // Guest: return empty collections silently
+        emit(
+          state.copyWith(status: CollectionStatus.success, collections: []),
+        );
+        return;
+      }
       emit(
         state.copyWith(status: CollectionStatus.failure, error: e.toString()),
       );
@@ -161,6 +169,9 @@ class CollectionCubit extends Cubit<CollectionState> {
       await repository.removePostFromCollection(collectionId, postId);
       await fetchCollectionDetail(collectionId);
     } catch (e) {
+      if (e is DioError && e.response?.statusCode == 401) {
+        return;
+      }
       emit(
         state.copyWith(status: CollectionStatus.failure, error: e.toString()),
       );

@@ -2,6 +2,7 @@ import 'package:eefood/core/widgets/custom_bottom_sheet.dart';
 import 'package:eefood/features/recipe/presentation/provider/post_cubit.dart';
 import 'package:eefood/features/recipe/presentation/widgets/published/edit_post_dialog.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:timeago/timeago.dart' as timeago;
 
 import '../../../../../app_routes.dart';
@@ -11,6 +12,7 @@ import '../../../data/models/post_publish_model.dart';
 
 import '../../../data/models/post_publish_model.dart';
 import '../../../domain/repositories/recipe_repository.dart';
+import '../../provider/post_state.dart';
 
 extension PostStatusUI on PostStatus {
   Color get color {
@@ -67,27 +69,34 @@ extension PostStatusUI on PostStatus {
 }
 
 class PublishedList extends StatelessWidget {
-  final List<PostPublishModel> posts;
-
-  const PublishedList({super.key, required this.posts});
-
+  const PublishedList({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return RefreshIndicator(
-      onRefresh: () async {
-        await getIt<PostCubit>().fetchPublishedPosts();
+    final postCubit = getIt<PostCubit>();
+
+    return BlocBuilder<PostCubit, PostState>(
+      bloc: postCubit,
+      builder: (context, state) {
+        final posts = state.posts;
+
+        return RefreshIndicator(
+          onRefresh: () async {
+            await postCubit.fetchPublishedPosts();
+          },
+          child: ListView.builder(
+            padding: const EdgeInsets.all(16),
+            itemCount: posts.length,
+            itemBuilder: (context, index) {
+              return PublishedPostCard(post: posts[index]);
+            },
+          ),
+        );
       },
-      child: ListView.builder(
-        padding: const EdgeInsets.all(16),
-        itemCount: posts.length,
-        itemBuilder: (context, index) {
-          return PublishedPostCard(post: posts[index]);
-        },
-      ),
     );
   }
 }
+
 
 class PublishedPostCard extends StatelessWidget {
   final PostPublishModel post;

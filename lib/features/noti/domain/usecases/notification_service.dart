@@ -8,21 +8,21 @@ import 'dart:io';
 
 class NotificationService {
   static final FlutterLocalNotificationsPlugin _notiPlugin =
-      FlutterLocalNotificationsPlugin();
+  FlutterLocalNotificationsPlugin();
 
 
   static Future<void> initialize() async {
     // Android init
     const AndroidInitializationSettings androidSettings =
-        AndroidInitializationSettings('ic_eefood');
+    AndroidInitializationSettings('ic_eefood');
 
     // iOS init
     const DarwinInitializationSettings iosSettings =
-        DarwinInitializationSettings(
-          requestAlertPermission: true,
-          requestBadgePermission: true,
-          requestSoundPermission: true,
-        );
+    DarwinInitializationSettings(
+      requestAlertPermission: true,
+      requestBadgePermission: true,
+      requestSoundPermission: true,
+    );
 
     // Init plugin
     await _notiPlugin.initialize(
@@ -173,7 +173,7 @@ Future<void> firebaseMessagingBackgroundHandler(RemoteMessage message) async {
   // Show notification when app is in background
   await NotificationService.showNotification(
     title:
-        message.data['title'] ?? message.notification?.title ?? 'Thông báo mới',
+    message.data['title'] ?? message.notification?.title ?? 'Thông báo mới',
     body: message.data['body'] ?? message.notification?.body ?? '',
     type: message.data['type'] ?? 'SYSTEM',
     avatarUrl: message.data['avatarUrl'],

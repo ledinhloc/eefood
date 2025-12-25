@@ -261,16 +261,13 @@ class _FeedViewState extends State<FeedView> {
 
       final user = await _getCurrentUser();
       if (!mounted) return;
-
-      if (user != null) {
-
-        await context.read<StoryCubit>().loadStories(user.id);
-        if (!mounted) return;
-        await context.read<NotificationCubit>().fetchUnreadCount();
-
+      if (user == null) {
+        // Guest → chỉ fetch posts
+        await context.read<PostListCubit>().fetchPosts();
+        return;
       }
-
-      if (!mounted) return;
+      await context.read<StoryCubit>().loadStories(user.id);
+      await context.read<NotificationCubit>().fetchUnreadCount();
       await context.read<PostListCubit>().fetchPosts();
     });
 
