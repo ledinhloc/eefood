@@ -10,7 +10,7 @@ class GoogleAuthService {
   /// Đăng nhập Google và trả về ID Token
   static Future<String?> signInWithGoogle() async {
     try {
-
+      print("TOKEN: "+AppKeys.webClientId);
       // Mở Google Login
       final GoogleSignInAccount? googleUser = await _googleSignIn.signIn();
 
@@ -37,11 +37,11 @@ class GoogleAuthService {
   /// Đăng xuất Google
   static Future<void> signOut() async {
     try {
-      await _googleSignIn.disconnect();
-      await _googleSignIn.signOut();
-    }
-    catch(err) {
-      print("Failed log out google $err");
+      if (await _googleSignIn.isSignedIn()) {
+        await _googleSignIn.signOut();
+      }
+    } catch (e) {
+      print("Google sign out error: $e");
     }
   }
 }
