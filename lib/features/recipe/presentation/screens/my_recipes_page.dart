@@ -167,19 +167,7 @@ class MyRecipesPage extends StatelessWidget {
               ),
 
               // Tab 2: Published
-              BlocBuilder<PostCubit, PostState>(
-                builder: (context, state) {
-                  if (state.isLoading) {
-                    return const Center(child: CircularProgressIndicator());
-                  } else if (state.posts.isNotEmpty) {
-                    return PublishedList();
-                  } else {
-                    return const Center(
-                      child: Text("Chưa có công thức đã đăng"),
-                    );
-                  }
-                },
-              ),
+              PublishedList(),
             ],
           ),
 
