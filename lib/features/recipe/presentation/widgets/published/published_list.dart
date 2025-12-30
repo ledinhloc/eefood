@@ -84,19 +84,63 @@ class PublishedList extends StatelessWidget {
           onRefresh: () async {
             await postCubit.fetchPublishedPosts();
           },
-          child: ListView.builder(
-            padding: const EdgeInsets.all(16),
-            itemCount: posts.length,
-            itemBuilder: (context, index) {
-              return PublishedPostCard(post: posts[index]);
-            },
+          child: posts.isEmpty
+              ? _buildEmptyState(context)
+              : ListView.builder(
+                  physics: const AlwaysScrollableScrollPhysics(),
+                  padding: const EdgeInsets.all(16),
+                  itemCount: posts.length,
+                  itemBuilder: (context, index) {
+                    return PublishedPostCard(post: posts[index]);
+                  },
+                ),
+        );
+      },
+    );
+  }
+
+  Widget _buildEmptyState(BuildContext context) {
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        return SingleChildScrollView(
+          physics: const AlwaysScrollableScrollPhysics(),
+          child: ConstrainedBox(
+            constraints: BoxConstraints(minHeight: constraints.maxHeight),
+            child: Center(
+              child: Padding(
+                padding: const EdgeInsets.all(32),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(
+                      Icons.article_outlined,
+                      size: 80,
+                      color: Colors.grey[300],
+                    ),
+                    const SizedBox(height: 16),
+                    Text(
+                      'Chưa có bài đăng nào',
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.w600,
+                        color: Colors.grey[600],
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      'Kéo xuống để làm mới',
+                      style: TextStyle(fontSize: 16, color: Colors.grey[500]),
+                    ),
+                  ],
+                ),
+              ),
+            ),
           ),
         );
       },
     );
   }
 }
-
 
 class PublishedPostCard extends StatelessWidget {
   final PostPublishModel post;
@@ -106,11 +150,7 @@ class PublishedPostCard extends StatelessWidget {
 
   Future<void> _onEditRecipe(BuildContext context) async {
     if (post.recipeId == null) {
-      showCustomSnackBar(
-        context,
-        "Công thức không hợp lệ",
-        isError: true,
-      );
+      showCustomSnackBar(context, "Công thức không hợp lệ", isError: true);
       return;
     }
 
@@ -121,10 +161,7 @@ class PublishedPostCard extends StatelessWidget {
       final result = await Navigator.pushNamed(
         context,
         AppRoutes.recipeCrudPage,
-        arguments: {
-          'initialRecipe': recipe,
-          'isCreate': false,
-        },
+        arguments: {'initialRecipe': recipe, 'isCreate': false},
       );
 
       // Edit xong → refresh list post
@@ -134,11 +171,7 @@ class PublishedPostCard extends StatelessWidget {
     } catch (e, stack) {
       debugPrint('Edit recipe error: $e');
       debugPrintStack(stackTrace: stack);
-      showCustomSnackBar(
-        context,
-        "Không thể tải công thức",
-        isError: true,
-      );
+      showCustomSnackBar(context, "Không thể tải công thức", isError: true);
     }
   }
 
@@ -223,7 +256,10 @@ class PublishedPostCard extends StatelessWidget {
                         },
                       ),
                       BottomSheetOption(
-                        icon: const Icon(Icons.restaurant_menu, color: Colors.orange),
+                        icon: const Icon(
+                          Icons.restaurant_menu,
+                          color: Colors.orange,
+                        ),
                         title: "Sửa công thức",
                         onTap: () => _onEditRecipe(context),
                       ),
@@ -405,10 +441,10 @@ class PublishedPostCard extends StatelessWidget {
   }
 
   void _showEditDialog(
-      BuildContext context,
-      PostCubit postCubit,
-      PostPublishModel post,
-      ) {
+    BuildContext context,
+    PostCubit postCubit,
+    PostPublishModel post,
+  ) {
     final titleController = TextEditingController(text: post.title);
     final contentController = TextEditingController(text: post.content);
 

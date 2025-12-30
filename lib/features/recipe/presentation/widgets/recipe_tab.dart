@@ -89,29 +89,29 @@ class _RecipeTabState extends State<RecipeTab>
     }
 
     // Error
-    if (state.error != null && state.draftRecipes.isEmpty) {
-      return ListView(
-        physics: const AlwaysScrollableScrollPhysics(),
-        children: [
-          SizedBox(
-            height: 400,
-            child: Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Text('Error: ${state.error}'),
-                  const SizedBox(height: 10),
-                  ElevatedButton(
-                    onPressed: () => widget.recipeListCubit.refresh(),
-                    child: const Text('Retry'),
-                  ),
-                ],
-              ),
-            ),
-          ),
-        ],
-      );
-    }
+    // if (state.error != null && state.draftRecipes.isEmpty) {
+    //   return ListView(
+    //     physics: const AlwaysScrollableScrollPhysics(),
+    //     children: [
+    //       SizedBox(
+    //         height: 400,
+    //         child: Center(
+    //           child: Column(
+    //             mainAxisAlignment: MainAxisAlignment.center,
+    //             children: [
+    //               Text('Error: ${state.error}'),
+    //               const SizedBox(height: 10),
+    //               ElevatedButton(
+    //                 onPressed: () => widget.recipeListCubit.refresh(),
+    //                 child: const Text('Retry'),
+    //               ),
+    //             ],
+    //           ),
+    //         ),
+    //       ),
+    //     ],
+    //   );
+    // }
 
     // Empty
     if (state.draftRecipes.isEmpty) {
