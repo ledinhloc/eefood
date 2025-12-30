@@ -1,4 +1,6 @@
 import 'package:eefood/app_routes.dart';
+import 'package:eefood/features/noti/presentation/provider/notification_cubit.dart';
+import 'package:eefood/features/noti/presentation/screens/notification_screen.dart';
 import 'package:eefood/features/profile/presentation/provider/profile_cubit.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -265,8 +267,17 @@ class ProfilePage extends StatelessWidget {
             ),
             floatingActionButton: FloatingActionButton(
               heroTag: 'fab_profile',
-              onPressed: () =>
-                  Navigator.pushNamed(context, AppRoutes.notificationScreen),
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => BlocProvider.value(
+                      value: getIt<NotificationCubit>(),
+                      child: const NotificationScreen(),
+                    ),
+                  ),
+                );
+              },
               backgroundColor: Colors.orange,
               child: const Icon(Icons.notifications),
             ),
