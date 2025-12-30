@@ -4,6 +4,7 @@ import 'package:eefood/core/widgets/snack_bar.dart';
 import 'package:eefood/features/auth/domain/entities/user.dart';
 import 'package:eefood/features/auth/domain/usecases/auth_usecases.dart';
 import 'package:eefood/features/profile/domain/usecases/profile_usecase.dart';
+import 'package:eefood/features/profile/presentation/widgets/preferences/preference_tab_view.dart';
 import 'package:flutter/material.dart';
 
 import '../../../auth/data/models/user_model.dart';
@@ -101,368 +102,215 @@ class _FoodPreferencesPageState extends State<FoodPreferencesPage>
     }
   }
 
-  bool get hasChanges {
-    // Check if there are any changes to save
-    return selectedCuisines.isNotEmpty ||
-        selectedAllergies.isNotEmpty ||
-        selectedDiets.isNotEmpty;
+  void _onCuisineToggle(String item) {
+    setState(() {
+      if (selectedCuisines.contains(item)) {
+        selectedCuisines.remove(item);
+      } else {
+        selectedCuisines.add(item);
+      }
+    });
+  }
+
+  void _onAllergyToggle(String item) {
+    setState(() {
+      if (selectedAllergies.contains(item)) {
+        selectedAllergies.remove(item);
+      } else {
+        selectedAllergies.add(item);
+      }
+    });
+  }
+
+  void _onDietToggle(String item) {
+    setState(() {
+      if (selectedDiets.contains(item)) {
+        selectedDiets.remove(item);
+      } else {
+        selectedDiets.add(item);
+      }
+    });
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.grey[50],
+      backgroundColor: const Color(0xFFF8F9FA),
       appBar: AppBar(
         elevation: 0,
         backgroundColor: Colors.white,
         title: const Text(
           'Sở thích món ăn',
-          style: TextStyle(fontWeight: FontWeight.bold, color: Colors.black87),
+          style: TextStyle(
+            fontWeight: FontWeight.w600,
+            color: Color(0xFF1A1A1A),
+            fontSize: 18,
+          ),
         ),
-        iconTheme: const IconThemeData(color: Colors.black87),
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back_ios_new, size: 20),
+          color: const Color(0xFF1A1A1A),
+          onPressed: () => Navigator.pop(context),
+        ),
         bottom: PreferredSize(
-          preferredSize: const Size.fromHeight(56),
+          preferredSize: const Size.fromHeight(52),
           child: Container(
             color: Colors.white,
             child: TabBar(
               controller: _tabController,
-              labelColor: Colors.orange,
-              unselectedLabelColor: Colors.grey,
-              indicatorColor: Colors.orange,
-              indicatorWeight: 3,
+              labelColor: const Color(0xFFFF6B35),
+              unselectedLabelColor: const Color(0xFF8E8E93),
+              indicatorColor: const Color(0xFFFF6B35),
+              indicatorWeight: 2.5,
+              indicatorSize: TabBarIndicatorSize.label,
               labelStyle: const TextStyle(
-                fontWeight: FontWeight.bold,
-                fontSize: 14,
+                fontWeight: FontWeight.w600,
+                fontSize: 15,
+              ),
+              unselectedLabelStyle: const TextStyle(
+                fontWeight: FontWeight.w500,
+                fontSize: 15,
               ),
               tabs: const [
                 Tab(text: 'Món ăn'),
                 Tab(text: 'Dị ứng'),
-                Tab(text: 'Chế độ ăn'),
+                Tab(text: 'Chế độ'),
               ],
             ),
           ),
         ),
       ),
       body: isLoading
-          ? const Center(child: CircularProgressIndicator())
+          ? const Center(
+              child: CircularProgressIndicator(
+                valueColor: AlwaysStoppedAnimation<Color>(Color(0xFFFF6B35)),
+              ),
+            )
           : Column(
               children: [
                 Expanded(
                   child: TabBarView(
                     controller: _tabController,
                     children: [
-                      _buildCuisineTab(),
-                      _buildAllergyTab(),
-                      _buildDietTab(),
+                      PreferenceTabView(
+                        title: 'Món ăn yêu thích',
+                        subtitle: 'Chọn món ăn bạn thích để nhận gợi ý phù hợp',
+                        icon: '🍽️',
+                        items: AppConstants.cuisines,
+                        selectedItems: selectedCuisines,
+                        onToggle: _onCuisineToggle,
+                        accentColor: const Color(0xFFFF6B35),
+                      ),
+                      PreferenceTabView(
+                        title: 'Dị ứng thực phẩm',
+                        subtitle: 'Những thực phẩm bạn cần tránh',
+                        icon: '⚠️',
+                        items: AppConstants.allergies,
+                        selectedItems: selectedAllergies,
+                        onToggle: _onAllergyToggle,
+                        accentColor: const Color(0xFFFF3B30),
+                      ),
+                      PreferenceTabView(
+                        title: 'Chế độ ăn',
+                        subtitle: 'Chế độ ăn phù hợp với lối sống',
+                        icon: '🥗',
+                        items: AppConstants.diets,
+                        selectedItems: selectedDiets,
+                        onToggle: _onDietToggle,
+                        accentColor: const Color(0xFF34C759),
+                      ),
                     ],
                   ),
                 ),
-                _buildBottomActionBar(),
+                _buildBottomBar(),
               ],
             ),
     );
   }
 
-  Widget _buildCuisineTab() {
-    return _buildPreferenceList(
-      title: 'Chọn món ăn yêu thích',
-      description: 'Chọn các món ăn mà bạn thích để nhận gợi ý phù hợp hơn',
-      icon: Icons.restaurant_menu,
-      items: AppConstants.cuisines,
-      selectedItems: selectedCuisines,
-      onChanged: (item) {
-        setState(() {
-          if (selectedCuisines.contains(item)) {
-            selectedCuisines.remove(item);
-          } else {
-            selectedCuisines.add(item);
-          }
-        });
-      },
-      emptyMessage: 'Chưa chọn món ăn nào',
-    );
-  }
+  Widget _buildBottomBar() {
+    final totalSelected =
+        selectedCuisines.length +
+        selectedAllergies.length +
+        selectedDiets.length;
 
-  Widget _buildAllergyTab() {
-    return _buildPreferenceList(
-      title: 'Dị ứng & Hạn chế',
-      description: 'Cho chúng tôi biết những thực phẩm bạn cần tránh',
-      icon: Icons.warning_amber_rounded,
-      items: AppConstants.allergies,
-      selectedItems: selectedAllergies,
-      onChanged: (item) {
-        setState(() {
-          if (selectedAllergies.contains(item)) {
-            selectedAllergies.remove(item);
-          } else {
-            selectedAllergies.add(item);
-          }
-        });
-      },
-      emptyMessage: 'Không có dị ứng nào',
-      color: Colors.red,
-    );
-  }
-
-  Widget _buildDietTab() {
-    return _buildPreferenceList(
-      title: 'Chế độ ăn uống',
-      description: 'Chọn chế độ ăn uống phù hợp với lối sống của bạn',
-      icon: Icons.eco,
-      items: AppConstants.diets,
-      selectedItems: selectedDiets,
-      onChanged: (item) {
-        setState(() {
-          if (selectedDiets.contains(item)) {
-            selectedDiets.remove(item);
-          } else {
-            selectedDiets.add(item);
-          }
-        });
-      },
-      emptyMessage: 'Chưa chọn chế độ ăn nào',
-      color: Colors.green,
-    );
-  }
-
-  Widget _buildPreferenceList({
-    required String title,
-    required String description,
-    required IconData icon,
-    required List<Map<String, String>> items,
-    required Set<String> selectedItems,
-    required Function(String) onChanged,
-    required String emptyMessage,
-    Color color = Colors.orange,
-  }) {
-    return ListView(
-      padding: const EdgeInsets.all(16),
-      children: [
-        // Header Card
-        Card(
-          elevation: 0,
-          color: color.withOpacity(0.1),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(16),
-          ),
-          child: Padding(
-            padding: const EdgeInsets.all(20),
-            child: Row(
-              children: [
-                Container(
-                  padding: const EdgeInsets.all(12),
-                  decoration: BoxDecoration(
-                    color: color.withOpacity(0.2),
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: Icon(icon, color: color, size: 28),
-                ),
-                const SizedBox(width: 16),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        title,
-                        style: TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.grey[800],
-                        ),
-                      ),
-                      const SizedBox(height: 4),
-                      Text(
-                        description,
-                        style: TextStyle(fontSize: 13, color: Colors.grey[600]),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
-
-        const SizedBox(height: 16),
-
-        // Selected Count
-        if (selectedItems.isNotEmpty)
-          Padding(
-            padding: const EdgeInsets.only(bottom: 12),
-            child: Row(
-              children: [
-                Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 12,
-                    vertical: 6,
-                  ),
-                  decoration: BoxDecoration(
-                    color: color.withOpacity(0.2),
-                    borderRadius: BorderRadius.circular(20),
-                  ),
-                  child: Text(
-                    '${selectedItems.length} đã chọn',
-                    style: TextStyle(
-                      color: color,
-                      fontWeight: FontWeight.bold,
-                      fontSize: 12,
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-
-        // Items Grid
-        ...items.map((item) {
-          final itemName = item['name'] ?? '';
-          final itemEmoji = item['emoji'] ?? '';
-          final isSelected = selectedItems.contains(itemName);
-          return Padding(
-            padding: const EdgeInsets.only(bottom: 8),
-            child: Material(
-              color: Colors.transparent,
-              child: InkWell(
-                borderRadius: BorderRadius.circular(12),
-                onTap: () => onChanged(itemName),
-                child: Container(
-                  padding: const EdgeInsets.all(16),
-                  decoration: BoxDecoration(
-                    color: isSelected ? color.withOpacity(0.15) : Colors.white,
-                    borderRadius: BorderRadius.circular(12),
-                    border: Border.all(
-                      color: isSelected ? color : Colors.grey.withOpacity(0.2),
-                      width: isSelected ? 2 : 1,
-                    ),
-                  ),
-                  child: Row(
-                    children: [
-                      Container(
-                        width: 24,
-                        height: 24,
-                        decoration: BoxDecoration(
-                          color: isSelected ? color : Colors.transparent,
-                          shape: BoxShape.circle,
-                          border: Border.all(
-                            color: isSelected ? color : Colors.grey,
-                            width: 2,
-                          ),
-                        ),
-                        child: isSelected
-                            ? const Icon(
-                                Icons.check,
-                                size: 16,
-                                color: Colors.white,
-                              )
-                            : null,
-                      ),
-                      const SizedBox(width: 12),
-                      if (itemEmoji.isNotEmpty) ...[
-                        Text(itemEmoji, style: const TextStyle(fontSize: 24)),
-                        const SizedBox(width: 12),
-                      ],
-                      Expanded(
-                        child: Text(
-                          itemName,
-                          style: TextStyle(
-                            fontSize: 15,
-                            fontWeight: isSelected
-                                ? FontWeight.w600
-                                : FontWeight.normal,
-                            color: isSelected
-                                ? Colors.grey[800]
-                                : Colors.grey[700],
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            ),
-          );
-        }).toList(),
-
-        const SizedBox(height: 80),
-      ],
-    );
-  }
-
-  Widget _buildBottomActionBar() {
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.fromLTRB(20, 16, 20, 16),
       decoration: BoxDecoration(
         color: Colors.white,
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 10,
-            offset: const Offset(0, -3),
+            color: Colors.black.withOpacity(0.06),
+            blurRadius: 12,
+            offset: const Offset(0, -2),
           ),
         ],
       ),
       child: SafeArea(
         child: Row(
           children: [
-            // Summary
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   Text(
-                    'Tổng đã chọn',
-                    style: TextStyle(fontSize: 12, color: Colors.grey[600]),
+                    'Đã chọn',
+                    style: TextStyle(
+                      fontSize: 13,
+                      color: Colors.grey[600],
+                      fontWeight: FontWeight.w500,
+                    ),
                   ),
                   const SizedBox(height: 2),
                   Text(
-                    '${selectedCuisines.length + selectedAllergies.length + selectedDiets.length} mục',
+                    '$totalSelected mục',
                     style: const TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.black87,
+                      fontSize: 20,
+                      fontWeight: FontWeight.w600,
+                      color: Color(0xFF1A1A1A),
                     ),
                   ),
                 ],
               ),
             ),
-
-            // Save Button
+            const SizedBox(width: 12),
             SizedBox(
-              width: 140,
-              height: 50,
+              height: 52,
               child: ElevatedButton(
                 onPressed: isSaving ? null : _savePreferences,
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.orange,
+                  backgroundColor: const Color(0xFFFF6B35),
                   foregroundColor: Colors.white,
                   elevation: 0,
+                  padding: const EdgeInsets.symmetric(horizontal: 32),
                   shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
+                    borderRadius: BorderRadius.circular(16),
                   ),
-                  disabledBackgroundColor: Colors.grey[300],
+                  disabledBackgroundColor: const Color(0xFFE5E5EA),
                 ),
                 child: isSaving
                     ? const SizedBox(
                         width: 20,
                         height: 20,
                         child: CircularProgressIndicator(
-                          strokeWidth: 2,
+                          strokeWidth: 2.5,
                           valueColor: AlwaysStoppedAnimation<Color>(
                             Colors.white,
                           ),
                         ),
                       )
                     : const Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
+                        mainAxisSize: MainAxisSize.min,
                         children: [
-                          Icon(Icons.check, size: 20),
+                          Icon(Icons.check_rounded, size: 22),
                           SizedBox(width: 8),
                           Text(
                             'Lưu',
                             style: TextStyle(
                               fontSize: 16,
-                              fontWeight: FontWeight.bold,
+                              fontWeight: FontWeight.w600,
+                              letterSpacing: 0.2,
                             ),
                           ),
                         ],
