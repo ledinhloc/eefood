@@ -68,8 +68,6 @@ class _RecipeGridCardState extends State<RecipeGridCard> {
           recipeImage: recipe.imageUrl,
           onCancel: () => Navigator.pop(context),
           onPublish: (content) async {
-            Navigator.pop(context);
-
             await postCubit.createPost(
               context,
               recipe.id!,
@@ -79,7 +77,10 @@ class _RecipeGridCardState extends State<RecipeGridCard> {
 
             widget.onRefresh?.call();
             _refreshCubit.refresh();
+
+            Navigator.pop(context);
           },
+          
         );
       },
     );
