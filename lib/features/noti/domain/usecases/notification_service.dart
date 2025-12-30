@@ -61,12 +61,12 @@ class NotificationService {
       priority: Priority.high,
       playSound: true,
       styleInformation: localImagePath != null
-          ? BigPictureStyleInformation(
-        FilePathAndroidBitmap(localImagePath),
-        contentTitle: title,
-        summaryText: body,
-        largeIcon: FilePathAndroidBitmap(localImagePath),
-      )
+            ? BigPictureStyleInformation(
+          FilePathAndroidBitmap(localImagePath),
+          contentTitle: title,
+          summaryText: body,
+          largeIcon: FilePathAndroidBitmap(localImagePath),
+          )
           : BigTextStyleInformation(body),
     );
 

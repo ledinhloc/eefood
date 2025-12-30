@@ -1,6 +1,5 @@
 import 'package:eefood/app_routes.dart';
 import 'package:eefood/core/di/injection.dart';
-import 'package:eefood/features/auth/domain/repositories/auth_repository.dart';
 import 'package:eefood/features/auth/domain/usecases/auth_usecases.dart';
 import 'package:eefood/features/auth/presentation/bloc/on_boarding_bloc/on_boarding_cubit.dart';
 import 'package:eefood/features/auth/presentation/screens/allergy_page.dart';
