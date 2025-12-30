@@ -159,7 +159,11 @@ class ProfilePage extends StatelessWidget {
                       "Trải nghiệm tất cả tính năng Plus miễn phí trong 7 ngày!",
                     ),
                     trailing: ElevatedButton(
-                      onPressed: () {},
+                      onPressed: () => Navigator.pushNamed(
+                        context,
+                        AppRoutes.commingSoonPage,
+                        arguments: {'featureName': "Tính năng Plus"},
+                      ),
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Colors.yellow.shade200,
                       ),
@@ -203,9 +207,14 @@ class ProfilePage extends StatelessWidget {
                     AppRoutes.notificationSettingScreen,
                   ),
                 ),
-                const ListTile(
+                ListTile(
                   leading: Icon(Icons.brightness_6_outlined),
                   title: Text("Hiển thị"),
+                  onTap: () => Navigator.pushNamed(
+                    context,
+                    AppRoutes.commingSoonPage,
+                    arguments: {'featureName': "Hiển thị"},
+                  ),
                 ),
 
                 const SizedBox(height: 16),
@@ -213,13 +222,23 @@ class ProfilePage extends StatelessWidget {
                   "Hỗ trợ",
                   style: TextStyle(fontWeight: FontWeight.bold),
                 ),
-                const ListTile(
+                ListTile(
                   leading: Icon(Icons.chat_bubble_outline),
                   title: Text("Góp ý"),
+                  onTap: () => Navigator.pushNamed(
+                    context,
+                    AppRoutes.commingSoonPage,
+                    arguments: {'featureName': "Góp ý"},
+                  ),
                 ),
-                const ListTile(
+                ListTile(
                   leading: Icon(Icons.bug_report_outlined),
                   title: Text("Báo lỗi"),
+                  onTap: () => Navigator.pushNamed(
+                    context,
+                    AppRoutes.commingSoonPage,
+                    arguments: {'featureName': "Báo lỗi"},
+                  ),
                 ),
 
                 const SizedBox(height: 16),
@@ -227,19 +246,27 @@ class ProfilePage extends StatelessWidget {
                   "Giới thiệu",
                   style: TextStyle(fontWeight: FontWeight.bold),
                 ),
-                const ListTile(
+                ListTile(
                   leading: Icon(Icons.thumb_up_outlined),
-                  title: Text("Giới thiệu cho bạn bè!"),
+                  title: Text("Điều khoản sử dụng"),
+                  onTap: () =>
+                      Navigator.pushNamed(context, AppRoutes.termOfServicePage),
                 ),
-                const ListTile(
+                ListTile(
                   leading: Icon(Icons.star_border),
                   title: Text("Đánh giá ứng dụng"),
+                  onTap: () => Navigator.pushNamed(
+                    context,
+                    AppRoutes.commingSoonPage,
+                    arguments: {'featureName': "Đánh giá ứng dụng"},
+                  ),
                 ),
               ],
             ),
             floatingActionButton: FloatingActionButton(
               heroTag: 'fab_profile',
-              onPressed: () {},
+              onPressed: () =>
+                  Navigator.pushNamed(context, AppRoutes.notificationScreen),
               backgroundColor: Colors.orange,
               child: const Icon(Icons.notifications),
             ),

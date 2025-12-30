@@ -17,14 +17,17 @@ import 'package:eefood/features/post/presentation/provider/story_setting_cubit.d
 import 'package:eefood/features/post/presentation/screens/collection_detail_page.dart';
 import 'package:eefood/features/post/presentation/screens/collection_list_page.dart';
 import 'package:eefood/features/post/presentation/screens/feed_screen.dart';
+import 'package:eefood/features/post/presentation/widgets/comment/comment_reaction/comment_react_list.dart';
 import 'package:eefood/features/post/presentation/widgets/follow/follow_list_page.dart';
 import 'package:eefood/features/post/presentation/widgets/post/image_search/image_search_page.dart';
 import 'package:eefood/features/post/presentation/widgets/story/crud_story/gallery_picker_page.dart';
 import 'package:eefood/features/post/presentation/widgets/story/story_settings/story_setting_page.dart';
+import 'package:eefood/features/profile/presentation/screens/coming_soon_page.dart';
 import 'package:eefood/features/profile/presentation/screens/edit_profile_page.dart';
 import 'package:eefood/features/profile/presentation/screens/food_preferences_page.dart';
 import 'package:eefood/features/profile/presentation/screens/language_page.dart';
 import 'package:eefood/features/profile/presentation/screens/personal_user_page.dart';
+import 'package:eefood/features/profile/presentation/screens/terms_of_service_page.dart';
 import 'package:eefood/features/recipe/data/models/recipe_model.dart';
 import 'package:eefood/features/recipe/presentation/screens/recipe_crud_page.dart';
 import 'package:eefood/features/recipe/presentation/screens/recipe_detail_page.dart';
@@ -59,6 +62,8 @@ class AppRoutes {
   static const foodPreference = '/foodPreference';
   static const language = '/language';
   static const mediaView = '/mediaView';
+  static const termOfServicePage = '/termOfServicePage';
+  static const commingSoonPage = '/commingSoonPage';
 
   /* feat recipe */
   static const recipeCrudPage = '/recipeCrudPage';
@@ -220,8 +225,9 @@ class AppRoutes {
         child: StorySettingPage(userId: userId),
       );
     },
-    recipeApprovalDetail: (context){
-      final args =  ModalRoute.of(context)!.settings.arguments as Map<String, dynamic>;
+    recipeApprovalDetail: (context) {
+      final args =
+          ModalRoute.of(context)!.settings.arguments as Map<String, dynamic>;
       return RecipeApprovalDetailPage(
         recipeId: args['recipeId'],
         recipeName: args['recipeName'],
@@ -229,6 +235,14 @@ class AppRoutes {
         imageUrl: args['imageUrl'],
         approvedAt: args['approvedAt'],
       );
-    }
+    },
+    termOfServicePage: (context) {
+      return TermsOfServicePage();
+    },
+    commingSoonPage: (context) {
+      final args =
+          ModalRoute.of(context)!.settings.arguments as Map<String, dynamic>;
+      return ComingSoonPage(featureName: args['featureName']);
+    },
   };
 }

@@ -176,4 +176,47 @@ class AppConstants {
     {"name": "Pizza", "icon": "🍕"},
     {"name": "Sushi", "icon": "🍣"},
   ];
+
+  static const List<Map<String, String>> termsOfService = [
+    {
+      "title": "1. Giới thiệu",
+      "content":
+          "Chào mừng bạn đến với ứng dụng EEFood. Bằng việc sử dụng ứng dụng, bạn đồng ý tuân theo các điều khoản và điều kiện được nêu dưới đây. Vui lòng đọc kỹ trước khi sử dụng dịch vụ.",
+    },
+    {
+      "title": "2. Quyền sử dụng",
+      "content":
+          "Chúng tôi cấp cho bạn quyền sử dụng ứng dụng cho mục đích cá nhân, phi thương mại. Bạn không được sao chép, phân phối, hoặc khai thác ứng dụng cho mục đích thương mại mà không có sự cho phép.",
+    },
+    {
+      "title": "3. Tài khoản người dùng",
+      "content":
+          "Bạn chịu trách nhiệm bảo mật thông tin tài khoản của mình. Mọi hoạt động dưới tài khoản của bạn sẽ được coi là do bạn thực hiện. Vui lòng thông báo ngay cho chúng tôi nếu phát hiện bất kỳ hành vi truy cập trái phép nào.",
+    },
+    {
+      "title": "4. Nội dung người dùng",
+      "content":
+          "Khi đăng tải nội dung lên ứng dụng, bạn cam kết rằng nội dung đó không vi phạm pháp luật, không xâm phạm quyền của bên thứ ba. Chúng tôi có quyền xóa bỏ nội dung không phù hợp mà không cần thông báo trước.",
+    },
+    {
+      "title": "5. Quyền riêng tư",
+      "content":
+          "Chúng tôi cam kết bảo vệ thông tin cá nhân của bạn theo chính sách bảo mật. Thông tin của bạn sẽ được mã hóa và chỉ được sử dụng để cải thiện trải nghiệm người dùng.",
+    },
+    {
+      "title": "6. Miễn trừ trách nhiệm",
+      "content":
+          "Ứng dụng được cung cấp 'như hiện có'. Chúng tôi không đảm bảo rằng dịch vụ sẽ hoạt động liên tục, không bị gián đoạn hoặc không có lỗi. Bạn sử dụng ứng dụng với rủi ro của riêng mình.",
+    },
+    {
+      "title": "7. Thay đổi điều khoản",
+      "content":
+          "Chúng tôi có quyền cập nhật và thay đổi các điều khoản này bất cứ lúc nào. Việc bạn tiếp tục sử dụng ứng dụng sau khi có thay đổi đồng nghĩa với việc bạn chấp nhận các điều khoản mới.",
+    },
+    {
+      "title": "8. Liên hệ",
+      "content":
+          "Nếu bạn có bất kỳ câu hỏi nào về điều khoản sử dụng, vui lòng liên hệ với chúng tôi qua email: support@eefood.com hoặc hotline: 1900-xxxx.",
+    },
+  ];
 }
