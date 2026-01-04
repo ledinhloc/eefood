@@ -96,7 +96,9 @@ class WelcomePage extends StatelessWidget {
                       print(user);
                       Navigator.pushNamed(context, AppRoutes.main);
                     } catch (err) {
-                      print('Failed: $err');
+                      // print('Failed: $err');
+                      showCustomSnackBar(context, "Vui lòng đăng nhập bằng gmail khác !");
+                      logger.i('Failed: $err');
                     } finally {
                       LoadingOverlay().hide();
                     }

@@ -15,6 +15,8 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:lottie/lottie.dart';
 
+import '../../../../core/utils/logger.dart';
+
 class RegisterPage extends StatelessWidget {
   RegisterPage({super.key});
   final LoginGoogle _loginGoogle = getIt<LoginGoogle>();
@@ -216,7 +218,9 @@ class RegisterPage extends StatelessWidget {
                                       AppRoutes.main,
                                     );
                                   } catch (err) {
-                                    print('Failed: $err');
+                                    // print('Failed: $err');
+                                    showCustomSnackBar(context, "Vui lòng đăng nhập bằng gmail khác !");
+                                    logger.i('Failed: $err');
                                   } finally {
                                     LoadingOverlay().hide();
                                   }

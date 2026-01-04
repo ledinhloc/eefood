@@ -11,6 +11,7 @@ import 'package:lottie/lottie.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../../../core/di/injection.dart';
+import '../../../../core/utils/logger.dart';
 import '../../domain/entities/user.dart';
 import '../../domain/repositories/auth_repository.dart';
 import '../../domain/usecases/auth_usecases.dart';
@@ -68,7 +69,10 @@ class _LoginPageState extends State<LoginPage> {
       print(user);
       Navigator.pushNamed(context, AppRoutes.main);
     } catch (err) {
-      print('Failed: $err');
+      // print('Failed: $err');
+      if (!mounted) return;
+      showCustomSnackBar(context, "Vui lòng đăng nhập bằng gmail khác !");
+      logger.i('Failed: $err');
     } finally {
       LoadingOverlay().hide();
     }

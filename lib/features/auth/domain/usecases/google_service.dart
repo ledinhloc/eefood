@@ -11,11 +11,18 @@ class GoogleAuthService {
   static Future<String?> signInWithGoogle() async {
     try {
       print("TOKEN: "+AppKeys.webClientId);
+
+      try {
+        await _googleSignIn.signOut();
+      } catch (e) {
+        print("SignOut skip: $e");
+      }
+
       // Mở Google Login
       final GoogleSignInAccount? googleUser = await _googleSignIn.signIn();
 
       if (googleUser == null) {
-        await signOut();
+        // await signOut();
         return null;
       }; // Người dùng bấm cancel
 
