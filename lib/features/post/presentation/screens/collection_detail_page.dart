@@ -45,6 +45,7 @@ class _CollectionDetailPageState extends State<CollectionDetailPage> {
               CollectionMoreButton(
                 collection: collection,
                 iconColor: Colors.black,
+                onDeleted: () => Navigator.pop(context),
               ),
             ],
           ),
