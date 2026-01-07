@@ -1,4 +1,3 @@
-import 'package:eefood/features/auth/data/models/user_model.dart';
 import 'package:eefood/features/post/data/models/follow_model.dart';
 
 abstract class FollowRepository {

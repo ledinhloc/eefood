@@ -87,6 +87,14 @@ class _StoryViewerPageState extends State<StoryViewerPage> {
       onNavigationChanged: _onStoryChanged,
       onComplete: () => Navigator.pop(context),
       onResetProgress: () {
+        final user = _navigationHelper.currentUser;
+
+        if (user.stories.isEmpty ||
+            _navigationHelper.storyIndex < 0 ||
+            _navigationHelper.storyIndex >= user.stories.length) {
+          return;
+        }
+
         final currentStory =
             _navigationHelper.currentUser.stories[_navigationHelper.storyIndex];
         if (currentStory.type == 'video') {
@@ -117,12 +125,12 @@ class _StoryViewerPageState extends State<StoryViewerPage> {
       if (widget.isCollection!) {
         _viewMarkerHelper.markStoryAsViewedNoneState(
           widget.userIndex,
-          widget.initialStoryIndex,
+          _navigationHelper.storyIndex,
         );
       } else {
         _viewMarkerHelper.markStoryAsViewed(
           widget.userIndex,
-          widget.initialStoryIndex,
+          _navigationHelper.storyIndex,
         );
       }
       if (_isCurrentUserStory()) {
@@ -152,12 +160,12 @@ class _StoryViewerPageState extends State<StoryViewerPage> {
     if (widget.isCollection!) {
       _viewMarkerHelper.markStoryAsViewedNoneState(
         widget.userIndex,
-        widget.initialStoryIndex,
+        _navigationHelper.storyIndex,
       );
     } else {
       _viewMarkerHelper.markStoryAsViewed(
         widget.userIndex,
-        widget.initialStoryIndex,
+        _navigationHelper.storyIndex,
       );
     }
 
@@ -291,6 +299,15 @@ class _StoryViewerPageState extends State<StoryViewerPage> {
 
     setState(() {
       currentStories.removeAt(index);
+
+      if (currentStories.isEmpty) {
+        if (_navigationHelper.userIndex < widget.allUsers.length - 1) {
+          _navigationHelper.nextUser();
+        } else {
+          Navigator.pop(context);
+        }
+        return;
+      }
 
       if (_navigationHelper.storyIndex >= currentStories.length) {
         if (_navigationHelper.userIndex < widget.allUsers.length - 1) {

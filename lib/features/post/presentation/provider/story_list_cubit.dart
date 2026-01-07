@@ -89,7 +89,7 @@ class StoryCubit extends Cubit<StoryState> {
     }
   }
 
-  Future<void> loadStories(int viewerId) async {
+  Future<void> loadStories(int viewerId, {bool? isCollection = false}) async {
     try {
       _safeEmit(state.copyWith(isLoading: true));
 
@@ -104,8 +104,15 @@ class StoryCubit extends Cubit<StoryState> {
       }
 
       // Lấy feed story
-      final feedStories = await repository.getFeed(viewerId);
-      print('Feed stories count: ${feedStories.length}');
+      var feedStories;
+      if(isCollection==true) {
+        feedStories = null;
+      }
+      else {
+        feedStories = await repository.getFeed(viewerId);
+        print('Feed stories count: ${feedStories.length}');
+      }
+      
 
       // Gộp: ownStory -> feedStory
       final mergedRaw = [if (ownStories != null) ownStories, ...feedStories];

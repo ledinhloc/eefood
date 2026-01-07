@@ -58,6 +58,9 @@ class _PersonalCollectionTabState extends State<PersonalCollectionTab> {
     super.dispose();
   }
 
+  bool get _isOwner =>
+      _currentUserId != null && _currentUserId == widget.user.id;
+
   @override
   Widget build(BuildContext context) {
     return BlocProvider.value(
@@ -83,6 +86,38 @@ class _PersonalCollectionTabState extends State<PersonalCollectionTab> {
                     'Chưa có danh mục nào',
                     style: TextStyle(fontSize: 16, color: Colors.grey[600]),
                   ),
+                  if (_isOwner) ...[
+                    const SizedBox(height: 24),
+                    ElevatedButton.icon(
+                      onPressed: () {
+                        showDialog(
+                          context: context,
+                          builder: (_) => BlocProvider.value(
+                            value: _cubit,
+                            child: CreateAndUpdateCollectionDialog(
+                              userId: _currentUserId!,
+                              collection: null,
+                            ),
+                          ),
+                        );
+                      },
+                      icon: const Icon(Icons.add, color: Colors.white),
+                      label: const Text(
+                        'Tạo danh mục',
+                        style: TextStyle(color: Colors.white),
+                      ),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.red,
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 24,
+                          vertical: 12,
+                        ),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(24),
+                        ),
+                      ),
+                    ),
+                  ],
                 ],
               ),
             );
@@ -135,7 +170,7 @@ class _PersonalCollectionTabState extends State<PersonalCollectionTab> {
                           ),
                         );
                         if (mounted) {
-                          await getIt<StoryCubit>().loadStories(user!.id);
+                          await getIt<StoryCubit>().loadStories(user!.id, isCollection: true);
                         }
                       },
                     );
@@ -148,7 +183,7 @@ class _PersonalCollectionTabState extends State<PersonalCollectionTab> {
                 child: FloatingActionButton(
                   shape: CircleBorder(),
                   backgroundColor: Colors.red,
-                  child: const Icon(Icons.add, size: 20, color: Colors.white,),
+                  child: const Icon(Icons.add, size: 20, color: Colors.white),
                   onPressed: () {
                     showDialog(
                       context: context,

@@ -1,5 +1,4 @@
 import 'package:dio/dio.dart';
-import 'package:eefood/features/auth/data/models/user_model.dart';
 import 'package:eefood/features/post/data/models/follow_model.dart';
 import 'package:eefood/features/post/domain/repositories/follow_repository.dart';
 
@@ -62,14 +61,17 @@ class FollowRepositoryImpl extends FollowRepository {
       final data = response.data['data'];
       final content = data['content'] as List<dynamic>;
       return content.map((json) => FollowModel.fromJson(json)).toList();
-    }
-    else {
+    } else {
       throw Exception('Failed to load posts');
     }
   }
 
   @override
-  Future<List<FollowModel>> getFollowings(int userId, int page, int size) async {
+  Future<List<FollowModel>> getFollowings(
+    int userId,
+    int page,
+    int size,
+  ) async {
     final response = await dio.get(
       '/v1/follows/followings/$userId',
       queryParameters: {'page': page, 'size': size},
@@ -78,13 +80,12 @@ class FollowRepositoryImpl extends FollowRepository {
       final data = response.data['data'];
       final content = data['content'] as List<dynamic>;
       return content.map((json) => FollowModel.fromJson(json)).toList();
-    }
-    else {
+    } else {
       throw Exception('Failed to load posts');
     }
   }
 
-   @override
+  @override
   Future<Map<String, int>> getFollowStats(int userId) async {
     try {
       final response = await dio.get('/v1/follows/stats/$userId');
