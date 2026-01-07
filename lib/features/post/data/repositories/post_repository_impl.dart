@@ -102,6 +102,24 @@ class PostRepositoryImpl extends PostRepository{
     }
   }
 
+  Future<int> getOwnPostsCount(int userId) async {
+    final response = await dio.get(
+      '/v1/posts/my',
+      queryParameters: {
+        'userId': userId,
+        'page': 1,
+        'size': 1,
+      },
+    );
+
+    if (response.statusCode == 200) {
+      final data = response.data['data'];
+      return data['totalElements'] ?? 0;
+    } else {
+      throw Exception('Failed to load post count');
+    }
+  }
+
   @override
   Future<PostModel> getPostById(int id) async {
     final response = await dio.get('/v1/posts/$id');

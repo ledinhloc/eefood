@@ -24,5 +24,7 @@ abstract class PostRepository {
     int userId, {
     String? sortBy,
   });
+
+  Future<int> getOwnPostsCount(int userId);
   Future<PostModel> getPostById(int id);
 }
