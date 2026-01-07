@@ -161,6 +161,19 @@ class _SearchPopupState extends State<SearchPopup> {
                                 if (keyword != null && context.mounted) {
                                   setState(() => _keywordCtl.text = keyword);
                                 }
+
+                                final filters = <String, dynamic>{
+                                  'keyword': _keywordCtl.text.trim().isEmpty
+                                      ? null
+                                      : _keywordCtl.text.trim(),
+                                  'region': _selectedRegion,
+                                  'difficulty': _selectedDifficulty != null
+                                      ? _difficultyMap[_selectedDifficulty]
+                                      : null,
+                                  'category': _selectedCategory,
+                                  'maxCookTime': _selectedMaxCookTime,
+                                };
+                                Navigator.of(context).pop(filters);
                               },
                             ),
                             // Image search

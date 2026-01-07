@@ -50,9 +50,16 @@ class StoryNavigationHelper {
 
   void previousStory() {
     if (currentUser.stories.isEmpty) {
-      onComplete();
+      onResetProgress();
       return;
     }
+
+    if (currentUser.stories.length == 1) {
+      _storyIndex = 0;
+      onResetProgress();
+      return;
+    }
+
     if (_storyIndex > 0) {
       _storyIndex--;
       _pageController.animateToPage(
@@ -88,14 +95,24 @@ class StoryNavigationHelper {
       return;
     }
 
-    if (_userIndex > 0) {
-      final newStoryIndex = allUsers[_userIndex - 1].stories.length - 1;
+    final prevUser = allUsers[_userIndex - 1];
+
+    if (prevUser.stories.isEmpty) {
       _userIndex--;
-      _storyIndex = newStoryIndex;
+      _storyIndex = 0;
       _pageController.dispose();
-      _pageController = PageController(initialPage: newStoryIndex);
+      _pageController = PageController(initialPage: 0);
       onNavigationChanged();
+      return;
     }
+
+    final newStoryIndex = prevUser.stories.length - 1;
+
+    _userIndex--;
+    _storyIndex = newStoryIndex;
+    _pageController.dispose();
+    _pageController = PageController(initialPage: newStoryIndex);
+    onNavigationChanged();
   }
 
   void updateIndices(int userIndex, int storyIndex) {
