@@ -11,6 +11,8 @@ import 'package:eefood/core/widgets/user_avatar.dart';
 import 'package:eefood/features/auth/domain/entities/user.dart';
 import 'package:eefood/features/profile/presentation/widgets/personal_header/start_item.dart';
 
+import '../../../../post/domain/repositories/post_repository.dart';
+
 class PersonalUserInfo extends StatefulWidget {
   final User user;
 
@@ -31,6 +33,11 @@ class _PersonalUserInfoState extends State<PersonalUserInfo> {
     super.initState();
     _followCubit = getIt<FollowCubit>();
     _getCurrentUserId();
+  }
+
+  Future<int> _getPostCount() {
+    final repo = getIt<PostRepository>();
+    return repo.getOwnPostsCount(widget.user.id);
   }
 
   @override
@@ -142,7 +149,19 @@ class _PersonalUserInfoState extends State<PersonalUserInfo> {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceAround,
         children: [
-          const StartItem(title: 'Bài viết', value: '128'),
+          FutureBuilder<int>(
+            future: _getPostCount(),
+            builder: (context, snapshot) {
+              final value = snapshot.connectionState == ConnectionState.waiting
+                  ? '...'
+                  : (snapshot.data ?? 0).toString();
+
+              return StartItem(
+                title: 'Bài viết',
+                value: value,
+              );
+            },
+          ),
           const VerticalDivider(),
           StartItem(
             title: 'Người theo dõi',
