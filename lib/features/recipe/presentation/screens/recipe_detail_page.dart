@@ -1,17 +1,25 @@
+import 'dart:convert';
+
 import 'package:eefood/core/di/injection.dart';
 import 'package:eefood/core/widgets/show_login_required.dart';
 import 'package:eefood/core/widgets/snack_bar.dart';
 import 'package:eefood/features/auth/domain/usecases/auth_usecases.dart';
+import 'package:eefood/features/post/presentation/provider/follow_cubit.dart';
 import 'package:eefood/features/recipe/presentation/provider/shopping_cubit.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import '../../../../app_routes.dart';
+import '../../../../core/constants/app_keys.dart';
 import '../../../../core/widgets/custom_bottom_sheet.dart';
+import '../../../auth/domain/entities/user.dart';
 import '../../../post/presentation/widgets/collection/add_to_collection_sheet.dart';
+import '../../../profile/domain/usecases/profile_usecase.dart';
 import '../../domain/repositories/shopping_repository.dart';
 import '../provider/recipe_detail_cubit.dart';
 import '../widgets/category_list_widget.dart';
 import '../widgets/instructions_tab.dart';
 import '../widgets/steps_tab.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class RecipeDetailPage extends StatefulWidget {
   final int recipeId;
@@ -23,22 +31,73 @@ class RecipeDetailPage extends StatefulWidget {
 
 class _RecipeDetailPageState extends State<RecipeDetailPage> {
   late final RecipeDetailCubit _cubit;
+  late final FollowCubit _followCubit;
+  int? _currentUserId;
+  bool _isLoadingFollow = false;
 
   @override
   void initState() {
     // TODO: implement initState
     super.initState();
     _cubit = RecipeDetailCubit()..loadRecipe(widget.recipeId);
+    _followCubit = FollowCubit();
+    _loadCurrentUserId();
   }
+
+  Future<void> _loadCurrentUserId() async {
+    final user = await getIt<GetCurrentUser>().call();
+    if (mounted) {
+      setState(() => _currentUserId = user?.id);
+    }
+  }
+
+  Future<void> _handleFollowToggle(int authorId) async {
+    final user = await getIt<GetCurrentUser>().call();
+    if (user == null) {
+      showLoginRequired(context);
+      return;
+    }
+
+    if (_currentUserId == null || _currentUserId == authorId) {
+      return;
+    }
+
+    setState(() => _isLoadingFollow = true);
+
+    try {
+      await _followCubit.toggleFollow(authorId, _currentUserId!);
+      await _followCubit.loadFollowData(authorId);
+      if (mounted) {
+        final isFollowing = _followCubit.state.isFollowing;
+        showCustomSnackBar(
+          context,
+          isFollowing ? "Đã theo dõi" : "Đã bỏ theo dõi",
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        showCustomSnackBar(context, "Có lỗi xảy ra");
+      }
+    } finally {
+      if (mounted) {
+        setState(() => _isLoadingFollow = false);
+      }
+    }
+  }
+
   @override
   void dispose() {
     _cubit.stopTracking();
+    _followCubit.close();
     super.dispose();
   }
   @override
   Widget build(BuildContext context) {
-    return BlocProvider.value(
-      value: _cubit,
+    return MultiBlocProvider(
+      providers: [
+        BlocProvider.value(value: _cubit),
+        BlocProvider.value(value: _followCubit),
+      ],
       child: BlocBuilder<RecipeDetailCubit, RecipeDetailState>(
         builder: (context, state) {
           if (state.isLoading) {
@@ -55,6 +114,10 @@ class _RecipeDetailPageState extends State<RecipeDetailPage> {
 
           final recipe = state.recipe!;
           final totalTime = (recipe.prepTime ?? 0) + (recipe.cookTime ?? 0);
+
+          if (_currentUserId != null && recipe.userId != null && recipe.userId != _currentUserId) {
+            _followCubit.loadFollowData(recipe.userId!);
+          }
 
           return Scaffold(
             body: DefaultTabController(
@@ -185,36 +248,51 @@ class _RecipeDetailPageState extends State<RecipeDetailPage> {
                                     ),
                                   ),
                                   const SizedBox(height: 4),
-                                  // GestureDetector(
-                                  //   onTap: () {
-                                  //     // TODO: mở trang cá nhân nếu bạn có UserProfilePage
-                                  //   },
-                                  //   child: const Text(
-                                  //     "Xem trang cá nhân",
-                                  //     style: TextStyle(
-                                  //       fontSize: 13,
-                                  //       color: Colors.orange,
-                                  //       decoration: TextDecoration.underline,
-                                  //     ),
-                                  //   ),
-                                  // ),
+                                  GestureDetector(
+                                    onTap: () async {
+                                      User? userStory = await getIt<GetUserById>().call(recipe.userId);
+                                      await Navigator.pushNamed(
+                                        context,
+                                        AppRoutes.personalUser,
+                                        arguments: {'user': userStory},
+                                      );
+                                    },
+                                    child: Container(
+                                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                      decoration: BoxDecoration(
+                                        color: Colors.orange.shade100,
+                                        borderRadius: BorderRadius.circular(8),
+                                      ),
+                                      child: Row(
+                                        mainAxisSize: MainAxisSize.min,
+                                        children: const [
+                                          Icon(
+                                            Icons.person_outline,
+                                            size: 14,
+                                            color: Colors.orange,
+                                          ),
+                                          SizedBox(width: 4),
+                                          Flexible(
+                                            child: Text(
+                                              "Xem trang cá nhân",
+                                              style: TextStyle(
+                                                fontSize: 12,
+                                                color: Colors.orange,
+                                                fontWeight: FontWeight.w600,
+                                              ),
+                                              overflow: TextOverflow.ellipsis,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ),
                                 ],
                               ),
                             ),
 
                             // --- Nút follow (tùy chọn) ---
-                            ElevatedButton(
-                              onPressed: () {
-                                // TODO: xử lý theo dõi người dùng
-                              },
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: Colors.orange,
-                                foregroundColor: Colors.white,
-                                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                              ),
-                              child: const Text("Theo dõi", style: TextStyle(fontSize: 13)),
-                            ),
+                            _buildFollowButton(recipe),
                           ],
                         ),
                       ),
@@ -321,6 +399,52 @@ class _RecipeDetailPageState extends State<RecipeDetailPage> {
           );
         },
       ),
+    );
+  }
+  // --- Widget Follow Button --
+  Widget _buildFollowButton(recipe) {
+    // Không hiển thị nút nếu là chính mình
+    if (_currentUserId == null ||
+        recipe.userId == null ||
+        _currentUserId == recipe.userId) {
+      return const SizedBox();
+    }
+
+    return BlocBuilder<FollowCubit, FollowState>(
+      builder: (context, followState) {
+        final isFollowing = followState.isFollowing;
+
+        if (_isLoadingFollow) {
+          return const SizedBox(
+            width: 80,
+            height: 36,
+            child: Center(
+              child: SizedBox(
+                width: 20,
+                height: 20,
+                child: CircularProgressIndicator(
+                  strokeWidth: 2,
+                  valueColor: AlwaysStoppedAnimation<Color>(Colors.orange),
+                ),
+              ),
+            ),
+          );
+        }
+
+        return ElevatedButton(
+          onPressed: () => _handleFollowToggle(recipe.userId!),
+          style: ElevatedButton.styleFrom(
+            backgroundColor: isFollowing ? Colors.grey : Colors.orange,
+            foregroundColor: Colors.white,
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          ),
+          child: Text(
+            isFollowing ? "Đã theo dõi" : "Theo dõi",
+            style: const TextStyle(fontSize: 13),
+          ),
+        );
+      },
     );
   }
 
