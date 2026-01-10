@@ -35,9 +35,12 @@ class FollowItem extends StatelessWidget {
         radius: 24,
         url: user.avatarUrl,
       ),
-      title: Text(
-        userName,
-        style: const TextStyle(fontWeight: FontWeight.w600),
+      title: GestureDetector(
+        onTap: () => _openProfile(context),
+        child: Text(
+          userName,
+          style: const TextStyle(fontWeight: FontWeight.w600),
+        ),
       ),
       subtitle: Text(
         user.email ?? '',
@@ -49,5 +52,18 @@ class FollowItem extends StatelessWidget {
         isFollowersList: isFollowersList,
       ),
     );
+  }
+
+  Future<void> _openProfile(BuildContext context) async {
+    User? userStory = await getIt<GetUserById>().call(isFollowersList ? user.followerId: user.followingId);
+    await Navigator.pushReplacementNamed(
+      context,
+      AppRoutes.personalUser,
+      arguments: {'user': userStory},
+    );
+
+    // if (context.mounted) {
+    //   getIt<PostListCubit>().resetFilters();
+    // }
   }
 }

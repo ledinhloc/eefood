@@ -114,23 +114,6 @@ class PostHeader extends StatelessWidget {
               },
             ),
             BottomSheetOption(
-              icon: const Icon(Icons.link, color: Colors.blue),
-              title: 'Sao chép liên kết món ăn',
-              onTap: () async {
-                await ShareUtils.shareToPlatform(
-                  platform: 'copy',
-                  recipeId: post.recipeId,
-                  title: post.title,
-                  imageUrl: post.imageUrl,
-                  desc: 'Xem thêm ở đây',
-                );
-
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Đã sao chép thành công')),
-                );
-              },
-            ),
-            BottomSheetOption(
               icon: const Icon(Icons.share_outlined, color: Colors.green),
               title: 'Chia sẻ bài viết',
               onTap: () {

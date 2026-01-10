@@ -78,7 +78,7 @@ class _FollowListPageState extends State<FollowListPage> {
       appBar: AppBar(
         title: Text(title),
         centerTitle: true,
-        backgroundColor: Colors.transparent,
+        backgroundColor: Colors.white,
       ),
       body: BlocBuilder<FollowCubit, FollowState>(
         builder: (context, state) {
@@ -99,6 +99,7 @@ class _FollowListPageState extends State<FollowListPage> {
             },
             child: ListView.builder(
               controller: _scrollController,
+              physics: const AlwaysScrollableScrollPhysics(),
               itemCount: users.length + (state.isLoading ? 1 : 0),
               itemBuilder: (context, index) {
                 if (index == users.length) {
