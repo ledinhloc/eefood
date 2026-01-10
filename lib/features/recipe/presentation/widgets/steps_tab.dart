@@ -1,6 +1,8 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:video_player/video_player.dart';
 
+import '../../../../core/widgets/media_view_page.dart';
 import '../../data/models/recipe_detail_model.dart';
 
 class StepsTab extends StatelessWidget {
@@ -77,20 +79,40 @@ class StepsTab extends StatelessWidget {
                       scrollDirection: Axis.horizontal,
                       itemCount: step.imageUrls!.length,
                       separatorBuilder: (_, __) => const SizedBox(width: 10),
-                      itemBuilder: (context, index) {
-                        return ClipRRect(
-                          borderRadius: BorderRadius.circular(12),
-                          child: Image.network(
-                            step.imageUrls![index],
-                            fit: BoxFit.cover,
-                            width: 220,
-                            errorBuilder: (context, error, stackTrace) {
-                              return Container(
+                      itemBuilder: (context, imgIndex) {
+                        return GestureDetector(
+                          onTap: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (_) => MediaViewPage(
+                                  url: step.imageUrls![imgIndex],
+                                  isVideo: false,
+                                  isLocal: false,
+                                ),
+                              ),
+                            );
+                          },
+                          child: ClipRRect(
+                            borderRadius: BorderRadius.circular(12),
+                            child: CachedNetworkImage(
+                              imageUrl: step.imageUrls![imgIndex],
+                              fit: BoxFit.cover,
+                              width: 220,
+                              placeholder: (context, url) => Container(
+                                width: 220,
+                                height: 200,
+                                color: Colors.grey[100],
+                                child: const Center(
+                                  child: CircularProgressIndicator(),
+                                ),
+                              ),
+                              errorWidget: (context, url, error) => Container(
                                 color: Colors.grey[200],
                                 width: 220,
                                 child: const Icon(Icons.broken_image, size: 48),
-                              );
-                            },
+                              ),
+                            ),
                           ),
                         );
                       },
