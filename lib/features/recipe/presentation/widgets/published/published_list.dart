@@ -13,6 +13,7 @@ import '../../../data/models/post_publish_model.dart';
 import '../../../data/models/post_publish_model.dart';
 import '../../../domain/repositories/recipe_repository.dart';
 import '../../provider/post_state.dart';
+import '../../screens/recipe_detail_page.dart';
 
 extension PostStatusUI on PostStatus {
   Color get color {
@@ -178,213 +179,224 @@ class PublishedPostCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final status = post.status;
-    return Container(
-      margin: const EdgeInsets.only(bottom: 16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
+    return InkWell(
+      onTap: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (_) => RecipeDetailPage(recipeId: post.recipeId),
           ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Image Section với Status Badge
-          Stack(
-            children: [
-              ClipRRect(
-                borderRadius: const BorderRadius.vertical(
-                  top: Radius.circular(16),
-                ),
-                child: post.imageUrl != null
-                    ? Image.network(
-                        post.imageUrl!,
-                        height: 200,
-                        width: double.infinity,
-                        fit: BoxFit.cover,
-                        errorBuilder: (_, __, ___) => _buildPlaceholder(),
-                      )
-                    : _buildPlaceholder(),
-              ),
-              // Status Badge
-              Positioned(
-                top: 12,
-                left: 12,
-                child: Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 12,
-                    vertical: 6,
-                  ),
-                  decoration: BoxDecoration(
-                    color: status.backgroundColor,
-                    borderRadius: BorderRadius.circular(20),
-                    border: Border.all(color: status.color, width: 1.5),
-                  ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Icon(status.icon, size: 16, color: status.color),
-                      const SizedBox(width: 4),
-                      Text(
-                        status.displayText,
-                        style: TextStyle(
-                          color: status.color,
-                          fontSize: 12,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-              Positioned(
-                top: 8,
-                right: 8,
-                child: IconButton(
-                  onPressed: () async {
-                    await showCustomBottomSheet(context, [
-                      BottomSheetOption(
-                        icon: const Icon(Icons.edit, color: Colors.blue),
-                        title: "Chỉnh sửa bài viết",
-                        onTap: () {
-                          _showEditDialog(context, postCubit, post);
-                        },
-                      ),
-                      BottomSheetOption(
-                        icon: const Icon(
-                          Icons.restaurant_menu,
-                          color: Colors.orange,
-                        ),
-                        title: "Sửa công thức",
-                        onTap: () => _onEditRecipe(context),
-                      ),
-                      BottomSheetOption(
-                        icon: const Icon(Icons.delete, color: Colors.red),
-                        title: "Xóa bài đăng",
-                        onTap: () {
-                          postCubit.deletePost(context, post.id);
-                        },
-                      ),
-                    ]);
-                  },
-                  icon: Icon(Icons.more_vert),
-                ),
-              ),
-            ],
-          ),
-
-          // Content Section
-          Padding(
-            padding: const EdgeInsets.all(16),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+        );
+      },
+      borderRadius: BorderRadius.circular(16),
+      child: Container(
+        margin: const EdgeInsets.only(bottom: 16),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(16),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.05),
+              blurRadius: 10,
+              offset: const Offset(0, 4),
+            ),
+          ],
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Image Section với Status Badge
+            Stack(
               children: [
-                // Title
-                Text(
-                  post.title,
-                  style: const TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                    color: Color(0xFF2D3436),
+                ClipRRect(
+                  borderRadius: const BorderRadius.vertical(
+                    top: Radius.circular(16),
                   ),
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
+                  child: post.imageUrl != null
+                      ? Image.network(
+                          post.imageUrl!,
+                          height: 200,
+                          width: double.infinity,
+                          fit: BoxFit.cover,
+                          errorBuilder: (_, __, ___) => _buildPlaceholder(),
+                        )
+                      : _buildPlaceholder(),
                 ),
-                const SizedBox(height: 8),
-
-                // Content
-                Text(
-                  post.content,
-                  style: TextStyle(
-                    fontSize: 14,
-                    color: Colors.grey[600],
-                    height: 1.4,
+                // Status Badge
+                Positioned(
+                  top: 12,
+                  left: 12,
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 6,
+                    ),
+                    decoration: BoxDecoration(
+                      color: status.backgroundColor,
+                      borderRadius: BorderRadius.circular(20),
+                      border: Border.all(color: status.color, width: 1.5),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(status.icon, size: 16, color: status.color),
+                        const SizedBox(width: 4),
+                        Text(
+                          status.displayText,
+                          style: TextStyle(
+                            color: status.color,
+                            fontSize: 12,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
                 ),
-                const SizedBox(height: 12),
-
-                // Recipe Info Row
-                Wrap(
-                  spacing: 12,
-                  runSpacing: 8,
-                  children: [
-                    if (post.difficulty != null)
-                      _buildInfoChip(
-                        Icons.signal_cellular_alt,
-                        post.difficulty!,
-                        const Color(0xFFFF6B6B),
-                      ),
-                    if (post.prepTime != null)
-                      _buildInfoChip(
-                        Icons.timer_outlined,
-                        post.prepTime!,
-                        const Color(0xFF4ECDC4),
-                      ),
-                    if (post.cookTime != null)
-                      _buildInfoChip(
-                        Icons.local_fire_department_outlined,
-                        post.cookTime!,
-                        const Color(0xFFFFBE0B),
-                      ),
-                    if (post.location != null)
-                      _buildInfoChip(
-                        Icons.location_on_outlined,
-                        post.location!,
-                        const Color(0xFF95E1D3),
-                      ),
-                  ],
-                ),
-                const SizedBox(height: 12),
-
-                // Stats and Time Row
-                Row(
-                  children: [
-                    // Reactions
-                    _buildStatItem(
-                      Icons.favorite_border,
-                      post.countReaction ?? 0,
-                      const Color(0xFFFF6B6B),
-                    ),
-                    const SizedBox(width: 16),
-                    // Comments
-                    _buildStatItem(
-                      Icons.chat_bubble_outline,
-                      post.countComment ?? 0,
-                      const Color(0xFF4ECDC4),
-                    ),
-                    const Spacer(),
-                    // Time ago
-                    if (post.createdAt != null)
-                      Row(
-                        children: [
-                          Icon(
-                            Icons.access_time,
-                            size: 14,
-                            color: Colors.grey[500],
+                Positioned(
+                  top: 8,
+                  right: 8,
+                  child: IconButton(
+                    onPressed: () async {
+                      await showCustomBottomSheet(context, [
+                        BottomSheetOption(
+                          icon: const Icon(Icons.edit, color: Colors.blue),
+                          title: "Chỉnh sửa bài viết",
+                          onTap: () {
+                            _showEditDialog(context, postCubit, post);
+                          },
+                        ),
+                        BottomSheetOption(
+                          icon: const Icon(
+                            Icons.restaurant_menu,
+                            color: Colors.orange,
                           ),
-                          const SizedBox(width: 4),
-                          Text(
-                            timeago.format(post.createdAt!, locale: 'vi'),
-                            style: TextStyle(
-                              fontSize: 12,
-                              color: Colors.grey[500],
-                            ),
-                          ),
-                        ],
-                      ),
-                  ],
+                          title: "Sửa công thức",
+                          onTap: () => _onEditRecipe(context),
+                        ),
+                        BottomSheetOption(
+                          icon: const Icon(Icons.delete, color: Colors.red),
+                          title: "Xóa bài đăng",
+                          onTap: () {
+                            postCubit.deletePost(context, post.id);
+                          },
+                        ),
+                      ]);
+                    },
+                    icon: Icon(Icons.more_vert),
+                  ),
                 ),
               ],
             ),
-          ),
-        ],
+      
+            // Content Section
+            Padding(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Title
+                  Text(
+                    post.title,
+                    style: const TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                      color: Color(0xFF2D3436),
+                    ),
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  const SizedBox(height: 8),
+      
+                  // Content
+                  Text(
+                    post.content,
+                    style: TextStyle(
+                      fontSize: 14,
+                      color: Colors.grey[600],
+                      height: 1.4,
+                    ),
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  const SizedBox(height: 12),
+      
+                  // Recipe Info Row
+                  Wrap(
+                    spacing: 12,
+                    runSpacing: 8,
+                    children: [
+                      if (post.difficulty != null)
+                        _buildInfoChip(
+                          Icons.signal_cellular_alt,
+                          post.difficulty!,
+                          const Color(0xFFFF6B6B),
+                        ),
+                      if (post.prepTime != null)
+                        _buildInfoChip(
+                          Icons.timer_outlined,
+                          post.prepTime!,
+                          const Color(0xFF4ECDC4),
+                        ),
+                      if (post.cookTime != null)
+                        _buildInfoChip(
+                          Icons.local_fire_department_outlined,
+                          post.cookTime!,
+                          const Color(0xFFFFBE0B),
+                        ),
+                      if (post.location != null)
+                        _buildInfoChip(
+                          Icons.location_on_outlined,
+                          post.location!,
+                          const Color(0xFF95E1D3),
+                        ),
+                    ],
+                  ),
+                  const SizedBox(height: 12),
+      
+                  // Stats and Time Row
+                  Row(
+                    children: [
+                      // Reactions
+                      _buildStatItem(
+                        Icons.favorite_border,
+                        post.countReaction ?? 0,
+                        const Color(0xFFFF6B6B),
+                      ),
+                      const SizedBox(width: 16),
+                      // Comments
+                      _buildStatItem(
+                        Icons.chat_bubble_outline,
+                        post.countComment ?? 0,
+                        const Color(0xFF4ECDC4),
+                      ),
+                      const Spacer(),
+                      // Time ago
+                      if (post.createdAt != null)
+                        Row(
+                          children: [
+                            Icon(
+                              Icons.access_time,
+                              size: 14,
+                              color: Colors.grey[500],
+                            ),
+                            const SizedBox(width: 4),
+                            Text(
+                              timeago.format(post.createdAt!, locale: 'vi'),
+                              style: TextStyle(
+                                fontSize: 12,
+                                color: Colors.grey[500],
+                              ),
+                            ),
+                          ],
+                        ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
