@@ -12,6 +12,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../../../core/di/injection.dart';
 import '../../../../core/utils/logger.dart';
+import '../../../noti/presentation/provider/notification_settings_cubit.dart';
 import '../../domain/entities/user.dart';
 import '../../domain/repositories/auth_repository.dart';
 import '../../domain/usecases/auth_usecases.dart';
@@ -28,6 +29,8 @@ class _LoginPageState extends State<LoginPage> {
   final LoginGoogle _loginGoogle = getIt<LoginGoogle>();
   final SharedPreferences _sharedPreferences = getIt<SharedPreferences>();
   final Login _login = getIt<Login>();
+  final NotificationSettingsCubit notificationSettingsCubit =
+  getIt<NotificationSettingsCubit>();
 
   final emailController = TextEditingController();
 
@@ -67,6 +70,9 @@ class _LoginPageState extends State<LoginPage> {
         return;
       }
       print(user);
+
+      await notificationSettingsCubit.fetchSettings();
+
       Navigator.pushNamed(context, AppRoutes.main);
     } catch (err) {
       // print('Failed: $err');
@@ -99,6 +105,8 @@ class _LoginPageState extends State<LoginPage> {
         Navigator.pushReplacementNamed(context, AppRoutes.onBoardingFlow);
         return;
       }
+
+      await notificationSettingsCubit.fetchSettings();
 
       Navigator.pushNamed(context, AppRoutes.main);
     } catch (e) {

@@ -4,11 +4,16 @@ import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:http/http.dart' as http;
 import 'package:path_provider/path_provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:io';
+
+import '../../../../core/di/injection.dart';
+import '../../presentation/provider/notification_settings_cubit.dart';
 
 class NotificationService {
   static final FlutterLocalNotificationsPlugin _notiPlugin =
   FlutterLocalNotificationsPlugin();
+  static bool _initialized = false;
 
 
   static Future<void> initialize() async {
@@ -83,6 +88,7 @@ class NotificationService {
 
 
   static Future<void> _ensureInitialized() async {
+    if (_initialized) return;
     const AndroidInitializationSettings androidSettings =
     AndroidInitializationSettings('ic_eefood');
 
@@ -97,6 +103,8 @@ class NotificationService {
       const InitializationSettings(android: androidSettings, iOS: iosSettings),
       onDidReceiveNotificationResponse: onActionReceived,
     );
+
+    _initialized = true;
   }
 
   static Future<String?> _downloadAndSaveImage(String url) async {
@@ -164,9 +172,20 @@ void onActionReceived(NotificationResponse response) {
 Future<void> firebaseMessagingBackgroundHandler(RemoteMessage message) async {
   // Initialize Firebase if not already initialized
   await Firebase.initializeApp();
+  final prefs = await SharedPreferences.getInstance();
 
   print('Handling background message: ${message.messageId}');
   print('Message data: ${message.data}');
+
+  final type = message.data['type'] ?? 'SYSTEM';
+
+  final isEnabled =
+      prefs.getBool('noti_setting_$type') ?? true;
+
+  if (!isEnabled) {
+    print('Background notification $type is disabled');
+    return;
+  }
 
   await NotificationService._ensureInitialized();
 

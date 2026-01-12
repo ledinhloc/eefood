@@ -2,6 +2,7 @@ import 'package:eefood/core/di/injection.dart';
 import 'package:eefood/features/noti/data/models/notification_model.dart';
 import 'package:eefood/features/noti/domain/repositories/notification_repository.dart';
 import 'package:eefood/features/noti/domain/usecases/notification_service.dart';
+import 'package:eefood/features/noti/presentation/provider/notification_settings_cubit.dart';
 import 'package:eefood/features/noti/presentation/provider/notification_state.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -12,6 +13,8 @@ class NotificationCubit extends Cubit<NotificationState> {
   final NotificationRepository repository = getIt<NotificationRepository>();
   final SharedPreferences prefs = getIt<SharedPreferences>();
   StompClient? _stompClient;
+  final NotificationSettingsCubit notificationSettingsCubit =
+      getIt<NotificationSettingsCubit>();
   final FirebaseMessaging _messaging = FirebaseMessaging.instance;
 
   NotificationCubit()
@@ -133,8 +136,17 @@ class NotificationCubit extends Cubit<NotificationState> {
     // Request Permission (foreground)
     await NotificationService.requestNotificationPermission();
     // Lắng nghe thông báo foreground
-    FirebaseMessaging.onMessage.listen((RemoteMessage msg) {
+    FirebaseMessaging.onMessage.listen((RemoteMessage msg) async {
       print('FCM Received in foreground: ${msg.data}');
+
+      final type = msg.data['type'] ?? 'SYSTEM';
+
+      final isEnabled = await notificationSettingsCubit.isEnabled(type);
+
+      if (!isEnabled) {
+        print('Notification $type is disabled');
+        return;
+      }
 
       final json = NotificationModel.fromJson(msg.data);
 
