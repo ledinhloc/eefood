@@ -2,6 +2,8 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>Ứng dụng cần vị trí để hiển thị thời tiết</string>
     <key>NSCameraUsageDescription</key>
     <string>App cần quyền camera để chụp ảnh</string>
     <key>NSPhotoLibraryUsageDescription</key>
