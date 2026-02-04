@@ -97,7 +97,6 @@ class LiveReactionCubit extends Cubit<LiveReactionState> {
     );
 
     _stompClient!.activate();
-
   }
 
   void _onWebSocketConnected(StompFrame frame) {
@@ -170,18 +169,6 @@ class LiveReactionCubit extends Cubit<LiveReactionState> {
     );
 
     developer.log('Subscribed to: $commentDestination', name: 'LiveComment');
-  }
-
-  // Load reactions ban đầu
-  Future<void> loadReactions(int liveStreamId) async {
-    try {
-      emit(state.copyWith(isLoading: true));
-      final reactions = await _repository.getReactions(liveStreamId);
-      emit(state.copyWith(reactions: reactions, isLoading: false));
-    } catch (e) {
-      developer.log('Error loading reactions: $e', name: 'LiveReaction');
-      emit(state.copyWith(error: e.toString(), isLoading: false));
-    }
   }
 
   // Tạo reaction mới

@@ -88,13 +88,6 @@ class StreamerCommentCubit extends Cubit<StreamerCommentState> {
     }
   }
 
-  void addCommentOptimistic(LiveCommentResponse comment) {
-    final updatedComments = List<LiveCommentResponse>.from(state.comments)
-      ..add(comment);
-
-    emit(state.copyWith(comments: updatedComments));
-  }
-
   /// Nhận comment từ WebSocket
   void addCommentFromWebSocket(LiveCommentResponse comment) {
     // Check duplicate
