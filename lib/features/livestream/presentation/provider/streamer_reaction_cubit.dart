@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:developer' as developer;
 import 'package:eefood/core/constants/app_keys.dart';
+import 'package:eefood/features/livestream/presentation/provider/streamer_reaction_state.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:equatable/equatable.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -11,33 +12,6 @@ import 'package:stomp_dart_client/stomp_frame.dart';
 
 import '../../data/model/live_reaction_response.dart';
 import '../../data/model/live_comment_response.dart';
-
-class StreamerReactionState extends Equatable {
-  final List<LiveReactionResponse> reactions;
-  final bool isLoading;
-  final String? error;
-
-  const StreamerReactionState({
-    this.reactions = const [],
-    this.isLoading = false,
-    this.error,
-  });
-
-  StreamerReactionState copyWith({
-    List<LiveReactionResponse>? reactions,
-    bool? isLoading,
-    String? error,
-  }) {
-    return StreamerReactionState(
-      reactions: reactions ?? this.reactions,
-      isLoading: isLoading ?? this.isLoading,
-      error: error,
-    );
-  }
-
-  @override
-  List<Object?> get props => [reactions, isLoading, error];
-}
 
 // Cubit cho Streamer
 class StreamerReactionCubit extends Cubit<StreamerReactionState> {

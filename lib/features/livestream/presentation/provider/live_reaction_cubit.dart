@@ -12,34 +12,7 @@ import 'package:stomp_dart_client/stomp_frame.dart';
 import '../../data/model/live_comment_response.dart';
 import '../../data/model/live_reaction_response.dart';
 import '../../domain/repository/live_reaction_repo.dart';
-
-// State
-class LiveReactionState extends Equatable {
-  final List<LiveReactionResponse> reactions;
-  final bool isLoading;
-  final String? error;
-
-  const LiveReactionState({
-    this.reactions = const [],
-    this.isLoading = false,
-    this.error,
-  });
-
-  LiveReactionState copyWith({
-    List<LiveReactionResponse>? reactions,
-    bool? isLoading,
-    String? error,
-  }) {
-    return LiveReactionState(
-      reactions: reactions ?? this.reactions,
-      isLoading: isLoading ?? this.isLoading,
-      error: error,
-    );
-  }
-
-  @override
-  List<Object?> get props => [reactions, isLoading, error];
-}
+import 'live_reaction_state.dart';
 
 // Cubit
 class LiveReactionCubit extends Cubit<LiveReactionState> {
@@ -178,11 +151,6 @@ class LiveReactionCubit extends Cubit<LiveReactionState> {
         liveStreamId,
         emotion.name,
       );
-
-      // Thêm reaction mới vào danh sách
-      // final updatedReactions = [...state.reactions, newReaction];
-      // final updatedReactions = [newReaction];
-      // emit(state.copyWith(reactions: updatedReactions));
 
       developer.log(
         'Reaction created: ${emotion.name} by ${newReaction.username}',
