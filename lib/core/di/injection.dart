@@ -262,28 +262,11 @@ Future<void> setupDependencies() async {
   getIt.registerLazySingleton<LiveCommentRepository>(
     () => LiveCommentRepositoryImpl(dio: getIt<DioClient>().dio),
   );
-  getIt.registerFactory<LiveCommentCubit>(
-    () => LiveCommentCubit(getIt<LiveCommentRepository>()),
-  );
   //live reaction
   getIt.registerLazySingleton<LiveReactionRepository>(
     () => LiveReactionRepositoryImpl(dio: getIt<DioClient>().dio),
   );
-  getIt.registerFactoryParam<LiveReactionCubit, int, void>(
-    (liveStreamId, _) => LiveReactionCubit(
-      getIt<LiveReactionRepository>(),
-      getIt<SharedPreferences>(),
-      liveStreamId,
-    ),
-  );
-  getIt.registerFactoryParam<StreamerReactionCubit, int, void>(
-    (liveStreamId, _) =>
-        StreamerReactionCubit(getIt<SharedPreferences>(), liveStreamId),
-  );
 
-  getIt.registerFactory<StreamerCommentCubit>(
-    () => StreamerCommentCubit(getIt<LiveCommentRepository>()),
-  );
 
   // report
   getIt.registerLazySingleton<ReportRepository>(

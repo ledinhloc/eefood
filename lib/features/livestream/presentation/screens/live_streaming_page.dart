@@ -4,6 +4,7 @@ import 'dart:developer' as developer;
 import 'package:camera/camera.dart';
 import 'package:eefood/core/constants/app_keys.dart';
 import 'package:eefood/core/widgets/snack_bar.dart';
+import 'package:eefood/features/livestream/presentation/provider/live_reaction_state.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:livekit_client/livekit_client.dart';
@@ -13,9 +14,11 @@ import '../../../../core/utils/helpers.dart';
 import '../../data/model/live_reaction_response.dart';
 import '../../data/model/live_stream_response.dart';
 import '../../domain/repository/live_comment_repo.dart';
+import '../provider/live_reaction_cubit.dart';
 import '../provider/start_live_cubit.dart';
 import '../provider/streamer_comment_cubit.dart';
 import '../provider/streamer_reaction_cubit.dart';
+import '../provider/streamer_reaction_state.dart';
 import '../widgets/live_comment_list.dart';
 import '../widgets/live_reaction_animation.dart';
 import '../widgets/live_status_timer.dart';
@@ -64,19 +67,19 @@ class _LiveStreamScreenState extends State<LiveStreamScreen> {
       }
     });
 
-    Future.microtask(() {
-      final reactionCubit = context.read<StreamerReactionCubit>();
-      final commentCubit = context.read<StreamerCommentCubit>();
-
-      reactionCubit.onCommentReceived = (comment) {
-        if (mounted) {
-          commentCubit.addCommentFromWebSocket(comment);
-
-          //  Giới hạn comments định kỳ
-          // commentCubit.limitComments(maxComments: 50);
-        }
-      };
-    });
+    // Future.microtask(() {
+    //   final reactionCubit = context.read<StreamerReactionCubit>();
+    //   final commentCubit = context.read<StreamerCommentCubit>();
+    //
+    //   reactionCubit.onCommentReceived = (comment) {
+    //     if (mounted) {
+    //       commentCubit.addCommentFromWebSocket(comment);
+    //
+    //       //  Giới hạn comments định kỳ
+    //       // commentCubit.limitComments(maxComments: 50);
+    //     }
+    //   };
+    // });
   }
 
   void _onReactionCompleted(LiveReactionResponse reaction) {
@@ -342,7 +345,7 @@ class _LiveStreamScreenState extends State<LiveStreamScreen> {
 
     return MultiBlocListener(
       listeners: [
-        BlocListener<StreamerReactionCubit, StreamerReactionState>(
+        BlocListener<LiveReactionCubit, LiveReactionState>(
           listener: (context, reactionState) {
             if (reactionState.reactions.isNotEmpty) {
               final newReactions = reactionState.reactions

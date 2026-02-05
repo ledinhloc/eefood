@@ -1,5 +1,8 @@
+import 'package:eefood/features/livestream/domain/repository/live_comment_repo.dart';
+import 'package:eefood/features/livestream/domain/repository/live_reaction_repo.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../../../../core/di/injection.dart';
 import '../../../../livestream/data/model/live_stream_response.dart';
@@ -27,10 +30,10 @@ class LiveStatusBadge extends StatelessWidget {
                       create: (_) => getIt<WatchLiveCubit>()
                   ),
                   BlocProvider(
-                    create: (_) => getIt<LiveCommentCubit>()..loadComments(stream!.id),
+                    create: (_) => LiveCommentCubit(getIt<LiveCommentRepository>(), getIt<SharedPreferences>(), stream!.id),
                   ),
                   BlocProvider(
-                    create: (_) => getIt<LiveReactionCubit>(param1: stream!.id)
+                    create: (_) => LiveReactionCubit(getIt<LiveReactionRepository>(), getIt<SharedPreferences>(), stream!.id)
                   ),
                 ],
                 child: LiveViewerScreen(streamId: stream!.id)),

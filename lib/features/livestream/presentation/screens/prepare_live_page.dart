@@ -2,9 +2,14 @@ import 'dart:io';
 
 import 'package:camera/camera.dart';
 import 'package:eefood/core/widgets/snack_bar.dart';
+import 'package:eefood/features/livestream/domain/repository/live_comment_repo.dart';
+import 'package:eefood/features/livestream/domain/repository/live_reaction_repo.dart';
+import 'package:eefood/features/livestream/presentation/provider/live_comment_cubit.dart';
+import 'package:eefood/features/livestream/presentation/provider/live_reaction_cubit.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:livekit_client/livekit_client.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../../../core/di/injection.dart';
 import '../provider/start_live_cubit.dart';
@@ -288,12 +293,10 @@ class _LivePrepScreenState extends State<LivePrepScreen> {
                 builder: (_) => MultiBlocProvider(
                   providers: [
                     BlocProvider(
-                      create: (_) => getIt<StreamerReactionCubit>(
-                        param1: state.stream!.id, // Pass streamId
-                      ),
+                      create: (_) => LiveReactionCubit(getIt<LiveReactionRepository>(),  state.stream!.id)
                     ),
                     BlocProvider(
-                      create: (_) => getIt<StreamerCommentCubit>()..loadComments(state.stream!.id),
+                      create: (_) => LiveCommentCubit(getIt<LiveCommentRepository>(),  state.stream!.id),
                     ),
                   ],
                   child: LiveStreamScreen(

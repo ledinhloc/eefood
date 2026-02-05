@@ -15,6 +15,7 @@ import '../../data/model/live_reaction_response.dart';
 import '../../data/model/live_stream_response.dart';
 import '../provider/live_comment_cubit.dart';
 import '../provider/live_reaction_cubit.dart';
+import '../provider/live_reaction_state.dart';
 import '../provider/watch_live_cubit.dart';
 import '../widgets/live_reaction_animation.dart';
 
@@ -52,9 +53,9 @@ class _LiveViewerScreenState extends State<LiveViewerScreen> {
       final commentCubit = context.read<LiveCommentCubit>();
 
       // Set callback để LiveReactionCubit gửi comment cho LiveCommentCubit
-      reactionCubit.onCommentReceived = (comment) {
-        commentCubit.addCommentFromWebSocket(comment);
-      };
+      // reactionCubit.onCommentReceived = (comment) {
+      //   commentCubit.addCommentFromWebSocket(comment);
+      // };
     });
     _loadStream();
 
