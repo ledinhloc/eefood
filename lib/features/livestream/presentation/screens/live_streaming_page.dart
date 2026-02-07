@@ -67,19 +67,6 @@ class _LiveStreamScreenState extends State<LiveStreamScreen> {
       }
     });
 
-    // Future.microtask(() {
-    //   final reactionCubit = context.read<StreamerReactionCubit>();
-    //   final commentCubit = context.read<StreamerCommentCubit>();
-    //
-    //   reactionCubit.onCommentReceived = (comment) {
-    //     if (mounted) {
-    //       commentCubit.addCommentFromWebSocket(comment);
-    //
-    //       //  Giới hạn comments định kỳ
-    //       // commentCubit.limitComments(maxComments: 50);
-    //     }
-    //   };
-    // });
   }
 
   void _onReactionCompleted(LiveReactionResponse reaction) {
@@ -355,11 +342,6 @@ class _LiveStreamScreenState extends State<LiveStreamScreen> {
               if (newReactions.isNotEmpty) {
                 setState(() {
                   _activeReactions.addAll(newReactions);
-
-                  // // Giới hạn max 20 reactions hiển thị
-                  // if (_activeReactions.length > 20) {
-                  //   _activeReactions.removeRange(0, _activeReactions.length - 20);
-                  // }
                 });
               }
             }
@@ -584,5 +566,4 @@ class _LiveStreamScreenState extends State<LiveStreamScreen> {
       ),
     );
   }
-
 }

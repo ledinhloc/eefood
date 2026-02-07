@@ -30,10 +30,10 @@ class LiveStatusBadge extends StatelessWidget {
                       create: (_) => getIt<WatchLiveCubit>()
                   ),
                   BlocProvider(
-                    create: (_) => LiveCommentCubit(getIt<LiveCommentRepository>(), getIt<SharedPreferences>(), stream!.id),
+                    create: (_) => LiveCommentCubit(getIt<LiveCommentRepository>(), stream!.id),
                   ),
                   BlocProvider(
-                    create: (_) => LiveReactionCubit(getIt<LiveReactionRepository>(), getIt<SharedPreferences>(), stream!.id)
+                    create: (_) => LiveReactionCubit(getIt<LiveReactionRepository>(),  stream!.id)
                   ),
                 ],
                 child: LiveViewerScreen(streamId: stream!.id)),

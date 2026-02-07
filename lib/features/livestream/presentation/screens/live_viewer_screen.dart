@@ -48,15 +48,6 @@ class _LiveViewerScreenState extends State<LiveViewerScreen> {
   void initState() {
     super.initState();
     developer.log('[VIEWER] initState called', name: 'LiveViewer');
-    Future.microtask(() {
-      final reactionCubit = context.read<LiveReactionCubit>();
-      final commentCubit = context.read<LiveCommentCubit>();
-
-      // Set callback để LiveReactionCubit gửi comment cho LiveCommentCubit
-      // reactionCubit.onCommentReceived = (comment) {
-      //   commentCubit.addCommentFromWebSocket(comment);
-      // };
-    });
     _loadStream();
 
     _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
