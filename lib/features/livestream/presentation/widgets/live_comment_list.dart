@@ -3,8 +3,6 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../data/model/live_comment_response.dart';
 import '../provider/live_comment_cubit.dart';
 import '../provider/live_comment_state.dart';
-import '../provider/streamer_comment_cubit.dart';
-import '../provider/streamer_comment_state.dart';
 import 'live_comment_item.dart';
 
 class LiveCommentList extends StatelessWidget {

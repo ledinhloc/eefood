@@ -6,6 +6,7 @@ import 'package:eefood/features/livestream/domain/repository/live_comment_repo.d
 import 'package:eefood/features/livestream/domain/repository/live_reaction_repo.dart';
 import 'package:eefood/features/livestream/presentation/provider/live_comment_cubit.dart';
 import 'package:eefood/features/livestream/presentation/provider/live_reaction_cubit.dart';
+import 'package:eefood/features/livestream/presentation/provider/live_stream_cubit.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:livekit_client/livekit_client.dart';
@@ -13,8 +14,6 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../../../core/di/injection.dart';
 import '../provider/start_live_cubit.dart';
-import '../provider/streamer_comment_cubit.dart';
-import '../provider/streamer_reaction_cubit.dart';
 import 'live_streaming_page.dart';
 
 class LivePrepScreen extends StatefulWidget {
@@ -298,11 +297,12 @@ class _LivePrepScreenState extends State<LivePrepScreen> {
                     BlocProvider(
                       create: (_) => LiveCommentCubit(getIt<LiveCommentRepository>(),  state.stream!.id),
                     ),
+                    BlocProvider(create: (_) => LiveStreamCubit())
                   ],
                   child: LiveStreamScreen(
                     stream: state.stream!,
-                    localVideoTrack: _localVideoTrack,
-                    localAudioTrack: _localAudioTrack,
+                    localVideoTrack: _localVideoTrack!,
+                    localAudioTrack: _localAudioTrack!,
                   ),
                 ),
               ),
