@@ -1,5 +1,6 @@
 // presentation/screens/live_stream_screen.dart
 import 'dart:async';
+import 'package:eefood/features/livestream/presentation/provider/live_viewer_cubit.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../core/constants/app_keys.dart';
@@ -15,6 +16,8 @@ import '../widgets/live_comment_list.dart';
 import '../widgets/live_reaction_animation.dart';
 import '../widgets/live_status_timer.dart';
 import 'package:livekit_client/livekit_client.dart';
+
+import '../widgets/viewer_list_bottom_sheet.dart';
 
 class LiveStreamScreen extends StatefulWidget {
   final LiveStreamResponse stream;
@@ -49,6 +52,8 @@ class _LiveStreamScreenState extends State<LiveStreamScreen> {
       widget.localVideoTrack,
       widget.localAudioTrack,
     );
+
+    context.read<LiveViewerCubit>().joinLiveStream();
 
     // Timer cho UI refresh (LiveStatusTimer)
     _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
@@ -102,58 +107,15 @@ class _LiveStreamScreenState extends State<LiveStreamScreen> {
   }
 
   void _showViewerList() {
-    final state = context.read<LiveStreamCubit>().state;
-    final viewers = state.room?.remoteParticipants.values.toList() ?? [];
-
+    final viewerCubit = context.read<LiveViewerCubit>();
     showModalBottomSheet(
       context: context,
-      backgroundColor: Colors.black87,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(18)),
-      ),
+      backgroundColor: Colors.transparent,
+      isScrollControlled: true,
       builder: (context) {
-        return SizedBox(
-          height: 350,
-          child: Column(
-            children: [
-              const Padding(
-                padding: EdgeInsets.all(12),
-                child: Text(
-                  "Người đang xem",
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ),
-              Expanded(
-                child: viewers.isEmpty
-                    ? const Center(
-                  child: Text(
-                    'Chưa có người xem',
-                    style: TextStyle(color: Colors.white70),
-                  ),
-                )
-                    : ListView.builder(
-                  itemCount: viewers.length,
-                  itemBuilder: (context, index) {
-                    final p = viewers[index];
-                    return ListTile(
-                      leading: const CircleAvatar(
-                        backgroundColor: Colors.blue,
-                        child: Icon(Icons.person, color: Colors.white),
-                      ),
-                      title: Text(
-                        p.identity ?? "User",
-                        style: const TextStyle(color: Colors.white),
-                      ),
-                    );
-                  },
-                ),
-              ),
-            ],
-          ),
+        return BlocProvider.value(
+            value: viewerCubit,
+          child: const ViewerListBottomSheet(),
         );
       },
     );
@@ -164,6 +126,8 @@ class _LiveStreamScreenState extends State<LiveStreamScreen> {
     _timer?.cancel();
     _commentController.dispose();
     _scrollController.dispose();
+
+    context.read<LiveViewerCubit>().leaveLiveStream();
     super.dispose();
   }
 

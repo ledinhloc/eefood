@@ -64,6 +64,8 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../../features/auth/data/repositories/auth_repository_impl.dart';
 import '../../features/auth/domain/repositories/auth_repository.dart';
 import '../../features/auth/domain/usecases/auth_usecases.dart';
+import '../../features/livestream/data/repositoty/live_viewer_repository_impl.dart';
+import '../../features/livestream/domain/repository/live_viewer_repository.dart';
 import '../../features/livestream/presentation/provider/live_reaction_cubit.dart';
 import '../../features/livestream/presentation/provider/watch_live_cubit.dart';
 import '../../features/post/data/repositories/search_repository.dart';
@@ -264,10 +266,11 @@ Future<void> setupDependencies() async {
   getIt.registerLazySingleton<LiveReactionRepository>(
     () => LiveReactionRepositoryImpl(dio: getIt<DioClient>().dio),
   );
-
-
   // report
   getIt.registerLazySingleton<ReportRepository>(
     () => ReportRepositoryImpl(dio: getIt<DioClient>().dio),
+  );
+  getIt.registerLazySingleton<LiveViewerRepository>(
+        () => LiveViewerRepositoryImpl(dio: getIt<DioClient>().dio),
   );
 }

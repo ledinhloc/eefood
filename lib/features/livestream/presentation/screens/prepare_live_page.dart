@@ -4,9 +4,11 @@ import 'package:camera/camera.dart';
 import 'package:eefood/core/widgets/snack_bar.dart';
 import 'package:eefood/features/livestream/domain/repository/live_comment_repo.dart';
 import 'package:eefood/features/livestream/domain/repository/live_reaction_repo.dart';
+import 'package:eefood/features/livestream/domain/repository/live_viewer_repository.dart';
 import 'package:eefood/features/livestream/presentation/provider/live_comment_cubit.dart';
 import 'package:eefood/features/livestream/presentation/provider/live_reaction_cubit.dart';
 import 'package:eefood/features/livestream/presentation/provider/live_stream_cubit.dart';
+import 'package:eefood/features/livestream/presentation/provider/live_viewer_cubit.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:livekit_client/livekit_client.dart';
@@ -83,15 +85,13 @@ class _LivePrepScreenState extends State<LivePrepScreen> {
       // Lấy danh sách camera
       final cameras = await availableCameras();
       final backCamera = cameras.firstWhere(
-            (camera) => camera.lensDirection == CameraLensDirection.back,
+        (camera) => camera.lensDirection == CameraLensDirection.back,
       );
 
       // Khởi tạo CameraController nếu chưa có
-      if (_cameraController == null || !_cameraController!.value.isInitialized) {
-        _cameraController = CameraController(
-          backCamera,
-          ResolutionPreset.high,
-        );
+      if (_cameraController == null ||
+          !_cameraController!.value.isInitialized) {
+        _cameraController = CameraController(backCamera, ResolutionPreset.high);
         await _cameraController!.initialize();
       }
 
@@ -108,9 +108,9 @@ class _LivePrepScreenState extends State<LivePrepScreen> {
       _isFlashOn = !_isFlashOn; // Revert lại trạng thái
       setState(() {});
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Lỗi bật/tắt flash: $e')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Lỗi bật/tắt flash: $e')));
     }
   }
 
@@ -156,8 +156,8 @@ class _LivePrepScreenState extends State<LivePrepScreen> {
       print('Error toggling microphone: $e');
       if (mounted) {
         showCustomSnackBar(
-            context,
-            'Không thể ${_isMicOn ? "tắt" : "bật"} microphone'
+          context,
+          'Không thể ${_isMicOn ? "tắt" : "bật"} microphone',
         );
       }
     }
@@ -183,20 +183,20 @@ class _LivePrepScreenState extends State<LivePrepScreen> {
       print('Error toggling camera: $e');
       if (mounted) {
         showCustomSnackBar(
-            context,
-            'Không thể ${_isCameraOn ? "tắt" : "bật"} camera: $e'
+          context,
+          'Không thể ${_isCameraOn ? "tắt" : "bật"} camera: $e',
         );
       }
     }
   }
 
   Future<void> _switchCamera() async {
-    print("switch camera: ---${!_isFrontCamera?'front':'back'}");
-    if(_localVideoTrack == null){
+    print("switch camera: ---${!_isFrontCamera ? 'front' : 'back'}");
+    if (_localVideoTrack == null) {
       print('track is null');
       return;
     }
-    
+
     try {
       if (_isFlashOn && _cameraController != null) {
         await _cameraController!.setFlashMode(FlashMode.off);
@@ -204,15 +204,15 @@ class _LivePrepScreenState extends State<LivePrepScreen> {
       }
 
       final wasEnabled = _isCameraOn;
-      final newPosition = _isFrontCamera ? CameraPosition.back : CameraPosition.front;
+      final newPosition = _isFrontCamera
+          ? CameraPosition.back
+          : CameraPosition.front;
 
       // Stop track cũ
       await _localVideoTrack!.stop();
       // Tạo track mới
       _localVideoTrack = await LocalVideoTrack.createCameraTrack(
-        CameraCaptureOptions(
-          cameraPosition: newPosition,
-        ),
+        CameraCaptureOptions(cameraPosition: newPosition),
       );
 
       // Khôi phục state
@@ -227,7 +227,9 @@ class _LivePrepScreenState extends State<LivePrepScreen> {
       // Tạo lại track cũ nếu fail
       _localVideoTrack = await LocalVideoTrack.createCameraTrack(
         CameraCaptureOptions(
-          cameraPosition: _isFrontCamera ? CameraPosition.front : CameraPosition.back,
+          cameraPosition: _isFrontCamera
+              ? CameraPosition.front
+              : CameraPosition.back,
         ),
       );
       setState(() {});
@@ -241,7 +243,7 @@ class _LivePrepScreenState extends State<LivePrepScreen> {
     //   );
     //   return;
     // }
-    if(_localVideoTrack == null){
+    if (_localVideoTrack == null) {
       showCustomSnackBar(context, 'Camera chua san sang');
       return;
     }
@@ -274,11 +276,11 @@ class _LivePrepScreenState extends State<LivePrepScreen> {
         _localAudioTrack!.dispose();
         _localAudioTrack = null;
       }
-
     } catch (e) {
       print('Error disposing camera, audio: $e');
     }
   }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -291,13 +293,25 @@ class _LivePrepScreenState extends State<LivePrepScreen> {
               MaterialPageRoute(
                 builder: (_) => MultiBlocProvider(
                   providers: [
+                    BlocProvider(create: (_) => LiveStreamCubit()),
                     BlocProvider(
-                      create: (_) => LiveReactionCubit(getIt<LiveReactionRepository>(),  state.stream!.id)
+                      create: (_) => LiveReactionCubit(
+                        getIt<LiveReactionRepository>(),
+                        state.stream!.id,
+                      ),
                     ),
                     BlocProvider(
-                      create: (_) => LiveCommentCubit(getIt<LiveCommentRepository>(),  state.stream!.id),
+                      create: (_) => LiveCommentCubit(
+                        getIt<LiveCommentRepository>(),
+                        state.stream!.id,
+                      ),
                     ),
-                    BlocProvider(create: (_) => LiveStreamCubit())
+                    BlocProvider(
+                      create: (_) => LiveViewerCubit(
+                        getIt<LiveViewerRepository>(),
+                        state.stream!.id,
+                      ),
+                    ),
                   ],
                   child: LiveStreamScreen(
                     stream: state.stream!,
@@ -309,9 +323,9 @@ class _LivePrepScreenState extends State<LivePrepScreen> {
             );
           }
           if (state.error != null) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text(state.error!)),
-            );
+            ScaffoldMessenger.of(
+              context,
+            ).showSnackBar(SnackBar(content: Text(state.error!)));
           }
         },
         builder: (context, state) {
@@ -319,9 +333,7 @@ class _LivePrepScreenState extends State<LivePrepScreen> {
             children: [
               // Preview camera
               if (_localVideoTrack != null && _isCameraOn)
-                Positioned.fill(
-                  child: VideoTrackRenderer(_localVideoTrack!),
-                )
+                Positioned.fill(child: VideoTrackRenderer(_localVideoTrack!))
               else
                 Container(
                   color: Colors.black,
@@ -374,7 +386,10 @@ class _LivePrepScreenState extends State<LivePrepScreen> {
                         ),
                         const SizedBox(width: 8),
                         IconButton(
-                          icon: const Icon(Icons.help_outline, color: Colors.white),
+                          icon: const Icon(
+                            Icons.help_outline,
+                            color: Colors.white,
+                          ),
                           onPressed: () {},
                         ),
                       ],
@@ -492,15 +507,17 @@ class _LivePrepScreenState extends State<LivePrepScreen> {
                             ),
                           ),
                           child: state.loading
-                              ? const CircularProgressIndicator(color: Colors.white)
+                              ? const CircularProgressIndicator(
+                                  color: Colors.white,
+                                )
                               : const Text(
-                            'Phát trực tiếp',
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontSize: 16,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
+                                  'Phát trực tiếp',
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
                         ),
                       ),
                       const SizedBox(height: 20),
@@ -538,10 +555,7 @@ class _LivePrepScreenState extends State<LivePrepScreen> {
           width: 80,
           child: Text(
             label,
-            style: const TextStyle(
-              color: Colors.white,
-              fontSize: 11,
-            ),
+            style: const TextStyle(color: Colors.white, fontSize: 11),
             textAlign: TextAlign.center,
             maxLines: 2,
             overflow: TextOverflow.ellipsis,

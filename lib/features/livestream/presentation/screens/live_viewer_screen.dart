@@ -16,8 +16,10 @@ import '../../data/model/live_stream_response.dart';
 import '../provider/live_comment_cubit.dart';
 import '../provider/live_reaction_cubit.dart';
 import '../provider/live_reaction_state.dart';
+import '../provider/live_viewer_cubit.dart';
 import '../provider/watch_live_cubit.dart';
 import '../widgets/live_reaction_animation.dart';
+import '../widgets/viewer_list_bottom_sheet.dart';
 
 class LiveViewerScreen extends StatefulWidget {
   final int streamId;
@@ -55,6 +57,8 @@ class _LiveViewerScreenState extends State<LiveViewerScreen> {
         setState(() {}); // Refresh UI để cập nhật thời gian và viewer count
       }
     });
+
+    context.read<LiveViewerCubit>().joinLiveStream();
   }
 
   Future<void> _loadStream() async {
@@ -264,6 +268,21 @@ class _LiveViewerScreenState extends State<LiveViewerScreen> {
     }
   }
 
+  void _showViewerList() {
+    final viewerCubit = context.read<LiveViewerCubit>();
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      isScrollControlled: true,
+      builder: (context) {
+        return BlocProvider.value(
+          value: viewerCubit,
+          child: const ViewerListBottomSheet(),
+        );
+      },
+    );
+  }
+
   //Lắng nghe mọi thay đổi của streamer
   void _handleRemoteParticipant(RemoteParticipant participant) {
     developer.log(
@@ -441,6 +460,8 @@ class _LiveViewerScreenState extends State<LiveViewerScreen> {
     _room?.dispose();
     _commentController.dispose();
     _scrollController.dispose();
+
+    context.read<LiveViewerCubit>().leaveLiveStream();
     super.dispose();
   }
 
@@ -599,33 +620,37 @@ class _LiveViewerScreenState extends State<LiveViewerScreen> {
                           LiveStatusTimer(startTime: stream.startedAt!),
                           const SizedBox(width: 8),
                           // Viewer count
-                          Container(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 10,
-                              vertical: 6,
-                            ),
-                            decoration: BoxDecoration(
-                              color: Colors.black54,
-                              borderRadius: BorderRadius.circular(4),
-                            ),
-                            child: Row(
-                              children: [
-                                const Icon(
-                                  Icons.visibility,
-                                  color: Colors.white,
-                                  size: 14,
-                                ),
-                                const SizedBox(width: 4),
-                                Text(
-                                  '$participantCount',
-                                  style: const TextStyle(
+                          GestureDetector(
+                            onTap: _showViewerList,
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 10,
+                                vertical: 6,
+                              ),
+                              decoration: BoxDecoration(
+                                color: Colors.black54,
+                                borderRadius: BorderRadius.circular(4),
+                              ),
+                              child: Row(
+                                children: [
+                                  const Icon(
+                                    Icons.visibility,
                                     color: Colors.white,
-                                    fontSize: 12,
+                                    size: 14,
                                   ),
-                                ),
-                              ],
+                                  const SizedBox(width: 4),
+                                  Text(
+                                    '$participantCount',
+                                    style: const TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 12,
+                                    ),
+                                  ),
+                                ],
+                              ),
                             ),
                           ),
+
                           const Spacer(),
                           // Close button
                           IconButton(
