@@ -5,6 +5,7 @@ import 'package:eefood/core/constants/app_keys.dart';
 import 'package:eefood/core/utils/helpers.dart';
 import 'package:eefood/features/livestream/presentation/widgets/live_comment_list.dart';
 import 'package:eefood/features/livestream/presentation/widgets/live_status_timer.dart';
+import 'package:eefood/features/livestream/presentation/widgets/stream_ended_dialog.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:livekit_client/livekit_client.dart';
@@ -18,6 +19,7 @@ import '../provider/live_reaction_cubit.dart';
 import '../provider/live_reaction_state.dart';
 import '../provider/live_viewer_cubit.dart';
 import '../provider/watch_live_cubit.dart';
+import '../provider/watch_live_state.dart';
 import '../widgets/live_reaction_animation.dart';
 import '../widgets/viewer_list_bottom_sheet.dart';
 
@@ -420,27 +422,30 @@ class _LiveViewerScreenState extends State<LiveViewerScreen> {
   }
 
   void _leaveLiveStream() async {
-    final confirm = await showDialog<bool>(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Rời khỏi phát trực tiếp?'),
-        content: const Text(
-          'Bạn có chắc muốn rời khỏi phiên phát trực tiếp này?',
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context, false),
-            child: const Text('Hủy'),
-          ),
-          TextButton(
-            onPressed: () => Navigator.pop(context, true),
-            child: const Text('Rời khỏi'),
-          ),
-        ],
-      ),
-    );
+    // final confirm = await showDialog<bool>(
+    //   context: context,
+    //   builder: (context) => AlertDialog(
+    //     title: const Text('Rời khỏi phát trực tiếp?'),
+    //     content: const Text(
+    //       'Bạn có chắc muốn rời khỏi phiên phát trực tiếp này?',
+    //     ),
+    //     actions: [
+    //       TextButton(
+    //         onPressed: () => Navigator.pop(context, false),
+    //         child: const Text('Hủy'),
+    //       ),
+    //       TextButton(
+    //         onPressed: () => Navigator.pop(context, true),
+    //         child: const Text('Rời khỏi'),
+    //       ),
+    //     ],
+    //   ),
+    // );
 
+    final confirm = true;
     if (confirm == true) {
+      context.read<LiveViewerCubit>().leaveLiveStream();
+
       developer.log(' [VIEWER] Leaving stream...', name: 'LiveViewer');
       await _room?.disconnect();
       await _room?.dispose();
@@ -460,27 +465,61 @@ class _LiveViewerScreenState extends State<LiveViewerScreen> {
     _room?.dispose();
     _commentController.dispose();
     _scrollController.dispose();
-
-    context.read<LiveViewerCubit>().leaveLiveStream();
     super.dispose();
+  }
+
+  Future<void> _handleStreamEnded(String? message) async {
+    developer.log('[VIEWER] Stream ended, showing dialog', name: 'LiveViewer');
+
+    // Disconnect LiveKit
+    await _room?.disconnect();
+    await _room?.dispose();
+
+    if (!mounted) return;
+
+    // Show dialog
+    await showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => StreamEndedDialog(
+        message: message,
+        onClose: () {
+          Navigator.of(context).pop(); //close dialog
+          Navigator.of(context).pop(); // exit livestream screen
+        },
+      ),
+    );
   }
 
   @override
   Widget build(BuildContext context) {
-    return BlocListener<LiveReactionCubit, LiveReactionState>(
-      listener: (context, reactionState) {
-        if (reactionState.reactions.isNotEmpty) {
-          final newReactions = reactionState.reactions
-              .where((r) => !_activeReactions.contains(r))
-              .toList();
+    return MultiBlocListener(
+      listeners: [
+        BlocListener<LiveReactionCubit, LiveReactionState>(
+          listener: (context, reactionState) {
+            if (reactionState.reactions.isNotEmpty) {
+              final newReactions = reactionState.reactions
+                  .where((r) => !_activeReactions.contains(r))
+                  .toList();
 
-          if (newReactions.isNotEmpty) {
-            setState(() {
-              _activeReactions.addAll(newReactions);
-            });
-          }
-        }
-      },
+              if (newReactions.isNotEmpty) {
+                setState(() {
+                  _activeReactions.addAll(newReactions);
+                });
+              }
+            }
+          },
+        ),
+        BlocListener<WatchLiveCubit, WatchLiveState>(
+          listenWhen: (previous, current) =>
+              previous.isStreamEnded != current.isStreamEnded,
+          listener: (context, state) {
+            if (state.isStreamEnded) {
+              _handleStreamEnded(state.streamEndMessage);
+            }
+          },
+        ),
+      ],
       child: BlocBuilder<WatchLiveCubit, WatchLiveState>(
         builder: (context, state) {
           if (state.loading) {

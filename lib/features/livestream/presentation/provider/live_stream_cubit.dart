@@ -17,6 +17,8 @@ class LiveStreamCubit extends Cubit<LiveStreamState> {
       LocalAudioTrack audioTrack,
       ) async {
     try {
+
+
       final room = Room();
       room.addListener(_onRoomUpdate);
 
