@@ -3,9 +3,9 @@ import 'dart:developer' as developer;
 
 import 'package:eefood/core/constants/app_keys.dart';
 import 'package:eefood/core/utils/helpers.dart';
+import 'package:eefood/features/livestream/data/model/stream_status_event.dart';
 import 'package:eefood/features/livestream/presentation/widgets/live_comment_list.dart';
 import 'package:eefood/features/livestream/presentation/widgets/live_status_timer.dart';
-import 'package:eefood/features/livestream/presentation/widgets/stream_ended_dialog.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:livekit_client/livekit_client.dart';
@@ -18,8 +18,8 @@ import '../provider/live_comment_cubit.dart';
 import '../provider/live_reaction_cubit.dart';
 import '../provider/live_reaction_state.dart';
 import '../provider/live_viewer_cubit.dart';
+import '../provider/stream_status_cubit.dart';
 import '../provider/watch_live_cubit.dart';
-import '../provider/watch_live_state.dart';
 import '../widgets/live_reaction_animation.dart';
 import '../widgets/viewer_list_bottom_sheet.dart';
 
@@ -422,30 +422,28 @@ class _LiveViewerScreenState extends State<LiveViewerScreen> {
   }
 
   void _leaveLiveStream() async {
-    // final confirm = await showDialog<bool>(
-    //   context: context,
-    //   builder: (context) => AlertDialog(
-    //     title: const Text('Rời khỏi phát trực tiếp?'),
-    //     content: const Text(
-    //       'Bạn có chắc muốn rời khỏi phiên phát trực tiếp này?',
-    //     ),
-    //     actions: [
-    //       TextButton(
-    //         onPressed: () => Navigator.pop(context, false),
-    //         child: const Text('Hủy'),
-    //       ),
-    //       TextButton(
-    //         onPressed: () => Navigator.pop(context, true),
-    //         child: const Text('Rời khỏi'),
-    //       ),
-    //     ],
-    //   ),
-    // );
+    final confirm = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Rời khỏi phát trực tiếp?'),
+        content: const Text(
+          'Bạn có chắc muốn rời khỏi phiên phát trực tiếp này?',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('Hủy'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: const Text('Rời khỏi'),
+          ),
+        ],
+      ),
+    );
 
-    final confirm = true;
     if (confirm == true) {
       context.read<LiveViewerCubit>().leaveLiveStream();
-
       developer.log(' [VIEWER] Leaving stream...', name: 'LiveViewer');
       await _room?.disconnect();
       await _room?.dispose();
@@ -453,6 +451,43 @@ class _LiveViewerScreenState extends State<LiveViewerScreen> {
         Navigator.pop(context);
       }
     }
+  }
+
+  void _handleStreamEnded() {
+    developer.log('[VIEWER] Stream ended notification received', name: 'LiveViewer');
+
+    if (!mounted) return;
+
+    // Hiển thị dialog thông báo
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => AlertDialog(
+        title: const Text('Phát trực tiếp đã kết thúc'),
+        content: const Text(
+          'Streamer đã kết thúc phiên phát trực tiếp.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () {
+              Navigator.pop(context); // Close dialog
+              _leaveLiveStream(); // Exit livestream
+            },
+            child: const Text('OK'),
+          ),
+        ],
+      ),
+    );
+
+    // Tự động thoát sau 5 giây nếu user không click OK
+    Future.delayed(const Duration(seconds: 5), () {
+      if (mounted) {
+        Navigator.pop(context, null); // Close dialog if still open
+        if (mounted) {
+          _leaveLiveStream();
+        }
+      }
+    });
   }
 
   @override
@@ -468,33 +503,11 @@ class _LiveViewerScreenState extends State<LiveViewerScreen> {
     super.dispose();
   }
 
-  Future<void> _handleStreamEnded(String? message) async {
-    developer.log('[VIEWER] Stream ended, showing dialog', name: 'LiveViewer');
-
-    // Disconnect LiveKit
-    await _room?.disconnect();
-    await _room?.dispose();
-
-    if (!mounted) return;
-
-    // Show dialog
-    await showDialog(
-      context: context,
-      barrierDismissible: false,
-      builder: (context) => StreamEndedDialog(
-        message: message,
-        onClose: () {
-          Navigator.of(context).pop(); //close dialog
-          Navigator.of(context).pop(); // exit livestream screen
-        },
-      ),
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     return MultiBlocListener(
       listeners: [
+        // Live Reaction listener
         BlocListener<LiveReactionCubit, LiveReactionState>(
           listener: (context, reactionState) {
             if (reactionState.reactions.isNotEmpty) {
@@ -510,12 +523,15 @@ class _LiveViewerScreenState extends State<LiveViewerScreen> {
             }
           },
         ),
-        BlocListener<WatchLiveCubit, WatchLiveState>(
-          listenWhen: (previous, current) =>
-              previous.isStreamEnded != current.isStreamEnded,
-          listener: (context, state) {
-            if (state.isStreamEnded) {
-              _handleStreamEnded(state.streamEndMessage);
+        // Stream Status listener
+        BlocListener<StreamStatusCubit, StreamStatusState>(
+          listener: (context, statusState) {
+            if (statusState.latestEvent?.status == StreamStatusType.liveEnded) {
+              developer.log(
+                '[VIEWER] Received LIVE_ENDED event',
+                name: 'LiveViewer',
+              );
+              _handleStreamEnded();
             }
           },
         ),

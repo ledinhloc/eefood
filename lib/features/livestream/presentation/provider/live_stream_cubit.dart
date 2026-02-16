@@ -9,46 +9,56 @@ class LiveStreamCubit extends Cubit<LiveStreamState> {
 
   LiveStreamCubit() : super(LiveStreamState.initial());
 
+  void _safeEmit(LiveStreamState newState) {
+    if (!isClosed) emit(newState);
+  }
+
+  /// Set tracks (dùng trong LivePrepScreen)
+  void setTracks(LocalVideoTrack videoTrack, LocalAudioTrack audioTrack) {
+    _safeEmit(state.copyWith(
+      localVideoTrack: videoTrack,
+      localAudioTrack: audioTrack,
+    ));
+  }
+
   /// Connect to LiveKit room
-  Future<void> connectToRoom(
-      String livekitUrl,
-      String token,
-      LocalVideoTrack videoTrack,
-      LocalAudioTrack audioTrack,
-      ) async {
+  Future<void> connectToRoom(String livekitUrl, String token) async {
+    if (state.localVideoTrack == null || state.localAudioTrack == null) {
+      _safeEmit(state.copyWith(error: 'Tracks not initialized'));
+      return;
+    }
+
     try {
-
-
       final room = Room();
       room.addListener(_onRoomUpdate);
 
       await room.connect(livekitUrl, token);
 
-      if (videoTrack.mediaStreamTrack.enabled) {
-        await room.localParticipant!.publishVideoTrack(videoTrack);
+      if (state.localVideoTrack!.mediaStreamTrack.enabled) {
+        await room.localParticipant!
+            .publishVideoTrack(state.localVideoTrack!);
       }
 
-      if (audioTrack.mediaStreamTrack.enabled) {
-        await room.localParticipant!.publishAudioTrack(audioTrack);
+      if (state.localAudioTrack!.mediaStreamTrack.enabled) {
+        await room.localParticipant!
+            .publishAudioTrack(state.localAudioTrack!);
       }
 
-      emit(state.copyWith(
+      _safeEmit(state.copyWith(
         room: room,
-        localVideoTrack: videoTrack,
-        localAudioTrack: audioTrack,
         isConnected: true,
       ));
     } catch (e) {
-      emit(state.copyWith(error: 'Connection error: $e'));
+      _safeEmit(state.copyWith(error: 'Connection error: $e'));
     }
   }
 
   void _onRoomUpdate() {
+    if (isClosed) return;
     final participantCount = (state.room?.remoteParticipants.length ?? 0) + 1;
-    emit(state.copyWith(viewerCount: participantCount));
+    _safeEmit(state.copyWith(viewerCount: participantCount));
   }
 
-  /// Toggle camera on/off
   Future<void> toggleCamera() async {
     if (state.localVideoTrack == null) return;
 
@@ -59,13 +69,12 @@ class LiveStreamCubit extends Cubit<LiveStreamState> {
         await state.localVideoTrack!.enable();
       }
 
-      emit(state.copyWith(isCameraOn: !state.isCameraOn));
+      _safeEmit(state.copyWith(isCameraOn: !state.isCameraOn));
     } catch (e) {
-      emit(state.copyWith(error: 'Error toggling camera: $e'));
+      _safeEmit(state.copyWith(error: 'Error toggling camera: $e'));
     }
   }
 
-  /// Toggle microphone on/off
   Future<void> toggleMic() async {
     if (state.localAudioTrack == null) return;
 
@@ -76,27 +85,24 @@ class LiveStreamCubit extends Cubit<LiveStreamState> {
         await state.localAudioTrack!.enable();
       }
 
-      emit(state.copyWith(isMicOn: !state.isMicOn));
+      _safeEmit(state.copyWith(isMicOn: !state.isMicOn));
     } catch (e) {
-      emit(state.copyWith(error: 'Error toggling mic: $e'));
+      _safeEmit(state.copyWith(error: 'Error toggling mic: $e'));
     }
   }
 
-  /// Switch between front/back camera
   Future<void> switchCamera() async {
     if (state.localVideoTrack == null) return;
 
     try {
-      // Tắt flash khi chuyển camera
       if (state.isFlashOn && _cameraController != null) {
         await _cameraController!.setFlashMode(FlashMode.off);
-        emit(state.copyWith(isFlashOn: false));
+        _safeEmit(state.copyWith(isFlashOn: false));
       }
 
       final wasEnabled = state.isCameraOn;
-      final newPosition = state.isFrontCamera
-          ? CameraPosition.back
-          : CameraPosition.front;
+      final newPosition =
+      state.isFrontCamera ? CameraPosition.back : CameraPosition.front;
 
       await state.localVideoTrack!.stop();
 
@@ -112,21 +118,20 @@ class LiveStreamCubit extends Cubit<LiveStreamState> {
         await newTrack.disable();
       }
 
-      emit(state.copyWith(
+      _safeEmit(state.copyWith(
         localVideoTrack: newTrack,
         isFrontCamera: !state.isFrontCamera,
       ));
     } catch (e) {
-      emit(state.copyWith(error: 'Error switching camera: $e'));
+      _safeEmit(state.copyWith(error: 'Error switching camera: $e'));
     }
   }
 
-  /// Toggle flash (back camera only)
   Future<void> toggleFlash() async {
     if (state.localVideoTrack == null) return;
 
     if (state.isFrontCamera) {
-      emit(state.copyWith(error: 'Flash only works with back camera'));
+      _safeEmit(state.copyWith(error: 'Flash chỉ hoạt động với camera sau'));
       return;
     }
 
@@ -136,8 +141,10 @@ class LiveStreamCubit extends Cubit<LiveStreamState> {
             (camera) => camera.lensDirection == CameraLensDirection.back,
       );
 
-      if (_cameraController == null || !_cameraController!.value.isInitialized) {
-        _cameraController = CameraController(backCamera, ResolutionPreset.high);
+      if (_cameraController == null ||
+          !_cameraController!.value.isInitialized) {
+        _cameraController =
+            CameraController(backCamera, ResolutionPreset.high);
         await _cameraController!.initialize();
       }
 
@@ -145,14 +152,24 @@ class LiveStreamCubit extends Cubit<LiveStreamState> {
         state.isFlashOn ? FlashMode.off : FlashMode.torch,
       );
 
-      emit(state.copyWith(isFlashOn: !state.isFlashOn));
+      _safeEmit(state.copyWith(isFlashOn: !state.isFlashOn));
     } catch (e) {
-      emit(state.copyWith(error: 'Error toggling flash: $e'));
+      _safeEmit(state.copyWith(error: 'Error toggling flash: $e'));
     }
+  }
+
+  /// Dispose chỉ tracks (không disconnect room)
+  Future<void> disposeTracksOnly() async {
+    await state.localVideoTrack?.stop();
+    await state.localVideoTrack?.dispose();
+    await state.localAudioTrack?.stop();
+    await state.localAudioTrack?.dispose();
+    await _cameraController?.dispose();
   }
 
   /// Disconnect and cleanup
   Future<void> disconnect() async {
+    state.room?.removeListener(_onRoomUpdate);
     await state.localVideoTrack?.stop();
     await state.localAudioTrack?.stop();
     await state.room?.disconnect();
@@ -161,8 +178,9 @@ class LiveStreamCubit extends Cubit<LiveStreamState> {
   }
 
   @override
-  Future<void> close() {
-    disconnect();
+  Future<void> close() async {
+    state.room?.removeListener(_onRoomUpdate);
+    await disconnect();
     return super.close();
   }
 }

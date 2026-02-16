@@ -21,14 +21,10 @@ import '../widgets/viewer_list_bottom_sheet.dart';
 
 class LiveStreamScreen extends StatefulWidget {
   final LiveStreamResponse stream;
-  final LocalVideoTrack localVideoTrack;
-  final LocalAudioTrack localAudioTrack;
 
   const LiveStreamScreen({
     Key? key,
     required this.stream,
-    required this.localVideoTrack,
-    required this.localAudioTrack,
   }) : super(key: key);
 
   @override
@@ -49,8 +45,6 @@ class _LiveStreamScreenState extends State<LiveStreamScreen> {
     context.read<LiveStreamCubit>().connectToRoom(
       AppKeys.livekitUrl,
       widget.stream.livekitToken!,
-      widget.localVideoTrack,
-      widget.localAudioTrack,
     );
 
     context.read<LiveViewerCubit>().joinLiveStream();

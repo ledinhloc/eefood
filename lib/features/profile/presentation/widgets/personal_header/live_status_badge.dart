@@ -10,6 +10,7 @@ import '../../../../livestream/domain/repository/live_viewer_repository.dart';
 import '../../../../livestream/presentation/provider/live_comment_cubit.dart';
 import '../../../../livestream/presentation/provider/live_reaction_cubit.dart';
 import '../../../../livestream/presentation/provider/live_viewer_cubit.dart';
+import '../../../../livestream/presentation/provider/stream_status_cubit.dart';
 import '../../../../livestream/presentation/provider/watch_live_cubit.dart';
 import '../../../../livestream/presentation/screens/live_viewer_screen.dart';
 class LiveStatusBadge extends StatelessWidget {
@@ -36,6 +37,9 @@ class LiveStatusBadge extends StatelessWidget {
                   ),
                   BlocProvider(
                     create: (_) => LiveReactionCubit(getIt<LiveReactionRepository>(),  stream!.id)
+                  ),
+                  BlocProvider(
+                    create: (_) => StreamStatusCubit(liveStreamId: stream!.id),
                   ),
                   BlocProvider(
                     create: (_) => LiveViewerCubit(
