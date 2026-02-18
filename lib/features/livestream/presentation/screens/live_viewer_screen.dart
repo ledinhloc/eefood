@@ -5,7 +5,6 @@ import 'package:eefood/core/constants/app_keys.dart';
 import 'package:eefood/core/utils/helpers.dart';
 import 'package:eefood/features/livestream/presentation/widgets/live_comment_list.dart';
 import 'package:eefood/features/livestream/presentation/widgets/live_status_timer.dart';
-import 'package:eefood/features/livestream/presentation/widgets/stream_ended_dialog.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:livekit_client/livekit_client.dart';
@@ -455,6 +454,43 @@ class _LiveViewerScreenState extends State<LiveViewerScreen> {
     }
   }
 
+  void _handleStreamEnded(String? streamEndMessage) {
+    developer.log('[VIEWER] Stream ended notification received', name: 'LiveViewer');
+
+    if (!mounted) return;
+
+    // Hiển thị dialog thông báo
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => AlertDialog(
+        title: const Text('Phát trực tiếp đã kết thúc'),
+        content: const Text(
+          'Streamer đã kết thúc phiên phát trực tiếp.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () {
+              Navigator.pop(context); // Close dialog
+              _leaveLiveStream(); // Exit livestream
+            },
+            child: const Text('OK'),
+          ),
+        ],
+      ),
+    );
+
+    // Tự động thoát sau 5 giây nếu user không click OK
+    Future.delayed(const Duration(seconds: 5), () {
+      if (mounted) {
+        Navigator.pop(context, null); // Close dialog if still open
+        if (mounted) {
+          _leaveLiveStream();
+        }
+      }
+    });
+  }
+
   @override
   void dispose() {
     developer.log('[VIEWER] Disposing...', name: 'LiveViewer');
@@ -468,33 +504,11 @@ class _LiveViewerScreenState extends State<LiveViewerScreen> {
     super.dispose();
   }
 
-  Future<void> _handleStreamEnded(String? message) async {
-    developer.log('[VIEWER] Stream ended, showing dialog', name: 'LiveViewer');
-
-    // Disconnect LiveKit
-    await _room?.disconnect();
-    await _room?.dispose();
-
-    if (!mounted) return;
-
-    // Show dialog
-    await showDialog(
-      context: context,
-      barrierDismissible: false,
-      builder: (context) => StreamEndedDialog(
-        message: message,
-        onClose: () {
-          Navigator.of(context).pop(); //close dialog
-          Navigator.of(context).pop(); // exit livestream screen
-        },
-      ),
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     return MultiBlocListener(
       listeners: [
+        // Live Reaction listener
         BlocListener<LiveReactionCubit, LiveReactionState>(
           listener: (context, reactionState) {
             if (reactionState.reactions.isNotEmpty) {

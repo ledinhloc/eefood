@@ -8,6 +8,7 @@ import 'package:eefood/core/utils/greeting_helper.dart';
 import 'package:eefood/core/widgets/post_skeletion_loading.dart';
 import 'package:eefood/core/widgets/snack_bar.dart';
 import 'package:eefood/features/auth/domain/usecases/auth_usecases.dart';
+import 'package:eefood/features/livestream/presentation/provider/live_stream_cubit.dart';
 import 'package:eefood/features/noti/presentation/provider/notification_cubit.dart';
 import 'package:eefood/features/noti/presentation/provider/notification_state.dart';
 import 'package:eefood/features/noti/presentation/screens/notification_screen.dart';
@@ -416,12 +417,14 @@ class _FeedViewState extends State<FeedView> {
                   Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (_) => BlocProvider.value(
-                        value: getIt<StartLiveCubit>(),
-                        child: LivePrepScreen(),
+                      builder: (_) => MultiBlocProvider(
+                          providers: [
+                            BlocProvider(create: (_) => LiveStreamCubit()),
+                            BlocProvider.value(value: getIt<StartLiveCubit>())
+                          ],
+                          child: const LivePrepScreen()),
                       ),
-                    ),
-                  );
+                    );
                 },
                 icon: const Icon(Icons.videocam),
               ),
