@@ -39,7 +39,6 @@ class _LiveViewerScreenState extends State<LiveViewerScreen> {
   bool _isConnecting = false;
   bool _hasAttemptedConnection = false;
   Timer? _timer;
-  // final List<CommentItem> _comments = [];
   final TextEditingController _commentController = TextEditingController();
   final ScrollController _scrollController = ScrollController();
 

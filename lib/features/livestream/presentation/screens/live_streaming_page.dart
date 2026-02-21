@@ -1,10 +1,12 @@
 // presentation/screens/live_stream_screen.dart
 import 'dart:async';
+import 'dart:io';
 import 'package:eefood/features/livestream/presentation/provider/live_viewer_cubit.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../core/constants/app_keys.dart';
 import '../../../../core/di/injection.dart';
+import '../../../../core/widgets/snack_bar.dart';
 import '../../data/model/live_reaction_response.dart';
 import '../../data/model/live_stream_response.dart';
 import '../provider/live_reaction_cubit.dart';
@@ -41,11 +43,14 @@ class _LiveStreamScreenState extends State<LiveStreamScreen> {
   void initState() {
     super.initState();
 
+    // _initializeTracks();
+
     // Connect to room qua Cubit
-    context.read<LiveStreamCubit>().connectToRoom(
-      AppKeys.livekitUrl,
-      widget.stream.livekitToken!,
-    );
+    // context.read<LiveStreamCubit>().connectToRoom(
+    //   AppKeys.livekitUrl,
+    //   widget.stream.livekitToken!,
+    // );
+    _ensureTracksReady();
 
     context.read<LiveViewerCubit>().joinLiveStream();
 
@@ -55,6 +60,51 @@ class _LiveStreamScreenState extends State<LiveStreamScreen> {
         setState(() {});
       }
     });
+  }
+
+  Future<void> _ensureTracksReady() async {
+    final cubit = context.read<LiveStreamCubit>();
+    final state = cubit.state;
+
+    print(' Checking tracks...');
+    print('   Video: ${state.localVideoTrack?.sid}');
+    print('   Audio: ${state.localAudioTrack?.sid}');
+
+    try {
+      final videoTrack = await LocalVideoTrack.createCameraTrack(
+        CameraCaptureOptions(
+          cameraPosition: state.isFrontCamera
+              ? CameraPosition.front
+              : CameraPosition.back,
+        ),
+      );
+      print(' New video track created: ${videoTrack.sid}');
+
+      final audioTrack = await LocalAudioTrack.create(
+        AudioCaptureOptions(
+          noiseSuppression: true,
+          echoCancellation: true,
+          autoGainControl: true,
+        ),
+      );
+      print(' New audio track created: ${audioTrack.sid}');
+
+      cubit.setTracks(videoTrack, audioTrack);
+
+      await Future.delayed(const Duration(milliseconds: 300));
+    } catch (e) {
+      print(' Error creating tracks: $e');
+      if (mounted) {
+        showCustomSnackBar(context, "Không thể khởi tạo camera/microphone");
+      }
+      return;
+    }
+    // Connect to room
+    print('🔌 Connecting to room...');
+    cubit.connectToRoom(
+      AppKeys.livekitUrl,
+      widget.stream.livekitToken!,
+    );
   }
 
   void _onReactionCompleted(LiveReactionResponse reaction) {
