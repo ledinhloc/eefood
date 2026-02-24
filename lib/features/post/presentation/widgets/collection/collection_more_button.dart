@@ -28,7 +28,7 @@ class CollectionMoreButton extends StatelessWidget {
         await showCustomBottomSheet(context, [
           BottomSheetOption(
             icon: Container(
-              padding: const EdgeInsets.all(8),
+              padding: const EdgeInsets.all(2),
               decoration: BoxDecoration(
                 color: const Color(0xFFFF8C42).withOpacity(0.1),
                 borderRadius: BorderRadius.circular(8),

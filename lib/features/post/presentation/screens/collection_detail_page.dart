@@ -5,7 +5,6 @@ import '../provider/collection_cubit.dart';
 import '../provider/collection_state.dart';
 import '../widgets/collection/collection_more_button.dart';
 import '../widgets/collection/post_summary_card.dart';
-import '../../../../../core/widgets/custom_bottom_sheet.dart'; // nếu bạn đang dùng hàm showCustomBottomSheet
 
 class CollectionDetailPage extends StatefulWidget {
   final int collectionId;
@@ -17,11 +16,13 @@ class CollectionDetailPage extends StatefulWidget {
 
 class _CollectionDetailPageState extends State<CollectionDetailPage> {
   final cubit = getIt<CollectionCubit>();
+
   @override
   void initState() {
     super.initState();
     cubit.selectCollectionDetail(widget.collectionId);
   }
+
   @override
   Widget build(BuildContext context) {
     return BlocBuilder<CollectionCubit, CollectionState>(
@@ -31,7 +32,7 @@ class _CollectionDetailPageState extends State<CollectionDetailPage> {
 
         if (collection == null) {
           return const Scaffold(
-            body: Center(child: CircularProgressIndicator()),
+            body: Center(child: CircularProgressIndicator(color: Color(0xFFFF8C42))),
           );
         }
 
@@ -39,29 +40,45 @@ class _CollectionDetailPageState extends State<CollectionDetailPage> {
         final posts = collection.posts ?? [];
 
         return Scaffold(
+          backgroundColor: const Color(0xFFF8F8F8),
+
           appBar: AppBar(
-            title: Text(name.isNotEmpty ? name : ''),
+            elevation: 0,
+            backgroundColor: Colors.white,
+            centerTitle: true,
+            title: Text(
+              name.isNotEmpty ? name : '',
+              style: const TextStyle(
+                fontSize: 20,
+                fontWeight: FontWeight.w700,
+                color: Color(0xFF2D3142),
+              ),
+            ),
+            shape: const RoundedRectangleBorder(
+              borderRadius: BorderRadius.vertical(bottom: Radius.circular(20)),
+            ),
             actions: [
               CollectionMoreButton(
                 collection: collection,
-                iconColor: Colors.black,
+                iconColor: Colors.black87,
                 onDeleted: () => Navigator.pop(context),
               ),
             ],
           ),
+
           body: posts.isEmpty
-              ? const Center(child: Text('Chưa có bài post nào'))
+              ? _buildEmptyState()
               : GridView.builder(
             padding: const EdgeInsets.all(16),
             gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
               crossAxisCount: 2,
-              mainAxisExtent: 220,
-              crossAxisSpacing: 10,
-              mainAxisSpacing: 10,
+              mainAxisExtent: 230,
+              crossAxisSpacing: 12,
+              mainAxisSpacing: 12,
             ),
             itemCount: posts.length,
-            itemBuilder: (context, index) {
-              final post = posts[index];
+            itemBuilder: (context, i) {
+              final post = posts[i];
               return PostSummaryCard(
                 recipe: post,
                 currentCollectionId: collection.id,
@@ -73,57 +90,40 @@ class _CollectionDetailPageState extends State<CollectionDetailPage> {
     );
   }
 
-  // 🔹 Đổi tên bộ sưu tập
-  void _showRenameDialog(BuildContext context, CollectionCubit cubit, String currentName) {
-    final controller = TextEditingController(text: currentName);
-
-    showDialog(
-      context: context,
-      builder: (_) => AlertDialog(
-        title: const Text('Đổi tên bộ sưu tập'),
-        content: TextField(
-          controller: controller,
-          decoration: const InputDecoration(hintText: 'Nhập tên mới'),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Hủy'),
+  // UI khi chưa có bài post
+  Widget _buildEmptyState() {
+    return Center(
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Container(
+            padding: const EdgeInsets.all(20),
+            decoration: BoxDecoration(
+              color: const Color(0xFFFF8C42).withOpacity(0.15),
+              shape: BoxShape.circle,
+            ),
+            child: const Icon(
+              Icons.photo_library_outlined,
+              color: Color(0xFFFF8C42),
+              size: 55,
+            ),
           ),
-          ElevatedButton(
-            onPressed: () async {
-              final newName = controller.text.trim();
-              if (newName.isEmpty) return;
-              Navigator.pop(context);
-              await cubit.updateCollection(widget.collectionId, name: newName);
-            },
-            child: const Text('Lưu'),
+          const SizedBox(height: 16),
+          const Text(
+            "Chưa có bài viết nào",
+            style: TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.w700,
+              color: Color(0xFF2D3142),
+            ),
           ),
-        ],
-      ),
-    );
-  }
-
-  // 🔹 Xóa bộ sưu tập (xác nhận trước)
-  void _showDeleteConfirmation(BuildContext context, CollectionCubit cubit) {
-    showDialog(
-      context: context,
-      builder: (_) => AlertDialog(
-        title: const Text('Xóa bộ sưu tập'),
-        content: const Text('Bạn có chắc muốn xóa bộ sưu tập này không?'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Hủy'),
-          ),
-          ElevatedButton(
-            style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
-            onPressed: () async {
-              Navigator.pop(context); // đóng dialog
-              await cubit.deleteCollection(widget.collectionId);
-              if (context.mounted) Navigator.pop(context); // quay về trang trước
-            },
-            child: const Text('Xóa'),
+          const SizedBox(height: 6),
+          Text(
+            "Hãy thêm món ăn yêu thích của bạn!",
+            style: TextStyle(
+              fontSize: 15,
+              color: Colors.grey.shade600,
+            ),
           ),
         ],
       ),
