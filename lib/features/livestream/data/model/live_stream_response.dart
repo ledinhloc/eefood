@@ -1,5 +1,11 @@
+import 'package:json_annotation/json_annotation.dart';
+
+part 'live_stream_response.g.dart';
+
+// @JsonEnum(alwaysCreate: true)
 enum LiveStreamStatus { SCHEDULED, LIVE, ENDED, CANCELLED }
 
+@JsonSerializable()
 class LiveStreamResponse {
   final int id;
   final int userId;
@@ -35,41 +41,8 @@ class LiveStreamResponse {
     this.avatarUrl,
   });
 
-  factory LiveStreamResponse.fromJson(Map<String, dynamic> json) {
-    LiveStreamStatus parseStatus(String s) {
-      switch (s) {
-        case 'SCHEDULED':
-          return LiveStreamStatus.SCHEDULED;
-        case 'LIVE':
-          return LiveStreamStatus.LIVE;
-        case 'ENDED':
-          return LiveStreamStatus.ENDED;
-        case 'CANCELLED':
-          return LiveStreamStatus.CANCELLED;
-        default:
-          return LiveStreamStatus.SCHEDULED; // fallback
-      }
-    }
+  factory LiveStreamResponse.fromJson(Map<String, dynamic> json) =>
+      _$LiveStreamResponseFromJson(json);
 
-    DateTime? parseDateTime(String? s) =>
-        s != null ? DateTime.parse(s) : null;
-
-    return LiveStreamResponse(
-      id: (json['id'] as num).toInt(),
-      userId: (json['userId'] as num).toInt(),
-      roomName: json['roomName'] as String,
-      title: json['title'] as String,
-      description: json['description'] as String?,
-      thumbnailUrl: json['thumbnailUrl'] as String?,
-      status: parseStatus(json['status'] as String),
-      viewerCount: (json['viewerCount'] as num?)?.toInt() ?? 0,
-      scheduledAt: parseDateTime(json['scheduledAt'] as String?),
-      startedAt: parseDateTime(json['startedAt'] as String?),
-      endedAt: parseDateTime(json['endedAt'] as String?),
-      livekitToken: json['livekitToken'] as String?,
-      username: json['username'] as String?,
-      email: json['email'] as String?,
-      avatarUrl: json['avatarUrl'] as String?,
-    );
-  }
+  Map<String, dynamic> toJson() => _$LiveStreamResponseToJson(this);
 }

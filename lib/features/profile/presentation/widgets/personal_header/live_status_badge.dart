@@ -1,10 +1,15 @@
+import 'package:eefood/features/livestream/domain/repository/live_comment_repo.dart';
+import 'package:eefood/features/livestream/domain/repository/live_reaction_repo.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../../../../core/di/injection.dart';
 import '../../../../livestream/data/model/live_stream_response.dart';
+import '../../../../livestream/domain/repository/live_viewer_repository.dart';
 import '../../../../livestream/presentation/provider/live_comment_cubit.dart';
 import '../../../../livestream/presentation/provider/live_reaction_cubit.dart';
+import '../../../../livestream/presentation/provider/live_viewer_cubit.dart';
 import '../../../../livestream/presentation/provider/watch_live_cubit.dart';
 import '../../../../livestream/presentation/screens/live_viewer_screen.dart';
 class LiveStatusBadge extends StatelessWidget {
@@ -27,10 +32,16 @@ class LiveStatusBadge extends StatelessWidget {
                       create: (_) => getIt<WatchLiveCubit>()
                   ),
                   BlocProvider(
-                    create: (_) => getIt<LiveCommentCubit>()..loadComments(stream!.id),
+                    create: (_) => LiveCommentCubit(getIt<LiveCommentRepository>(), stream!.id),
                   ),
                   BlocProvider(
-                    create: (_) => getIt<LiveReactionCubit>(param1: stream!.id)
+                    create: (_) => LiveReactionCubit(getIt<LiveReactionRepository>(),  stream!.id)
+                  ),
+                  BlocProvider(
+                    create: (_) => LiveViewerCubit(
+                      getIt<LiveViewerRepository>(),
+                      stream!.id,
+                    ),
                   ),
                 ],
                 child: LiveViewerScreen(streamId: stream!.id)),

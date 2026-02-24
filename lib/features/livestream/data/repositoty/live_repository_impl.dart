@@ -38,6 +38,7 @@ class LiveRepositoryImpl extends LiveRepository{
     return LiveStreamResponse.fromJson(res.data['data']);
   }
 
+  @override
   Future<LiveStreamResponse> getLiveStream(int liveStreamId) async{
     final res = await dio.get(
       '/v1/livestreams/$liveStreamId'
