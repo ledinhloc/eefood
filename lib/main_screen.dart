@@ -1,4 +1,5 @@
 import 'package:eefood/app_routes.dart';
+import 'package:eefood/features/chatbot/presentation/screens/chatbot_fab.dart';
 import 'package:flutter/material.dart';
 
 import 'core/di/injection.dart';
@@ -78,40 +79,7 @@ class _MainScreenState extends State<MainScreen>
             onTap: (index) => _onItemTapped(index, user, context),
           ),
           floatingActionButton: !_tabsWithCustomFAB.contains(_selectedIndex)
-              ? Container(
-                  width: 60,
-                  height: 60,
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                      colors: [
-                        Colors.purpleAccent.shade400,
-                        Colors.deepPurpleAccent.shade700,
-                      ],
-                    ),
-                    shape: BoxShape.circle,
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.purple.withOpacity(0.4),
-                        blurRadius: 12,
-                        offset: const Offset(0, 6),
-                      ),
-                    ],
-                  ),
-                  child: FloatingActionButton(
-                    heroTag: 'fab_chatbot',
-                    onPressed: () => _handleFABPress(user, context),
-                    tooltip: 'AI Chatbot',
-                    elevation: 0,
-                    backgroundColor: Colors.transparent,
-                    child: const Icon(
-                      Icons.smart_toy_rounded,
-                      size: 28,
-                      color: Colors.white,
-                    ),
-                  ),
-                )
+              ? ChatbotFAB(onPressed: () => _handleFABPress(user, context))
               : null,
         );
       },
