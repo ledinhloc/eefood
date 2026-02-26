@@ -6,7 +6,7 @@ import 'package:http_parser/http_parser.dart';
 
 import '../models/post_model.dart';
 
-class PostRepositoryImpl extends PostRepository{
+class PostRepositoryImpl extends PostRepository {
   final Dio dio;
   PostRepositoryImpl({required this.dio});
 
@@ -105,11 +105,7 @@ class PostRepositoryImpl extends PostRepository{
   Future<int> getOwnPostsCount(int userId) async {
     final response = await dio.get(
       '/v1/posts/my',
-      queryParameters: {
-        'userId': userId,
-        'page': 1,
-        'size': 1,
-      },
+      queryParameters: {'userId': userId, 'page': 1, 'size': 1},
     );
 
     if (response.statusCode == 200) {

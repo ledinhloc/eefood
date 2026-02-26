@@ -1,8 +1,73 @@
+import 'package:eefood/features/post/data/models/comment_model.dart';
+import 'package:eefood/features/post/data/models/post_model.dart';
+import 'package:eefood/features/post/data/models/reaction_type.dart';
 import 'package:eefood/features/post/data/models/story_model.dart';
 import 'package:eefood/features/post/data/models/user_story_model.dart';
 import 'package:eefood/features/recipe/domain/entities/recipe.dart';
 
 class AppConstants {
+  static final PostModel samplePost = PostModel(
+    id: 1,
+    userId: 10,
+    username: "nguyenvana",
+    email: "nguyenvana@gmail.com",
+    avatarUrl: "https://i.pravatar.cc/150?img=3",
+
+    recipeId: 101,
+    title: "Phở bò truyền thống",
+    content: "Cách nấu phở bò chuẩn vị Hà Nội, nước dùng trong và đậm đà.",
+    imageUrl: "https://images.unsplash.com/photo-1604908177522-4321d5d7d8c3",
+
+    createdAt: DateTime.now().subtract(const Duration(hours: 2)),
+    updatedAt: DateTime.now(),
+
+    totalFavorites: 120,
+    totalShares: 35,
+    totalComments: 5,
+
+    reactionCounts: {
+      ReactionType.LIKE: 80,
+      ReactionType.LOVE: 25,
+      ReactionType.WOW: 10,
+      ReactionType.SAD: 5,
+    },
+
+    comments: [
+      CommentModel(
+        id: 1,
+        userId: 20,
+        username: "tranthib",
+        avatarUrl: "https://i.pravatar.cc/150?img=5",
+        content: "Nhìn hấp dẫn quá!",
+        createdAt: DateTime.now().subtract(const Duration(minutes: 30)),
+      ),
+      CommentModel(
+        id: 2,
+        userId: 21,
+        username: "leminh",
+        avatarUrl: "https://i.pravatar.cc/150?img=7",
+        content: "Mình đã thử và rất ngon 👍",
+        createdAt: DateTime.now().subtract(const Duration(minutes: 10)),
+      ),
+    ],
+
+    description: "Món phở bò truyền thống với nước dùng ninh từ xương bò.",
+    region: "Hà Nội",
+    prepTime: 30,
+    cookTime: 180,
+    difficulty: "Medium",
+
+    recipeCategories: ["Món nước", "Ẩm thực Việt"],
+
+    recipeIngredientKeywords: [
+      "xương bò",
+      "bánh phở",
+      "hành tím",
+      "gừng",
+      "quế",
+      "hoa hồi",
+    ],
+  );
   static final List<String> reasons = [
     "Nội dung không phù hợp",
     "Spam hoặc quảng cáo",
@@ -149,15 +214,15 @@ class AppConstants {
     {"name": "Eat Clean", "icon": "🥗"},
   ];
   static final allergies = [
-    {"name": "Đậu phộng", "icon": "🥜"},
+    {"name": "Lạc (đậu phộng)", "icon": "🥜"},
     {"name": "Hạt", "icon": "🌰"},
     {"name": "Sữa bò", "icon": "🥛"},
     {"name": "Trứng gà", "icon": "🥚"},
     {"name": "Lúa mì", "icon": "🌾"},
     {"name": "Đậu nành", "icon": "🫘"},
     {"name": "Cá", "icon": "🐟"},
-    {"name": "Tôm cua", "icon": "🦐"},
-    {"name": "Vừng/Mè", "icon": "⚪"},
+    {"name": "Tôm/Cua biển", "icon": "🦐"},
+    {"name": "Mè (vừng)", "icon": "⚪"},
     {"name": "Mắm tôm", "icon": "🟣"},
     {"name": "Ốc, nghêu, sò", "icon": "🐚"},
   ];

@@ -1,4 +1,3 @@
-
 import 'package:eefood/app_routes.dart';
 import 'package:flutter/material.dart';
 
@@ -13,15 +12,34 @@ class MainScreen extends StatefulWidget {
   State<MainScreen> createState() => _MainScreenState();
 }
 
-class _MainScreenState extends State<MainScreen> {
+class _MainScreenState extends State<MainScreen>
+    with SingleTickerProviderStateMixin {
   int _selectedIndex = 0;
   final GetCurrentUser _getCurrentUser = getIt<GetCurrentUser>();
   late Future<User?> _userFuture;
+  final Set<int> _tabsWithCustomFAB = {1, 2, 4};
 
   @override
   void initState() {
     super.initState();
     _userFuture = _getCurrentUser();
+  }
+
+  void _handleFABPress(User? user, BuildContext context) async {
+    if (user == null) {
+      showLoginRequired(context);
+      return;
+    }
+    Navigator.pushNamed(
+      context,
+      AppRoutes.chatBotScreen,
+      arguments: {'userId': user.id},
+    );
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
   }
 
   @override
@@ -39,20 +57,68 @@ class _MainScreenState extends State<MainScreen> {
           bottomNavigationBar: BottomNavigationBar(
             items: const <BottomNavigationBarItem>[
               BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Posts'),
-              BottomNavigationBarItem(icon: Icon(Icons.bookmark_border), label: 'Saved'),
-              BottomNavigationBarItem(icon: Icon(Icons.menu_book_outlined), label: 'MyRecipes'),
-              BottomNavigationBarItem(icon: Icon(Icons.shopping_cart), label: 'Ingredients'),
-              BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Profile'),
+              BottomNavigationBarItem(
+                icon: Icon(Icons.bookmark_border),
+                label: 'Saved',
+              ),
+              BottomNavigationBarItem(
+                icon: Icon(Icons.menu_book_outlined),
+                label: 'MyRecipes',
+              ),
+              BottomNavigationBarItem(
+                icon: Icon(Icons.shopping_cart),
+                label: 'Ingredients',
+              ),
+              BottomNavigationBarItem(
+                icon: Icon(Icons.person),
+                label: 'Profile',
+              ),
             ],
             currentIndex: _selectedIndex,
             onTap: (index) => _onItemTapped(index, user, context),
           ),
+          floatingActionButton: !_tabsWithCustomFAB.contains(_selectedIndex)
+              ? Container(
+                  width: 60,
+                  height: 60,
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                      colors: [
+                        Colors.purpleAccent.shade400,
+                        Colors.deepPurpleAccent.shade700,
+                      ],
+                    ),
+                    shape: BoxShape.circle,
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.purple.withOpacity(0.4),
+                        blurRadius: 12,
+                        offset: const Offset(0, 6),
+                      ),
+                    ],
+                  ),
+                  child: FloatingActionButton(
+                    heroTag: 'fab_chatbot',
+                    onPressed: () => _handleFABPress(user, context),
+                    tooltip: 'AI Chatbot',
+                    elevation: 0,
+                    backgroundColor: Colors.transparent,
+                    child: const Icon(
+                      Icons.smart_toy_rounded,
+                      size: 28,
+                      color: Colors.white,
+                    ),
+                  ),
+                )
+              : null,
         );
       },
     );
   }
 
-  void _onItemTapped(int index, User? user,BuildContext context) {
+  void _onItemTapped(int index, User? user, BuildContext context) {
     if (index == 0) {
       setState(() => _selectedIndex = index);
       return;

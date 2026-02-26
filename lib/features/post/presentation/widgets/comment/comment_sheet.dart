@@ -1,5 +1,3 @@
-import 'package:eefood/core/di/injection.dart';
-import 'package:eefood/features/post/data/models/comment_model.dart';
 import 'package:eefood/features/post/presentation/provider/comment_list_cubit.dart';
 import 'package:eefood/features/post/presentation/provider/comment_list_state.dart';
 import 'package:eefood/features/post/presentation/widgets/comment/comment_input.dart';
@@ -30,7 +28,10 @@ class _CommentBottomSheetState extends State<CommentBottomSheet> {
   void _onScroll(BuildContext context) {
     if (_scrollController.position.pixels ==
         _scrollController.position.maxScrollExtent) {
-      context.read<CommentListCubit>().fetchComments(widget.postId, loadMore: true);
+      context.read<CommentListCubit>().fetchComments(
+        widget.postId,
+        loadMore: true,
+      );
     }
   }
 
@@ -178,7 +179,9 @@ class _CommentBottomSheetState extends State<CommentBottomSheet> {
             child: RefreshIndicator(
               onRefresh: () async {
                 context.read<CommentListCubit>().resetForNewPost();
-                return context.read<CommentListCubit>().fetchComments(widget.postId);
+                return context.read<CommentListCubit>().fetchComments(
+                  widget.postId,
+                );
               },
               child: _buildCommentList(),
             ),

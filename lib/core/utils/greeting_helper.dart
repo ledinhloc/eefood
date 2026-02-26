@@ -15,4 +15,20 @@ class GreetingHelper {
 
     return '$greeting, $userName 👋';
   }
+
+  static String getTime() {
+    final hour = DateTime.now().hour;
+    String time;
+
+    if (hour >= 5 && hour < 11) {
+      time = 'Buổi sáng';
+    } else if (hour >= 11 && hour < 13) {
+      time = 'Buổi trưa';
+    } else if (hour >= 13 && hour < 18) {
+      time = 'Buổi chiều';
+    } else {
+      time = 'Buổi tối';
+    }
+    return time;
+  }
 }
