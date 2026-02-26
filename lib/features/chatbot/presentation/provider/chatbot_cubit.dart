@@ -92,7 +92,9 @@ class ChatbotCubit extends Cubit<ChatbotState> {
       role: ChatRole.USER.name,
       message: message,
       data: null,
-      meta: null,
+      meta: (imageUrl != null && imageUrl.isNotEmpty)
+          ? {'imageUrl': imageUrl}
+          : null,
     );
     final committedMessages = [...state.messages, userMsg];
 

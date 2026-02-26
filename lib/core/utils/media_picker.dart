@@ -1,20 +1,21 @@
 import 'dart:io';
+
 import 'package:device_info_plus/device_info_plus.dart';
+import 'package:file_picker/file_picker.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:permission_handler/permission_handler.dart';
 
 /* chon Image, Video, File trong may*/
-class MediaPicker{
-  static Future<bool> _checkPermission(Permission permission) async{
+class MediaPicker {
+  static Future<bool> _checkPermission(Permission permission) async {
     // Android 13 trở lên
-    if(Platform.isAndroid && (await _getSdkInt()) >=33) {
+    if (Platform.isAndroid && (await _getSdkInt()) >= 33) {
       var status = await permission.status;
-      if(status.isDenied){
+      if (status.isDenied) {
         status = await permission.request();
       }
       return status.isGranted;
-    }
-    else {
+    } else {
       // Android 12 trở xuống
       var status = await Permission.storage.status;
       if (status.isDenied) {
@@ -22,25 +23,52 @@ class MediaPicker{
       }
       return status.isGranted;
     }
-    
   }
 
-  static Future<File?> pickImage() async{
-    if(!await _checkPermission(Permission.photos)) return null;
+  static Future<File?> pickImage() async {
+    if (!await _checkPermission(Permission.photos)) return null;
 
     final picked = await ImagePicker().pickImage(source: ImageSource.gallery);
     return picked != null ? File(picked.path) : null;
   }
 
-  static Future<File?> pickVideo() async{
-    if(!await _checkPermission(Permission.videos)) return null;
+  static Future<File?> pickImageNew() async {
+    final result = await FilePicker.platform.pickFiles(
+      type: FileType.image,
+      allowMultiple: false,
+    );
+
+    if (result != null && result.files.single.path != null) {
+      return File(result.files.single.path!);
+    }
+
+    return null;
+  }
+
+  static Future<File?> pickVideo() async {
+    if (!await _checkPermission(Permission.videos)) return null;
 
     final picked = await ImagePicker().pickVideo(source: ImageSource.gallery);
     return picked != null ? File(picked.path) : null;
   }
 
+  static Future<File?> pickVideoNew() async {
+    final result = await FilePicker.platform.pickFiles(
+      type: FileType.video,
+      allowMultiple: false,
+    );
+
+    if (result != null && result.files.single.path != null) {
+      return File(result.files.single.path!);
+    }
+
+    return null;
+  }
+
   static Future<int> _getSdkInt() async {
-    final sdkInt = await DeviceInfoPlugin().androidInfo.then((info) => info.version.sdkInt);
+    final sdkInt = await DeviceInfoPlugin().androidInfo.then(
+      (info) => info.version.sdkInt,
+    );
     return sdkInt;
   }
 

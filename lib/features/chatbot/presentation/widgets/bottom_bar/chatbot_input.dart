@@ -1,6 +1,12 @@
+import 'dart:io';
+
+import 'package:eefood/core/di/injection.dart';
+import 'package:eefood/core/utils/file_upload.dart';
+import 'package:eefood/core/utils/media_picker.dart';
 import 'package:eefood/core/widgets/custom_bottom_sheet.dart';
 import 'package:eefood/features/chatbot/presentation/provider/chatbot_cubit.dart';
 import 'package:eefood/features/chatbot/presentation/provider/chatbot_state.dart';
+import 'package:eefood/features/chatbot/presentation/widgets/bottom_bar/image_preview_tag.dart';
 import 'package:eefood/features/chatbot/presentation/widgets/bottom_bar/recent_post_bottom_sheet.dart';
 import 'package:eefood/features/chatbot/presentation/widgets/bottom_bar/selected_post_detail_sheet.dart';
 import 'package:eefood/features/chatbot/presentation/widgets/bottom_bar/selected_post_tag.dart';
@@ -19,7 +25,13 @@ class ChatbotInput extends StatefulWidget {
 class _ChatbotInputState extends State<ChatbotInput> {
   final TextEditingController _textController = TextEditingController();
   final FocusNode _focusNode = FocusNode();
+
+  final _fileUpload = getIt<FileUploader>();
+
   bool _hasText = false;
+  File? _imageFile;
+  String? _imageUrl;
+  bool _isUploadingImage = false;
 
   @override
   void initState() {
@@ -46,14 +58,45 @@ class _ChatbotInputState extends State<ChatbotInput> {
     final message = _textController.text.trim();
     final cubit = context.read<ChatbotCubit>();
     final hasSelectedPosts = cubit.state.hasSelectedPosts;
-    if (message.isNotEmpty || hasSelectedPosts) {
+    final hasImage = _imageUrl != null;
+
+    if (message.isNotEmpty || hasSelectedPosts || hasImage) {
       if (widget.userId != null) {
-        cubit.sendMessage(message, widget.userId!);
+        cubit.sendMessage(message, widget.userId!, imageUrl: _imageUrl);
       }
       _textController.clear();
       _focusNode.unfocus();
-      cubit.clearSelectedPosts(); 
+      cubit.clearSelectedPosts();
+      setState(() {
+        _imageFile = null;
+        _imageUrl = null;
+      });
     }
+  }
+
+  Future<void> _pickImage() async {
+    final File? image = await MediaPicker.pickImageNew();
+    if (image != null) {
+      setState(() => _isUploadingImage = true);
+      try {
+        final url = await _fileUpload.uploadFile(image);
+        if (url.isNotEmpty) {
+          setState(() {
+            _imageFile = image;
+            _imageUrl = url;
+          });
+        }
+      } finally {
+        setState(() => _isUploadingImage = false);
+      }
+    }
+  }
+
+  void _clearImage() {
+    setState(() {
+      _imageFile = null;
+      _imageUrl = null;
+    });
   }
 
   Future<void> _showOptionsBottomSheet() async {
@@ -62,7 +105,7 @@ class _ChatbotInputState extends State<ChatbotInput> {
       BottomSheetOption(
         icon: const Icon(Icons.image_rounded, color: Colors.blue),
         title: 'Chọn hình từ thư viện',
-        onTap: () {},
+        onTap: _pickImage,
       ),
       BottomSheetOption(
         icon: const Icon(
@@ -186,6 +229,13 @@ class _ChatbotInputState extends State<ChatbotInput> {
                 );
               },
             ),
+
+            if (_imageFile != null || _isUploadingImage)
+              ImagePreviewTag(
+                imageFile: _imageFile,
+                isUploading: _isUploadingImage,
+                onClear: _clearImage,
+              ),
 
             // Input row
             Padding(
