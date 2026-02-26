@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+
 import '../../../../core/di/injection.dart';
 import '../provider/collection_cubit.dart';
 import '../provider/collection_state.dart';
 import '../widgets/collection/collection_more_button.dart';
 import '../widgets/collection/post_summary_card.dart';
-import '../../../../../core/widgets/custom_bottom_sheet.dart'; // nếu bạn đang dùng hàm showCustomBottomSheet
 
 class CollectionDetailPage extends StatefulWidget {
   final int collectionId;
@@ -22,6 +22,7 @@ class _CollectionDetailPageState extends State<CollectionDetailPage> {
     super.initState();
     cubit.selectCollectionDetail(widget.collectionId);
   }
+
   @override
   Widget build(BuildContext context) {
     return BlocBuilder<CollectionCubit, CollectionState>(
@@ -52,29 +53,33 @@ class _CollectionDetailPageState extends State<CollectionDetailPage> {
           body: posts.isEmpty
               ? const Center(child: Text('Chưa có bài post nào'))
               : GridView.builder(
-            padding: const EdgeInsets.all(16),
-            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-              crossAxisCount: 2,
-              mainAxisExtent: 220,
-              crossAxisSpacing: 10,
-              mainAxisSpacing: 10,
-            ),
-            itemCount: posts.length,
-            itemBuilder: (context, index) {
-              final post = posts[index];
-              return PostSummaryCard(
-                recipe: post,
-                currentCollectionId: collection.id,
-              );
-            },
-          ),
+                  padding: const EdgeInsets.all(16),
+                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                    crossAxisCount: 2,
+                    mainAxisExtent: 220,
+                    crossAxisSpacing: 10,
+                    mainAxisSpacing: 10,
+                  ),
+                  itemCount: posts.length,
+                  itemBuilder: (context, index) {
+                    final post = posts[index];
+                    return PostSummaryCard(
+                      recipe: post,
+                      currentCollectionId: collection.id,
+                    );
+                  },
+                ),
         );
       },
     );
   }
 
   // 🔹 Đổi tên bộ sưu tập
-  void _showRenameDialog(BuildContext context, CollectionCubit cubit, String currentName) {
+  void _showRenameDialog(
+    BuildContext context,
+    CollectionCubit cubit,
+    String currentName,
+  ) {
     final controller = TextEditingController(text: currentName);
 
     showDialog(
@@ -121,7 +126,8 @@ class _CollectionDetailPageState extends State<CollectionDetailPage> {
             onPressed: () async {
               Navigator.pop(context); // đóng dialog
               await cubit.deleteCollection(widget.collectionId);
-              if (context.mounted) Navigator.pop(context); // quay về trang trước
+              if (context.mounted)
+                Navigator.pop(context); // quay về trang trước
             },
             child: const Text('Xóa'),
           ),

@@ -83,6 +83,8 @@ dependencies:
   # get location
   geolocator: ^10.1.0
   geocoding: ^3.0.0
+
+  flutter_animate: ^4.5.2 #animation
 dev_dependencies:
   flutter_test:
     sdk: flutter

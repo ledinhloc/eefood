@@ -30,7 +30,11 @@ class _MainScreenState extends State<MainScreen>
       showLoginRequired(context);
       return;
     }
-    Navigator.pushNamed(context, AppRoutes.chatBotScreen);
+    Navigator.pushNamed(
+      context,
+      AppRoutes.chatBotScreen,
+      arguments: {'userId': user.id},
+    );
   }
 
   @override
@@ -53,10 +57,22 @@ class _MainScreenState extends State<MainScreen>
           bottomNavigationBar: BottomNavigationBar(
             items: const <BottomNavigationBarItem>[
               BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Posts'),
-              BottomNavigationBarItem(icon: Icon(Icons.bookmark_border),label: 'Saved',),
-              BottomNavigationBarItem(icon: Icon(Icons.menu_book_outlined),label: 'MyRecipes',),
-              BottomNavigationBarItem(icon: Icon(Icons.shopping_cart),label: 'Ingredients',),
-              BottomNavigationBarItem(icon: Icon(Icons.person),label: 'Profile',),
+              BottomNavigationBarItem(
+                icon: Icon(Icons.bookmark_border),
+                label: 'Saved',
+              ),
+              BottomNavigationBarItem(
+                icon: Icon(Icons.menu_book_outlined),
+                label: 'MyRecipes',
+              ),
+              BottomNavigationBarItem(
+                icon: Icon(Icons.shopping_cart),
+                label: 'Ingredients',
+              ),
+              BottomNavigationBarItem(
+                icon: Icon(Icons.person),
+                label: 'Profile',
+              ),
             ],
             currentIndex: _selectedIndex,
             onTap: (index) => _onItemTapped(index, user, context),

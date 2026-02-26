@@ -9,6 +9,7 @@ import 'package:eefood/features/auth/presentation/screens/reset_password_page.da
 import 'package:eefood/features/auth/presentation/screens/splash_page.dart';
 import 'package:eefood/features/auth/presentation/screens/verify_otp_page.dart';
 import 'package:eefood/features/auth/presentation/screens/welcome_page.dart';
+import 'package:eefood/features/chatbot/presentation/provider/chatbot_cubit.dart';
 import 'package:eefood/features/chatbot/presentation/screens/chatbot_main_srcreen.dart';
 import 'package:eefood/features/noti/presentation/screens/notification_screen.dart';
 import 'package:eefood/features/noti/presentation/screens/ntofication_settings_screen.dart';
@@ -247,7 +248,14 @@ class AppRoutes {
       return ComingSoonPage(featureName: args['featureName']);
     },
     chatBotScreen: (context) {
-      return ChatbotMainSrcreen();
+      final args =
+          ModalRoute.of(context)!.settings.arguments as Map<String, dynamic>;
+      final userId = args['userId'];
+
+      return BlocProvider(
+        create: (_) => getIt<ChatbotCubit>(),
+        child: ChatbotMainScreen(userId: userId),
+      );
     },
   };
 }

@@ -2,6 +2,7 @@ import 'package:eefood/core/utils/file_upload.dart';
 import 'package:eefood/features/auth/presentation/bloc/on_boarding_bloc/on_boarding_cubit.dart';
 import 'package:eefood/features/chatbot/data/repositories/chatbot_repository_impl.dart';
 import 'package:eefood/features/chatbot/domain/repositories/chatbot_repository.dart';
+import 'package:eefood/features/chatbot/presentation/provider/chatbot_cubit.dart';
 import 'package:eefood/features/livestream/data/repositoty/live_comment_repo_impl.dart';
 import 'package:eefood/features/livestream/data/repositoty/live_reaction_repo_impl.dart';
 import 'package:eefood/features/livestream/data/repositoty/live_repository_impl.dart';
@@ -237,9 +238,7 @@ Future<void> setupDependencies() async {
   // notification
 
   //collection
-  getIt.registerLazySingleton<CollectionCubit>(
-    () => CollectionCubit(),
-  );
+  getIt.registerLazySingleton<CollectionCubit>(() => CollectionCubit());
 
   //post in recipe
   getIt.registerLazySingleton<PostPublishRepository>(
@@ -297,4 +296,6 @@ Future<void> setupDependencies() async {
   getIt.registerLazySingleton<ChatbotRepository>(
     () => ChatbotRepositoryImpl(dio: getIt<DioClient>().dio),
   );
+
+  getIt.registerFactory<ChatbotCubit>(() => ChatbotCubit());
 }

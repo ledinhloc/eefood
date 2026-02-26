@@ -1,5 +1,3 @@
-import 'dart:convert';
-
 import 'package:eefood/core/di/injection.dart';
 import 'package:eefood/core/widgets/show_login_required.dart';
 import 'package:eefood/core/widgets/snack_bar.dart';
@@ -8,18 +6,15 @@ import 'package:eefood/features/post/presentation/provider/follow_cubit.dart';
 import 'package:eefood/features/recipe/presentation/provider/shopping_cubit.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+
 import '../../../../app_routes.dart';
-import '../../../../core/constants/app_keys.dart';
 import '../../../../core/widgets/custom_bottom_sheet.dart';
 import '../../../auth/domain/entities/user.dart';
-import '../../../post/presentation/widgets/collection/add_to_collection_sheet.dart';
 import '../../../profile/domain/usecases/profile_usecase.dart';
-import '../../domain/repositories/shopping_repository.dart';
 import '../provider/recipe_detail_cubit.dart';
 import '../widgets/category_list_widget.dart';
 import '../widgets/instructions_tab.dart';
 import '../widgets/steps_tab.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
 class RecipeDetailPage extends StatefulWidget {
   final int recipeId;
@@ -91,6 +86,7 @@ class _RecipeDetailPageState extends State<RecipeDetailPage> {
     _followCubit.close();
     super.dispose();
   }
+
   @override
   Widget build(BuildContext context) {
     return MultiBlocProvider(
@@ -115,7 +111,9 @@ class _RecipeDetailPageState extends State<RecipeDetailPage> {
           final recipe = state.recipe!;
           final totalTime = (recipe.prepTime ?? 0) + (recipe.cookTime ?? 0);
 
-          if (_currentUserId != null && recipe.userId != null && recipe.userId != _currentUserId) {
+          if (_currentUserId != null &&
+              recipe.userId != null &&
+              recipe.userId != _currentUserId) {
             _followCubit.loadFollowData(recipe.userId!);
           }
 
@@ -129,7 +127,10 @@ class _RecipeDetailPageState extends State<RecipeDetailPage> {
                     pinned: true,
                     backgroundColor: Colors.white,
                     leading: IconButton(
-                      icon: const Icon(Icons.arrow_back_ios_new, color: Colors.white),
+                      icon: const Icon(
+                        Icons.arrow_back_ios_new,
+                        color: Colors.white,
+                      ),
                       onPressed: () => Navigator.pop(context),
                     ),
                     actions: [
@@ -149,7 +150,10 @@ class _RecipeDetailPageState extends State<RecipeDetailPage> {
                             fit: BoxFit.cover,
                             errorBuilder: (_, __, ___) => Container(
                               color: Colors.grey.shade200,
-                              child: const Icon(Icons.image_not_supported, size: 80),
+                              child: const Icon(
+                                Icons.image_not_supported,
+                                size: 80,
+                              ),
                             ),
                           ),
                           Container(
@@ -161,7 +165,7 @@ class _RecipeDetailPageState extends State<RecipeDetailPage> {
                                   Colors.black54,
                                   Colors.transparent,
                                   Colors.transparent,
-                                  Colors.black26
+                                  Colors.black26,
                                 ],
                               ),
                             ),
@@ -207,12 +211,24 @@ class _RecipeDetailPageState extends State<RecipeDetailPage> {
                               height: 60,
                               decoration: BoxDecoration(
                                 shape: BoxShape.circle,
-                                border: Border.all(color: Colors.orange, width: 2),
+                                border: Border.all(
+                                  color: Colors.orange,
+                                  width: 2,
+                                ),
                               ),
                               child: ClipOval(
-                                child: recipe.avatarUrl != null && recipe.avatarUrl!.isNotEmpty
-                                    ? Image.network(recipe.avatarUrl!, fit: BoxFit.cover)
-                                    : const Icon(Icons.person, size: 40, color: Colors.grey),
+                                child:
+                                    recipe.avatarUrl != null &&
+                                        recipe.avatarUrl!.isNotEmpty
+                                    ? Image.network(
+                                        recipe.avatarUrl!,
+                                        fit: BoxFit.cover,
+                                      )
+                                    : const Icon(
+                                        Icons.person,
+                                        size: 40,
+                                        color: Colors.grey,
+                                      ),
                               ),
                             ),
                             const SizedBox(width: 16),
@@ -236,7 +252,11 @@ class _RecipeDetailPageState extends State<RecipeDetailPage> {
                                         ),
                                       ),
                                       const SizedBox(width: 6),
-                                      const Icon(Icons.verified, color: Colors.orange, size: 18),
+                                      const Icon(
+                                        Icons.verified,
+                                        color: Colors.orange,
+                                        size: 18,
+                                      ),
                                     ],
                                   ),
                                   const SizedBox(height: 2),
@@ -250,7 +270,10 @@ class _RecipeDetailPageState extends State<RecipeDetailPage> {
                                   const SizedBox(height: 4),
                                   GestureDetector(
                                     onTap: () async {
-                                      User? userStory = await getIt<GetUserById>().call(recipe.userId);
+                                      User? userStory =
+                                          await getIt<GetUserById>().call(
+                                            recipe.userId,
+                                          );
                                       await Navigator.pushNamed(
                                         context,
                                         AppRoutes.personalUser,
@@ -258,7 +281,10 @@ class _RecipeDetailPageState extends State<RecipeDetailPage> {
                                       );
                                     },
                                     child: Container(
-                                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                      padding: const EdgeInsets.symmetric(
+                                        horizontal: 8,
+                                        vertical: 4,
+                                      ),
                                       decoration: BoxDecoration(
                                         color: Colors.orange.shade100,
                                         borderRadius: BorderRadius.circular(8),
@@ -302,16 +328,23 @@ class _RecipeDetailPageState extends State<RecipeDetailPage> {
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                         children: [
-                          _infoBlock("${recipe.ingredients?.length ?? 0}", "Ingredients"),
+                          _infoBlock(
+                            "${recipe.ingredients?.length ?? 0}",
+                            "Ingredients",
+                          ),
                           _infoBlock("${totalTime}m", "Total Time"),
-                          _infoBlock(recipe.difficulty?.name ?? "N/A", "Difficulty"),
+                          _infoBlock(
+                            recipe.difficulty?.name ?? "N/A",
+                            "Difficulty",
+                          ),
                         ],
                       ),
 
                       const SizedBox(height: 16),
 
                       // --- Description ---
-                      if (recipe.description != null && recipe.description!.isNotEmpty)
+                      if (recipe.description != null &&
+                          recipe.description!.isNotEmpty)
                         Text(
                           recipe.description!,
                           style: const TextStyle(fontSize: 15),
@@ -324,30 +357,38 @@ class _RecipeDetailPageState extends State<RecipeDetailPage> {
                         spacing: 12,
                         runSpacing: 8,
                         children: [
-                          if (recipe.region != null && recipe.region!.isNotEmpty)
+                          if (recipe.region != null &&
+                              recipe.region!.isNotEmpty)
                             _iconText(Icons.place, recipe.region!),
-                          _iconText(Icons.schedule, "Prep: ${recipe.prepTime ?? 0} min"),
-                          _iconText(Icons.local_dining, "Cook: ${recipe.cookTime ?? 0} min"),
+                          _iconText(
+                            Icons.schedule,
+                            "Prep: ${recipe.prepTime ?? 0} min",
+                          ),
+                          _iconText(
+                            Icons.local_dining,
+                            "Cook: ${recipe.cookTime ?? 0} min",
+                          ),
                         ],
                       ),
 
                       const SizedBox(height: 16),
 
                       // --- Categories ---
-                      if (recipe.categories != null && recipe.categories!.isNotEmpty)
+                      if (recipe.categories != null &&
+                          recipe.categories!.isNotEmpty)
                         CategoryListWidget(categories: recipe.categories!),
 
                       const SizedBox(height: 16),
 
                       // --- Video Preview ---
-                      if (recipe.videoUrl != null && recipe.videoUrl!.isNotEmpty)
+                      if (recipe.videoUrl != null &&
+                          recipe.videoUrl!.isNotEmpty)
                         GestureDetector(
                           onTap: () {
                             // // Có thể mở video player riêng nếu bạn muốn
                             // ScaffoldMessenger.of(context).showSnackBar(
                             //   snackBarMessage("Mở video hướng dẫn: ${recipe.videoUrl}"),
                             // );
-
                           },
                           child: Container(
                             decoration: BoxDecoration(
@@ -357,11 +398,19 @@ class _RecipeDetailPageState extends State<RecipeDetailPage> {
                             padding: const EdgeInsets.all(12),
                             child: Row(
                               children: const [
-                                Icon(Icons.play_circle_fill, color: Colors.orange, size: 40),
+                                Icon(
+                                  Icons.play_circle_fill,
+                                  color: Colors.orange,
+                                  size: 40,
+                                ),
                                 SizedBox(width: 8),
-                                Text("Xem video hướng dẫn",
-                                    style: TextStyle(
-                                        fontSize: 16, fontWeight: FontWeight.w500)),
+                                Text(
+                                  "Xem video hướng dẫn",
+                                  style: TextStyle(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                                ),
                               ],
                             ),
                           ),
@@ -401,6 +450,7 @@ class _RecipeDetailPageState extends State<RecipeDetailPage> {
       ),
     );
   }
+
   // --- Widget Follow Button --
   Widget _buildFollowButton(recipe) {
     // Không hiển thị nút nếu là chính mình
@@ -437,7 +487,9 @@ class _RecipeDetailPageState extends State<RecipeDetailPage> {
             backgroundColor: isFollowing ? Colors.grey : Colors.orange,
             foregroundColor: Colors.white,
             padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
           ),
           child: Text(
             isFollowing ? "Đã theo dõi" : "Theo dõi",
@@ -470,17 +522,26 @@ class _RecipeDetailPageState extends State<RecipeDetailPage> {
   Widget _infoBlock(String value, String label) {
     return Column(
       children: [
-        Text(value,
-            style: const TextStyle(
-                fontWeight: FontWeight.bold, fontSize: 17, color: Colors.orange)),
+        Text(
+          value,
+          style: const TextStyle(
+            fontWeight: FontWeight.bold,
+            fontSize: 17,
+            color: Colors.orange,
+          ),
+        ),
         Text(label, style: const TextStyle(color: Colors.black54)),
       ],
     );
   }
 
-  void _showRecipeOption(BuildContext context, int recipeId, {bool isAuthor = false}) async {
+  void _showRecipeOption(
+    BuildContext context,
+    int recipeId, {
+    bool isAuthor = false,
+  }) async {
     final user = await getIt<GetCurrentUser>().call();
-    if(user == null){
+    if (user == null) {
       showLoginRequired(context);
       return;
     }
@@ -512,8 +573,16 @@ class _RecipeDetailPageState extends State<RecipeDetailPage> {
     ];
     if (isAuthor) {
       opts.addAll([
-        BottomSheetOption(icon: const Icon(Icons.edit), title: 'Chỉnh sửa', onTap: () {}),
-        BottomSheetOption(icon: const Icon(Icons.delete_forever), title: 'Xóa', onTap: () {}),
+        BottomSheetOption(
+          icon: const Icon(Icons.edit),
+          title: 'Chỉnh sửa',
+          onTap: () {},
+        ),
+        BottomSheetOption(
+          icon: const Icon(Icons.delete_forever),
+          title: 'Xóa',
+          onTap: () {},
+        ),
       ]);
     }
     await showCustomBottomSheet(context, opts);
