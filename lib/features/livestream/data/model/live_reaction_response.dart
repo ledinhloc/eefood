@@ -1,3 +1,7 @@
+import 'package:json_annotation/json_annotation.dart';
+part 'live_reaction_response.g.dart';
+
+@JsonSerializable()
 class LiveReactionResponse {
   final int id;
   final int liveStreamId;
@@ -17,29 +21,11 @@ class LiveReactionResponse {
     this.createdAt,
   });
 
-  factory LiveReactionResponse.fromJson(Map<String, dynamic> json) {
-    return LiveReactionResponse(
-      id: json['id'] ?? 0,
-      liveStreamId: json['liveStreamId'] ?? 0,
-      emotion: parseFoodEmotion(json['emotion'] ?? 'DELICIOUS'),
-      userId: json['userId'] ?? 0,
-      username: json['username'] ?? '',
-      avatarUrl: json['avatarUrl'] ?? '',
-      createdAt: json['createdAt'] != null
-          ? DateTime.parse(json['createdAt'])
-          : null,
-    );
-  }
+  factory LiveReactionResponse.fromJson(Map<String, dynamic> json)
+    => _$LiveReactionResponseFromJson(json);
+
+  Map<String, dynamic> toJson() => _$LiveReactionResponseToJson(this);
 }
-
-FoodEmotion parseFoodEmotion(String value) {
-  return FoodEmotion.values.firstWhere(
-        (e) => e.name == value,
-    orElse: () => FoodEmotion.DELICIOUS, // default
-  );
-}
-
-
 enum FoodEmotion {
   DELICIOUS,
   LOVE_IT,

@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../data/model/live_comment_response.dart';
 import '../provider/live_comment_cubit.dart';
-import '../provider/streamer_comment_cubit.dart';
+import '../provider/live_comment_state.dart';
 import 'live_comment_item.dart';
 
 class LiveCommentList extends StatelessWidget {
@@ -38,7 +38,7 @@ class LiveCommentList extends StatelessWidget {
             final text = controller.text.trim();
             if (text.isEmpty) return;
 
-            context.read<LiveCommentCubit>().addComment(text);
+            context.read<LiveCommentCubit>().sendComment(text);
             controller.clear();
             _scrollToBottom();
           },
@@ -48,7 +48,7 @@ class LiveCommentList extends StatelessWidget {
   }
 
   Widget _buildStreamerCommentList(BuildContext context) {
-    return BlocBuilder<StreamerCommentCubit, StreamerCommentState>(
+    return BlocBuilder<LiveCommentCubit, LiveCommentState>(
       builder: (context, state) {
         if (state.loading) {
           return const Center(child: CircularProgressIndicator());
@@ -59,7 +59,7 @@ class LiveCommentList extends StatelessWidget {
           onSend: () {
             final text = controller.text.trim();
             if (text.isEmpty) return;
-            context.read<StreamerCommentCubit>().addComment(text);
+            context.read<LiveCommentCubit>().sendComment(text);
             controller.clear();
             _scrollToBottom();
           },
