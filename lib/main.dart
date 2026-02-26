@@ -26,7 +26,6 @@ void main() async {
     ),
   );
   await di.setupDependencies();
-
   runApp(const MyApp());
 }
 

@@ -17,6 +17,7 @@ class CollectionDetailPage extends StatefulWidget {
 
 class _CollectionDetailPageState extends State<CollectionDetailPage> {
   final cubit = getIt<CollectionCubit>();
+
   @override
   void initState() {
     super.initState();
@@ -32,7 +33,7 @@ class _CollectionDetailPageState extends State<CollectionDetailPage> {
 
         if (collection == null) {
           return const Scaffold(
-            body: Center(child: CircularProgressIndicator()),
+            body: Center(child: CircularProgressIndicator(color: Color(0xFFFF8C42))),
           );
         }
 
@@ -40,18 +41,34 @@ class _CollectionDetailPageState extends State<CollectionDetailPage> {
         final posts = collection.posts ?? [];
 
         return Scaffold(
+          backgroundColor: const Color(0xFFF8F8F8),
+
           appBar: AppBar(
-            title: Text(name.isNotEmpty ? name : ''),
+            elevation: 0,
+            backgroundColor: Colors.white,
+            centerTitle: true,
+            title: Text(
+              name.isNotEmpty ? name : '',
+              style: const TextStyle(
+                fontSize: 20,
+                fontWeight: FontWeight.w700,
+                color: Color(0xFF2D3142),
+              ),
+            ),
+            shape: const RoundedRectangleBorder(
+              borderRadius: BorderRadius.vertical(bottom: Radius.circular(20)),
+            ),
             actions: [
               CollectionMoreButton(
                 collection: collection,
-                iconColor: Colors.black,
+                iconColor: Colors.black87,
                 onDeleted: () => Navigator.pop(context),
               ),
             ],
           ),
+
           body: posts.isEmpty
-              ? const Center(child: Text('Chưa có bài post nào'))
+              ? _buildEmptyState()
               : GridView.builder(
                   padding: const EdgeInsets.all(16),
                   gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
@@ -103,23 +120,53 @@ class _CollectionDetailPageState extends State<CollectionDetailPage> {
               await cubit.updateCollection(widget.collectionId, name: newName);
             },
             child: const Text('Lưu'),
+            padding: const EdgeInsets.all(16),
+            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+              crossAxisCount: 2,
+              mainAxisExtent: 230,
+              crossAxisSpacing: 12,
+              mainAxisSpacing: 12,
+            ),
+            itemCount: posts.length,
+            itemBuilder: (context, i) {
+              final post = posts[i];
+              return PostSummaryCard(
+                recipe: post,
+                currentCollectionId: collection.id,
+              );
+            },
           ),
-        ],
-      ),
+        );
+      },
     );
   }
 
-  // 🔹 Xóa bộ sưu tập (xác nhận trước)
-  void _showDeleteConfirmation(BuildContext context, CollectionCubit cubit) {
-    showDialog(
-      context: context,
-      builder: (_) => AlertDialog(
-        title: const Text('Xóa bộ sưu tập'),
-        content: const Text('Bạn có chắc muốn xóa bộ sưu tập này không?'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Hủy'),
+  // UI khi chưa có bài post
+  Widget _buildEmptyState() {
+    return Center(
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Container(
+            padding: const EdgeInsets.all(20),
+            decoration: BoxDecoration(
+              color: const Color(0xFFFF8C42).withOpacity(0.15),
+              shape: BoxShape.circle,
+            ),
+            child: const Icon(
+              Icons.photo_library_outlined,
+              color: Color(0xFFFF8C42),
+              size: 55,
+            ),
+          ),
+          const SizedBox(height: 16),
+          const Text(
+            "Chưa có bài viết nào",
+            style: TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.w700,
+              color: Color(0xFF2D3142),
+            ),
           ),
           ElevatedButton(
             style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
@@ -130,6 +177,15 @@ class _CollectionDetailPageState extends State<CollectionDetailPage> {
                 Navigator.pop(context); // quay về trang trước
             },
             child: const Text('Xóa'),
+
+          const SizedBox(height: 6),
+          Text(
+            "Hãy thêm món ăn yêu thích của bạn!",
+            style: TextStyle(
+              fontSize: 15,
+              color: Colors.grey.shade600,
+            ),
+
           ),
         ],
       ),
