@@ -9,6 +9,8 @@ import 'package:eefood/features/auth/presentation/screens/reset_password_page.da
 import 'package:eefood/features/auth/presentation/screens/splash_page.dart';
 import 'package:eefood/features/auth/presentation/screens/verify_otp_page.dart';
 import 'package:eefood/features/auth/presentation/screens/welcome_page.dart';
+import 'package:eefood/features/chatbot/presentation/provider/chatbot_cubit.dart';
+import 'package:eefood/features/chatbot/presentation/screens/chatbot_main_srcreen.dart';
 import 'package:eefood/features/noti/presentation/screens/notification_screen.dart';
 import 'package:eefood/features/noti/presentation/screens/ntofication_settings_screen.dart';
 import 'package:eefood/features/post/presentation/provider/follow_cubit.dart';
@@ -17,7 +19,6 @@ import 'package:eefood/features/post/presentation/provider/story_setting_cubit.d
 import 'package:eefood/features/post/presentation/screens/collection_detail_page.dart';
 import 'package:eefood/features/post/presentation/screens/collection_list_page.dart';
 import 'package:eefood/features/post/presentation/screens/feed_screen.dart';
-import 'package:eefood/features/post/presentation/widgets/comment/comment_reaction/comment_react_list.dart';
 import 'package:eefood/features/post/presentation/widgets/follow/follow_list_page.dart';
 import 'package:eefood/features/post/presentation/widgets/post/image_search/image_search_page.dart';
 import 'package:eefood/features/post/presentation/widgets/story/crud_story/gallery_picker_page.dart';
@@ -89,6 +90,8 @@ class AppRoutes {
 
   static const storySettingPage = '/storySettingPage';
   static const recipeApprovalDetail = '/recipe-approval-detail';
+
+  static const chatBotScreen = '/chatBotScreen';
 
   // Danh sách các widget cho BottomNavigationBar trong main page
   static List<Widget> widgetOptions = <Widget>[
@@ -243,6 +246,16 @@ class AppRoutes {
       final args =
           ModalRoute.of(context)!.settings.arguments as Map<String, dynamic>;
       return ComingSoonPage(featureName: args['featureName']);
+    },
+    chatBotScreen: (context) {
+      final args =
+          ModalRoute.of(context)!.settings.arguments as Map<String, dynamic>;
+      final userId = args['userId'];
+
+      return BlocProvider(
+        create: (_) => getIt<ChatbotCubit>(),
+        child: ChatbotMainScreen(userId: userId),
+      );
     },
   };
 }

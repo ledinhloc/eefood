@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+
 import '../../../../core/di/injection.dart';
 import '../provider/collection_cubit.dart';
 import '../provider/collection_state.dart';
@@ -69,6 +70,56 @@ class _CollectionDetailPageState extends State<CollectionDetailPage> {
           body: posts.isEmpty
               ? _buildEmptyState()
               : GridView.builder(
+                  padding: const EdgeInsets.all(16),
+                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                    crossAxisCount: 2,
+                    mainAxisExtent: 220,
+                    crossAxisSpacing: 10,
+                    mainAxisSpacing: 10,
+                  ),
+                  itemCount: posts.length,
+                  itemBuilder: (context, index) {
+                    final post = posts[index];
+                    return PostSummaryCard(
+                      recipe: post,
+                      currentCollectionId: collection.id,
+                    );
+                  },
+                ),
+        );
+      },
+    );
+  }
+
+  // 🔹 Đổi tên bộ sưu tập
+  void _showRenameDialog(
+    BuildContext context,
+    CollectionCubit cubit,
+    String currentName,
+  ) {
+    final controller = TextEditingController(text: currentName);
+
+    showDialog(
+      context: context,
+      builder: (_) => AlertDialog(
+        title: const Text('Đổi tên bộ sưu tập'),
+        content: TextField(
+          controller: controller,
+          decoration: const InputDecoration(hintText: 'Nhập tên mới'),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Hủy'),
+          ),
+          ElevatedButton(
+            onPressed: () async {
+              final newName = controller.text.trim();
+              if (newName.isEmpty) return;
+              Navigator.pop(context);
+              await cubit.updateCollection(widget.collectionId, name: newName);
+            },
+            child: const Text('Lưu'),
             padding: const EdgeInsets.all(16),
             gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
               crossAxisCount: 2,
@@ -117,6 +168,16 @@ class _CollectionDetailPageState extends State<CollectionDetailPage> {
               color: Color(0xFF2D3142),
             ),
           ),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+            onPressed: () async {
+              Navigator.pop(context); // đóng dialog
+              await cubit.deleteCollection(widget.collectionId);
+              if (context.mounted)
+                Navigator.pop(context); // quay về trang trước
+            },
+            child: const Text('Xóa'),
+
           const SizedBox(height: 6),
           Text(
             "Hãy thêm món ăn yêu thích của bạn!",
@@ -124,6 +185,7 @@ class _CollectionDetailPageState extends State<CollectionDetailPage> {
               fontSize: 15,
               color: Colors.grey.shade600,
             ),
+
           ),
         ],
       ),
