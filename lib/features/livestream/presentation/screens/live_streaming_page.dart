@@ -9,6 +9,7 @@ import '../../../../core/di/injection.dart';
 import '../../../../core/widgets/snack_bar.dart';
 import '../../data/model/live_reaction_response.dart';
 import '../../data/model/live_stream_response.dart';
+import '../provider/block_user_cubit.dart';
 import '../provider/live_reaction_cubit.dart';
 import '../provider/live_reaction_state.dart';
 import '../provider/live_stream_cubit.dart';
@@ -55,11 +56,11 @@ class _LiveStreamScreenState extends State<LiveStreamScreen> {
     context.read<LiveViewerCubit>().joinLiveStream();
 
     // Timer cho UI refresh (LiveStatusTimer)
-    _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
-      if (mounted) {
-        setState(() {});
-      }
-    });
+    // _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
+    //   if (mounted) {
+    //     setState(() {});
+    //   }
+    // });
   }
 
   Future<void> _ensureTracksReady() async {
@@ -76,6 +77,8 @@ class _LiveStreamScreenState extends State<LiveStreamScreen> {
           cameraPosition: state.isFrontCamera
               ? CameraPosition.front
               : CameraPosition.back,
+          params: VideoParametersPresets.h540_169,
+          maxFrameRate: 24,
         ),
       );
       print(' New video track created: ${videoTrack.sid}');
@@ -152,13 +155,17 @@ class _LiveStreamScreenState extends State<LiveStreamScreen> {
 
   void _showViewerList() {
     final viewerCubit = context.read<LiveViewerCubit>();
+    final blockCubit = context.read<BlockUserCubit>();
     showModalBottomSheet(
       context: context,
       backgroundColor: Colors.transparent,
       isScrollControlled: true,
       builder: (context) {
-        return BlocProvider.value(
-            value: viewerCubit,
+        return MultiBlocProvider(
+          providers: [
+            BlocProvider.value(value: viewerCubit),
+            BlocProvider.value(value: blockCubit),
+          ],
           child: const ViewerListBottomSheet(),
         );
       },

@@ -44,9 +44,9 @@ class _LiveViewerScreenState extends State<LiveViewerScreen> {
     context.read<LiveViewerCubit>().joinLiveStream();
 
     // Timer for UI updates
-    _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
-      if (mounted) setState(() {});
-    });
+    // _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
+    //   if (mounted) setState(() {});
+    // });
   }
 
   void _handleStreamEnded(String? message) {
