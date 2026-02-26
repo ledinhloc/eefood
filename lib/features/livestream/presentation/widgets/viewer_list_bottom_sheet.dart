@@ -1,4 +1,6 @@
 // presentation/widgets/viewer_list_bottom_sheet.dart
+import 'package:eefood/core/widgets/custom_bottom_sheet.dart';
+import 'package:eefood/features/livestream/presentation/provider/block_user_cubit.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:cached_network_image/cached_network_image.dart';
@@ -89,6 +91,21 @@ class ViewerListBottomSheet extends StatelessWidget {
                             fontSize: 12,
                           ),
                         ),
+                        trailing: IconButton(
+                            onPressed: () {
+                              final  blockUserCubit = context.read<BlockUserCubit>();
+                              showCustomBottomSheet(context,
+                                [
+                                  BottomSheetOption(
+                                      icon: const Icon(Icons.block, color: Colors.red,),
+                                      title: "Chặn người này",
+                                      onTap: () {
+                                        blockUserCubit.blockUser(viewer.userId);
+                                      },
+                                  )
+                                ]);
+                            },
+                            icon: const Icon(Icons.more_vert, color: Colors.white,)),
                       );
                     },
                   ),

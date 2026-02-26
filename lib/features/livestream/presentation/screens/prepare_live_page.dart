@@ -8,6 +8,7 @@ import '../../../../core/widgets/snack_bar.dart';
 import '../../domain/repository/live_comment_repo.dart';
 import '../../domain/repository/live_reaction_repo.dart';
 import '../../domain/repository/live_viewer_repository.dart';
+import '../provider/block_user_cubit.dart';
 import '../provider/live_comment_cubit.dart';
 import '../provider/live_reaction_cubit.dart';
 import '../provider/live_stream_cubit.dart';
@@ -131,6 +132,9 @@ class _LivePrepScreenState extends State<LivePrepScreen> {
                             getIt<LiveViewerRepository>(),
                             startState.stream!.id,
                           ),
+                        ),
+                        BlocProvider(
+                          create: (_) => BlockUserCubit(),
                         ),
                       ],
                       child: LiveStreamScreen(stream: startState.stream!),

@@ -1,2 +1,5 @@
 NOTE
 1. Định nghĩa router trong app_routes
+
+command:
+- auto create file: flutter pub run build_runner watch --delete-conflicting-outputs

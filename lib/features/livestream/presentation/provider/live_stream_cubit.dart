@@ -105,6 +105,7 @@ class LiveStreamCubit extends Cubit<LiveStreamState> {
       state.isFrontCamera ? CameraPosition.back : CameraPosition.front;
 
       await state.localVideoTrack!.stop();
+      await state.localVideoTrack!.dispose();
 
       final newTrack = await LocalVideoTrack.createCameraTrack(
         CameraCaptureOptions(cameraPosition: newPosition),
@@ -171,7 +172,9 @@ class LiveStreamCubit extends Cubit<LiveStreamState> {
   Future<void> disconnect() async {
     state.room?.removeListener(_onRoomUpdate);
     await state.localVideoTrack?.stop();
+    await state.localVideoTrack?.dispose();
     await state.localAudioTrack?.stop();
+    await state.localAudioTrack?.dispose();
     await state.room?.disconnect();
     await state.room?.dispose();
     await _cameraController?.dispose();
