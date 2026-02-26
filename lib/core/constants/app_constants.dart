@@ -6,6 +6,16 @@ import 'package:eefood/features/post/data/models/user_story_model.dart';
 import 'package:eefood/features/recipe/domain/entities/recipe.dart';
 
 class AppConstants {
+  static final List<String> chatBubbleMessages = [
+    "Hôm nay ăn gì? 🍜",
+    "Tôi có thể giúp bạn! ✨",
+    "Thử công thức mới nhé? 🥗",
+    "Gợi ý món ngon cho bạn 🍳",
+    "Hỏi tôi bất cứ điều gì! 💬",
+    "Bữa tối hôm nay ra sao? 🍽️",
+    "Tôi biết 1000+ công thức 👨‍🍳",
+    "Muốn học nấu ăn không? 📖",
+  ];
   static final PostModel samplePost = PostModel(
     id: 1,
     userId: 10,
@@ -74,7 +84,7 @@ class AppConstants {
     "Ngôn từ gây thù ghét",
     "Nội dung phản cảm",
     "Thông tin sai lệch",
-    "Khác"
+    "Khác",
   ];
   static final List<UserStoryModel> userStories = [
     UserStoryModel(
