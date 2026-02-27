@@ -33,7 +33,9 @@ class _CollectionDetailPageState extends State<CollectionDetailPage> {
 
         if (collection == null) {
           return const Scaffold(
-            body: Center(child: CircularProgressIndicator(color: Color(0xFFFF8C42))),
+            body: Center(
+              child: CircularProgressIndicator(color: Color(0xFFFF8C42)),
+            ),
           );
         }
 
@@ -116,28 +118,14 @@ class _CollectionDetailPageState extends State<CollectionDetailPage> {
             onPressed: () async {
               final newName = controller.text.trim();
               if (newName.isEmpty) return;
+
               Navigator.pop(context);
               await cubit.updateCollection(widget.collectionId, name: newName);
             },
             child: const Text('Lưu'),
-            padding: const EdgeInsets.all(16),
-            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-              crossAxisCount: 2,
-              mainAxisExtent: 230,
-              crossAxisSpacing: 12,
-              mainAxisSpacing: 12,
-            ),
-            itemCount: posts.length,
-            itemBuilder: (context, i) {
-              final post = posts[i];
-              return PostSummaryCard(
-                recipe: post,
-                currentCollectionId: collection.id,
-              );
-            },
           ),
-        );
-      },
+        ],
+      ),
     );
   }
 
@@ -177,15 +165,11 @@ class _CollectionDetailPageState extends State<CollectionDetailPage> {
                 Navigator.pop(context); // quay về trang trước
             },
             child: const Text('Xóa'),
-
+          ),
           const SizedBox(height: 6),
           Text(
             "Hãy thêm món ăn yêu thích của bạn!",
-            style: TextStyle(
-              fontSize: 15,
-              color: Colors.grey.shade600,
-            ),
-
+            style: TextStyle(fontSize: 15, color: Colors.grey.shade600),
           ),
         ],
       ),
