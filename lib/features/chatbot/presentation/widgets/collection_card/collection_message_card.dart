@@ -1,9 +1,10 @@
 import 'package:cached_network_image/cached_network_image.dart';
-import 'package:eefood/app_routes.dart';
 import 'package:eefood/core/di/injection.dart';
 import 'package:eefood/features/post/data/models/collection_model.dart';
 import 'package:eefood/features/post/presentation/provider/collection_cubit.dart';
+import 'package:eefood/features/post/presentation/screens/collection_detail_page.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 
 class CollectionMessageCard extends StatelessWidget {
   final CollectionModel collectionModel;
@@ -15,13 +16,16 @@ class CollectionMessageCard extends StatelessWidget {
 
     return InkWell(
       onTap: () {
-        Navigator.pushNamed(
+        final collectionCubit = getIt<CollectionCubit>();
+
+        Navigator.push(
           context,
-          AppRoutes.collectionDetail,
-          arguments: {
-            'collectionCubit': getIt<CollectionCubit>(),
-            'collectionId': collectionModel.id,
-          },
+          MaterialPageRoute(
+            builder: (_) => BlocProvider(
+              create: (_) => collectionCubit..fetchCollectionsByUser(),
+              child: CollectionDetailPage(collectionId: collectionModel.id),
+            ),
+          ),
         );
       },
       child: Padding(

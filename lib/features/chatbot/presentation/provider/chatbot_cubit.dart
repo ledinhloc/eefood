@@ -21,6 +21,44 @@ class ChatbotCubit extends Cubit<ChatbotState> {
     }
   }
 
+  Future<void> deleteChatMessage(int messageId) async {
+    _safeEmit(state.copyWith(isLoading: true, clearError: true));
+    try {
+      await repository.deleteChatMessage(messageId);
+
+      final index = state.messages.indexWhere((msg) => msg.id == messageId);
+
+      if (index == -1) {
+        _safeEmit(
+          state.copyWith(
+            isLoading: false,
+            error: "Không tìm thấy message để xóa",
+          ),
+        );
+        return;
+      }
+
+      final updatedMessages = state.messages.sublist(0, index);
+
+      _safeEmit(
+        state.copyWith(
+          messages: updatedMessages,
+          isLoading: false,
+          clearError: true,
+        ),
+      );
+    }
+    catch(e) {
+      logger.e("Không thể xóa lịch sử chat: $e");
+      _safeEmit(
+        state.copyWith(
+          isLoading: false,
+          error: 'Không thể xóa lịch sử chat: $e',
+        ),
+      );
+    }
+  }
+
   Future<void> loadChatHistory(int userId) async {
     _safeEmit(state.copyWith(isLoading: true, clearError: true));
     try {

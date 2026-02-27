@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:eefood/core/di/injection.dart';
 import 'package:eefood/core/utils/file_upload.dart';
 import 'package:eefood/core/utils/media_picker.dart';
+import 'package:eefood/core/utils/speech_helper.dart';
 import 'package:eefood/core/widgets/custom_bottom_sheet.dart';
 import 'package:eefood/features/chatbot/presentation/provider/chatbot_cubit.dart';
 import 'package:eefood/features/chatbot/presentation/provider/chatbot_state.dart';
@@ -54,7 +55,7 @@ class _ChatbotInputState extends State<ChatbotInput> {
     super.dispose();
   }
 
-  void _handleSendMessage() {
+  void _handleSendMessage() async {
     final message = _textController.text.trim();
     final cubit = context.read<ChatbotCubit>();
     final hasSelectedPosts = cubit.state.hasSelectedPosts;
@@ -72,6 +73,8 @@ class _ChatbotInputState extends State<ChatbotInput> {
         _imageUrl = null;
       });
     }
+
+    await cubit.loadChatHistory(widget.userId!);
   }
 
   Future<void> _pickImage() async {
@@ -202,8 +205,13 @@ class _ChatbotInputState extends State<ChatbotInput> {
     );
   }
 
-  void _handlePickImage() {
-    print('Pick image');
+  Future<void> _handleVoiceSearch() async {
+    final helper = SpeechHelper();
+    final message = await helper.listenOnceWithUI(context);
+    if (message != null && context.mounted) {
+      setState(() => _textController.text = message);
+    }
+    _handleSendMessage();
   }
 
   @override
@@ -211,7 +219,7 @@ class _ChatbotInputState extends State<ChatbotInput> {
     return SafeArea(
       top: false,
       child: Container(
-        color: Colors.white,
+        color: Colors.transparent,
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
@@ -295,11 +303,14 @@ class _ChatbotInputState extends State<ChatbotInput> {
                             ),
                           ),
                           if (!_hasText)
-                            const Padding(
-                              padding: EdgeInsets.symmetric(horizontal: 4),
-                              child: Icon(
-                                Icons.mic_none_rounded,
-                                color: Colors.grey,
+                            GestureDetector(
+                              onTap: _handleVoiceSearch,
+                              child: const Padding(
+                                padding: EdgeInsets.symmetric(horizontal: 4),
+                                child: Icon(
+                                  Icons.mic_none_rounded,
+                                  color: Colors.grey,
+                                ),
                               ),
                             ),
                           const SizedBox(width: 2),

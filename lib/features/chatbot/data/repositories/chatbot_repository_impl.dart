@@ -14,6 +14,15 @@ class ChatbotRepositoryImpl extends ChatbotRepository {
   ChatbotRepositoryImpl({required this.dio});
 
   @override
+  Future<void> deleteChatMessage(int id) async {
+    try {
+      await dio.delete('/v1/chatbot/$id');
+    } catch (e) {
+      throw Exception("Failed to delete  $e");
+    }
+  }
+
+  @override
   Future<List<PostModel>> getRecentPostsFromHistory() async {
     try {
       final response = await dio.get('/v1/chatbot/recent-data');

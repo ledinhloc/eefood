@@ -80,9 +80,10 @@ class _ChatbotMainScreenState extends State<ChatbotMainScreen> {
               },
               buildWhen: (prev, curr) {
                 if (prev.isLoading != curr.isLoading) return true;
-                if (prev.messages != curr.messages) return true;  
+                if (prev.messages != curr.messages) return true;
                 if (prev.streaming != curr.streaming) return true;
-                if (prev.animatingMessageIndex != curr.animatingMessageIndex) return true;
+                if (prev.animatingMessageIndex != curr.animatingMessageIndex)
+                  return true;
                 return false;
               },
               builder: (context, state) {
@@ -118,6 +119,7 @@ class _ChatbotMainScreenState extends State<ChatbotMainScreen> {
 
                     return ChatbotMessage(
                       key: ValueKey('msg_$index'),
+                      messageId: message.id,
                       message: message.message,
                       role: message.role,
                       data: message.data,
