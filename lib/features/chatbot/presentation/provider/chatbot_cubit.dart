@@ -22,7 +22,7 @@ class ChatbotCubit extends Cubit<ChatbotState> {
   }
 
   Future<void> deleteChatMessage(int messageId) async {
-    _safeEmit(state.copyWith(isLoading: true, clearError: true));
+    //_safeEmit(state.copyWith(isLoading: true, clearError: true));
     try {
       await repository.deleteChatMessage(messageId);
 
@@ -43,7 +43,7 @@ class ChatbotCubit extends Cubit<ChatbotState> {
       _safeEmit(
         state.copyWith(
           messages: updatedMessages,
-          isLoading: false,
+          //isLoading: false,
           clearError: true,
         ),
       );
