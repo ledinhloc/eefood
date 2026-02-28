@@ -21,4 +21,5 @@ Map<String, dynamic> _$ChatbotResponseToJson(ChatbotResponse instance) =>
       'role': instance.role,
       'data': instance.data,
       'meta': instance.meta,
+      'isStatusMessage': instance.isStatusMessage,
     };

@@ -9,7 +9,7 @@ part of 'block_user_response.dart';
 BlockUserResponse _$BlockUserResponseFromJson(Map<String, dynamic> json) =>
     BlockUserResponse(
       blockedUserId: (json['blockedUserId'] as num).toInt(),
-      createAt: json['createAt'] as String,
+      createdAt: json['createdAt'] as String,
       username: json['username'] as String?,
       avatarUrl: json['avatarUrl'] as String?,
       email: json['email'] as String?,
@@ -18,7 +18,7 @@ BlockUserResponse _$BlockUserResponseFromJson(Map<String, dynamic> json) =>
 Map<String, dynamic> _$BlockUserResponseToJson(BlockUserResponse instance) =>
     <String, dynamic>{
       'blockedUserId': instance.blockedUserId,
-      'createAt': instance.createAt,
+      'createdAt': instance.createdAt,
       'username': instance.username,
       'avatarUrl': instance.avatarUrl,
       'email': instance.email,

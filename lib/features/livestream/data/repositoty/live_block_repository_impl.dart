@@ -8,7 +8,7 @@ class LiveBlockRepositoryImpl extends LiveBlockRepository {
 
   @override
   Future<List<BlockUserResponse>> getBlockedUsers() async {
-    final res = await dio.get('/v1/livestreams/block/list');
+    final res = await dio.get('/v1/livestreams/block');
 
     final data = res.data['data'] as List;
     return data

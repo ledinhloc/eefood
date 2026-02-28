@@ -4,13 +4,13 @@ part 'block_user_response.g.dart';
 @JsonSerializable()
 class BlockUserResponse{
   final int blockedUserId;
-  final String createAt;
+  final String createdAt;
   final String? username;
   final String? avatarUrl;
   final String? email;
   BlockUserResponse({
     required this.blockedUserId,
-    required this.createAt,
+    required this.createdAt,
     this.username,
     this.avatarUrl,
     this.email

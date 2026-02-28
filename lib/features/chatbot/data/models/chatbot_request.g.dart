@@ -17,8 +17,12 @@ ChatbotRequest _$ChatbotRequestFromJson(Map<String, dynamic> json) =>
               json['location'] as Map<String, dynamic>,
             ),
       time: json['time'] as String?,
-      postId: json['postId'] as List<int>?,
-      recipeId: json['recipeId'] as List<int>?,
+      postId: (json['postId'] as List<dynamic>?)
+          ?.map((e) => (e as num).toInt())
+          .toList(),
+      recipeId: (json['recipeId'] as List<dynamic>?)
+          ?.map((e) => (e as num).toInt())
+          .toList(),
       userId: (json['userId'] as num?)?.toInt(),
     );
 
