@@ -1,8 +1,14 @@
+import 'package:eefood/core/widgets/custom_bottom_sheet.dart';
+import 'package:eefood/core/widgets/snack_bar.dart';
+import 'package:eefood/features/chatbot/presentation/provider/chatbot_cubit.dart';
 import 'package:eefood/features/chatbot/presentation/widgets/streaming_message/streaming_data_card.dart';
 import 'package:eefood/features/chatbot/presentation/widgets/typing_text.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 
 class ChatbotMessage extends StatelessWidget {
+  final int? messageId;
   final String? message;
   final String role;
   final List<dynamic>? data;
@@ -11,6 +17,7 @@ class ChatbotMessage extends StatelessWidget {
 
   const ChatbotMessage({
     super.key,
+    this.messageId,
     this.message,
     required this.role,
     this.data,
@@ -22,6 +29,42 @@ class ChatbotMessage extends StatelessWidget {
   String? get _metaType => meta?['tool'] as String?;
   bool get _isError => _metaType == 'ERROR';
   String? get _imageUrl => meta?['imageUrl'] as String?;
+
+  Future<void> _showOptionsBottomSheet(BuildContext context) async {
+    final cubit = context.read<ChatbotCubit>();
+    final options = <BottomSheetOption>[];
+    
+    if (message != null && message!.isNotEmpty) {
+      options.add(
+        BottomSheetOption(
+          icon: const Icon(Icons.copy_rounded, color: Colors.blue),
+          title: 'Sao chép nội dung',
+          onTap: () async {
+            await Clipboard.setData(ClipboardData(text: message!));
+            if (context.mounted) {
+              showCustomSnackBar(context, "Đã sao chép vào bộ nhớ tạm");
+            }
+          },
+        ),
+      );
+    }
+
+    if (messageId != null) {
+      options.add(
+        BottomSheetOption(
+          icon: const Icon(Icons.delete_outline_rounded, color: Colors.red),
+          title: 'Xóa tin nhắn',
+          onTap: () {
+            cubit.deleteChatMessage(messageId!);
+          },
+        ),
+      );
+    }
+
+    if (options.isEmpty) return;
+
+    await showCustomBottomSheet(context, options);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -55,6 +98,7 @@ class ChatbotMessage extends StatelessWidget {
                       text: message!,
                       isUser: _isUser,
                       animate: animate,
+                      onDeleted: () => _showOptionsBottomSheet(context),
                     ),
                   if (data != null && data!.isNotEmpty) ...[
                     const SizedBox(height: 8),
@@ -206,42 +250,47 @@ class _MessageBubble extends StatelessWidget {
   final String text;
   final bool isUser;
   final bool animate;
+  final VoidCallback onDeleted;
 
   const _MessageBubble({
     required this.text,
     required this.isUser,
     required this.animate,
+    required this.onDeleted,
   });
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      constraints: const BoxConstraints(maxWidth: 320),
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-      decoration: BoxDecoration(
-        color: isUser ? Colors.deepOrange : Colors.white,
-        borderRadius: BorderRadius.only(
-          topLeft: const Radius.circular(20),
-          topRight: const Radius.circular(20),
-          bottomLeft: Radius.circular(isUser ? 20 : 4),
-          bottomRight: Radius.circular(isUser ? 4 : 20),
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.06),
-            blurRadius: 8,
-            offset: const Offset(0, 2),
+    return GestureDetector(
+      onLongPress: onDeleted,
+      child: Container(
+        constraints: const BoxConstraints(maxWidth: 320),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        decoration: BoxDecoration(
+          color: isUser ? Colors.deepOrange : Colors.white,
+          borderRadius: BorderRadius.only(
+            topLeft: const Radius.circular(20),
+            topRight: const Radius.circular(20),
+            bottomLeft: Radius.circular(isUser ? 20 : 4),
+            bottomRight: Radius.circular(isUser ? 4 : 20),
           ),
-        ],
-      ),
-      child: TypingText(
-        text: text,
-        // Animate chỉ lần đầu khi message được commit
-        animate: !isUser && animate,
-        style: TextStyle(
-          color: isUser ? Colors.white : Colors.black87,
-          fontSize: 15,
-          height: 1.5,
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.06),
+              blurRadius: 8,
+              offset: const Offset(0, 2),
+            ),
+          ],
+        ),
+        child: TypingText(
+          text: text,
+          // Animate chỉ lần đầu khi message được commit
+          animate: !isUser && animate,
+          style: TextStyle(
+            color: isUser ? Colors.white : Colors.black87,
+            fontSize: 15,
+            height: 1.5,
+          ),
         ),
       ),
     );

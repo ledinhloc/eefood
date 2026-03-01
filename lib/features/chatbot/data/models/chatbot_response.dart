@@ -4,6 +4,7 @@ part 'chatbot_response.g.dart';
 
 @JsonSerializable()
 class ChatbotResponse {
+  final int? id;
   final String? message;
   final String role;
   final List<dynamic>? data;
@@ -11,6 +12,7 @@ class ChatbotResponse {
   final bool? isStatusMessage;
 
   ChatbotResponse({
+    this.id,
     this.message,
     required this.role,
     this.data,
