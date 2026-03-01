@@ -94,6 +94,37 @@ class LiveStreamWebSocketManager {
     developer.log('Subscribed to: $destination', name: logName);
   }
 
+  void subscribeUserQueue<T>({
+    required String queue,
+    required T Function(Map<String, dynamic>) fromJson,
+    required void Function(T) onData,
+    required String logPrefix,
+  }) {
+
+    final destination = '/user/queue/$queue';
+
+    _stompClient?.subscribe(
+      destination: destination,
+      callback: (StompFrame frame) {
+        if (frame.body != null) {
+          try {
+            final json = jsonDecode(frame.body!);
+            final data = fromJson(Map<String, dynamic>.from(json));
+
+            developer.log('Received USER $logPrefix', name: logName);
+
+            onData(data);
+          } catch (e) {
+            developer.log('Error parsing USER $logPrefix: $e', name: logName);
+            onError?.call('Error parsing USER $logPrefix: $e');
+          }
+        }
+      },
+    );
+
+    developer.log('Subscribed to USER queue: $destination', name: logName);
+  }
+
   void disconnect() {
     developer.log('Disconnecting from stream $liveStreamId', name: logName);
     _stompClient?.deactivate();

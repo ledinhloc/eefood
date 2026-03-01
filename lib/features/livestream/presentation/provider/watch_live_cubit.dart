@@ -68,14 +68,22 @@ class WatchLiveCubit extends Cubit<WatchLiveState> {
       topic: 'livestream',
       fromJson: LiveStreamEndMessage.fromJson,
       onData: _handleStreamEnded,
-      logPrefix: 'stream-end',
+      logPrefix: 'stream-end-broadcast',
+    );
+
+    _wsManager.subscribeUserQueue<LiveStreamEndMessage>(
+      queue: 'livestream',
+      fromJson: LiveStreamEndMessage.fromJson,
+      onData: _handleStreamEnded,
+      logPrefix: 'stream-end-user',
     );
   }
 
-  void _handleStreamEnded(LiveStreamEndMessage message) {
+  void _handleStreamEnded(LiveStreamEndMessage message) async {
     developer.log('Stream ended: ${message.message}', name: 'WatchLive');
 
     if (message.type == 'STREAM_ENDED') {
+      await disconnect();
       _safeEmit(state.copyWith(
         isStreamEnded: true,
         streamEndMessage: message.message,
