@@ -1,4 +1,5 @@
 import 'dart:async';
+
 import 'package:eefood/app_routes.dart';
 import 'package:eefood/core/di/injection.dart';
 import 'package:eefood/core/widgets/snack_bar.dart';
@@ -6,6 +7,7 @@ import 'package:eefood/features/auth/data/models/otp_model.dart';
 import 'package:eefood/features/auth/data/models/result_model.dart';
 import 'package:eefood/features/auth/domain/usecases/auth_usecases.dart';
 import 'package:eefood/features/auth/presentation/widgets/auth_button.dart';
+import 'package:eefood/l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
 import 'package:lottie/lottie.dart';
 import 'package:pinput/pinput.dart';
@@ -26,6 +28,7 @@ class VerificationOtpPage extends StatefulWidget {
 
 class _VerificationOtpPageState extends State<VerificationOtpPage> {
   final VerifyOtp _verifyOtp = getIt<VerifyOtp>();
+  final ForgotPassword _forgotPassword = getIt<ForgotPassword>();
   final TextEditingController _otpController = TextEditingController();
   Timer? _timer;
   int _remainingSeconds = 60;
@@ -52,31 +55,63 @@ class _VerificationOtpPageState extends State<VerificationOtpPage> {
     });
   }
 
+  void _fetchApiResentOtp() async {
+    try {
+      Result<bool> isResent = await _forgotPassword(widget.email);
+      if (isResent.isFailure) {
+        showCustomSnackBar(context, isResent.error!, isError: true);
+      } else {
+        _startCountdown();
+      }
+    } catch (e) {
+      showCustomSnackBar(context, 'Resent OTP failed $e', isError: true);
+    }
+  }
+
   void _fetchApiVerifyOtp() async {
+    final l10n = AppLocalizations.of(context)!;
     final otpCode = _otpController.text;
+
     if (otpCode.length != 6) {
-      showCustomSnackBar(context,'OTP không hợp lệ',isError: true);
+      showCustomSnackBar(
+        context,
+        l10n.otpInvalid,
+        isError: true,
+      ); // key: otpInvalid
       return;
     }
     try {
-      Result<bool> isVerified = await _verifyOtp(widget.email, otpCode, widget.otpType);
+      Result<bool> isVerified = await _verifyOtp(
+        widget.email,
+        otpCode,
+        widget.otpType,
+      );
       if (isVerified.isFailure) {
-        showCustomSnackBar(context,isVerified.error!,isError: true);
-      } 
-      else {
-        showCustomSnackBar(context,'Verify otp successfully',isError: false);
-        widget.otpType == OtpType.FORGOT_PASSWORD 
-        ?
-          Navigator.pushNamed(context, AppRoutes.resetPassword,
-            arguments: {
-              'email': widget.email,
-              'otpCode': otpCode,
-            },
-          )
-        : Navigator.pushNamedAndRemoveUntil(context,AppRoutes.login,(route) => false);
+        showCustomSnackBar(context, isVerified.error!, isError: true);
+      } else {
+        showCustomSnackBar(
+          context,
+          l10n.otpVerifiedSuccess, // key: otpVerifiedSuccess
+          isError: false,
+        );
+        widget.otpType == OtpType.FORGOT_PASSWORD
+            ? Navigator.pushNamed(
+                context,
+                AppRoutes.resetPassword,
+                arguments: {'email': widget.email, 'otpCode': otpCode},
+              )
+            : Navigator.pushNamedAndRemoveUntil(
+                context,
+                AppRoutes.login,
+                (route) => false,
+              );
       }
     } catch (e) {
-      showCustomSnackBar(context,'Verify OTP failed $e',isError: true);
+      showCustomSnackBar(
+        context,
+        l10n.otpVerifiedFailed, // key: otpVerifiedFailed
+        isError: true,
+      );
     }
   }
 
@@ -89,23 +124,23 @@ class _VerificationOtpPageState extends State<VerificationOtpPage> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    final theme = Theme.of(context);
     const focusedBorderColor = Color.fromRGBO(23, 171, 144, 1);
     const fillColor = Color.fromRGBO(243, 246, 249, 0);
 
     final defaultPinTheme = PinTheme(
       width: 50,
       height: 50,
-      textStyle: const TextStyle(
-        fontSize: 22,
-        color: Color.fromRGBO(30, 60, 87, 1),
-      ),
+      textStyle: TextStyle(fontSize: 22, color: theme.colorScheme.onSurface),
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(10),
-        border: Border.all(color: const Color.fromARGB(102, 134, 137, 137)),
+        border: Border.all(color: theme.colorScheme.outline.withOpacity(0.4)),
       ),
     );
 
     return Scaffold(
+      backgroundColor: theme.scaffoldBackgroundColor,
       body: SafeArea(
         child: Column(
           children: [
@@ -113,6 +148,7 @@ class _VerificationOtpPageState extends State<VerificationOtpPage> {
               child: SingleChildScrollView(
                 child: Column(
                   children: [
+                    // Back button
                     Padding(
                       padding: const EdgeInsets.symmetric(
                         vertical: 7,
@@ -122,11 +158,16 @@ class _VerificationOtpPageState extends State<VerificationOtpPage> {
                         children: [
                           IconButton(
                             onPressed: () => Navigator.maybePop(context),
-                            icon: const Icon(Icons.arrow_back),
+                            icon: Icon(
+                              Icons.arrow_back,
+                              color: theme.colorScheme.onSurface,
+                            ),
                           ),
                         ],
                       ),
                     ),
+
+                    // Animation
                     SizedBox(
                       height: 220,
                       width: double.infinity,
@@ -138,31 +179,30 @@ class _VerificationOtpPageState extends State<VerificationOtpPage> {
                         ),
                       ),
                     ),
+
                     Padding(
                       padding: const EdgeInsets.all(4.0),
                       child: Column(
                         children: [
-                          const Text(
-                            'Verification OTP',
-                            style: TextStyle(
-                              color: Colors.black,
-                              fontSize: 32,
+                          Text(
+                            l10n.verificationOtp, // key: verificationOtp
+                            style: theme.textTheme.displaySmall?.copyWith(
                               fontWeight: FontWeight.bold,
                               fontFamily: 'Poppins',
                             ),
                           ),
                           const SizedBox(height: 10),
-                          const Text(
-                            'Check your email and enter\n a code below',
-                            style: TextStyle(
-                              color: Colors.black,
-                              fontSize: 15,
+                          Text(
+                            l10n.verificationOtpSubtitle, // key: verificationOtpSubtitle
+                            style: theme.textTheme.bodyMedium?.copyWith(
                               fontWeight: FontWeight.bold,
                               fontFamily: 'Poppins',
                             ),
                             textAlign: TextAlign.center,
                           ),
                           const SizedBox(height: 10),
+
+                          // OTP input
                           Pinput(
                             length: 6,
                             controller: _otpController,
@@ -183,13 +223,16 @@ class _VerificationOtpPageState extends State<VerificationOtpPage> {
                               border: Border.all(color: Colors.redAccent),
                             ),
                           ),
+
                           const SizedBox(height: 15),
+
+                          // Countdown / Resend
                           _remainingSeconds > 0
                               ? Text(
-                                  'Didn’t receive email?\nYou can resend code in $_remainingSeconds s',
-                                  style: const TextStyle(
-                                    color: Colors.black,
-                                    fontSize: 15,
+                                  l10n.otpResendCountdown(
+                                    _remainingSeconds,
+                                  ), // key: otpResendCountdown
+                                  style: theme.textTheme.bodyMedium?.copyWith(
                                     fontWeight: FontWeight.bold,
                                     fontFamily: 'Poppins',
                                   ),
@@ -202,22 +245,22 @@ class _VerificationOtpPageState extends State<VerificationOtpPage> {
                                   },
                                   child: Container(
                                     padding: const EdgeInsets.only(bottom: 2),
-                                    decoration: const BoxDecoration(
+                                    decoration: BoxDecoration(
                                       border: Border(
                                         bottom: BorderSide(
-                                          color: Colors.black45,
+                                          color: theme.colorScheme.onSurface
+                                              .withOpacity(0.45),
                                           width: 1.0,
                                         ),
                                       ),
                                     ),
-                                    child: const Text(
-                                      'Get OTP again',
-                                      style: TextStyle(
-                                        color: Colors.black,
-                                        fontSize: 15,
-                                        fontWeight: FontWeight.bold,
-                                        fontFamily: 'Poppins',
-                                      ),
+                                    child: Text(
+                                      l10n.otpGetAgain, // key: otpGetAgain
+                                      style: theme.textTheme.bodyMedium
+                                          ?.copyWith(
+                                            fontWeight: FontWeight.bold,
+                                            fontFamily: 'Poppins',
+                                          ),
                                       textAlign: TextAlign.center,
                                     ),
                                   ),
@@ -229,14 +272,14 @@ class _VerificationOtpPageState extends State<VerificationOtpPage> {
                 ),
               ),
             ),
+
+            // Confirm button
             Padding(
               padding: const EdgeInsets.all(16.0),
               child: AuthButton(
-                text: 'Confirm',
-                onPressed: () async {
-                  _fetchApiVerifyOtp();
-                },
-                textColor: Colors.white,
+                text: l10n.confirm, // key: confirm (đã có)
+                onPressed: _fetchApiVerifyOtp,
+                textColor: theme.colorScheme.onPrimary,
               ),
             ),
           ],

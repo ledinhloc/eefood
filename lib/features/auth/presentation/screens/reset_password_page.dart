@@ -6,6 +6,7 @@ import 'package:eefood/features/auth/domain/usecases/auth_usecases.dart';
 import 'package:eefood/features/auth/presentation/widgets/auth_button.dart';
 import 'package:eefood/features/auth/presentation/widgets/custom_dialog.dart';
 import 'package:eefood/features/auth/presentation/widgets/custom_text_field.dart';
+import 'package:eefood/l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
 import 'package:lottie/lottie.dart';
 
@@ -42,6 +43,7 @@ class _ResetPasswordPageState extends State<ResetPasswordPage> {
   }
 
   void _fetchApiRestPassword() async {
+    final l10n = AppLocalizations.of(context)!;
     Result<bool> isReset = await _resetPassword(
       widget.email,
       widget.otpCode,
@@ -52,12 +54,14 @@ class _ResetPasswordPageState extends State<ResetPasswordPage> {
             context: context,
             barrierDismissible: false,
             builder: (context) => CustomDialog(
-              title: "Success",
-              description: "Your password has been updated",
+              title: l10n
+                  .resetPasswordSuccessTitle, // key: resetPasswordSuccessTitle
+              description: l10n
+                  .resetPasswordSuccessDesc, // key: resetPasswordSuccessDesc
               imageLottie: "assets/lotties/success_animation.json",
               buttons: [
                 DialogButton(
-                  text: 'Go to home',
+                  text: l10n.goToHome, // key: goToHome
                   onPressed: () {
                     Navigator.pop(context);
                     Navigator.pushReplacementNamed(context, AppRoutes.login);
@@ -71,7 +75,10 @@ class _ResetPasswordPageState extends State<ResetPasswordPage> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    final theme = Theme.of(context);
     return Scaffold(
+      backgroundColor: theme.scaffoldBackgroundColor,
       body: SafeArea(
         child: Column(
           children: [
@@ -92,11 +99,15 @@ class _ResetPasswordPageState extends State<ResetPasswordPage> {
                           children: [
                             IconButton(
                               onPressed: () => Navigator.maybePop(context),
-                              icon: const Icon(Icons.arrow_back),
+                              icon: Icon(
+                                Icons.arrow_back,
+                                color: theme.colorScheme.onSurface,
+                              ),
                             ),
                           ],
                         ),
                       ),
+
                       // Animation
                       SizedBox(
                         height: 220,
@@ -108,6 +119,7 @@ class _ResetPasswordPageState extends State<ResetPasswordPage> {
                           ),
                         ),
                       ),
+
                       // Fields
                       Padding(
                         padding: const EdgeInsets.symmetric(
@@ -116,21 +128,17 @@ class _ResetPasswordPageState extends State<ResetPasswordPage> {
                         ),
                         child: Column(
                           children: [
-                            const Text(
-                              'Create new password',
-                              style: TextStyle(
-                                color: Colors.black,
-                                fontSize: 32,
+                            Text(
+                              l10n.createNewPassword, // key: createNewPassword
+                              style: theme.textTheme.displaySmall?.copyWith(
                                 fontWeight: FontWeight.bold,
                                 fontFamily: 'Poppins',
                               ),
                             ),
                             const SizedBox(height: 10),
-                            const Text(
-                              'Enter your new password below',
-                              style: TextStyle(
-                                color: Colors.black,
-                                fontSize: 15,
+                            Text(
+                              l10n.createNewPasswordSubtitle, // key: createNewPasswordSubtitle
+                              style: theme.textTheme.bodyMedium?.copyWith(
                                 fontWeight: FontWeight.bold,
                                 fontFamily: 'Poppins',
                               ),
@@ -138,34 +146,45 @@ class _ResetPasswordPageState extends State<ResetPasswordPage> {
                             ),
                             const SizedBox(height: 30),
                             CustomTextField(
-                              labelText: 'Password',
+                              labelText: l10n.password, // key: password (đã có)
                               controller: passController,
                               isPassword: true,
-                              prefixIcon: const Icon(Icons.lock),
+                              prefixIcon: Icon(
+                                Icons.lock,
+                                color: theme.colorScheme.onSurface,
+                              ),
                               borderRadius: 8,
                               validator: (value) {
                                 if (value == null || value.isEmpty) {
-                                  return "Password cannot be empty";
+                                  return l10n
+                                      .passwordEmpty; // key: passwordEmpty
                                 }
                                 if (value.length < 8) {
-                                  return "Password must be at least 8 characters";
+                                  return l10n
+                                      .passwordTooShort; // key: passwordTooShort
                                 }
                                 return null;
                               },
                             ),
                             const SizedBox(height: 15),
                             CustomTextField(
-                              labelText: 'Confirm password',
+                              labelText:
+                                  l10n.confirmPassword, // key: confirmPassword
                               controller: confirmPassController,
                               isPassword: true,
-                              prefixIcon: const Icon(Icons.lock),
+                              prefixIcon: Icon(
+                                Icons.lock,
+                                color: theme.colorScheme.onSurface,
+                              ),
                               borderRadius: 8,
                               validator: (value) {
                                 if (value == null || value.isEmpty) {
-                                  return "Confirm password cannot be empty";
+                                  return l10n
+                                      .confirmPasswordEmpty; // key: confirmPasswordEmpty
                                 }
                                 if (value != passController.text) {
-                                  return "Passwords do not match";
+                                  return l10n
+                                      .passwordsDoNotMatch; // key: passwordsDoNotMatch
                                 }
                                 return null;
                               },
@@ -178,13 +197,14 @@ class _ResetPasswordPageState extends State<ResetPasswordPage> {
                 ),
               ),
             ),
+
             // Confirm button
             Padding(
               padding: const EdgeInsets.all(16.0),
               child: AuthButton(
-                text: 'Confirm',
+                text: l10n.confirm, // key: confirm (đã có)
                 onPressed: () => _onConfirmPressed(context),
-                textColor: Colors.white,
+                textColor: theme.colorScheme.onPrimary,
               ),
             ),
           ],

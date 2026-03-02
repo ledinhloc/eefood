@@ -10,6 +10,7 @@ import 'package:eefood/features/auth/presentation/bloc/register_bloc/register_cu
 import 'package:eefood/features/auth/presentation/bloc/register_bloc/register_state.dart';
 import 'package:eefood/features/auth/presentation/widgets/auth_button.dart';
 import 'package:eefood/features/auth/presentation/widgets/custom_text_field.dart';
+import 'package:eefood/l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
@@ -22,13 +23,13 @@ class RegisterPage extends StatelessWidget {
   final LoginGoogle _loginGoogle = getIt<LoginGoogle>();
   final Register _register = getIt<Register>();
   final nameController = TextEditingController(text: 'khoa');
-  final emailController = TextEditingController(
-    text: 'anhkhoaxn11@gmail.com',
-  );
+  final emailController = TextEditingController(text: 'anhkhoaxn11@gmail.com');
   final passController = TextEditingController(text: '12345678');
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    final theme = Theme.of(context);
     return BlocProvider(
       create: (_) => RegisterCubit(_register),
       child: BlocListener<RegisterCubit, RegisterState>(
@@ -50,12 +51,14 @@ class RegisterPage extends StatelessWidget {
         child: BlocBuilder<RegisterCubit, RegisterState>(
           builder: (context, state) {
             return Scaffold(
+              backgroundColor: theme.scaffoldBackgroundColor,
               body: Stack(
                 children: [
                   SingleChildScrollView(
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
+                        // Back button
                         Padding(
                           padding: const EdgeInsets.symmetric(
                             vertical: 7,
@@ -65,7 +68,10 @@ class RegisterPage extends StatelessWidget {
                             children: [
                               IconButton(
                                 onPressed: () => Navigator.maybePop(context),
-                                icon: const Icon(Icons.arrow_back),
+                                icon: Icon(
+                                  Icons.arrow_back,
+                                  color: theme.colorScheme.onSurface,
+                                ),
                               ),
                             ],
                           ),
@@ -91,11 +97,11 @@ class RegisterPage extends StatelessWidget {
                             vertical: 10,
                           ),
                           decoration: BoxDecoration(
-                            color: Colors.white,
+                            color: theme.colorScheme.surface,
                             borderRadius: BorderRadius.circular(22),
                             boxShadow: [
                               BoxShadow(
-                                color: Colors.grey.withOpacity(0.3),
+                                color: theme.shadowColor.withOpacity(0.3),
                                 blurRadius: 15,
                                 spreadRadius: 2,
                                 offset: const Offset(0, 6),
@@ -105,11 +111,9 @@ class RegisterPage extends StatelessWidget {
                           child: Column(
                             children: [
                               const SizedBox(height: 10),
-                              const Text(
-                                'Sign up',
-                                style: TextStyle(
-                                  color: Color.fromARGB(255, 0, 0, 0),
-                                  fontSize: 25,
+                              Text(
+                                l10n.signUp, // key: signUp
+                                style: theme.textTheme.headlineSmall?.copyWith(
                                   fontWeight: FontWeight.bold,
                                   fontFamily: 'Poppins',
                                 ),
@@ -117,44 +121,52 @@ class RegisterPage extends StatelessWidget {
                               const SizedBox(height: 10),
                               CustomTextField(
                                 controller: nameController,
-                                labelText: 'Username',
-                                prefixIcon: const Icon(
+                                labelText: l10n.username, // key: username
+                                prefixIcon: Icon(
                                   Icons.account_circle_rounded,
+                                  color: theme.colorScheme.onSurface,
                                 ),
                                 enableClear: true,
                                 borderRadius: 8,
-                                fillColor: Colors.black,
+                                fillColor: theme.colorScheme.onSurface,
                                 maxLines: 1,
                               ),
                               const SizedBox(height: 10),
                               CustomTextField(
                                 controller: emailController,
-                                labelText: 'Email',
-                                prefixIcon: const Icon(Icons.email),
+                                labelText: l10n.email, // key: email
+                                prefixIcon: Icon(
+                                  Icons.email,
+                                  color: theme.colorScheme.onSurface,
+                                ),
                                 enableClear: true,
                                 borderRadius: 8,
-                                fillColor: Colors.black,
+                                fillColor: theme.colorScheme.onSurface,
                                 maxLines: 1,
                               ),
                               const SizedBox(height: 10),
                               CustomTextField(
                                 controller: passController,
-                                labelText: 'Password',
+                                labelText: l10n.password, // key: password
                                 isPassword: true,
-                                prefixIcon: const Icon(Icons.lock),
-                                suffixIcon: const Icon(Icons.visibility_off),
-
+                                prefixIcon: Icon(
+                                  Icons.lock,
+                                  color: theme.colorScheme.onSurface,
+                                ),
+                                suffixIcon: Icon(
+                                  Icons.visibility_off,
+                                  color: theme.colorScheme.onSurface,
+                                ),
                                 borderRadius: 8,
-                                fillColor: Colors.black,
+                                fillColor: theme.colorScheme.onSurface,
                                 maxLines: 1,
                               ),
 
                               const SizedBox(height: 20),
-                              /*
-                                Sign in Button
-                              */
+
+                              // Sign up button
                               AuthButton(
-                                text: 'Sign up',
+                                text: l10n.signUp, // key: signUp
                                 onPressed: () {
                                   context.read<RegisterCubit>().register(
                                     nameController.text,
@@ -163,30 +175,44 @@ class RegisterPage extends StatelessWidget {
                                   );
                                 },
                               ),
+
                               const SizedBox(height: 20),
+
+                              // Divider
                               Row(
-                                children: const [
-                                  Expanded(child: Divider(color: Colors.grey)),
+                                children: [
+                                  Expanded(
+                                    child: Divider(
+                                      color: theme.colorScheme.outlineVariant,
+                                    ),
+                                  ),
                                   Padding(
-                                    padding: EdgeInsets.symmetric(
+                                    padding: const EdgeInsets.symmetric(
                                       horizontal: 8.0,
                                     ),
                                     child: Text(
-                                      'or continue with',
-                                      style: TextStyle(
-                                        color: Color.fromARGB(255, 0, 0, 0),
-                                        fontSize: 13,
-                                        fontWeight: FontWeight.bold,
-                                        fontFamily: 'Poppins',
-                                      ),
+                                      l10n.orContinueWith, // key: orContinueWith
+                                      style: theme.textTheme.bodySmall
+                                          ?.copyWith(
+                                            fontWeight: FontWeight.bold,
+                                            fontFamily: 'Poppins',
+                                          ),
                                     ),
                                   ),
-                                  Expanded(child: Divider(color: Colors.grey)),
+                                  Expanded(
+                                    child: Divider(
+                                      color: theme.colorScheme.outlineVariant,
+                                    ),
+                                  ),
                                 ],
                               ),
+
                               const SizedBox(height: 20),
+
+                              // Google button
                               AuthButton(
-                                text: 'Continue with Google',
+                                text: l10n
+                                    .continueWithGoogle, // key: continueWithGoogle
                                 iconImage: const AssetImage(
                                   'assets/images/google.png',
                                 ),
@@ -218,15 +244,17 @@ class RegisterPage extends StatelessWidget {
                                       AppRoutes.main,
                                     );
                                   } catch (err) {
-                                    // print('Failed: $err');
-                                    showCustomSnackBar(context, "Vui lòng đăng nhập bằng gmail khác !");
+                                    showCustomSnackBar(
+                                      context,
+                                      "Vui lòng đăng nhập bằng gmail khác !",
+                                    );
                                     logger.i('Failed: $err');
                                   } finally {
                                     LoadingOverlay().hide();
                                   }
                                 },
-                                color: Colors.white,
-                                textColor: Colors.black,
+                                color: theme.colorScheme.surface,
+                                textColor: theme.colorScheme.onSurface,
                               ),
                             ],
                           ),
@@ -234,6 +262,8 @@ class RegisterPage extends StatelessWidget {
                       ],
                     ),
                   ),
+
+                  // Loading overlay
                   if (state is RegisterLoading)
                     Container(
                       color: Colors.black.withOpacity(0.3),

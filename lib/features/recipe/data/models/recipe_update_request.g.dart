@@ -20,9 +20,8 @@ RecipeUpdateRequest _$RecipeUpdateRequestFromJson(Map<String, dynamic> json) =>
           .map((e) => e as String)
           .toList(),
       ingredients: (json['ingredients'] as List<dynamic>)
-          .map(
-            (e) => IngredientCreateRequest.fromJson(e as Map<String, dynamic>),
-          )
+          .map((e) =>
+              IngredientCreateRequest.fromJson(e as Map<String, dynamic>))
           .toList(),
       steps: (json['steps'] as List<dynamic>)
           .map((e) => RecipeStepModel.fromJson(e as Map<String, dynamic>))
@@ -30,17 +29,17 @@ RecipeUpdateRequest _$RecipeUpdateRequestFromJson(Map<String, dynamic> json) =>
     );
 
 Map<String, dynamic> _$RecipeUpdateRequestToJson(
-  RecipeUpdateRequest instance,
-) => <String, dynamic>{
-  'title': instance.title,
-  'description': instance.description,
-  'region': instance.region,
-  'imageUrl': instance.imageUrl,
-  'videoUrl': instance.videoUrl,
-  'prepTime': instance.prepTime,
-  'cookTime': instance.cookTime,
-  'difficulty': instance.difficulty,
-  'categories': instance.categories,
-  'ingredients': instance.ingredients,
-  'steps': instance.steps,
-};
+        RecipeUpdateRequest instance) =>
+    <String, dynamic>{
+      'title': instance.title,
+      'description': instance.description,
+      'region': instance.region,
+      'imageUrl': instance.imageUrl,
+      'videoUrl': instance.videoUrl,
+      'prepTime': instance.prepTime,
+      'cookTime': instance.cookTime,
+      'difficulty': instance.difficulty,
+      'categories': instance.categories,
+      'ingredients': instance.ingredients,
+      'steps': instance.steps,
+    };

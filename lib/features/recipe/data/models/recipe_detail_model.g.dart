@@ -29,8 +29,7 @@ RecipeDetailModel _$RecipeDetailModelFromJson(Map<String, dynamic> json) =>
           .toList(),
       ingredients: (json['ingredients'] as List<dynamic>?)
           ?.map(
-            (e) => RecipeIngredientModel.fromJson(e as Map<String, dynamic>),
-          )
+              (e) => RecipeIngredientModel.fromJson(e as Map<String, dynamic>))
           .toList(),
     );
 

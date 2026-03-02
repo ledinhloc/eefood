@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:eefood/core/utils/deep_link_handler.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
@@ -5,29 +7,24 @@ import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:http/http.dart' as http;
 import 'package:path_provider/path_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'dart:io';
-
-import '../../../../core/di/injection.dart';
-import '../../presentation/provider/notification_settings_cubit.dart';
 
 class NotificationService {
   static final FlutterLocalNotificationsPlugin _notiPlugin =
-  FlutterLocalNotificationsPlugin();
+      FlutterLocalNotificationsPlugin();
   static bool _initialized = false;
-
 
   static Future<void> initialize() async {
     // Android init
     const AndroidInitializationSettings androidSettings =
-    AndroidInitializationSettings('ic_eefood');
+        AndroidInitializationSettings('ic_eefood');
 
     // iOS init
     const DarwinInitializationSettings iosSettings =
-    DarwinInitializationSettings(
-      requestAlertPermission: true,
-      requestBadgePermission: true,
-      requestSoundPermission: true,
-    );
+        DarwinInitializationSettings(
+          requestAlertPermission: true,
+          requestBadgePermission: true,
+          requestSoundPermission: true,
+        );
 
     // Init plugin
     await _notiPlugin.initialize(
@@ -48,7 +45,6 @@ class NotificationService {
     String? avatarUrl,
     String? path,
   }) async {
-
     await _ensureInitialized();
 
     String? localImagePath;
@@ -66,12 +62,12 @@ class NotificationService {
       priority: Priority.high,
       playSound: true,
       styleInformation: localImagePath != null
-            ? BigPictureStyleInformation(
-          FilePathAndroidBitmap(localImagePath),
-          contentTitle: title,
-          summaryText: body,
-          largeIcon: FilePathAndroidBitmap(localImagePath),
-          )
+          ? BigPictureStyleInformation(
+              FilePathAndroidBitmap(localImagePath),
+              contentTitle: title,
+              summaryText: body,
+              largeIcon: FilePathAndroidBitmap(localImagePath),
+            )
           : BigTextStyleInformation(body),
     );
 
@@ -86,18 +82,17 @@ class NotificationService {
     );
   }
 
-
   static Future<void> _ensureInitialized() async {
     if (_initialized) return;
     const AndroidInitializationSettings androidSettings =
-    AndroidInitializationSettings('ic_eefood');
+        AndroidInitializationSettings('ic_eefood');
 
     const DarwinInitializationSettings iosSettings =
-    DarwinInitializationSettings(
-      requestAlertPermission: true,
-      requestBadgePermission: true,
-      requestSoundPermission: true,
-    );
+        DarwinInitializationSettings(
+          requestAlertPermission: true,
+          requestBadgePermission: true,
+          requestSoundPermission: true,
+        );
 
     await _notiPlugin.initialize(
       const InitializationSettings(android: androidSettings, iOS: iosSettings),
@@ -117,7 +112,8 @@ class NotificationService {
       final directory = await getTemporaryDirectory();
 
       // Tạo file name unique
-      final fileName = 'notification_${DateTime.now().millisecondsSinceEpoch}.jpg';
+      final fileName =
+          'notification_${DateTime.now().millisecondsSinceEpoch}.jpg';
       final filePath = '${directory.path}/$fileName';
 
       // Lưu file
@@ -179,8 +175,7 @@ Future<void> firebaseMessagingBackgroundHandler(RemoteMessage message) async {
 
   final type = message.data['type'] ?? 'SYSTEM';
 
-  final isEnabled =
-      prefs.getBool('noti_setting_$type') ?? true;
+  final isEnabled = prefs.getBool('noti_setting_$type') ?? true;
 
   if (!isEnabled) {
     print('Background notification $type is disabled');
@@ -192,7 +187,7 @@ Future<void> firebaseMessagingBackgroundHandler(RemoteMessage message) async {
   // Show notification when app is in background
   await NotificationService.showNotification(
     title:
-    message.data['title'] ?? message.notification?.title ?? 'Thông báo mới',
+        message.data['title'] ?? message.notification?.title ?? 'Thông báo mới',
     body: message.data['body'] ?? message.notification?.body ?? '',
     type: message.data['type'] ?? 'SYSTEM',
     avatarUrl: message.data['avatarUrl'],

@@ -1,4 +1,5 @@
 import 'package:eefood/features/auth/presentation/bloc/on_boarding_bloc/on_boarding_cubit.dart';
+import 'package:eefood/l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
@@ -9,7 +10,7 @@ class PreferenceGridPage extends StatefulWidget {
   final Set<String> initialSelection;
   final Function(Set<String>) onSelectionComplete;
   final Function() onSkip;
-  final String continueButtonText;
+  final String? continueButtonText;
   final bool showSkipButton;
 
   const PreferenceGridPage({
@@ -20,7 +21,7 @@ class PreferenceGridPage extends StatefulWidget {
     required this.initialSelection,
     required this.onSelectionComplete,
     required this.onSkip,
-    this.continueButtonText = "Continue",
+    this.continueButtonText,
     this.showSkipButton = true,
   });
 
@@ -39,13 +40,18 @@ class _PreferenceGridPageState extends State<PreferenceGridPage> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    final theme = Theme.of(context);
+
     return Scaffold(
+      backgroundColor: theme.scaffoldBackgroundColor,
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.all(16),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              // Progress bar
               BlocBuilder<OnBoardingCubit, int>(
                 builder: (context, currentPage) {
                   final totalPages = context.read<OnBoardingCubit>().totalPages;
@@ -54,7 +60,7 @@ class _PreferenceGridPageState extends State<PreferenceGridPage> {
                     child: LinearProgressIndicator(
                       value: currentPage / totalPages,
                       minHeight: 8,
-                      backgroundColor: Colors.grey[300],
+                      backgroundColor: theme.colorScheme.surfaceVariant,
                       color: Colors.red,
                     ),
                   );
@@ -64,15 +70,15 @@ class _PreferenceGridPageState extends State<PreferenceGridPage> {
 
               Text(
                 widget.title,
-                style: const TextStyle(
-                  fontSize: 20,
+                style: theme.textTheme.titleLarge?.copyWith(
                   fontWeight: FontWeight.bold,
                 ),
               ),
               const SizedBox(height: 8),
-              Text(widget.description),
+              Text(widget.description, style: theme.textTheme.bodyMedium),
               const SizedBox(height: 20),
 
+              // Grid
               Expanded(
                 child: GridView.builder(
                   itemCount: widget.items.length,
@@ -97,7 +103,9 @@ class _PreferenceGridPageState extends State<PreferenceGridPage> {
                       child: Container(
                         decoration: BoxDecoration(
                           border: Border.all(
-                            color: isSelected ? Colors.red : Colors.grey[300]!,
+                            color: isSelected
+                                ? Colors.red
+                                : theme.colorScheme.outlineVariant,
                             width: 2,
                           ),
                           borderRadius: BorderRadius.circular(16),
@@ -110,7 +118,11 @@ class _PreferenceGridPageState extends State<PreferenceGridPage> {
                               style: const TextStyle(fontSize: 30),
                             ),
                             const SizedBox(height: 8),
-                            Text(item["name"]),
+                            Text(
+                              item["name"],
+                              style: theme.textTheme.bodySmall,
+                              textAlign: TextAlign.center,
+                            ),
                           ],
                         ),
                       ),
@@ -119,6 +131,7 @@ class _PreferenceGridPageState extends State<PreferenceGridPage> {
                 ),
               ),
 
+              // Buttons
               Row(
                 children: [
                   if (widget.showSkipButton)
@@ -131,9 +144,9 @@ class _PreferenceGridPageState extends State<PreferenceGridPage> {
                           ),
                           side: const BorderSide(color: Colors.red),
                         ),
-                        child: const Text(
-                          "Skip",
-                          style: TextStyle(color: Colors.red),
+                        child: Text(
+                          l10n.skip, // key: skip
+                          style: const TextStyle(color: Colors.red),
                         ),
                       ),
                     ),
@@ -150,8 +163,11 @@ class _PreferenceGridPageState extends State<PreferenceGridPage> {
                         ),
                       ),
                       child: Text(
-                        widget.continueButtonText,
-                        style: const TextStyle(color: Colors.white),
+                        widget.continueButtonText ??
+                            l10n.continueButton, // key: continueButton
+                        style: theme.textTheme.bodyMedium?.copyWith(
+                          color: Colors.white,
+                        ),
                       ),
                     ),
                   ),
