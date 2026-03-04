@@ -14,8 +14,7 @@ ChatbotRequest _$ChatbotRequestFromJson(Map<String, dynamic> json) =>
       location: json['location'] == null
           ? null
           : LocationInfoRequest.fromJson(
-              json['location'] as Map<String, dynamic>,
-            ),
+              json['location'] as Map<String, dynamic>),
       time: json['time'] as String?,
       postId: (json['postId'] as List<dynamic>?)
           ?.map((e) => (e as num).toInt())

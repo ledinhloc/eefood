@@ -1,7 +1,6 @@
 import 'package:eefood/app_routes.dart';
 import 'package:eefood/core/di/injection.dart';
 import 'package:eefood/core/utils/convert_time.dart';
-import 'package:eefood/core/utils/share_utils.dart';
 import 'package:eefood/core/widgets/show_login_required.dart';
 import 'package:eefood/features/post/presentation/provider/post_list_cubit.dart';
 import 'package:eefood/features/post/presentation/widgets/share/share_bottom_sheet.dart';
@@ -19,7 +18,12 @@ class PostHeader extends StatelessWidget {
   final int userId;
   final PostModel post;
   final bool isGuest;
-  const PostHeader({super.key, required this.userId, required this.post, required this.isGuest});
+  const PostHeader({
+    super.key,
+    required this.userId,
+    required this.post,
+    required this.isGuest,
+  });
 
   void _openShareSheet(BuildContext context) {
     showModalBottomSheet(
@@ -36,6 +40,7 @@ class PostHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     return ListTile(
       contentPadding: EdgeInsets.zero,
       horizontalTitleGap: 6,
@@ -46,7 +51,7 @@ class PostHeader extends StatelessWidget {
       ),
       title: GestureDetector(
         onTap: () async {
-          if(isGuest){
+          if (isGuest) {
             showLoginRequired(context);
             return;
           }
@@ -64,17 +69,21 @@ class PostHeader extends StatelessWidget {
         },
         child: Text(
           post.username,
-          style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
+          style: TextStyle(
+            fontWeight: FontWeight.bold,
+            fontSize: 15,
+            color: theme.colorScheme.onSurface,
+          ),
         ),
       ),
       subtitle: Text(
         TimeParser.formatCommentTime(post.createdAt),
-        style: const TextStyle(color: Colors.grey, fontSize: 12),
+        style: TextStyle(color: theme.colorScheme.onSurface, fontSize: 12),
       ),
       trailing: IconButton(
-        icon: const Icon(Icons.more_horiz, color: Colors.grey),
+        icon: Icon(Icons.more_horiz, color: theme.colorScheme.onSurface),
         onPressed: () async {
-          if(isGuest){
+          if (isGuest) {
             showLoginRequired(context);
             return;
           }

@@ -14,9 +14,10 @@ class CollectionMessageListCard extends StatefulWidget {
 class _CollectionMessageListCardState extends State<CollectionMessageListCard> {
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     return Container(
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: theme.scaffoldBackgroundColor,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(color: Colors.grey.shade200),
       ),
@@ -38,7 +39,7 @@ class _CollectionMessageListCardState extends State<CollectionMessageListCard> {
                   style: TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.w600,
-                    color: Colors.grey.shade800,
+                    color: theme.colorScheme.onSurface,
                   ),
                 ),
               ],

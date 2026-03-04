@@ -6,6 +6,7 @@ import 'package:eefood/core/widgets/loading_overlay.dart';
 import 'package:eefood/core/widgets/snack_bar.dart';
 import 'package:eefood/features/auth/domain/usecases/google_service.dart';
 import 'package:eefood/features/auth/presentation/widgets/custom_text_field.dart';
+import 'package:eefood/l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
 import 'package:lottie/lottie.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -30,7 +31,7 @@ class _LoginPageState extends State<LoginPage> {
   final SharedPreferences _sharedPreferences = getIt<SharedPreferences>();
   final Login _login = getIt<Login>();
   final NotificationSettingsCubit notificationSettingsCubit =
-  getIt<NotificationSettingsCubit>();
+      getIt<NotificationSettingsCubit>();
 
   final emailController = TextEditingController();
 
@@ -120,7 +121,10 @@ class _LoginPageState extends State<LoginPage> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    final theme = Theme.of(context);
     return Scaffold(
+      backgroundColor: theme.scaffoldBackgroundColor,
       body: SingleChildScrollView(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -132,7 +136,10 @@ class _LoginPageState extends State<LoginPage> {
                 children: [
                   IconButton(
                     onPressed: () => Navigator.maybePop(context),
-                    icon: const Icon(Icons.arrow_back),
+                    icon: Icon(
+                      Icons.arrow_back,
+                      color: theme.colorScheme.onSurface,
+                    ),
                   ),
                 ],
               ),
@@ -156,11 +163,11 @@ class _LoginPageState extends State<LoginPage> {
               width: double.infinity,
               padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 20),
               decoration: BoxDecoration(
-                color: Colors.white,
+                color: theme.colorScheme.surface,
                 borderRadius: BorderRadius.circular(22),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.grey.withOpacity(0.3),
+                    color: theme.shadowColor.withOpacity(0.3),
                     blurRadius: 15,
                     spreadRadius: 2,
                     offset: const Offset(0, 6),
@@ -169,11 +176,9 @@ class _LoginPageState extends State<LoginPage> {
               ),
               child: Column(
                 children: [
-                  const Text(
-                    'Sign in',
-                    style: TextStyle(
-                      color: Colors.black,
-                      fontSize: 25,
+                  Text(
+                    l10n.signInTitle, // key: signIn
+                    style: theme.textTheme.headlineSmall?.copyWith(
                       fontWeight: FontWeight.bold,
                       fontFamily: 'Poppins',
                     ),
@@ -183,11 +188,14 @@ class _LoginPageState extends State<LoginPage> {
                   // Email
                   CustomTextField(
                     controller: emailController,
-                    labelText: 'Email',
-                    prefixIcon: const Icon(Icons.email),
+                    labelText: l10n.email, // key: email
+                    prefixIcon: Icon(
+                      Icons.email,
+                      color: theme.colorScheme.onSurface,
+                    ),
                     enableClear: true,
                     borderRadius: 8,
-                    fillColor: Colors.black,
+                    fillColor: theme.colorScheme.onSurface,
                     maxLines: 1,
                   ),
                   const SizedBox(height: 10),
@@ -195,12 +203,18 @@ class _LoginPageState extends State<LoginPage> {
                   // Password
                   CustomTextField(
                     controller: passController,
-                    labelText: 'Password',
+                    labelText: l10n.password, // key: password
                     isPassword: true,
-                    prefixIcon: const Icon(Icons.lock),
-                    suffixIcon: const Icon(Icons.visibility_off),
+                    prefixIcon: Icon(
+                      Icons.lock,
+                      color: theme.colorScheme.onSurface,
+                    ),
+                    suffixIcon: Icon(
+                      Icons.visibility_off,
+                      color: theme.colorScheme.onSurface,
+                    ),
                     borderRadius: 8,
-                    fillColor: Colors.black,
+                    fillColor: theme.colorScheme.onSurface,
                     maxLines: 1,
                   ),
 
@@ -221,11 +235,9 @@ class _LoginPageState extends State<LoginPage> {
                                 });
                               },
                             ),
-                            const Text(
-                              'Remember me',
-                              style: TextStyle(
-                                color: Colors.black,
-                                fontSize: 13,
+                            Text(
+                              l10n.rememberMe, // key: rememberMe
+                              style: theme.textTheme.bodySmall?.copyWith(
                                 fontWeight: FontWeight.bold,
                                 fontFamily: 'Poppins',
                               ),
@@ -240,11 +252,9 @@ class _LoginPageState extends State<LoginPage> {
                             AppRoutes.forgotPassword,
                           );
                         },
-                        child: const Text(
-                          'Forgot password',
-                          style: TextStyle(
-                            color: Colors.black,
-                            fontSize: 13,
+                        child: Text(
+                          l10n.forgotPassword, // key: forgotPassword
+                          style: theme.textTheme.bodySmall?.copyWith(
                             fontWeight: FontWeight.bold,
                             fontFamily: 'Poppins',
                           ),
@@ -256,24 +266,26 @@ class _LoginPageState extends State<LoginPage> {
                   const SizedBox(height: 20),
 
                   // Sign in button
-                  AuthButton(text: 'Sign in', onPressed: _handleLogin),
+                  AuthButton(
+                    text: l10n.signInTitle, // key: signIn
+                    onPressed: _handleLogin,
+                  ),
 
                   const SizedBox(height: 20),
 
                   // Divider
                   Row(
                     children: [
-                      const Expanded(child: Divider(color: Colors.grey)),
+                      Expanded(
+                        child: Divider(color: theme.colorScheme.outlineVariant),
+                      ),
                       Padding(
                         padding: const EdgeInsets.symmetric(horizontal: 8.0),
                         child: Row(
                           children: [
-                            const Text(
-                              'or continue with? ',
-                              style: TextStyle(
-                                color: Colors.black,
-                                fontSize: 13,
-                                fontWeight: FontWeight.normal,
+                            Text(
+                              l10n.orContinueWith, // key: orContinueWith
+                              style: theme.textTheme.bodySmall?.copyWith(
                                 fontFamily: 'Poppins',
                               ),
                             ),
@@ -284,11 +296,9 @@ class _LoginPageState extends State<LoginPage> {
                                   AppRoutes.register,
                                 );
                               },
-                              child: const Text(
-                                'Sign up',
-                                style: TextStyle(
-                                  color: Colors.black,
-                                  fontSize: 13,
+                              child: Text(
+                                l10n.signUp, // key: signUp
+                                style: theme.textTheme.bodySmall?.copyWith(
                                   fontWeight: FontWeight.bold,
                                   fontFamily: 'Poppins',
                                 ),
@@ -297,7 +307,9 @@ class _LoginPageState extends State<LoginPage> {
                           ],
                         ),
                       ),
-                      const Expanded(child: Divider(color: Colors.grey)),
+                      Expanded(
+                        child: Divider(color: theme.colorScheme.outlineVariant),
+                      ),
                     ],
                   ),
 
@@ -305,12 +317,12 @@ class _LoginPageState extends State<LoginPage> {
 
                   // Google button
                   AuthButton(
-                    text: 'Continue with Google',
+                    text: l10n.continueWithGoogle, // key: continueWithGoogle
                     iconImage: const AssetImage('assets/images/google.png'),
                     iconSize: 20,
                     onPressed: _handleLoginGoogle,
-                    color: Colors.white,
-                    textColor: Colors.black,
+                    color: theme.colorScheme.surface,
+                    textColor: theme.colorScheme.onSurface,
                   ),
                 ],
               ),

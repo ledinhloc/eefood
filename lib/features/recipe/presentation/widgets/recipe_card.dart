@@ -1,8 +1,8 @@
-import 'package:eefood/core/widgets/snack_bar.dart';
 import 'package:eefood/features/recipe/presentation/provider/shopping_cubit.dart';
 import 'package:eefood/features/recipe/presentation/widgets/ingredient_tile.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+
 import '../../../../core/widgets/custom_bottom_sheet.dart';
 import '../../data/models/shopping_item_model.dart';
 import '../screens/recipe_detail_page.dart';
@@ -13,6 +13,7 @@ class RecipeCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     return Card(
       margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       elevation: 2,
@@ -27,7 +28,7 @@ class RecipeCard extends StatelessWidget {
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
             colors: [
-              Colors.white,
+              theme.colorScheme.surface,
               Colors.orange.shade50.withOpacity(0.3),
             ],
           ),
@@ -67,10 +68,10 @@ class RecipeCard extends StatelessWidget {
                       children: [
                         Text(
                           item.recipeTitle ?? "Unknown Recipe",
-                          style: const TextStyle(
+                          style: TextStyle(
                             fontWeight: FontWeight.bold,
                             fontSize: 16,
-                            color: Colors.black87,
+                            color: theme.colorScheme.onSurface,
                           ),
                           maxLines: 2,
                           overflow: TextOverflow.ellipsis,
@@ -102,7 +103,7 @@ class RecipeCard extends StatelessWidget {
                   IconButton(
                     icon: Icon(
                       Icons.more_vert,
-                      color: Colors.grey.shade700,
+                      color: theme.colorScheme.onSurface,
                     ),
                     padding: EdgeInsets.zero,
                     constraints: const BoxConstraints(),
@@ -118,7 +119,8 @@ class RecipeCard extends StatelessWidget {
                             Navigator.push(
                               context,
                               MaterialPageRoute(
-                                builder: (_) => RecipeDetailPage(recipeId: item.recipeId!),
+                                builder: (_) =>
+                                    RecipeDetailPage(recipeId: item.recipeId!),
                               ),
                             );
                           },
@@ -135,9 +137,10 @@ class RecipeCard extends StatelessWidget {
                               item,
                             );
                             if (newServing != null) {
-                              context
-                                  .read<ShoppingCubit>()
-                                  .updateServings(item.id!, newServing);
+                              context.read<ShoppingCubit>().updateServings(
+                                item.id!,
+                                newServing,
+                              );
                             }
                           },
                         ),
@@ -148,9 +151,9 @@ class RecipeCard extends StatelessWidget {
                           ),
                           title: "Xóa khỏi danh sách",
                           onTap: () {
-                            context
-                                .read<ShoppingCubit>()
-                                .removeItem(item.id ?? 0);
+                            context.read<ShoppingCubit>().removeItem(
+                              item.id ?? 0,
+                            );
                           },
                         ),
                       ]);
@@ -162,10 +165,7 @@ class RecipeCard extends StatelessWidget {
               // Divider
               Padding(
                 padding: const EdgeInsets.symmetric(vertical: 8),
-                child: Divider(
-                  color: Colors.orange.shade200,
-                  height: 1,
-                ),
+                child: Divider(color: Colors.orange.shade200, height: 1),
               ),
 
               // Ingredients Count Badge
@@ -226,9 +226,9 @@ class RecipeCard extends StatelessWidget {
   }
 
   Future<int?> _showDialogUpdateServing(
-      BuildContext context,
-      ShoppingItemModel recipe,
-      ) async {
+    BuildContext context,
+    ShoppingItemModel recipe,
+  ) async {
     final controller = TextEditingController(
       text: recipe.servings?.toString() ?? "1",
     );
@@ -236,9 +236,7 @@ class RecipeCard extends StatelessWidget {
     return showDialog<int>(
       context: context,
       builder: (dialogContext) => AlertDialog(
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(16),
-        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         title: Row(
           children: [
             Container(
@@ -252,10 +250,7 @@ class RecipeCard extends StatelessWidget {
               child: const Icon(Icons.people, color: Colors.white, size: 20),
             ),
             const SizedBox(width: 12),
-            const Text(
-              "Cập nhật khẩu phần",
-              style: TextStyle(fontSize: 18),
-            ),
+            const Text("Cập nhật khẩu phần", style: TextStyle(fontSize: 18)),
           ],
         ),
         content: TextField(
@@ -265,25 +260,17 @@ class RecipeCard extends StatelessWidget {
           decoration: InputDecoration(
             labelText: "Số khẩu phần",
             prefixIcon: const Icon(Icons.people_outline),
-            border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(12),
-            ),
+            border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
-              borderSide: BorderSide(
-                color: Colors.orange.shade400,
-                width: 2,
-              ),
+              borderSide: BorderSide(color: Colors.orange.shade400, width: 2),
             ),
           ),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(dialogContext),
-            child: Text(
-              "Hủy",
-              style: TextStyle(color: Colors.grey.shade700),
-            ),
+            child: Text("Hủy", style: TextStyle(color: Colors.grey.shade700)),
           ),
           ElevatedButton(
             onPressed: () {
@@ -298,10 +285,7 @@ class RecipeCard extends StatelessWidget {
                 borderRadius: BorderRadius.circular(8),
               ),
             ),
-            child: const Text(
-              "Lưu",
-              style: TextStyle(color: Colors.white),
-            ),
+            child: const Text("Lưu", style: TextStyle(color: Colors.white)),
           ),
         ],
       ),

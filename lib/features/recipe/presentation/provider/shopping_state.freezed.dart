@@ -12,8 +12,7 @@ part of 'shopping_state.dart';
 T _$identity<T>(T value) => value;
 
 final _privateConstructorUsedError = UnsupportedError(
-  'It seems like you constructed your class using `MyClass._()`. This constructor is only meant to be used by freezed and you are not supposed to need it nor use it.\nPlease check the documentation here for more information: https://github.com/rrousselGit/freezed#adding-getters-and-methods-to-our-models',
-);
+    'It seems like you constructed your class using `MyClass._()`. This constructor is only meant to be used by freezed and you are not supposed to need it nor use it.\nPlease check the documentation here for more information: https://github.com/rrousselGit/freezed#adding-getters-and-methods-to-our-models');
 
 /// @nodoc
 mixin _$ShoppingState {
@@ -24,9 +23,7 @@ mixin _$ShoppingState {
       throw _privateConstructorUsedError;
   ShoppingViewMode get viewMode => throw _privateConstructorUsedError;
 
-  /// Create a copy of ShoppingState
-  /// with the given fields replaced by the non-null parameter values.
-  @JsonKey(includeFromJson: false, includeToJson: false)
+  @JsonKey(ignore: true)
   $ShoppingStateCopyWith<ShoppingState> get copyWith =>
       throw _privateConstructorUsedError;
 }
@@ -34,17 +31,15 @@ mixin _$ShoppingState {
 /// @nodoc
 abstract class $ShoppingStateCopyWith<$Res> {
   factory $ShoppingStateCopyWith(
-    ShoppingState value,
-    $Res Function(ShoppingState) then,
-  ) = _$ShoppingStateCopyWithImpl<$Res, ShoppingState>;
+          ShoppingState value, $Res Function(ShoppingState) then) =
+      _$ShoppingStateCopyWithImpl<$Res, ShoppingState>;
   @useResult
-  $Res call({
-    bool isLoading,
-    String? error,
-    List<ShoppingItemModel> recipes,
-    List<ShoppingIngredientModel> ingredients,
-    ShoppingViewMode viewMode,
-  });
+  $Res call(
+      {bool isLoading,
+      String? error,
+      List<ShoppingItemModel> recipes,
+      List<ShoppingIngredientModel> ingredients,
+      ShoppingViewMode viewMode});
 }
 
 /// @nodoc
@@ -57,8 +52,6 @@ class _$ShoppingStateCopyWithImpl<$Res, $Val extends ShoppingState>
   // ignore: unused_field
   final $Res Function($Val) _then;
 
-  /// Create a copy of ShoppingState
-  /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
   $Res call({
@@ -68,31 +61,28 @@ class _$ShoppingStateCopyWithImpl<$Res, $Val extends ShoppingState>
     Object? ingredients = null,
     Object? viewMode = null,
   }) {
-    return _then(
-      _value.copyWith(
-            isLoading: null == isLoading
-                ? _value.isLoading
-                : isLoading // ignore: cast_nullable_to_non_nullable
-                      as bool,
-            error: freezed == error
-                ? _value.error
-                : error // ignore: cast_nullable_to_non_nullable
-                      as String?,
-            recipes: null == recipes
-                ? _value.recipes
-                : recipes // ignore: cast_nullable_to_non_nullable
-                      as List<ShoppingItemModel>,
-            ingredients: null == ingredients
-                ? _value.ingredients
-                : ingredients // ignore: cast_nullable_to_non_nullable
-                      as List<ShoppingIngredientModel>,
-            viewMode: null == viewMode
-                ? _value.viewMode
-                : viewMode // ignore: cast_nullable_to_non_nullable
-                      as ShoppingViewMode,
-          )
-          as $Val,
-    );
+    return _then(_value.copyWith(
+      isLoading: null == isLoading
+          ? _value.isLoading
+          : isLoading // ignore: cast_nullable_to_non_nullable
+              as bool,
+      error: freezed == error
+          ? _value.error
+          : error // ignore: cast_nullable_to_non_nullable
+              as String?,
+      recipes: null == recipes
+          ? _value.recipes
+          : recipes // ignore: cast_nullable_to_non_nullable
+              as List<ShoppingItemModel>,
+      ingredients: null == ingredients
+          ? _value.ingredients
+          : ingredients // ignore: cast_nullable_to_non_nullable
+              as List<ShoppingIngredientModel>,
+      viewMode: null == viewMode
+          ? _value.viewMode
+          : viewMode // ignore: cast_nullable_to_non_nullable
+              as ShoppingViewMode,
+    ) as $Val);
   }
 }
 
@@ -100,18 +90,16 @@ class _$ShoppingStateCopyWithImpl<$Res, $Val extends ShoppingState>
 abstract class _$$ShoppingStateImplCopyWith<$Res>
     implements $ShoppingStateCopyWith<$Res> {
   factory _$$ShoppingStateImplCopyWith(
-    _$ShoppingStateImpl value,
-    $Res Function(_$ShoppingStateImpl) then,
-  ) = __$$ShoppingStateImplCopyWithImpl<$Res>;
+          _$ShoppingStateImpl value, $Res Function(_$ShoppingStateImpl) then) =
+      __$$ShoppingStateImplCopyWithImpl<$Res>;
   @override
   @useResult
-  $Res call({
-    bool isLoading,
-    String? error,
-    List<ShoppingItemModel> recipes,
-    List<ShoppingIngredientModel> ingredients,
-    ShoppingViewMode viewMode,
-  });
+  $Res call(
+      {bool isLoading,
+      String? error,
+      List<ShoppingItemModel> recipes,
+      List<ShoppingIngredientModel> ingredients,
+      ShoppingViewMode viewMode});
 }
 
 /// @nodoc
@@ -119,12 +107,9 @@ class __$$ShoppingStateImplCopyWithImpl<$Res>
     extends _$ShoppingStateCopyWithImpl<$Res, _$ShoppingStateImpl>
     implements _$$ShoppingStateImplCopyWith<$Res> {
   __$$ShoppingStateImplCopyWithImpl(
-    _$ShoppingStateImpl _value,
-    $Res Function(_$ShoppingStateImpl) _then,
-  ) : super(_value, _then);
+      _$ShoppingStateImpl _value, $Res Function(_$ShoppingStateImpl) _then)
+      : super(_value, _then);
 
-  /// Create a copy of ShoppingState
-  /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
   $Res call({
@@ -134,45 +119,43 @@ class __$$ShoppingStateImplCopyWithImpl<$Res>
     Object? ingredients = null,
     Object? viewMode = null,
   }) {
-    return _then(
-      _$ShoppingStateImpl(
-        isLoading: null == isLoading
-            ? _value.isLoading
-            : isLoading // ignore: cast_nullable_to_non_nullable
-                  as bool,
-        error: freezed == error
-            ? _value.error
-            : error // ignore: cast_nullable_to_non_nullable
-                  as String?,
-        recipes: null == recipes
-            ? _value._recipes
-            : recipes // ignore: cast_nullable_to_non_nullable
-                  as List<ShoppingItemModel>,
-        ingredients: null == ingredients
-            ? _value._ingredients
-            : ingredients // ignore: cast_nullable_to_non_nullable
-                  as List<ShoppingIngredientModel>,
-        viewMode: null == viewMode
-            ? _value.viewMode
-            : viewMode // ignore: cast_nullable_to_non_nullable
-                  as ShoppingViewMode,
-      ),
-    );
+    return _then(_$ShoppingStateImpl(
+      isLoading: null == isLoading
+          ? _value.isLoading
+          : isLoading // ignore: cast_nullable_to_non_nullable
+              as bool,
+      error: freezed == error
+          ? _value.error
+          : error // ignore: cast_nullable_to_non_nullable
+              as String?,
+      recipes: null == recipes
+          ? _value._recipes
+          : recipes // ignore: cast_nullable_to_non_nullable
+              as List<ShoppingItemModel>,
+      ingredients: null == ingredients
+          ? _value._ingredients
+          : ingredients // ignore: cast_nullable_to_non_nullable
+              as List<ShoppingIngredientModel>,
+      viewMode: null == viewMode
+          ? _value.viewMode
+          : viewMode // ignore: cast_nullable_to_non_nullable
+              as ShoppingViewMode,
+    ));
   }
 }
 
 /// @nodoc
 
 class _$ShoppingStateImpl implements _ShoppingState {
-  const _$ShoppingStateImpl({
-    this.isLoading = false,
-    this.error,
-    final List<ShoppingItemModel> recipes = const <ShoppingItemModel>[],
-    final List<ShoppingIngredientModel> ingredients =
-        const <ShoppingIngredientModel>[],
-    this.viewMode = ShoppingViewMode.byRecipe,
-  }) : _recipes = recipes,
-       _ingredients = ingredients;
+  const _$ShoppingStateImpl(
+      {this.isLoading = false,
+      this.error,
+      final List<ShoppingItemModel> recipes = const <ShoppingItemModel>[],
+      final List<ShoppingIngredientModel> ingredients =
+          const <ShoppingIngredientModel>[],
+      this.viewMode = ShoppingViewMode.byRecipe})
+      : _recipes = recipes,
+        _ingredients = ingredients;
 
   @override
   @JsonKey()
@@ -215,27 +198,22 @@ class _$ShoppingStateImpl implements _ShoppingState {
                 other.isLoading == isLoading) &&
             (identical(other.error, error) || other.error == error) &&
             const DeepCollectionEquality().equals(other._recipes, _recipes) &&
-            const DeepCollectionEquality().equals(
-              other._ingredients,
-              _ingredients,
-            ) &&
+            const DeepCollectionEquality()
+                .equals(other._ingredients, _ingredients) &&
             (identical(other.viewMode, viewMode) ||
                 other.viewMode == viewMode));
   }
 
   @override
   int get hashCode => Object.hash(
-    runtimeType,
-    isLoading,
-    error,
-    const DeepCollectionEquality().hash(_recipes),
-    const DeepCollectionEquality().hash(_ingredients),
-    viewMode,
-  );
+      runtimeType,
+      isLoading,
+      error,
+      const DeepCollectionEquality().hash(_recipes),
+      const DeepCollectionEquality().hash(_ingredients),
+      viewMode);
 
-  /// Create a copy of ShoppingState
-  /// with the given fields replaced by the non-null parameter values.
-  @JsonKey(includeFromJson: false, includeToJson: false)
+  @JsonKey(ignore: true)
   @override
   @pragma('vm:prefer-inline')
   _$$ShoppingStateImplCopyWith<_$ShoppingStateImpl> get copyWith =>
@@ -243,13 +221,12 @@ class _$ShoppingStateImpl implements _ShoppingState {
 }
 
 abstract class _ShoppingState implements ShoppingState {
-  const factory _ShoppingState({
-    final bool isLoading,
-    final String? error,
-    final List<ShoppingItemModel> recipes,
-    final List<ShoppingIngredientModel> ingredients,
-    final ShoppingViewMode viewMode,
-  }) = _$ShoppingStateImpl;
+  const factory _ShoppingState(
+      {final bool isLoading,
+      final String? error,
+      final List<ShoppingItemModel> recipes,
+      final List<ShoppingIngredientModel> ingredients,
+      final ShoppingViewMode viewMode}) = _$ShoppingStateImpl;
 
   @override
   bool get isLoading;
@@ -261,11 +238,8 @@ abstract class _ShoppingState implements ShoppingState {
   List<ShoppingIngredientModel> get ingredients;
   @override
   ShoppingViewMode get viewMode;
-
-  /// Create a copy of ShoppingState
-  /// with the given fields replaced by the non-null parameter values.
   @override
-  @JsonKey(includeFromJson: false, includeToJson: false)
+  @JsonKey(ignore: true)
   _$$ShoppingStateImplCopyWith<_$ShoppingStateImpl> get copyWith =>
       throw _privateConstructorUsedError;
 }

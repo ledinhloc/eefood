@@ -14,9 +14,9 @@ LocationInfoRequest _$LocationInfoRequestFromJson(Map<String, dynamic> json) =>
     );
 
 Map<String, dynamic> _$LocationInfoRequestToJson(
-  LocationInfoRequest instance,
-) => <String, dynamic>{
-  'latitude': instance.latitude,
-  'longitude': instance.longitude,
-  'province': instance.province,
-};
+        LocationInfoRequest instance) =>
+    <String, dynamic>{
+      'latitude': instance.latitude,
+      'longitude': instance.longitude,
+      'province': instance.province,
+    };

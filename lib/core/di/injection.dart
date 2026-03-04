@@ -1,4 +1,6 @@
+import 'package:eefood/core/database/isar_service.dart';
 import 'package:eefood/core/utils/file_upload.dart';
+import 'package:eefood/features/app_settings/data_sources/settings_local_data_source.dart';
 import 'package:eefood/features/auth/presentation/bloc/on_boarding_bloc/on_boarding_cubit.dart';
 import 'package:eefood/features/livestream/data/repositoty/live_block_repository_impl.dart';
 import 'package:eefood/features/chatbot/data/repositories/chatbot_repository_impl.dart';
@@ -241,9 +243,7 @@ Future<void> setupDependencies() async {
   // notification
 
   //collection
-  getIt.registerLazySingleton<CollectionCubit>(
-    () => CollectionCubit(),
-  );
+  getIt.registerLazySingleton<CollectionCubit>(() => CollectionCubit());
 
   //post in recipe
   getIt.registerLazySingleton<PostPublishRepository>(
@@ -291,5 +291,22 @@ Future<void> setupDependencies() async {
 
   getIt.registerLazySingleton<LiveBlockRepository>(
         () => LiveBlockRepositoryImpl(dio: getIt<DioClient>().dio),
+  );
+  // Local db isar
+  final isarService = IsarService();
+  await isarService.init();
+
+  getIt.registerSingleton<IsarService>(isarService);
+  // SettingsLocalDataSource
+  getIt.registerLazySingleton<SettingsLocalDataSource>(
+    () => SettingsLocalDataSource(),
+  );
+  // SettingsRepository
+  getIt.registerLazySingleton<SettingsRepository>(
+    () => SettingsRepositoryImpl(getIt<SettingsLocalDataSource>()),
+  );
+
+  getIt.registerLazySingleton<SettingsCubit>(
+    () => SettingsCubit(getIt<SettingsRepository>()),
   );
 }

@@ -17,12 +17,12 @@ LiveCommentResponse _$LiveCommentResponseFromJson(Map<String, dynamic> json) =>
     );
 
 Map<String, dynamic> _$LiveCommentResponseToJson(
-  LiveCommentResponse instance,
-) => <String, dynamic>{
-  'id': instance.id,
-  'userId': instance.userId,
-  'username': instance.username,
-  'avatarUrl': instance.avatarUrl,
-  'message': instance.message,
-  'createdAt': instance.createdAt,
-};
+        LiveCommentResponse instance) =>
+    <String, dynamic>{
+      'id': instance.id,
+      'userId': instance.userId,
+      'username': instance.username,
+      'avatarUrl': instance.avatarUrl,
+      'message': instance.message,
+      'createdAt': instance.createdAt,
+    };

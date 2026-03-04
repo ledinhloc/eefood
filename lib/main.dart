@@ -1,10 +1,14 @@
 import 'package:eefood/app_routes.dart';
 import 'package:eefood/core/utils/deep_link_service.dart';
 import 'package:eefood/features/noti/domain/usecases/notification_service.dart';
+import 'package:eefood/features/profile/presentation/provider/settings_cubit.dart';
+import 'package:eefood/features/profile/presentation/provider/settings_state.dart';
+import 'package:eefood/l10n/app_localizations.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:eefood/core/constants/app_keys.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 
 import 'core/constants/app_themes.dart';
 import 'core/di/injection.dart' as di;
@@ -37,27 +41,50 @@ class MyApp extends StatefulWidget {
 }
 
 class _MyAppState extends State<MyApp> {
+  late final SettingsCubit _settingsCubit;
   @override
   void initState() {
     super.initState();
-
-    // Future.microtask(() {
-    //   di.getIt<NotificationCubit>();
-    // });
-
+    _settingsCubit = di.getIt<SettingsCubit>()..loadSettings();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       DeepLinkService().initialize();
     });
   }
+
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      navigatorKey: navigatorKey,
-      debugShowCheckedModeBanner: false,
-      title: 'eeFood',
-      theme: appTheme(),
-      initialRoute: AppRoutes.splashPage,
-      routes: AppRoutes.listRoute,
+    return BlocProvider.value(
+      value: _settingsCubit,
+      child: BlocBuilder<SettingsCubit, SettingsState>(
+        builder: (context, settings) {
+          return MediaQuery(
+            // Áp dụng textScaleFactor từ settings
+            data: MediaQuery.of(
+              context,
+            ).copyWith(textScaler: TextScaler.linear(settings.textScaleFactor)),
+            child: MaterialApp(
+              navigatorKey: navigatorKey,
+              debugShowCheckedModeBanner: false,
+              title: 'eeFood',
+              // Theme
+              theme: appTheme(), // light theme
+              darkTheme: appDarkTheme(), // dark theme
+              themeMode: settings.flutterThemeMode,
+              // Localization
+              locale: settings.locale,
+              supportedLocales: AppLocalizations.supportedLocales,
+              localizationsDelegates: const [
+                AppLocalizations.delegate,
+                GlobalMaterialLocalizations.delegate,
+                GlobalWidgetsLocalizations.delegate,
+                GlobalCupertinoLocalizations.delegate,
+              ],
+              initialRoute: AppRoutes.splashPage,
+              routes: AppRoutes.listRoute,
+            ),
+          );
+        },
+      ),
     );
   }
 }

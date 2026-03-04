@@ -1,7 +1,7 @@
 import 'dart:async';
+
 import 'package:eefood/app_routes.dart';
 import 'package:eefood/core/utils/deep_link_service.dart';
-import 'package:eefood/features/auth/presentation/screens/welcome_page.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 

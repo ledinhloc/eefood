@@ -48,9 +48,10 @@ class _ChatbotMainScreenState extends State<ChatbotMainScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     return Scaffold(
-      backgroundColor: const Color(0xFFF8F9FA),
-      appBar: _buildAppBar(),
+      backgroundColor: theme.scaffoldBackgroundColor,
+      appBar: _buildAppBar(theme),
       body: Column(
         children: [
           Expanded(
@@ -138,7 +139,7 @@ class _ChatbotMainScreenState extends State<ChatbotMainScreen> {
     );
   }
 
-  PreferredSizeWidget _buildAppBar() {
+  PreferredSizeWidget _buildAppBar(ThemeData theme) {
     return AppBar(
       title: Row(
         mainAxisSize: MainAxisSize.min,
@@ -155,14 +156,18 @@ class _ChatbotMainScreenState extends State<ChatbotMainScreen> {
             child: const Icon(Icons.restaurant, color: Colors.white, size: 16),
           ),
           const SizedBox(width: 8),
-          const Text(
+          Text(
             'eeFoodBot',
-            style: TextStyle(fontWeight: FontWeight.w600, fontSize: 17),
+            style: TextStyle(
+              fontWeight: FontWeight.w600,
+              fontSize: 17,
+              color: theme.colorScheme.onSurface,
+            ),
           ),
         ],
       ),
       centerTitle: true,
-      backgroundColor: Colors.white,
+      backgroundColor: theme.scaffoldBackgroundColor,
       elevation: 0,
       bottom: PreferredSize(
         preferredSize: const Size.fromHeight(1),
