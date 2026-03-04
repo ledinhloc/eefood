@@ -11,6 +11,7 @@ class NotificationItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     final bool isSystem = notification.type == "SYSTEM";
     final bool isRead = notification.isRead ?? true;
     final bool hasPostImage = notification.postImageUrl?.isNotEmpty ?? false;
@@ -21,10 +22,16 @@ class NotificationItem extends StatelessWidget {
         width: double.infinity,
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
         decoration: BoxDecoration(
-          color: isRead ? Colors.white : Colors.blue.shade50,
-          border: Border(
-            bottom: BorderSide(color: Color(0xFFEAEAEA), width: 1),
-          ),
+          color: isRead
+              ? Colors
+                    .transparent 
+              : theme.brightness == Brightness.dark
+              ? theme.colorScheme.primary.withOpacity(
+                  0.12,
+                ) 
+              : theme.colorScheme.primary.withOpacity(
+                  0.08,
+                ), 
         ),
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -94,7 +101,7 @@ class NotificationItem extends StatelessWidget {
                           style: TextStyle(
                             fontSize: 15,
                             fontWeight: FontWeight.w600,
-                            color: Colors.black87,
+                            color: theme.colorScheme.onSurface,
                           ),
                         ),
                       ),
@@ -106,9 +113,9 @@ class NotificationItem extends StatelessWidget {
                   // Nội dung
                   Text(
                     notification.body ?? '',
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontSize: 13,
-                      color: Colors.black54,
+                      color: theme.colorScheme.onSurface,
                       height: 1.3,
                     ),
                     maxLines: 2,
@@ -122,7 +129,7 @@ class NotificationItem extends StatelessWidget {
                     TimeParser.formatTime(
                       notification.createdAt ?? DateTime.now(),
                     ),
-                    style: const TextStyle(fontSize: 12, color: Colors.grey),
+                    style: TextStyle(fontSize: 12, color: Colors.grey[600]),
                   ),
                 ],
               ),

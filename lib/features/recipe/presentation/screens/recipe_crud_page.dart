@@ -1,12 +1,13 @@
 import 'package:eefood/core/di/injection.dart';
 import 'package:eefood/core/widgets/snack_bar.dart';
+import 'package:eefood/features/recipe/data/models/recipe_model.dart';
 import 'package:eefood/features/recipe/presentation/provider/recipe_cubit.dart';
 import 'package:eefood/features/recipe/presentation/provider/recipe_refresh_cubit.dart';
 import 'package:eefood/features/recipe/presentation/provider/recipe_state.dart';
 import 'package:flutter/material.dart';
-import 'package:eefood/features/recipe/data/models/recipe_model.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
+
 import '../widgets/basic_info_section.dart';
 import '../widgets/ingredients_section.dart';
 import '../widgets/instructions_section.dart';
@@ -55,10 +56,11 @@ class _RecipeCreatePageState extends State<RecipeCreatePage> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     return BlocProvider(
       create: (_) => getIt<RecipeCrudCubit>(param1: _recipe),
       child: Scaffold(
-        backgroundColor: Colors.white,
+        backgroundColor: theme.scaffoldBackgroundColor,
         body: SafeArea(
           child: BlocConsumer<RecipeCrudCubit, RecipeCrudState>(
             listener: (context, state) {
@@ -79,15 +81,19 @@ class _RecipeCreatePageState extends State<RecipeCreatePage> {
                     child: Row(
                       children: [
                         IconButton(
-                          icon: const Icon(Icons.close),
+                          icon: Icon(
+                            Icons.close,
+                            color: theme.colorScheme.onSurface,
+                          ),
                           onPressed: () => Navigator.pop(context),
                         ),
-                        const Expanded(
+                        Expanded(
                           child: Text(
                             'Create Recipe',
                             style: TextStyle(
                               fontSize: 18,
                               fontWeight: FontWeight.bold,
+                              color: theme.colorScheme.onSurface,
                             ),
                           ),
                         ),
@@ -100,7 +106,10 @@ class _RecipeCreatePageState extends State<RecipeCreatePage> {
                             ),
                           ),
                         IconButton(
-                          icon: const Icon(Icons.save),
+                          icon: Icon(
+                            Icons.save,
+                            color: theme.colorScheme.onSurface,
+                          ),
                           onPressed: () {
                             _saveRecipe(context);
                           },

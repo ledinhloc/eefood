@@ -4,16 +4,36 @@ import 'app_colors.dart';
 
 ThemeData appTheme() {
   return ThemeData(
+    appBarTheme: AppBarTheme(
+      backgroundColor: Colors.transparent
+    ),
+    cardTheme: CardThemeData(color: Colors.red[50]),
+    colorScheme: ColorScheme.light(
+      primary: primaryColor,
+      secondary: primaryColor,
+      surface: Colors.white,
+      onSurface: textColor, 
+      onPrimary: Colors.white,
+      primaryContainer: primaryColor.withOpacity(0.1),
+    ),
     /* mau chu dao dung cho: AppBar, Button */
     primaryColor: primaryColor,
     /* mau mac dinh cho scaffold */
     scaffoldBackgroundColor: backgroundColor,
     /* style mặc định cho TextField / TextFormField */
     inputDecorationTheme: InputDecorationTheme(
+      filled: true,
+      fillColor: Colors.white,
       border: OutlineInputBorder(
-        borderSide: BorderSide(color: inputBorderColor),
+        borderRadius: BorderRadius.circular(12),
+        borderSide: const BorderSide(color: Color(0xFFB2BEC3)),
+      ),
+      enabledBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(12),
+        borderSide: const BorderSide(color: Color(0xFFB2BEC3)),
       ),
       focusedBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(12),
         borderSide: BorderSide(color: primaryColor),
       ),
     ),
@@ -50,24 +70,42 @@ ThemeData appDarkTheme() {
   const darkBackgroundColor = Color(0xFF121212); // Nền tối
   const darkSurfaceColor = Color(0xFF1E1E1E); // Card, bottom nav
   const darkTextColor = Color(0xFFEFEFEF); // Chữ sáng
-  const darkInputBorderColor = Color(0xFF3A3A3A); // Viền input
+  const darkInputBorderColor = Colors.white; // Viền input
 
   return ThemeData(
+    appBarTheme: AppBarTheme(backgroundColor: Colors.black),
+    cardTheme: CardThemeData(
+      color: Colors.red[40]
+    ),
+    colorScheme: const ColorScheme.dark(
+      primary: darkPrimaryColor,
+      secondary: darkPrimaryColor,
+      surface: darkSurfaceColor,
+      onSurface: darkTextColor, // ← Màu chữ & icon tự động sáng lên
+      onPrimary: Colors.white,
+      primaryContainer: Color(0xFF2A1F3D),
+    ),
     /* mau chu dao */
     primaryColor: darkPrimaryColor,
     /* mau nen scaffold */
     scaffoldBackgroundColor: darkBackgroundColor,
     /* style mặc định cho TextField / TextFormField */
-    inputDecorationTheme: const InputDecorationTheme(
+    inputDecorationTheme: InputDecorationTheme(
+      filled: true,
+      fillColor: Colors.black,
       border: OutlineInputBorder(
-        borderSide: BorderSide(color: darkInputBorderColor),
+        borderRadius: BorderRadius.circular(12),
+        borderSide: const BorderSide(color: Colors.white),
+      ),
+      enabledBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(12),
+        borderSide: const BorderSide(color: Colors.white),
       ),
       focusedBorder: OutlineInputBorder(
-        borderSide: BorderSide(color: darkPrimaryColor),
+        borderRadius: BorderRadius.circular(12),
+        borderSide: const BorderSide(color: darkPrimaryColor),
       ),
-      filled: true,
-      fillColor: darkSurfaceColor,
-      hintStyle: TextStyle(color: Color(0xFF6B6B6B)),
+      hintStyle: const TextStyle(color: Color(0xFF6B6B6B)),
     ),
     /* style chữ */
     textTheme: const TextTheme(

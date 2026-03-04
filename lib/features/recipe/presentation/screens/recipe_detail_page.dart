@@ -89,6 +89,8 @@ class _RecipeDetailPageState extends State<RecipeDetailPage> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
     return MultiBlocProvider(
       providers: [
         BlocProvider.value(value: _cubit),
@@ -123,6 +125,7 @@ class _RecipeDetailPageState extends State<RecipeDetailPage> {
               child: NestedScrollView(
                 headerSliverBuilder: (context, _) => [
                   SliverAppBar(
+                    shadowColor: Colors.transparent,
                     expandedHeight: 300,
                     pinned: true,
                     backgroundColor: Colors.white,
@@ -187,9 +190,10 @@ class _RecipeDetailPageState extends State<RecipeDetailPage> {
                             const SizedBox(height: 4),
                             Text(
                               recipe.title,
-                              style: const TextStyle(
+                              style: TextStyle(
                                 fontSize: 22,
                                 fontWeight: FontWeight.bold,
+                                color: theme.colorScheme.onSurface,
                               ),
                               textAlign: TextAlign.center,
                             ),
@@ -224,10 +228,10 @@ class _RecipeDetailPageState extends State<RecipeDetailPage> {
                                         recipe.avatarUrl!,
                                         fit: BoxFit.cover,
                                       )
-                                    : const Icon(
+                                    : Icon(
                                         Icons.person,
                                         size: 40,
-                                        color: Colors.grey,
+                                        color: theme.colorScheme.onSurface,
                                       ),
                               ),
                             ),
@@ -331,11 +335,13 @@ class _RecipeDetailPageState extends State<RecipeDetailPage> {
                           _infoBlock(
                             "${recipe.ingredients?.length ?? 0}",
                             "Ingredients",
+                            context,
                           ),
-                          _infoBlock("${totalTime}m", "Total Time"),
+                          _infoBlock("${totalTime}m", "Total Time", context),
                           _infoBlock(
                             recipe.difficulty?.name ?? "N/A",
                             "Difficulty",
+                            context,
                           ),
                         ],
                       ),
@@ -347,7 +353,10 @@ class _RecipeDetailPageState extends State<RecipeDetailPage> {
                           recipe.description!.isNotEmpty)
                         Text(
                           recipe.description!,
-                          style: const TextStyle(fontSize: 15),
+                          style: TextStyle(
+                            fontSize: 15,
+                            color: theme.colorScheme.onSurface,
+                          ),
                         ),
 
                       const SizedBox(height: 12),
@@ -359,14 +368,16 @@ class _RecipeDetailPageState extends State<RecipeDetailPage> {
                         children: [
                           if (recipe.region != null &&
                               recipe.region!.isNotEmpty)
-                            _iconText(Icons.place, recipe.region!),
+                            _iconText(Icons.place, recipe.region!, context),
                           _iconText(
                             Icons.schedule,
                             "Prep: ${recipe.prepTime ?? 0} min",
+                            context
                           ),
                           _iconText(
                             Icons.local_dining,
                             "Cook: ${recipe.cookTime ?? 0} min",
+                            context
                           ),
                         ],
                       ),
@@ -397,7 +408,7 @@ class _RecipeDetailPageState extends State<RecipeDetailPage> {
                             ),
                             padding: const EdgeInsets.all(12),
                             child: Row(
-                              children: const [
+                              children:  [
                                 Icon(
                                   Icons.play_circle_fill,
                                   color: Colors.orange,
@@ -409,6 +420,7 @@ class _RecipeDetailPageState extends State<RecipeDetailPage> {
                                   style: TextStyle(
                                     fontSize: 16,
                                     fontWeight: FontWeight.w500,
+                                    color: theme.colorScheme.onSurface
                                   ),
                                 ),
                               ],
@@ -501,7 +513,8 @@ class _RecipeDetailPageState extends State<RecipeDetailPage> {
   }
 
   // --- Helper widgets ---
-  Widget _iconText(IconData icon, String text) {
+  Widget _iconText(IconData icon, String text, BuildContext context) {
+    final theme = Theme.of(context);
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
       decoration: BoxDecoration(
@@ -511,15 +524,16 @@ class _RecipeDetailPageState extends State<RecipeDetailPage> {
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(icon, size: 18, color: Colors.black54),
+          Icon(icon, size: 18, color: Colors.black45),
           const SizedBox(width: 4),
-          Text(text),
+          Text(text, style: TextStyle(color: Colors.black45)),
         ],
       ),
     );
   }
 
-  Widget _infoBlock(String value, String label) {
+  Widget _infoBlock(String value, String label, BuildContext context) {
+    final theme = Theme.of(context);
     return Column(
       children: [
         Text(
@@ -530,7 +544,7 @@ class _RecipeDetailPageState extends State<RecipeDetailPage> {
             color: Colors.orange,
           ),
         ),
-        Text(label, style: const TextStyle(color: Colors.black54)),
+        Text(label, style: TextStyle(color: theme.colorScheme.onSurface)),
       ],
     );
   }

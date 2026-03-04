@@ -77,7 +77,10 @@ class ProfilePage extends StatelessWidget {
               automaticallyImplyLeading: false,
               title: Text(
                 l10n.profileTitle,
-                style: TextStyle(fontWeight: FontWeight.bold),
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  color: theme.colorScheme.onSurface,
+                ),
               ),
             ),
             body: ListView(
@@ -136,9 +139,9 @@ class ProfilePage extends StatelessWidget {
                     IconButton(
                       onPressed: () async =>
                           await _handlerLogout(context, user),
-                      icon: const Icon(
+                      icon: Icon(
                         Icons.exit_to_app_outlined,
-                        color: Colors.black,
+                        color: theme.colorScheme.onSurface,
                         size: 30,
                       ),
                     ),
@@ -158,10 +161,13 @@ class ProfilePage extends StatelessWidget {
                 ),
 
                 Card(
-                  color: Colors.red[50],
+                  color: theme.cardTheme.color,
                   child: ListTile(
                     leading: const Icon(Icons.star, color: Colors.red),
-                    title: Text(l10n.tryPlusTitle),
+                    title: Text(
+                      l10n.tryPlusTitle,
+                      style: TextStyle(color: theme.colorScheme.onSurface),
+                    ),
                     trailing: ElevatedButton(
                       onPressed: () => Navigator.pushNamed(
                         context,
@@ -171,7 +177,10 @@ class ProfilePage extends StatelessWidget {
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Colors.yellow.shade200,
                       ),
-                      child: Text(l10n.tryPlusButton),
+                      child: Text(
+                        l10n.tryPlusButton,
+                        style: TextStyle(color: Colors.red),
+                      ),
                     ),
                   ),
                 ),

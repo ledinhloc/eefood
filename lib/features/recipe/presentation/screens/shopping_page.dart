@@ -25,11 +25,12 @@ class ShoppingView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     return Scaffold(
-      backgroundColor: Colors.grey.shade50,
+      backgroundColor: theme.scaffoldBackgroundColor,
       appBar: AppBar(
         elevation: 0,
-        backgroundColor: Colors.white,
+        backgroundColor: theme.scaffoldBackgroundColor,
         automaticallyImplyLeading: false,
         title: Row(
           children: [
@@ -49,12 +50,12 @@ class ShoppingView extends StatelessWidget {
             ),
             const SizedBox(width: 12),
             Expanded(
-              child: const Text(
+              child:  Text(
                 'Danh sách nguyên liệu',
                 overflow: TextOverflow.ellipsis,
                 style: TextStyle(
                   fontWeight: FontWeight.bold,
-                  color: Colors.black87,
+                  color: theme.colorScheme.onSurface,
                 ),
               ),
             ),

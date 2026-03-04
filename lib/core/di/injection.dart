@@ -55,6 +55,7 @@ import 'package:eefood/features/profile/data/repo/settings_repository_impl.dart'
 import 'package:eefood/features/profile/domain/repositories/profile_repository.dart';
 import 'package:eefood/features/profile/domain/repositories/settings_repository.dart';
 import 'package:eefood/features/profile/domain/usecases/profile_usecase.dart';
+import 'package:eefood/features/profile/presentation/provider/settings_cubit.dart';
 import 'package:eefood/features/recipe/data/models/recipe_model.dart';
 import 'package:eefood/features/recipe/data/repositories/recipe_repository_impl.dart';
 import 'package:eefood/features/recipe/domain/repositories/recipe_repository.dart';
@@ -298,5 +299,9 @@ Future<void> setupDependencies() async {
   // SettingsRepository
   getIt.registerLazySingleton<SettingsRepository>(
     () => SettingsRepositoryImpl(getIt<SettingsLocalDataSource>()),
+  );
+
+  getIt.registerLazySingleton<SettingsCubit>(
+    () => SettingsCubit(getIt<SettingsRepository>()),
   );
 }

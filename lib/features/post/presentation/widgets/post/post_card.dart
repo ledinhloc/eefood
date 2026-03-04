@@ -1,10 +1,10 @@
-import 'package:eefood/features/auth/domain/entities/user.dart';
 import 'package:flutter/material.dart';
+
 import '../../../data/models/post_model.dart';
 import '../../../data/models/reaction_type.dart';
-import 'post_header.dart';
 import 'post_content.dart';
 import 'post_footer.dart';
+import 'post_header.dart';
 
 // 🎨 App color palette
 const kPrimaryColor = Color(0xFFFF6B35);
@@ -19,7 +19,8 @@ class PostCard extends StatelessWidget {
   final PostModel post;
   final bool isGuest;
   final VoidCallback? onTap;
-  final void Function(Offset offset, Function(ReactionType) onSelect)? onShowReactions;
+  final void Function(Offset offset, Function(ReactionType) onSelect)?
+  onShowReactions;
 
   const PostCard({
     super.key,
@@ -33,9 +34,9 @@ class PostCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final hasImage = post.imageUrl != null && post.imageUrl.trim().isNotEmpty;
-
+    final theme = Theme.of(context);
     return Card(
-      color: Colors.white,
+      color: theme.colorScheme.surface,
       margin: const EdgeInsets.symmetric(horizontal: 0, vertical: 10),
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
       clipBehavior: Clip.antiAlias,
@@ -44,35 +45,39 @@ class PostCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          PostHeader(userId: userId,post: post, isGuest: isGuest),
+          PostHeader(userId: userId, post: post, isGuest: isGuest),
           GestureDetector(
             onTap: onTap,
             child: Hero(
               tag: 'post_${post.id}',
               child: hasImage
                   ? Image.network(
-                post.imageUrl,
-                fit: BoxFit.cover,
-                width: double.infinity,
-                height: 220,
-                loadingBuilder: (context, child, loadingProgress) {
-                  if (loadingProgress == null) return child;
-                  return Container(
-                    height: 220,
-                    color: kNeutralLight,
-                    child: const Center(
-                      child: CircularProgressIndicator(strokeWidth: 2),
-                    ),
-                  );
-                },
-                errorBuilder: (_, __, ___) => _buildImagePlaceholder(),
-              )
+                      post.imageUrl,
+                      fit: BoxFit.cover,
+                      width: double.infinity,
+                      height: 220,
+                      loadingBuilder: (context, child, loadingProgress) {
+                        if (loadingProgress == null) return child;
+                        return Container(
+                          height: 220,
+                          color: kNeutralLight,
+                          child: const Center(
+                            child: CircularProgressIndicator(strokeWidth: 2),
+                          ),
+                        );
+                      },
+                      errorBuilder: (_, __, ___) => _buildImagePlaceholder(),
+                    )
                   : _buildImagePlaceholder(),
             ),
           ),
           PostContent(post: post),
           const Divider(height: 1, color: kNeutralGray),
-          PostFooter(post: post, onShowReactions: onShowReactions, isGuest: isGuest,),
+          PostFooter(
+            post: post,
+            onShowReactions: onShowReactions,
+            isGuest: isGuest,
+          ),
         ],
       ),
     );
@@ -84,11 +89,7 @@ class PostCard extends StatelessWidget {
       width: double.infinity,
       color: kNeutralLight,
       child: const Center(
-        child: Icon(
-          Icons.image_not_supported,
-          size: 50,
-          color: Colors.grey,
-        ),
+        child: Icon(Icons.image_not_supported, size: 50, color: Colors.grey),
       ),
     );
   }

@@ -20,7 +20,7 @@ class SettingsState {
   factory SettingsState.initial() => const SettingsState(
     language: AppLanguage.vi,
     themeMode: AppThemeMode.system,
-    fontSize: AppFontSize.medium,
+    fontSize: AppFontSize.small,
   );
 
   SettingsState copyWith({
@@ -63,7 +63,7 @@ class SettingsState {
   double get textScaleFactor {
     switch (fontSize) {
       case AppFontSize.small:
-        return 0.85;
+        return 0.75;
       case AppFontSize.medium:
         return 1.0;
       case AppFontSize.large:

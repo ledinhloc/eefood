@@ -1,2 +1,9 @@
 NOTE
 1. Định nghĩa router trong app_routes
+
+2. Thêm vào C:\Users\Tên máy\AppData\Local\Pub\Cache\hosted\pub.dev\isar_flutter_libs-3.1.0+1\android\build.gradle
+android {
+    namespace 'com.isar.isar_flutter_libs'   // ← Thêm dòng này
+    compileSdkVersion 35
+    // ... phần còn lại giữ nguyên
+}

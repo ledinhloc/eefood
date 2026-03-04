@@ -132,11 +132,12 @@ class _PersonalUserInfoState extends State<PersonalUserInfo> {
   }
 
   Widget _buildStats(BuildContext context, FollowState state) {
+    final theme = Theme.of(context);
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 16),
       padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 8),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: theme.colorScheme.surface,
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(

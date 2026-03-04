@@ -1,7 +1,6 @@
 import 'package:eefood/core/constants/app_constants.dart';
 import 'package:eefood/features/auth/domain/entities/user.dart';
 import 'package:flutter/material.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
 class AboutTab extends StatefulWidget {
   final User user;
@@ -14,40 +13,57 @@ class AboutTab extends StatefulWidget {
 class _AboutTabState extends State<AboutTab> {
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     return Container(
-      color: const Color(0xFFF8F9FA),
+      color: theme.colorScheme.surface,
       child: CustomScrollView(
         slivers: [
           SliverPadding(
             padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
             sliver: SliverList(
               delegate: SliverChildListDelegate([
-                _buildSectionTitle('Thông tin cá nhân', Icons.person_outline),
+                _buildSectionTitle(
+                  'Thông tin cá nhân',
+                  Icons.person_outline,
+                  theme,
+                ),
                 const SizedBox(height: 16),
                 _buildInfoRow(
                   Icons.cake_outlined,
                   'Ngày sinh',
                   _formatDate(widget.user.dob),
+                  theme,
                 ),
                 _buildDivider(),
                 _buildInfoRow(
                   Icons.wc_outlined,
                   'Giới tính',
                   widget.user.gender ?? 'Khác',
+                  theme,
                 ),
                 _buildDivider(),
-                _buildInfoRow(Icons.email_outlined, 'Email', widget.user.email),
+                _buildInfoRow(
+                  Icons.email_outlined,
+                  'Email',
+                  widget.user.email,
+                  theme,
+                ),
                 _buildDivider(),
                 _buildInfoRow(
                   Icons.location_on_outlined,
                   'Địa chỉ',
                   _formatAddress(widget.user.address),
+                  theme,
                   maxLines: 2,
                 ),
 
                 const SizedBox(height: 32),
                 if (widget.user.allergies?.isNotEmpty ?? false) ...[
-                  _buildSectionTitle('Dị ứng', Icons.warning_amber_rounded),
+                  _buildSectionTitle(
+                    'Dị ứng',
+                    Icons.warning_amber_rounded,
+                    theme,
+                  ),
                   const SizedBox(height: 16),
                   _buildTagList(
                     widget.user.allergies!,
@@ -61,6 +77,7 @@ class _AboutTabState extends State<AboutTab> {
                   _buildSectionTitle(
                     'Danh sách yêu thích',
                     Icons.restaurant_menu,
+                    theme,
                   ),
                   const SizedBox(height: 16),
                   _buildTagList(
@@ -72,7 +89,11 @@ class _AboutTabState extends State<AboutTab> {
                   const SizedBox(height: 32),
                 ],
                 if (widget.user.dietaryPreferences?.isNotEmpty ?? false) ...[
-                  _buildSectionTitle('Chế độ ăn yêu thích', Icons.eco_outlined),
+                  _buildSectionTitle(
+                    'Chế độ ăn yêu thích',
+                    Icons.eco_outlined,
+                    theme,
+                  ),
                   const SizedBox(height: 16),
                   _buildTagList(
                     widget.user.dietaryPreferences!,
@@ -90,17 +111,17 @@ class _AboutTabState extends State<AboutTab> {
     );
   }
 
-  Widget _buildSectionTitle(String title, IconData icon) {
+  Widget _buildSectionTitle(String title, IconData icon, ThemeData theme) {
     return Row(
       children: [
         Icon(icon, size: 22, color: const Color(0xFFE67E22)),
         const SizedBox(width: 8),
         Text(
           title,
-          style: const TextStyle(
+          style: TextStyle(
             fontSize: 18,
             fontWeight: FontWeight.w700,
-            color: Color(0xFF2C3E50),
+            color: theme.colorScheme.onSurface,
             letterSpacing: 0.3,
           ),
         ),
@@ -111,7 +132,8 @@ class _AboutTabState extends State<AboutTab> {
   Widget _buildInfoRow(
     IconData icon,
     String label,
-    String value, {
+    String value,
+    ThemeData theme, {
     int maxLines = 1,
   }) {
     return Padding(
@@ -119,7 +141,7 @@ class _AboutTabState extends State<AboutTab> {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          Icon(icon, size: 20, color: Colors.grey.shade600),
+          Icon(icon, size: 20, color: theme.colorScheme.onSurface),
           const SizedBox(width: 12),
           Expanded(
             child: Column(
@@ -130,7 +152,7 @@ class _AboutTabState extends State<AboutTab> {
                   style: TextStyle(
                     fontSize: 13,
                     fontWeight: FontWeight.w500,
-                    color: Colors.grey.shade600,
+                    color: theme.colorScheme.onSurface,
                   ),
                 ),
                 const SizedBox(height: 4),
@@ -138,10 +160,10 @@ class _AboutTabState extends State<AboutTab> {
                   value,
                   maxLines: maxLines,
                   overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 15,
                     fontWeight: FontWeight.w600,
-                    color: Color(0xFF2C3E50),
+                    color: theme.colorScheme.onSurface,
                     height: 1.4,
                   ),
                 ),
