@@ -1,6 +1,7 @@
 import 'package:eefood/features/post/data/models/reaction_type.dart';
 import 'package:eefood/features/post/presentation/widgets/post/post_card.dart';
 import 'package:flutter/material.dart';
+
 import '../../../data/models/post_model.dart';
 
 class PostContent extends StatelessWidget {
@@ -48,7 +49,7 @@ class PostContent extends StatelessWidget {
             maxLines: 3,
             overflow: TextOverflow.ellipsis,
             style: TextStyle(
-              color: Colors.grey.shade800,
+              color: Colors.grey.shade700,
               fontSize: 14,
               height: 1.5,
             ),
@@ -73,14 +74,15 @@ class PostContent extends StatelessWidget {
           ],
 
           // Reaction Summary
-          _buildEngagementStats(),
+          _buildEngagementStats(context),
         ],
       ),
     );
   }
 
   Widget _buildRecipeInfoRow() {
-    final hasInfo = post.region != null ||
+    final hasInfo =
+        post.region != null ||
         post.difficulty != null ||
         post.prepTime != null ||
         post.cookTime != null;
@@ -227,11 +229,7 @@ class PostContent extends StatelessWidget {
       children: [
         Row(
           children: [
-            Icon(
-              Icons.restaurant_menu,
-              size: 16,
-              color: kSecondaryColor,
-            ),
+            Icon(Icons.restaurant_menu, size: 16, color: kSecondaryColor),
             const SizedBox(width: 6),
             Text(
               'Nguyên liệu:',
@@ -270,7 +268,9 @@ class PostContent extends StatelessWidget {
     );
   }
 
-  Widget _buildEngagementStats() {
+  Widget _buildEngagementStats(BuildContext context) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
     final hasReactions = post.reactionCounts.entries.any((e) => e.value > 0);
     final hasEngagement =
         hasReactions || post.totalComments > 0 || post.totalShares > 0;
@@ -283,7 +283,7 @@ class PostContent extends StatelessWidget {
       margin: const EdgeInsets.only(top: 8),
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
       decoration: BoxDecoration(
-        color: kNeutralLight,
+        color: isDark ? Colors.grey[800] : Colors.grey[100],
         borderRadius: BorderRadius.circular(12),
       ),
       child: Row(
@@ -364,7 +364,7 @@ class PostContent extends StatelessWidget {
           style: TextStyle(
             fontSize: 14,
             fontWeight: FontWeight.w600,
-            color: Colors.grey.shade700,
+            color: Colors.grey.shade500,
           ),
         ),
       ],

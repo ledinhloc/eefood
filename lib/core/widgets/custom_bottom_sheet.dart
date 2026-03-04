@@ -2,9 +2,9 @@ import 'package:flutter/material.dart';
 
 /// Hàm helper mở CustomBottomSheet
 Future<void> showCustomBottomSheet(
-    BuildContext context,
-    List<BottomSheetOption> options,
-    ) {
+  BuildContext context,
+  List<BottomSheetOption> options,
+) {
   return showModalBottomSheet(
     context: context,
     backgroundColor: Colors.transparent,
@@ -32,9 +32,10 @@ class CustomBottomSheet extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     return Container(
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: theme.scaffoldBackgroundColor,
         borderRadius: const BorderRadius.vertical(top: Radius.circular(28)),
         boxShadow: [
           BoxShadow(
@@ -83,12 +84,12 @@ class CustomBottomSheet extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(width: 12),
-                  const Text(
+                  Text(
                     "Chọn thao tác",
                     style: TextStyle(
                       fontSize: 18,
                       fontWeight: FontWeight.bold,
-                      color: Color(0xFF2D3436),
+                      color: theme.colorScheme.onSurface,
                     ),
                   ),
                 ],
@@ -119,22 +120,19 @@ class CustomBottomSheet extends StatelessWidget {
   }
 
   Widget _buildOptionTile(
-      BuildContext context,
-      BottomSheetOption option,
-      bool isLast,
-      ) {
+    BuildContext context,
+    BottomSheetOption option,
+    bool isLast,
+  ) {
     // Xác định màu theo icon
     Color accentColor = _getAccentColor(option.icon);
-
+    final theme = Theme.of(context);
     return Container(
       margin: EdgeInsets.only(bottom: isLast ? 0 : 8),
       decoration: BoxDecoration(
         color: accentColor.withOpacity(0.05),
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(
-          color: accentColor.withOpacity(0.1),
-          width: 1,
-        ),
+        border: Border.all(color: accentColor.withOpacity(0.1), width: 1),
       ),
       child: Material(
         color: Colors.transparent,
@@ -166,10 +164,10 @@ class CustomBottomSheet extends StatelessWidget {
                 Expanded(
                   child: Text(
                     option.title,
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.w600,
-                      color: Color(0xFF2D3436),
+                      color: theme.colorScheme.onSurface,
                       letterSpacing: 0.2,
                     ),
                   ),

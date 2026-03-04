@@ -8,7 +8,7 @@ part of 'chatbot_response.dart';
 
 ChatbotResponse _$ChatbotResponseFromJson(Map<String, dynamic> json) =>
     ChatbotResponse(
-      id: json['id'] as int?,
+      id: (json['id'] as num?)?.toInt(),
       message: json['message'] as String?,
       role: json['role'] as String,
       data: json['data'] as List<dynamic>?,
@@ -23,4 +23,5 @@ Map<String, dynamic> _$ChatbotResponseToJson(ChatbotResponse instance) =>
       'role': instance.role,
       'data': instance.data,
       'meta': instance.meta,
+      'isStatusMessage': instance.isStatusMessage,
     };

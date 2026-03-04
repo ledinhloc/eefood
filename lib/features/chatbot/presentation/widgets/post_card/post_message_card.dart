@@ -9,6 +9,7 @@ class PostMessageCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     return InkWell(
       borderRadius: BorderRadius.circular(14),
       onTap: () {
@@ -66,11 +67,11 @@ class PostMessageCard extends StatelessWidget {
                     postModel.title,
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(
+                    style:  TextStyle(
                       fontSize: 13,
                       fontWeight: FontWeight.w600,
                       height: 1.35,
-                      color: Color(0xFF1A1A1A),
+                      color: theme.colorScheme.onSurface,
                     ),
                   ),
 

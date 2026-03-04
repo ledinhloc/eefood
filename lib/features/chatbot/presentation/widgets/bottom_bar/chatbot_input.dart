@@ -103,17 +103,18 @@ class _ChatbotInputState extends State<ChatbotInput> {
   }
 
   Future<void> _showOptionsBottomSheet() async {
+    final theme = Theme.of(context);
     final cubit = context.read<ChatbotCubit>();
     await showCustomBottomSheet(context, [
       BottomSheetOption(
-        icon: const Icon(Icons.image_rounded, color: Colors.blue),
+        icon: Icon(Icons.image_rounded, color: theme.colorScheme.primary),
         title: 'Chọn hình từ thư viện',
         onTap: _pickImage,
       ),
       BottomSheetOption(
-        icon: const Icon(
+        icon: Icon(
           Icons.collections_bookmark_rounded,
-          color: Colors.deepOrange,
+          color: theme.colorScheme.primary,
         ),
         title: 'Bài viết gần đây',
         onTap: () async {
@@ -129,6 +130,8 @@ class _ChatbotInputState extends State<ChatbotInput> {
 
   void _showRecentPostsSheet(ChatbotCubit cubit) {
     if (!mounted) return;
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
 
     if (cubit.state.recentPosts.isEmpty && !cubit.state.isLoadingRecentPosts) {
       cubit.loadRecentPosts();
@@ -152,12 +155,14 @@ class _ChatbotInputState extends State<ChatbotInput> {
             if (state.isLoadingRecentPosts) {
               return Container(
                 height: 300,
-                decoration: const BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
+                decoration: BoxDecoration(
+                  color: isDark ? const Color(0xFF242424) : Colors.white,
+                  borderRadius: const BorderRadius.vertical(
+                    top: Radius.circular(28),
+                  ),
                 ),
-                child: const Center(
-                  child: SpinKitCircle(color: Colors.deepOrange),
+                child: Center(
+                  child: SpinKitCircle(color: theme.colorScheme.primary),
                 ),
               );
             }
@@ -216,6 +221,36 @@ class _ChatbotInputState extends State<ChatbotInput> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+
+    // ── Màu semantic ────────────────────────────────────────────────────────
+    // Nền ô input: xám nhạt (light) / xám than (dark)
+    final Color inputBg = isDark
+        ? const Color(0xFF2C2C2C)
+        : const Color(0xFFF3F4F6);
+
+    // Màu hint & icon mic
+    final Color hintAndMicColor = isDark
+        ? const Color(0xFF6B6B6B)
+        : Colors.grey;
+
+    // Nút "+" khi active: nền đen (light) / trắng ngà (dark)
+    final Color addBtnBg = isDark ? const Color(0xFFEFEFEF) : Colors.black;
+    final Color addBtnIcon = isDark ? Colors.black : Colors.white;
+
+    // Nút "+" khi disabled (đã có post)
+    final Color addBtnDisabledBg = isDark
+        ? const Color(0xFF3A3A3A)
+        : Colors.grey.shade200;
+    final Color addBtnDisabledIcon = isDark
+        ? const Color(0xFF555555)
+        : Colors.grey.shade400;
+
+    // Nút send khi không có text: nền đen (light) / trắng ngà (dark)
+    final Color idleSendBg = isDark ? const Color(0xFFEFEFEF) : Colors.black;
+    final Color idleSendIcon = isDark ? Colors.black : Colors.white;
+
     return SafeArea(
       top: false,
       child: Container(
@@ -245,33 +280,34 @@ class _ChatbotInputState extends State<ChatbotInput> {
                 onClear: _clearImage,
               ),
 
-            // Input row
+            // ── Input row ──────────────────────────────────────────────────
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
               child: Row(
                 children: [
+                  // Nút "+"
                   BlocSelector<ChatbotCubit, ChatbotState, bool>(
                     selector: (state) => state.hasSelectedPosts,
                     builder: (context, hasSelectedPosts) => _circleButton(
                       icon: Icons.add_rounded,
                       background: hasSelectedPosts
-                          ? Colors.grey.shade200
-                          : Colors.black,
+                          ? addBtnDisabledBg
+                          : addBtnBg,
                       iconColor: hasSelectedPosts
-                          ? Colors.grey.shade400
-                          : Colors.white,
+                          ? addBtnDisabledIcon
+                          : addBtnIcon,
                       onTap: hasSelectedPosts ? null : _showOptionsBottomSheet,
                     ),
                   ),
 
                   const SizedBox(width: 8),
 
-                  // Text input + send
+                  // Ô nhập text
                   Expanded(
                     child: Container(
                       padding: const EdgeInsets.fromLTRB(14, 0, 6, 0),
                       decoration: BoxDecoration(
-                        color: const Color(0xFFF3F4F6),
+                        color: inputBg,
                         borderRadius: BorderRadius.circular(24),
                       ),
                       child: Row(
@@ -282,6 +318,9 @@ class _ChatbotInputState extends State<ChatbotInput> {
                               focusNode: _focusNode,
                               maxLines: null,
                               textInputAction: TextInputAction.send,
+                              style: TextStyle(
+                                color: theme.colorScheme.onSurface,
+                              ),
                               onSubmitted: (_) {
                                 final hasSelected = context
                                     .read<ChatbotCubit>()
@@ -291,29 +330,38 @@ class _ChatbotInputState extends State<ChatbotInput> {
                                   _handleSendMessage();
                                 }
                               },
-                              decoration: const InputDecoration(
-                                hintText: "Hỏi đáp với eeFoodBot",
+                              decoration: InputDecoration(
+                                filled: false,
+                                hintText: 'Hỏi đáp với eeFoodBot',
+                                hintStyle: TextStyle(color: hintAndMicColor),
                                 border: InputBorder.none,
                                 enabledBorder: InputBorder.none,
                                 focusedBorder: InputBorder.none,
-                                contentPadding: EdgeInsets.symmetric(
+                                contentPadding: const EdgeInsets.symmetric(
                                   vertical: 10,
                                 ),
                               ),
                             ),
                           ),
+
+                          // Icon mic (khi chưa có text)
                           if (!_hasText)
                             GestureDetector(
                               onTap: _handleVoiceSearch,
-                              child: const Padding(
-                                padding: EdgeInsets.symmetric(horizontal: 4),
+                              child: Padding(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 4,
+                                ),
                                 child: Icon(
                                   Icons.mic_none_rounded,
-                                  color: Colors.grey,
+                                  color: hintAndMicColor,
                                 ),
                               ),
                             ),
+
                           const SizedBox(width: 2),
+
+                          // Nút send / graphic_eq
                           BlocSelector<ChatbotCubit, ChatbotState, bool>(
                             selector: (state) => state.hasSelectedPosts,
                             builder: (context, hasSelectedPosts) {
@@ -322,10 +370,14 @@ class _ChatbotInputState extends State<ChatbotInput> {
                                 icon: canSend
                                     ? Icons.arrow_upward_rounded
                                     : Icons.graphic_eq_rounded,
+                                // Khi có thể gửi → cam chủ đạo
+                                // Khi idle      → đen/trắng theo theme
                                 background: canSend
-                                    ? Colors.deepOrangeAccent
-                                    : Colors.black,
-                                iconColor: Colors.white,
+                                    ? theme.colorScheme.primary
+                                    : idleSendBg,
+                                iconColor: canSend
+                                    ? Colors.white
+                                    : idleSendIcon,
                                 onTap: canSend ? _handleSendMessage : null,
                               );
                             },

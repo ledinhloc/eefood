@@ -99,21 +99,25 @@ class _NotificationScreenState extends State<NotificationScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     return GestureDetector(
       onTap: _removeOverlay, // nhấn ra ngoài để đóng overlay
       child: Scaffold(
-        backgroundColor: Colors.white,
+        backgroundColor: theme.scaffoldBackgroundColor,
         appBar: AppBar(
-          backgroundColor: Colors.white,
-          foregroundColor: Colors.black87,
+          backgroundColor: theme.appBarTheme.backgroundColor,
+          foregroundColor: theme.colorScheme.onSurface,
           elevation: 0.5,
           leading: IconButton(
             icon: const Icon(Icons.arrow_back_rounded),
             onPressed: () => Navigator.pop(context),
           ),
-          title: const Text(
+          title: Text(
             "Notifications",
-            style: TextStyle(fontWeight: FontWeight.w600),
+            style: TextStyle(
+              fontWeight: FontWeight.w600,
+              color: theme.colorScheme.onSurface,
+            ),
           ),
           centerTitle: true,
           actions: [
@@ -122,11 +126,17 @@ class _NotificationScreenState extends State<NotificationScreen> {
               child: Row(
                 children: [
                   IconButton(
-                    icon: const Icon(Icons.more_vert),
+                    icon: Icon(
+                      Icons.more_vert,
+                      color: theme.colorScheme.onSurface,
+                    ),
                     onPressed: () => _toggleOverlayMenu(context),
                   ),
                   IconButton(
-                    icon: const Icon(Icons.settings_outlined),
+                    icon: Icon(
+                      Icons.settings_outlined,
+                      color: theme.colorScheme.onSurface,
+                    ),
                     onPressed: () => Navigator.pushNamed(
                       context,
                       AppRoutes.notificationSettingScreen,
@@ -158,7 +168,7 @@ class _NotificationScreenState extends State<NotificationScreen> {
                     itemCount:
                         state.notifications.length + (state.isLoading ? 1 : 0),
                     separatorBuilder: (_, __) =>
-                        const Divider(height: 0, thickness: 0.6),
+                        const Divider(height: 0, thickness: 0.2),
                     itemBuilder: (context, index) {
                       if (index == state.notifications.length) {
                         return const Padding(

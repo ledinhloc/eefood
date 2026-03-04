@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+
 import '../../../data/models/shopping_item_model.dart';
 import '../../provider/shopping_cubit.dart';
 import '../recipe_card.dart';
@@ -7,29 +8,23 @@ import '../recipe_card.dart';
 class RecipeListWidget extends StatelessWidget {
   final List<ShoppingItemModel> recipes;
 
-  const RecipeListWidget({
-    super.key,
-    required this.recipes,
-  });
+  const RecipeListWidget({super.key, required this.recipes});
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     if (recipes.isEmpty) {
       return Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(
-              Icons.restaurant_menu,
-              size: 80,
-              color: Colors.grey.shade400,
-            ),
+            Icon(Icons.restaurant_menu, size: 80, color: Colors.grey.shade400),
             const SizedBox(height: 16),
             Text(
               'Chưa có món ăn nào',
               style: TextStyle(
                 fontSize: 16,
-                color: Colors.grey.shade600,
+                color: theme.colorScheme.onSurface,
               ),
             ),
             const SizedBox(height: 8),
@@ -37,7 +32,7 @@ class RecipeListWidget extends StatelessWidget {
               'Hãy thêm món ăn vào danh sách',
               style: TextStyle(
                 fontSize: 14,
-                color: Colors.grey.shade500,
+                color: theme.colorScheme.onSurface,
               ),
             ),
           ],
@@ -65,7 +60,7 @@ class RecipeListWidget extends StatelessWidget {
               ),
               alignment: Alignment.centerRight,
               padding: const EdgeInsets.only(right: 16),
-              child: const Column(
+              child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Icon(Icons.delete_outline, color: Colors.white, size: 28),
@@ -73,7 +68,7 @@ class RecipeListWidget extends StatelessWidget {
                   Text(
                     'Xóa',
                     style: TextStyle(
-                      color: Colors.white,
+                      color: theme.colorScheme.onSurface,
                       fontWeight: FontWeight.w600,
                     ),
                   ),

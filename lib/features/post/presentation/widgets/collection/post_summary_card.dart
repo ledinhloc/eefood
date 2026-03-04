@@ -1,12 +1,11 @@
+import 'package:eefood/core/widgets/custom_bottom_sheet.dart';
 import 'package:eefood/features/post/data/models/post_collection_model.dart';
 import 'package:flutter/material.dart';
+
 import '../../../../../core/di/injection.dart';
+import '../../../../../core/widgets/user_avatar.dart';
 import '../../../../recipe/presentation/provider/shopping_cubit.dart';
 import '../../../../recipe/presentation/screens/recipe_detail_page.dart';
-import '../../../../../core/widgets/user_avatar.dart';
-
-import 'package:eefood/core/widgets/custom_bottom_sheet.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../provider/collection_cubit.dart';
 import 'add_to_collection_sheet.dart';
 
@@ -22,6 +21,7 @@ class PostSummaryCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     final cubit = getIt<CollectionCubit>();
     return InkWell(
       borderRadius: BorderRadius.circular(16),
@@ -59,36 +59,33 @@ class PostSummaryCard extends StatelessWidget {
                   // Hình ảnh món ăn
                   recipe.imageUrl != null && recipe.imageUrl!.isNotEmpty
                       ? Image.network(
-                    recipe.imageUrl!,
-                    fit: BoxFit.cover,
-                    errorBuilder: (context, error, stackTrace) {
-                      return Container(
-                        color: Colors.grey[200],
-                        child: Icon(
-                          Icons.restaurant,
-                          size: 48,
-                          color: Colors.grey[400],
-                        ),
-                      );
-                    },
-                  )
+                          recipe.imageUrl!,
+                          fit: BoxFit.cover,
+                          errorBuilder: (context, error, stackTrace) {
+                            return Container(
+                              color: Colors.grey[200],
+                              child: Icon(
+                                Icons.restaurant,
+                                size: 48,
+                                color: Colors.grey[400],
+                              ),
+                            );
+                          },
+                        )
                       : Container(
-                    decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                        begin: Alignment.topLeft,
-                        end: Alignment.bottomRight,
-                        colors: [
-                          Colors.orange[100]!,
-                          Colors.orange[50]!,
-                        ],
-                      ),
-                    ),
-                    child: Icon(
-                      Icons.restaurant_menu,
-                      size: 48,
-                      color: Colors.orange[300],
-                    ),
-                  ),
+                          decoration: BoxDecoration(
+                            gradient: LinearGradient(
+                              begin: Alignment.topLeft,
+                              end: Alignment.bottomRight,
+                              colors: [Colors.orange[100]!, Colors.orange[50]!],
+                            ),
+                          ),
+                          child: Icon(
+                            Icons.restaurant_menu,
+                            size: 48,
+                            color: Colors.orange[300],
+                          ),
+                        ),
 
                   // Gradient overlay từ dưới lên
                   Positioned(
@@ -126,15 +123,20 @@ class PostSummaryCard extends StatelessWidget {
                           onTap: () async {
                             await showCustomBottomSheet(context, [
                               BottomSheetOption(
-                                icon: const Icon(Icons.add_shopping_cart_rounded,
-                                    color: Colors.orange),
+                                icon: const Icon(
+                                  Icons.add_shopping_cart_rounded,
+                                  color: Colors.orange,
+                                ),
                                 title: 'Thêm vào danh sách nguyên liệu',
-                                onTap: () => getIt<ShoppingCubit>()
-                                    .addRecipe(recipe.recipeId),
+                                onTap: () => getIt<ShoppingCubit>().addRecipe(
+                                  recipe.recipeId,
+                                ),
                               ),
                               BottomSheetOption(
-                                icon: const Icon(Icons.bookmark_add,
-                                    color: Colors.blue),
+                                icon: const Icon(
+                                  Icons.bookmark_add,
+                                  color: Colors.blue,
+                                ),
                                 title: 'Lưu vào bộ sưu tập khác',
                                 onTap: () {
                                   showModalBottomSheet(
@@ -146,7 +148,8 @@ class PostSummaryCard extends StatelessWidget {
                                       ),
                                     ),
                                     builder: (_) => AddToCollectionSheet(
-                                        postId: recipe.postId),
+                                      postId: recipe.postId,
+                                    ),
                                   );
                                 },
                               ),
@@ -196,11 +199,12 @@ class PostSummaryCard extends StatelessWidget {
                       recipe.title,
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontWeight: FontWeight.w600,
                         fontSize: 14,
                         height: 1.3,
                         letterSpacing: -0.2,
+                        color: Colors.black45
                       ),
                     ),
 

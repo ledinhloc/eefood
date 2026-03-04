@@ -95,6 +95,7 @@ class _PersonalUserHeaderState extends State<PersonalUserHeader> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     return BlocBuilder<ProfileCubit, User?>(
       bloc: _cubit,
       builder: (context, userState) {
@@ -112,10 +113,10 @@ class _PersonalUserHeaderState extends State<PersonalUserHeader> {
           pinned: true,
           elevation: 0,
           shadowColor: Colors.transparent,
-          backgroundColor: Colors.white,
+          backgroundColor: theme.scaffoldBackgroundColor,
           stretch: true,
           leading: IconButton(
-            icon: const Icon(Icons.arrow_back, color: Colors.orangeAccent),
+            icon: const Icon(Icons.arrow_back, color: Colors.deepOrange),
             onPressed: () => Navigator.pop(context),
           ),
           actions: [
@@ -147,13 +148,6 @@ class _PersonalUserHeaderState extends State<PersonalUserHeader> {
                 },
               ),
             ],
-            IconButton(
-              icon: const Icon(
-                Icons.settings_outlined,
-                color: Colors.orangeAccent,
-              ),
-              onPressed: () {},
-            ),
           ],
           flexibleSpace: FlexibleSpaceBar(
             stretchModes: const [

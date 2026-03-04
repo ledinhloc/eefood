@@ -3,12 +3,12 @@ import 'package:eefood/core/di/injection.dart';
 import 'package:eefood/core/utils/helpers.dart';
 import 'package:eefood/core/widgets/snack_bar.dart';
 import 'package:eefood/features/auth/data/models/otp_model.dart';
-import 'package:eefood/features/auth/data/models/result_model.dart';
 import 'package:eefood/features/auth/domain/usecases/auth_usecases.dart';
 import 'package:eefood/features/auth/presentation/bloc/forgot_password_bloc/forgot_password_cubit.dart';
 import 'package:eefood/features/auth/presentation/bloc/forgot_password_bloc/forgot_password_state.dart';
 import 'package:eefood/features/auth/presentation/widgets/auth_button.dart';
 import 'package:eefood/features/auth/presentation/widgets/custom_text_field.dart';
+import 'package:eefood/l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
@@ -20,18 +20,20 @@ class ForgotPasswordPage extends StatelessWidget {
   final ForgotPassword _forgotPassword = getIt<ForgotPassword>();
   final emailController = TextEditingController(text: 'ledinhloc7@gmail.com');
 
-  _validateEmail(String? email) {
+  _validateEmail(String? email, AppLocalizations l10n) {
     if (email == null || email.isEmpty) {
-      return 'Không được để trống email';
+      return l10n.emailEmpty;
     }
     if (!isValidEmail(email)) {
-      return 'Email không hợp lệ';
+      return l10n.emailInvalid;
     }
     return null;
   }
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    final theme = Theme.of(context);
     final emailController = TextEditingController(text: 'ledinhloc7@gmail.com');
 
     return BlocProvider(
@@ -55,6 +57,7 @@ class ForgotPasswordPage extends StatelessWidget {
         child: BlocBuilder<ForgotPasswordCubit, ForgotPasswordState>(
           builder: (context, state) {
             return Scaffold(
+              backgroundColor: theme.scaffoldBackgroundColor,
               body: Stack(
                 children: [
                   SafeArea(
@@ -65,6 +68,7 @@ class ForgotPasswordPage extends StatelessWidget {
                             child: Column(
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
+                                // Back button
                                 Padding(
                                   padding: const EdgeInsets.symmetric(
                                     vertical: 7,
@@ -75,11 +79,16 @@ class ForgotPasswordPage extends StatelessWidget {
                                       IconButton(
                                         onPressed: () =>
                                             Navigator.maybePop(context),
-                                        icon: const Icon(Icons.arrow_back),
+                                        icon: Icon(
+                                          Icons.arrow_back,
+                                          color: theme.colorScheme.onSurface,
+                                        ),
                                       ),
                                     ],
                                   ),
                                 ),
+
+                                // Top image
                                 SizedBox(
                                   height: 220,
                                   width: double.infinity,
@@ -91,6 +100,7 @@ class ForgotPasswordPage extends StatelessWidget {
                                     ),
                                   ),
                                 ),
+
                                 Container(
                                   width: double.infinity,
                                   padding: const EdgeInsets.symmetric(
@@ -100,35 +110,36 @@ class ForgotPasswordPage extends StatelessWidget {
                                   child: Column(
                                     children: [
                                       Text(
-                                        'Forgot password',
-                                        style: TextStyle(
-                                          color: Colors.black,
-                                          fontSize: 32,
-                                          fontWeight: FontWeight.bold,
-                                          fontFamily: 'Poppins',
-                                        ),
+                                        l10n.forgotPassword, // key: forgotPassword
+                                        style: theme.textTheme.displaySmall
+                                            ?.copyWith(
+                                              fontWeight: FontWeight.bold,
+                                              fontFamily: 'Poppins',
+                                            ),
                                       ),
-                                      SizedBox(height: 10),
+                                      const SizedBox(height: 10),
                                       Text(
-                                        'Please enter your email.\nWe will send an OTP code for verification',
-                                        style: TextStyle(
-                                          color: Colors.black,
-                                          fontSize: 15,
-                                          fontWeight: FontWeight.bold,
-                                          fontFamily: 'Poppins',
-                                        ),
+                                        l10n.forgotPasswordSubtitle, // key: forgotPasswordSubtitle
+                                        style: theme.textTheme.bodyMedium
+                                            ?.copyWith(
+                                              fontWeight: FontWeight.bold,
+                                              fontFamily: 'Poppins',
+                                            ),
                                         textAlign: TextAlign.center,
                                       ),
-                                      SizedBox(height: 10),
+                                      const SizedBox(height: 10),
                                       CustomTextField(
                                         controller: emailController,
                                         validator: (value) =>
-                                            _validateEmail(value!),
-                                        labelText: 'Email',
-                                        prefixIcon: const Icon(Icons.email),
+                                            _validateEmail(value!, l10n),
+                                        labelText: l10n.email, // key: email
+                                        prefixIcon: Icon(
+                                          Icons.email,
+                                          color: theme.colorScheme.onSurface,
+                                        ),
                                         enableClear: true,
                                         borderRadius: 8,
-                                        fillColor: Colors.black,
+                                        fillColor: theme.colorScheme.onSurface,
                                         maxLines: 1,
                                       ),
                                     ],
@@ -138,21 +149,25 @@ class ForgotPasswordPage extends StatelessWidget {
                             ),
                           ),
                         ),
+
+                        // Confirm button
                         Padding(
                           padding: const EdgeInsets.all(16.0),
                           child: AuthButton(
-                            text: 'Confirm',
+                            text: l10n.confirm, // key: confirm
                             onPressed: () {
                               context
                                   .read<ForgotPasswordCubit>()
                                   .forgotPassword(emailController.text);
                             },
-                            textColor: Colors.white,
+                            textColor: theme.colorScheme.onPrimary,
                           ),
                         ),
                       ],
                     ),
                   ),
+
+                  // Loading overlay
                   if (state is ForgotPasswordLoading)
                     Container(
                       color: Colors.black.withOpacity(0.3),

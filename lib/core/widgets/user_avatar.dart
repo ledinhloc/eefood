@@ -23,6 +23,7 @@ class UserAvatar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     return GestureDetector(
       onTap: () {
         Navigator.pushNamed(
@@ -50,7 +51,7 @@ class UserAvatar extends StatelessWidget {
                 username.isNotEmpty ? username[0].toUpperCase() : '?',
                 style: TextStyle(
                   fontSize: radius / 2,
-                  color: Colors.white,
+                  color: theme.colorScheme.onSurface,
                   fontWeight: FontWeight.bold,
                 ),
               )

@@ -6,10 +6,10 @@ import 'package:eefood/features/auth/domain/entities/user.dart';
 import 'package:eefood/features/auth/domain/usecases/auth_usecases.dart';
 import 'package:eefood/features/auth/presentation/widgets/preference_grid_page.dart';
 import 'package:eefood/features/profile/domain/usecases/profile_usecase.dart';
+import 'package:eefood/l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
 
 import '../../data/models/user_model.dart';
-
 
 class DietaryPreferencePage extends StatelessWidget {
   final Set<String> selectedCuisines;
@@ -18,7 +18,6 @@ class DietaryPreferencePage extends StatelessWidget {
   final UpdateProfile _updateProfile = getIt<UpdateProfile>();
   final GetCurrentUser _getCurrentUser = getIt<GetCurrentUser>();
 
-  
   DietaryPreferencePage({
     super.key,
     required this.selectedCuisines,
@@ -26,7 +25,11 @@ class DietaryPreferencePage extends StatelessWidget {
     required this.onComplete,
   });
 
-  Future<void> _savePreferences(BuildContext context, Set<String> selectedDiets) async {
+  Future<void> _savePreferences(
+    BuildContext context,
+    Set<String> selectedDiets,
+  ) async {
+    final l10n = AppLocalizations.of(context)!;
     final User? user = await _getCurrentUser();
     final request = UserModel(
       id: user!.id,
@@ -41,27 +44,33 @@ class DietaryPreferencePage extends StatelessWidget {
 
     final result = await _updateProfile(request);
     if (result.isSuccess) {
-      showCustomSnackBar(context, 'Đã lưu thành công');
+      showCustomSnackBar(context, l10n.saveSuccess); // key: saveSuccess
       onComplete();
-    }else{
-      showCustomSnackBar(context, 'Lưu thất bại!', isError: true);
+    } else {
+      showCustomSnackBar(
+        context,
+        l10n.saveFailed,
+        isError: true,
+      ); // key: saveFailed
     }
   }
+
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
 
     return PreferenceGridPage(
-      title: "Chọn chế độ ăn uống ưa thích của bạn",
-      description: "Chọn chế độ ăn uống mà bạn đang dùng.\nBạn có thể bỏ qua bước này.",
+      title: l10n.dietaryTitle, // key: dietaryTitle
+      description: l10n.dietaryDesc, // key: dietaryDesc
       items: AppConstants.diets,
       initialSelection: {},
-      onSelectionComplete: (selectedDiets) async{
+      onSelectionComplete: (selectedDiets) async {
         await _savePreferences(context, selectedDiets);
       },
       onSkip: () {
         Navigator.pushReplacementNamed(context, AppRoutes.main);
       },
-      continueButtonText: "Finish",
+      continueButtonText: l10n.finish, // key: finish
     );
   }
 }

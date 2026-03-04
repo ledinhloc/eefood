@@ -14,6 +14,7 @@ class IngredientListWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     if (ingredients.isEmpty) {
       return Center(
         child: Column(
@@ -29,7 +30,7 @@ class IngredientListWidget extends StatelessWidget {
               'Không có nguyên liệu',
               style: TextStyle(
                 fontSize: 16,
-                color: Colors.grey.shade600,
+                color: theme.colorScheme.onSurface,
               ),
             ),
             const SizedBox(height: 8),
@@ -37,7 +38,7 @@ class IngredientListWidget extends StatelessWidget {
               'Thêm món ăn để có nguyên liệu',
               style: TextStyle(
                 fontSize: 14,
-                color: Colors.grey.shade500,
+                color: theme.colorScheme.onSurface,
               ),
             ),
           ],

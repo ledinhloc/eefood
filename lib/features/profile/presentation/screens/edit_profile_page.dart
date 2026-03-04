@@ -1,5 +1,4 @@
 import 'dart:io';
-import 'dart:math';
 
 import 'package:eefood/core/di/injection.dart';
 import 'package:eefood/core/utils/media_picker.dart';
@@ -7,7 +6,6 @@ import 'package:eefood/core/widgets/snack_bar.dart';
 import 'package:eefood/core/widgets/user_avatar.dart';
 import 'package:eefood/features/profile/domain/usecases/profile_usecase.dart';
 import 'package:flutter/material.dart';
-import 'package:image_picker/image_picker.dart';
 
 import '../../../../core/utils/file_upload.dart';
 import '../../../auth/data/models/user_model.dart';
@@ -226,13 +224,13 @@ class _EditProfilePageState extends State<EditProfilePage> {
             ),
           ),
         ),
-        if(_isLoading)
+        if (_isLoading)
           Container(
             color: Colors.black.withOpacity(0.4),
             child: Center(
-              child: CircularProgressIndicator(color: Colors.white,),
+              child: CircularProgressIndicator(color: Colors.white),
             ),
-          )
+          ),
       ],
     );
   }

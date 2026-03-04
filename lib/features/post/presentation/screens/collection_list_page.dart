@@ -1,6 +1,7 @@
 import 'package:eefood/features/post/data/models/post_collection_model.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+
 import '../../../../core/di/injection.dart';
 import '../provider/collection_cubit.dart';
 import '../provider/collection_state.dart';
@@ -26,16 +27,14 @@ class _CollectionListPageState extends State<CollectionListPage> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     return Scaffold(
-      backgroundColor: const Color(0xFFFAFAFA),
+      backgroundColor: theme.colorScheme.surface,
       floatingActionButton: Container(
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(20),
           gradient: const LinearGradient(
-            colors: [
-              Color(0xFFFF6B35),
-              Color(0xFFFF8C42),
-            ],
+            colors: [Color(0xFFFF6B35), Color(0xFFFF8C42)],
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
           ),
@@ -57,11 +56,7 @@ class _CollectionListPageState extends State<CollectionListPage> {
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(20),
           ),
-          child: const Icon(
-            Icons.add_rounded,
-            size: 32,
-            color: Colors.white,
-          ),
+          child: const Icon(Icons.add_rounded, size: 32, color: Colors.white),
         ),
       ),
       body: SafeArea(
@@ -80,7 +75,10 @@ class _CollectionListPageState extends State<CollectionListPage> {
               },
               child: SingleChildScrollView(
                 physics: const AlwaysScrollableScrollPhysics(),
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 12,
+                ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -151,7 +149,7 @@ class _CollectionListPageState extends State<CollectionListPage> {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        const Row(
+                        Row(
                           children: [
                             Icon(
                               Icons.collections_bookmark_rounded,
@@ -164,7 +162,7 @@ class _CollectionListPageState extends State<CollectionListPage> {
                               style: TextStyle(
                                 fontSize: 22,
                                 fontWeight: FontWeight.w800,
-                                color: Color(0xFF2D3436),
+                                color: theme.colorScheme.onSurface,
                                 letterSpacing: -0.5,
                               ),
                             ),
@@ -226,10 +224,7 @@ class _CollectionListPageState extends State<CollectionListPage> {
                           height: 24,
                           decoration: BoxDecoration(
                             gradient: const LinearGradient(
-                              colors: [
-                                Color(0xFFFF6B35),
-                                Color(0xFFFF8C42),
-                              ],
+                              colors: [Color(0xFFFF6B35), Color(0xFFFF8C42)],
                               begin: Alignment.topCenter,
                               end: Alignment.bottomCenter,
                             ),
@@ -237,12 +232,12 @@ class _CollectionListPageState extends State<CollectionListPage> {
                           ),
                         ),
                         const SizedBox(width: 10),
-                        const Text(
+                        Text(
                           'Gần đây',
                           style: TextStyle(
                             fontSize: 22,
                             fontWeight: FontWeight.w800,
-                            color: Color(0xFF2D3436),
+                            color: theme.colorScheme.onSurface,
                             letterSpacing: -0.5,
                           ),
                         ),
@@ -273,20 +268,21 @@ class _CollectionListPageState extends State<CollectionListPage> {
                     filteredRecipes.isEmpty
                         ? _buildEmptyState()
                         : GridView.builder(
-                      physics: const NeverScrollableScrollPhysics(),
-                      shrinkWrap: true,
-                      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                        crossAxisCount: 2,
-                        childAspectRatio: 0.75,
-                        crossAxisSpacing: 12,
-                        mainAxisSpacing: 16,
-                      ),
-                      itemCount: filteredRecipes.length,
-                      itemBuilder: (context, index) {
-                        final recipe = filteredRecipes[index];
-                        return PostSummaryCard(recipe: recipe);
-                      },
-                    ),
+                            physics: const NeverScrollableScrollPhysics(),
+                            shrinkWrap: true,
+                            gridDelegate:
+                                const SliverGridDelegateWithFixedCrossAxisCount(
+                                  crossAxisCount: 2,
+                                  childAspectRatio: 0.75,
+                                  crossAxisSpacing: 12,
+                                  mainAxisSpacing: 16,
+                                ),
+                            itemCount: filteredRecipes.length,
+                            itemBuilder: (context, index) {
+                              final recipe = filteredRecipes[index];
+                              return PostSummaryCard(recipe: recipe);
+                            },
+                          ),
                     const SizedBox(height: 24),
                   ],
                 ),
@@ -334,10 +330,7 @@ class _CollectionListPageState extends State<CollectionListPage> {
             const SizedBox(height: 8),
             const Text(
               'Hãy thêm món ăn yêu thích vào bộ sưu tập',
-              style: TextStyle(
-                fontSize: 14,
-                color: Color(0xFFB2BEC3),
-              ),
+              style: TextStyle(fontSize: 14, color: Color(0xFFB2BEC3)),
             ),
           ],
         ),
@@ -346,9 +339,9 @@ class _CollectionListPageState extends State<CollectionListPage> {
   }
 
   List<PostCollectionModel> _getFilteredPosts(
-      List collections,
-      String searchQuery,
-      ) {
+    List collections,
+    String searchQuery,
+  ) {
     final allPosts = collections
         .expand((c) => c.posts ?? [])
         .cast<PostCollectionModel>()
@@ -379,9 +372,10 @@ class _CollectionListPageState extends State<CollectionListPage> {
   }
 
   void _showCreateCollectionDialog(
-      BuildContext parentContext,
-      CollectionCubit cubit,
-      ) {
+    BuildContext parentContext,
+    CollectionCubit cubit,
+  ) {
+    final theme = Theme.of(parentContext);
     final controller = TextEditingController();
 
     showDialog(
@@ -393,11 +387,11 @@ class _CollectionListPageState extends State<CollectionListPage> {
             borderRadius: BorderRadius.circular(24),
           ),
           elevation: 0,
-          backgroundColor: Colors.transparent,
+          backgroundColor: theme.colorScheme.surface,
           child: Container(
             padding: const EdgeInsets.all(24),
             decoration: BoxDecoration(
-              color: Colors.white,
+              color: theme.colorScheme.surface,
               borderRadius: BorderRadius.circular(24),
               boxShadow: [
                 BoxShadow(
@@ -418,10 +412,7 @@ class _CollectionListPageState extends State<CollectionListPage> {
                       padding: const EdgeInsets.all(12),
                       decoration: BoxDecoration(
                         gradient: const LinearGradient(
-                          colors: [
-                            Color(0xFFFF6B35),
-                            Color(0xFFFF8C42),
-                          ],
+                          colors: [Color(0xFFFF6B35), Color(0xFFFF8C42)],
                         ),
                         borderRadius: BorderRadius.circular(12),
                       ),
@@ -432,13 +423,13 @@ class _CollectionListPageState extends State<CollectionListPage> {
                       ),
                     ),
                     const SizedBox(width: 12),
-                    const Expanded(
+                     Expanded(
                       child: Text(
                         'Tạo bộ sưu tập mới',
                         style: TextStyle(
                           fontSize: 20,
                           fontWeight: FontWeight.w700,
-                          color: Color(0xFF2D3436),
+                          color: theme.colorScheme.onSurface,
                         ),
                       ),
                     ),
@@ -448,33 +439,45 @@ class _CollectionListPageState extends State<CollectionListPage> {
 
                 // TextField
                 Container(
+                  clipBehavior: Clip.hardEdge,
                   decoration: BoxDecoration(
-                    color: const Color(0xFFFAFAFA),
+                    color: theme.brightness == Brightness.light
+                        ? Colors.white
+                        : Colors.black,
                     borderRadius: BorderRadius.circular(12),
                     border: Border.all(
-                      color: const Color(0xFFE8E8E8),
+                      color: theme.brightness == Brightness.light
+                          ? const Color(0xFFB2BEC3) // xám
+                          : Colors.white,
                       width: 1,
                     ),
                   ),
                   child: TextField(
                     controller: controller,
                     autofocus: true,
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontSize: 15,
-                      color: Color(0xFF2D3436),
+                      color: theme.brightness == Brightness.light
+                          ? Colors.black
+                          : Colors.white,
                       fontWeight: FontWeight.w500,
                     ),
-                    decoration: const InputDecoration(
+                    decoration: InputDecoration(
                       hintText: 'VD: Món ăn Việt Nam, Bánh ngọt...',
                       hintStyle: TextStyle(
-                        color: Color(0xFFB2BEC3),
+                        color: theme.brightness == Brightness.light
+                            ? const Color(0xFFB2BEC3)
+                            : const Color(0xFF6B6B6B),
                         fontSize: 14,
                       ),
+                      filled: false,
                       border: InputBorder.none,
-                      contentPadding: EdgeInsets.symmetric(
+                      contentPadding: const EdgeInsets.symmetric(
                         horizontal: 16,
                         vertical: 14,
                       ),
+                      enabledBorder: InputBorder.none,
+                      focusedBorder: InputBorder.none,
                     ),
                   ),
                 ),
@@ -507,10 +510,7 @@ class _CollectionListPageState extends State<CollectionListPage> {
                       child: Container(
                         decoration: BoxDecoration(
                           gradient: const LinearGradient(
-                            colors: [
-                              Color(0xFFFF6B35),
-                              Color(0xFFFF8C42),
-                            ],
+                            colors: [Color(0xFFFF6B35), Color(0xFFFF8C42)],
                           ),
                           borderRadius: BorderRadius.circular(12),
                           boxShadow: [

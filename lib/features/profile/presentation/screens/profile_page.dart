@@ -2,6 +2,7 @@ import 'package:eefood/app_routes.dart';
 import 'package:eefood/features/noti/presentation/provider/notification_cubit.dart';
 import 'package:eefood/features/noti/presentation/screens/notification_screen.dart';
 import 'package:eefood/features/profile/presentation/provider/profile_cubit.dart';
+import 'package:eefood/l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
@@ -16,21 +17,22 @@ class ProfilePage extends StatelessWidget {
 
   Future<void> _handlerLogout(BuildContext context, User user) async {
     if (!context.mounted) return;
+    final l10n = AppLocalizations.of(context)!;
 
     final confirm = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text("Xác nhận đăng xuất"),
-        content: const Text("Bạn có chắc chắn muốn đăng xuất không?"),
+        title: Text(l10n.logoutConfirmTitle),
+        content: Text(l10n.logoutConfirmMessage),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
-            child: const Text("Hủy"),
+            child: Text(l10n.cancel),
           ),
           ElevatedButton(
             style: ElevatedButton.styleFrom(backgroundColor: Colors.redAccent),
             onPressed: () => Navigator.pop(context, true),
-            child: const Text("Đăng xuất"),
+            child: Text(l10n.logout),
           ),
         ],
       ),
@@ -67,13 +69,18 @@ class ProfilePage extends StatelessWidget {
           if (user == null) {
             return const Center(child: CircularProgressIndicator());
           }
+          final l10n = AppLocalizations.of(context)!;
+          final theme = Theme.of(context);
           return Scaffold(
             appBar: AppBar(
               backgroundColor: Colors.transparent,
               automaticallyImplyLeading: false,
-              title: const Text(
-                'Profile',
-                style: TextStyle(fontWeight: FontWeight.bold),
+              title: Text(
+                l10n.profileTitle,
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  color: theme.colorScheme.onSurface,
+                ),
               ),
             ),
             body: ListView(
@@ -108,7 +115,7 @@ class ProfilePage extends StatelessWidget {
                           ),
                           const SizedBox(height: 4),
                           Text(
-                            "Thành viên",
+                            l10n.memberLabel,
                             style: TextStyle(color: Colors.grey[600]),
                           ),
                           const SizedBox(height: 8),
@@ -118,8 +125,8 @@ class ProfilePage extends StatelessWidget {
                               onPressed: () {
                                 _handlerEditProfile(context, user);
                               },
-                              child: const Text(
-                                "Chỉnh sửa",
+                              child: Text(
+                                l10n.editProfile,
                                 style: TextStyle(fontSize: 12),
                                 textAlign: TextAlign.start,
                               ),
@@ -132,9 +139,9 @@ class ProfilePage extends StatelessWidget {
                     IconButton(
                       onPressed: () async =>
                           await _handlerLogout(context, user),
-                      icon: const Icon(
+                      icon: Icon(
                         Icons.exit_to_app_outlined,
-                        color: Colors.black,
+                        color: theme.colorScheme.onSurface,
                         size: 30,
                       ),
                     ),
@@ -143,22 +150,23 @@ class ProfilePage extends StatelessWidget {
 
                 const SizedBox(height: 20),
                 // --- Phần tài khoản ---
-                const Text(
-                  "Tài khoản",
+                Text(
+                  l10n.accountTitle,
                   style: TextStyle(fontWeight: FontWeight.bold),
                 ),
                 const SizedBox(height: 8),
-                const ListTile(
-                  title: Text("Gói hiện tại"),
-                  trailing: Text("Miễn phí"),
+                ListTile(
+                  title: Text(l10n.currentPlan),
+                  trailing: Text(l10n.freePlan),
                 ),
 
                 Card(
-                  color: Colors.red[50],
+                  color: theme.cardTheme.color,
                   child: ListTile(
                     leading: const Icon(Icons.star, color: Colors.red),
-                    title: const Text(
-                      "Trải nghiệm tất cả tính năng Plus miễn phí trong 7 ngày!",
+                    title: Text(
+                      l10n.tryPlusTitle,
+                      style: TextStyle(color: theme.colorScheme.onSurface),
                     ),
                     trailing: ElevatedButton(
                       onPressed: () => Navigator.pushNamed(
@@ -169,20 +177,23 @@ class ProfilePage extends StatelessWidget {
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Colors.yellow.shade200,
                       ),
-                      child: const Text("Dùng thử miễn phí"),
+                      child: Text(
+                        l10n.tryPlusButton,
+                        style: TextStyle(color: Colors.red),
+                      ),
                     ),
                   ),
                 ),
 
                 const SizedBox(height: 16),
-                const Text(
-                  "Quản lý tài khoản",
+                Text(
+                  l10n.manageAccount,
                   style: TextStyle(fontWeight: FontWeight.bold),
                 ),
                 ListTile(
                   leading: const Icon(Icons.favorite_border),
-                  title: const Text("Sở thích món ăn"),
-                  subtitle: const Text("Áp dụng cho tab Gợi ý cho bạn"),
+                  title: Text(l10n.foodPreference),
+                  subtitle: Text(l10n.foodPreferenceHint),
                   onTap: () =>
                       Navigator.pushNamed(context, AppRoutes.foodPreference),
                 ),
@@ -192,75 +203,71 @@ class ProfilePage extends StatelessWidget {
                 //   title: Text("Khôi phục giao dịch mua"),
                 // ),
                 const SizedBox(height: 16),
-                const Text(
-                  "Hệ thống",
+                Text(
+                  l10n.system,
                   style: TextStyle(fontWeight: FontWeight.bold),
                 ),
                 ListTile(
                   leading: const Icon(Icons.language),
-                  title: const Text("Ngôn ngữ"),
+                  title: Text(l10n.language),
+                  trailing: const Icon(Icons.chevron_right_rounded),
                   onTap: () => Navigator.pushNamed(context, AppRoutes.language),
                 ),
                 ListTile(
-                  leading: Icon(Icons.notifications_none),
-                  title: Text("Thông báo"),
+                  leading: const Icon(Icons.notifications_none),
+                  title: Text(l10n.notifications),
+                  trailing: const Icon(Icons.chevron_right_rounded),
                   onTap: () => Navigator.pushNamed(
                     context,
                     AppRoutes.notificationSettingScreen,
                   ),
                 ),
                 ListTile(
-                  leading: Icon(Icons.brightness_6_outlined),
-                  title: Text("Hiển thị"),
-                  onTap: () => Navigator.pushNamed(
-                    context,
-                    AppRoutes.commingSoonPage,
-                    arguments: {'featureName': "Hiển thị"},
-                  ),
+                  leading: const Icon(Icons.brightness_6_outlined),
+                  title: Text(l10n.display),
+                  trailing: const Icon(Icons.chevron_right_rounded),
+                  onTap: () => Navigator.pushNamed(context, AppRoutes.display),
                 ),
 
                 const SizedBox(height: 16),
-                const Text(
-                  "Hỗ trợ",
+                Text(
+                  l10n.support,
                   style: TextStyle(fontWeight: FontWeight.bold),
                 ),
                 ListTile(
                   leading: Icon(Icons.chat_bubble_outline),
-                  title: Text("Góp ý"),
+                  title: Text(l10n.feedback),
                   onTap: () => Navigator.pushNamed(
                     context,
                     AppRoutes.commingSoonPage,
-                    arguments: {'featureName': "Góp ý"},
+                    arguments: {'featureName': l10n.feedback},
                   ),
                 ),
                 ListTile(
                   leading: Icon(Icons.bug_report_outlined),
-                  title: Text("Báo lỗi"),
+                  title: Text(l10n.reportBug),
                   onTap: () => Navigator.pushNamed(
                     context,
                     AppRoutes.commingSoonPage,
-                    arguments: {'featureName': "Báo lỗi"},
+                    arguments: {'featureName': l10n.reportBug},
                   ),
                 ),
 
                 const SizedBox(height: 16),
-                const Text(
-                  "Giới thiệu",
-                  style: TextStyle(fontWeight: FontWeight.bold),
-                ),
+                Text(l10n.about, style: TextStyle(fontWeight: FontWeight.bold)),
                 ListTile(
                   leading: Icon(Icons.thumb_up_outlined),
-                  title: Text("Điều khoản sử dụng"),
+                  title: Text(l10n.termsOfService),
                   onTap: () =>
                       Navigator.pushNamed(context, AppRoutes.termOfServicePage),
                 ),
                 ListTile(
                   leading: Icon(Icons.star_border),
-                  title: Text("Đánh giá ứng dụng"),
+                  title: Text(l10n.rateApp),
                   onTap: () => Navigator.pushNamed(
                     context,
                     AppRoutes.commingSoonPage,
-                    arguments: {'featureName': "Đánh giá ứng dụng"},
+                    arguments: {'featureName': l10n.rateApp},
                   ),
                 ),
               ],

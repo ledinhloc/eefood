@@ -23,7 +23,9 @@ import 'package:eefood/features/post/presentation/widgets/follow/follow_list_pag
 import 'package:eefood/features/post/presentation/widgets/post/image_search/image_search_page.dart';
 import 'package:eefood/features/post/presentation/widgets/story/crud_story/gallery_picker_page.dart';
 import 'package:eefood/features/post/presentation/widgets/story/story_settings/story_setting_page.dart';
+import 'package:eefood/features/profile/presentation/provider/settings_cubit.dart';
 import 'package:eefood/features/profile/presentation/screens/coming_soon_page.dart';
+import 'package:eefood/features/profile/presentation/screens/display_page.dart';
 import 'package:eefood/features/profile/presentation/screens/edit_profile_page.dart';
 import 'package:eefood/features/profile/presentation/screens/food_preferences_page.dart';
 import 'package:eefood/features/profile/presentation/screens/language_page.dart';
@@ -61,7 +63,6 @@ class AppRoutes {
   /* feat profile*/
   static const editProfile = '/editProfile';
   static const foodPreference = '/foodPreference';
-  static const language = '/language';
   static const mediaView = '/mediaView';
   static const termOfServicePage = '/termOfServicePage';
   static const commingSoonPage = '/commingSoonPage';
@@ -93,6 +94,10 @@ class AppRoutes {
 
   static const chatBotScreen = '/chatBotScreen';
 
+  // settings
+  static const language = '/language';
+  static const display = '/display';
+
   // Danh sách các widget cho BottomNavigationBar trong main page
   static List<Widget> widgetOptions = <Widget>[
     FeedScreen(),
@@ -115,7 +120,6 @@ class AppRoutes {
       return EditProfilePage(user: user);
     },
     foodPreference: (context) => const FoodPreferencesPage(),
-    language: (context) => const LanguagePage(),
     register: (context) => RegisterPage(),
     verifyOtp: (context) {
       final args =
@@ -255,6 +259,18 @@ class AppRoutes {
       return BlocProvider(
         create: (_) => getIt<ChatbotCubit>(),
         child: ChatbotMainScreen(userId: userId),
+      );
+    },
+    language: (context) {
+      return BlocProvider.value(
+        value: getIt<SettingsCubit>(),
+        child: const LanguagePage(),
+      );
+    },
+    display: (context) {
+      return BlocProvider.value(
+        value: getIt<SettingsCubit>(),
+        child: const DisplayPage(),
       );
     },
   };

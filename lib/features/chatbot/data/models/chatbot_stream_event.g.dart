@@ -10,16 +10,16 @@ ChatbotStreamEvent _$ChatbotStreamEventFromJson(Map<String, dynamic> json) =>
     ChatbotStreamEvent(
       type: $enumDecode(_$ChatbotEventTypeEnumMap, json['type']),
       message: json['message'] as String?,
-      data: json['payload'] == null
+      data: json['data'] == null
           ? null
-          : ChatbotResponse.fromJson(json['payload'] as Map<String, dynamic>),
+          : ChatbotResponse.fromJson(json['data'] as Map<String, dynamic>),
     );
 
 Map<String, dynamic> _$ChatbotStreamEventToJson(ChatbotStreamEvent instance) =>
     <String, dynamic>{
       'type': _$ChatbotEventTypeEnumMap[instance.type]!,
       'message': instance.message,
-      'payload': instance.data,
+      'data': instance.data,
     };
 
 const _$ChatbotEventTypeEnumMap = {

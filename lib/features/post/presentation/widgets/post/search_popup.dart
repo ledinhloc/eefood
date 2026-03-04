@@ -1,6 +1,5 @@
 import 'package:eefood/app_routes.dart';
 import 'package:eefood/core/utils/speech_helper.dart';
-import 'package:eefood/core/widgets/snack_bar.dart';
 import 'package:eefood/features/post/presentation/widgets/post/toggle_chips.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -87,8 +86,10 @@ class _SearchPopupState extends State<SearchPopup> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
     return Dialog(
-      backgroundColor: Colors.white,
+      backgroundColor: theme.scaffoldBackgroundColor,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       insetPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 40),
       child: SizedBox(
@@ -101,7 +102,9 @@ class _SearchPopupState extends State<SearchPopup> {
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
               decoration: BoxDecoration(
-                color: Colors.orange.shade50,
+                color: isDark
+                    ? theme.colorScheme.surface
+                    : const Color(0xFFFFF3EB),
                 borderRadius: const BorderRadius.vertical(
                   top: Radius.circular(16),
                 ),
@@ -110,21 +113,22 @@ class _SearchPopupState extends State<SearchPopup> {
                 children: [
                   Icon(
                     Icons.filter_list_rounded,
-                    color: Colors.orange.shade700,
+                    color: theme.colorScheme.primary,
                   ),
                   const SizedBox(width: 8),
-                  const Expanded(
+                  Expanded(
                     child: Text(
                       'Bộ lọc tìm kiếm',
                       style: TextStyle(
                         fontSize: 20,
                         fontWeight: FontWeight.bold,
+                        color: theme.colorScheme.onSurface,
                       ),
                     ),
                   ),
                   IconButton(
                     onPressed: () => Navigator.of(context).pop(),
-                    icon: const Icon(Icons.close),
+                    icon: Icon(Icons.close, color: theme.colorScheme.onSurface),
                     iconSize: 24,
                   ),
                 ],
@@ -139,12 +143,16 @@ class _SearchPopupState extends State<SearchPopup> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     // ===== KEYWORD =====
-                    _buildSectionTitle('🔍 Từ khóa'),
+                    _buildSectionTitle('🔍 Từ khóa', theme),
                     const SizedBox(height: 8),
                     TextField(
                       controller: _keywordCtl,
                       decoration: InputDecoration(
-                        prefixIcon: const Icon(Icons.search_rounded, size: 22),
+                        prefixIcon: Icon(
+                          Icons.search_rounded,
+                          size: 22,
+                          color: theme.colorScheme.onSurface,
+                        ),
                         suffixIcon: Row(
                           mainAxisSize: MainAxisSize.min,
                           mainAxisAlignment: MainAxisAlignment.end,
@@ -195,11 +203,11 @@ class _SearchPopupState extends State<SearchPopup> {
                         ),
                         hintText: 'Nhập tên món, nguyên liệu...',
                         hintStyle: TextStyle(color: Colors.grey.shade400),
-                        filled: true,
+                        filled: false,
                         fillColor: Colors.grey.shade50,
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(12),
-                          borderSide: BorderSide(color: Colors.grey.shade300),
+                          borderSide: BorderSide(color: const Color.fromARGB(255, 25, 15, 15)),
                         ),
                         enabledBorder: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(12),
@@ -232,7 +240,10 @@ class _SearchPopupState extends State<SearchPopup> {
                             Row(
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
-                                _buildSectionTitle('🕒 Tìm kiếm gần đây'),
+                                _buildSectionTitle(
+                                  '🕒 Tìm kiếm gần đây',
+                                  theme,
+                                ),
                                 TextButton(
                                   onPressed: () {
                                     getIt<PostListCubit>().clearAllKeywords();
@@ -300,7 +311,7 @@ class _SearchPopupState extends State<SearchPopup> {
                     ),
 
                     // ===== REGION =====
-                    _buildSectionTitle('🌍 Khu vực'),
+                    _buildSectionTitle('🌍 Khu vực', theme),
                     const SizedBox(height: 8), // Giảm từ 12 → 8
                     ToggleChips(
                       options: _regions,
@@ -309,7 +320,7 @@ class _SearchPopupState extends State<SearchPopup> {
                     ),
                     const SizedBox(height: 16), // Giảm từ 24 → 16
                     // ===== DIFFICULTY =====
-                    _buildSectionTitle(' Độ khó'),
+                    _buildSectionTitle(' Độ khó', theme),
                     const SizedBox(height: 8),
                     ToggleChips(
                       options: _difficultyMap.keys.toList(),
@@ -319,7 +330,7 @@ class _SearchPopupState extends State<SearchPopup> {
                     const SizedBox(height: 16),
 
                     // ===== CATEGORY =====
-                    _buildSectionTitle(' Danh mục'),
+                    _buildSectionTitle(' Danh mục', theme),
                     const SizedBox(height: 8),
                     ToggleChips(
                       options: _categories,
@@ -329,7 +340,7 @@ class _SearchPopupState extends State<SearchPopup> {
                     const SizedBox(height: 16),
 
                     // ===== COOK TIME =====
-                    _buildSectionTitle('⏱️ Thời gian nấu'),
+                    _buildSectionTitle('⏱️ Thời gian nấu', theme),
                     const SizedBox(height: 8),
                     ToggleChips(
                       options: _cookTimeMap.keys.toList(),
@@ -365,7 +376,7 @@ class _SearchPopupState extends State<SearchPopup> {
             Container(
               padding: const EdgeInsets.all(12), // Giảm từ 16 → 12
               decoration: BoxDecoration(
-                color: Colors.white,
+                color: theme.scaffoldBackgroundColor,
                 boxShadow: [
                   BoxShadow(
                     color: Colors.grey.shade200,
@@ -442,13 +453,14 @@ class _SearchPopupState extends State<SearchPopup> {
     );
   }
 
-  Widget _buildSectionTitle(String title) {
+  Widget _buildSectionTitle(String title, ThemeData theme) {
     return Text(
       title,
-      style: const TextStyle(
+      style: TextStyle(
         fontSize: 15, // Giảm từ 16 → 15
         fontWeight: FontWeight.w600,
         letterSpacing: 0.2,
+        color: theme.colorScheme.onSurface,
       ),
     );
   }

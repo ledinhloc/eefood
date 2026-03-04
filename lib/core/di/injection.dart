@@ -1,4 +1,6 @@
+import 'package:eefood/core/database/isar_service.dart';
 import 'package:eefood/core/utils/file_upload.dart';
+import 'package:eefood/features/app_settings/data_sources/settings_local_data_source.dart';
 import 'package:eefood/features/auth/presentation/bloc/on_boarding_bloc/on_boarding_cubit.dart';
 import 'package:eefood/features/chatbot/data/repositories/chatbot_repository_impl.dart';
 import 'package:eefood/features/chatbot/domain/repositories/chatbot_repository.dart';
@@ -9,7 +11,6 @@ import 'package:eefood/features/livestream/data/repositoty/live_repository_impl.
 import 'package:eefood/features/livestream/domain/repository/live_comment_repo.dart';
 import 'package:eefood/features/livestream/domain/repository/live_reaction_repo.dart';
 import 'package:eefood/features/livestream/domain/repository/live_repository.dart';
-import 'package:eefood/features/livestream/presentation/provider/live_comment_cubit.dart';
 import 'package:eefood/features/livestream/presentation/provider/start_live_cubit.dart';
 import 'package:eefood/features/noti/data/repositories/notification_repository_impl.dart';
 import 'package:eefood/features/noti/domain/repositories/notification_repository.dart';
@@ -50,8 +51,11 @@ import 'package:eefood/features/post/presentation/provider/story_reaction_cubit.
 import 'package:eefood/features/post/presentation/provider/story_reaction_list_cubit.dart';
 import 'package:eefood/features/post/presentation/provider/story_setting_cubit.dart';
 import 'package:eefood/features/post/presentation/provider/story_viewer_cubit.dart';
+import 'package:eefood/features/profile/data/repo/settings_repository_impl.dart';
 import 'package:eefood/features/profile/domain/repositories/profile_repository.dart';
+import 'package:eefood/features/profile/domain/repositories/settings_repository.dart';
 import 'package:eefood/features/profile/domain/usecases/profile_usecase.dart';
+import 'package:eefood/features/profile/presentation/provider/settings_cubit.dart';
 import 'package:eefood/features/recipe/data/models/recipe_model.dart';
 import 'package:eefood/features/recipe/data/repositories/recipe_repository_impl.dart';
 import 'package:eefood/features/recipe/domain/repositories/recipe_repository.dart';
@@ -69,7 +73,6 @@ import '../../features/auth/domain/repositories/auth_repository.dart';
 import '../../features/auth/domain/usecases/auth_usecases.dart';
 import '../../features/livestream/data/repositoty/live_viewer_repository_impl.dart';
 import '../../features/livestream/domain/repository/live_viewer_repository.dart';
-import '../../features/livestream/presentation/provider/live_reaction_cubit.dart';
 import '../../features/livestream/presentation/provider/watch_live_cubit.dart';
 import '../../features/post/data/repositories/search_repository.dart';
 import '../../features/post/presentation/provider/post_list_cubit.dart';
@@ -281,7 +284,24 @@ Future<void> setupDependencies() async {
   getIt.registerFactory<ChatbotCubit>(() => ChatbotCubit());
 
   getIt.registerLazySingleton<LiveViewerRepository>(
-        () => LiveViewerRepositoryImpl(dio: getIt<DioClient>().dio),
+    () => LiveViewerRepositoryImpl(dio: getIt<DioClient>().dio),
   );
 
+  // Local db isar
+  final isarService = IsarService();
+  await isarService.init();
+
+  getIt.registerSingleton<IsarService>(isarService);
+  // SettingsLocalDataSource
+  getIt.registerLazySingleton<SettingsLocalDataSource>(
+    () => SettingsLocalDataSource(),
+  );
+  // SettingsRepository
+  getIt.registerLazySingleton<SettingsRepository>(
+    () => SettingsRepositoryImpl(getIt<SettingsLocalDataSource>()),
+  );
+
+  getIt.registerLazySingleton<SettingsCubit>(
+    () => SettingsCubit(getIt<SettingsRepository>()),
+  );
 }

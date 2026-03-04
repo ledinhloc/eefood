@@ -187,6 +187,7 @@ class _IngredientsSectionState extends State<IngredientsSection> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     final state = context.watch<RecipeCrudCubit>().state;
     final ingredients = state.ingredients;
 
@@ -203,7 +204,7 @@ class _IngredientsSectionState extends State<IngredientsSection> {
           Container(
             padding: const EdgeInsets.all(24),
             decoration: BoxDecoration(
-              color: Colors.grey[50],
+              color: theme.scaffoldBackgroundColor,
               borderRadius: BorderRadius.circular(12),
               border: Border.all(color: Colors.grey[300]!),
             ),
