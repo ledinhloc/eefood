@@ -14,27 +14,27 @@ abstract class LivePollRepository {
 
   Future<LivePollResponse> getPollDetail({
     required int liveStreamId,
-    required String pollId,
+    required int pollId,
   });
 
   Future<LivePollResponse> openPoll({
     required int liveStreamId,
-    required String pollId,
+    required int pollId,
   });
 
   Future<LivePollResponse> closePoll({
     required int liveStreamId,
-    required String pollId,
+    required int pollId,
   });
 
   Future<PollResultResponse> vote({
     required int liveStreamId,
-    required String pollId,
+    required int pollId,
     required List<int> optionIds,
   });
 
   Future<PollResultResponse> getPollResult({
     required int liveStreamId,
-    required String pollId,
+    required int pollId,
   });
 }

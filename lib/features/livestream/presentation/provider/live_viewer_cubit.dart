@@ -1,7 +1,6 @@
 // presentation/provider/live_viewer_cubit.dart
 import 'dart:developer' as developer;
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import '../../data/model/viewer_model.dart';
 import '../../data/model/viewer_update_message.dart';
 import '../../domain/repository/live_viewer_repository.dart';

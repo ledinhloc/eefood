@@ -38,7 +38,7 @@ class LivePollRepositoryImpl extends LivePollRepository {
   @override
   Future<LivePollResponse> getPollDetail({
     required int liveStreamId,
-    required String pollId,
+    required int pollId,
   }) async {
     final res = await dio.get(
       '/v1/livestreams/$liveStreamId/polls/$pollId',
@@ -49,7 +49,7 @@ class LivePollRepositoryImpl extends LivePollRepository {
 
   Future<LivePollResponse> updatePollStatus({
     required int liveStreamId,
-    required String pollId,
+    required int pollId,
     required PollStatus status,
   }) async {
     final res = await dio.patch(
@@ -65,7 +65,7 @@ class LivePollRepositoryImpl extends LivePollRepository {
   @override
   Future<LivePollResponse> openPoll({
     required int liveStreamId,
-    required String pollId,
+    required int pollId,
   }) async {
     return updatePollStatus(
       liveStreamId: liveStreamId,
@@ -77,7 +77,7 @@ class LivePollRepositoryImpl extends LivePollRepository {
   @override
   Future<LivePollResponse> closePoll({
     required int liveStreamId,
-    required String pollId,
+    required int pollId,
   }) async {
     return updatePollStatus(
       liveStreamId: liveStreamId,
@@ -89,7 +89,7 @@ class LivePollRepositoryImpl extends LivePollRepository {
   @override
   Future<PollResultResponse> vote({
     required int liveStreamId,
-    required String pollId,
+    required int pollId,
     required List<int> optionIds,
   }) async {
     final res = await dio.post(
@@ -105,7 +105,7 @@ class LivePollRepositoryImpl extends LivePollRepository {
   @override
   Future<PollResultResponse> getPollResult({
     required int liveStreamId,
-    required String pollId,
+    required int pollId,
   }) async {
     final res = await dio.get(
       '/v1/livestreams/$liveStreamId/polls/$pollId/result',

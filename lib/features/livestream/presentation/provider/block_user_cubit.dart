@@ -1,5 +1,4 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:eefood/features/livestream/data/model/block_user_response.dart';
 import 'package:eefood/features/livestream/domain/repository/live_block_repository.dart';
 import '../../../../core/di/injection.dart';
 import 'block_user_state.dart';

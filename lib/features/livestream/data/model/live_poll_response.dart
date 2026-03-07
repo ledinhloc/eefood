@@ -9,7 +9,7 @@ part 'live_poll_response.g.dart';
 @JsonSerializable()
 class LivePollResponse {
 
-  final String id;
+  final int id;
   final int liveStreamId;
   final String question;
   final PollStatus status;

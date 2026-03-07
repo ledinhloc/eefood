@@ -1,10 +1,14 @@
-import 'package:eefood/features/livestream/presentation/provider/livestream_websocket_manager.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
+import 'dart:async';
+
 import 'package:eefood/core/di/injection.dart';
 import 'package:eefood/features/livestream/data/model/create_live_poll_request.dart';
 import 'package:eefood/features/livestream/data/model/live_poll_response.dart';
 import 'package:eefood/features/livestream/data/model/poll_result_response.dart';
+import 'package:eefood/features/livestream/domain/enum/poll_result_visibility.dart';
+import 'package:eefood/features/livestream/domain/enum/poll_status.dart';
 import 'package:eefood/features/livestream/domain/repository/live_poll_repository.dart';
+import 'package:eefood/features/livestream/presentation/provider/livestream_websocket_manager.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 
 import 'live_poll_state.dart';
 
@@ -15,29 +19,46 @@ class LivePollCubit extends Cubit<LivePollState> {
 
   LivePollCubit() : super(const LivePollState());
 
-  /// Gọi khi vào màn livestream
+  // khởi tạo poll khi vào livestream
   Future<void> init({
     required int liveStreamId,
-    String? pollId,
     bool connectSocket = true,
+    bool isHost = false,
+    int? pollId,
   }) async {
     emit(
       state.copyWith(
         liveStreamId: liveStreamId,
+        isHost: isHost,
         clearError: true,
       ),
     );
 
+    // kết nối websocket realtime
     if (connectSocket) {
       _connectWebSocket(liveStreamId);
     }
 
-    if (pollId != null && pollId.isNotEmpty) {
-      await loadPollDetail(pollId: pollId);
-      await loadPollResult(pollId: pollId);
+    try {
+      // có pollId thì load chi tiết poll
+      if (pollId != null) {
+        await loadPollDetail(pollId: pollId);
+      } else {
+        // không có pollId thì lấy poll đang mở
+        await loadActivePoll();
+      }
+
+      // load kết quả nếu được phép hiển thị
+      final currentPollId = state.poll?.id;
+      if (currentPollId != null) {
+        await loadPollResultIfNeeded(pollId: currentPollId);
+      }
+    } catch (_) {
+      // lỗi đã được emit ở từng hàm
     }
   }
 
+  // mở kết nối websocket
   void _connectWebSocket(int liveStreamId) {
     _wsManager?.disconnect();
 
@@ -61,29 +82,39 @@ class LivePollCubit extends Cubit<LivePollState> {
     _wsManager!.connect();
   }
 
+  // đăng ký các topic realtime của poll
   void _subscribePollTopics() {
     final manager = _wsManager;
     if (manager == null) return;
 
-    /// Topic tên chỉ là ví dụ.
-    /// Anh/chị sửa lại theo backend thật của mình.
-
-    // Realtime cập nhật thông tin poll: create/open/close/detail
+    // nhận realtime khi poll create/open/close/update
     manager.subscribe<LivePollResponse>(
       topic: 'live-poll',
       fromJson: (json) => LivePollResponse.fromJson(json),
-      onData: (data) {
+      onData: (data) async {
+        // lọc lại các option đã chọn cho đúng poll mới nhất
+        final nextSelected = _sanitizeSelectedOptions(
+          selected: state.selectedOptionIds,
+          poll: data,
+        );
+
         emit(
           state.copyWith(
             poll: data,
+            selectedOptionIds: nextSelected,
             clearError: true,
           ),
         );
+
+        // poll đóng thì kiểm tra load kết quả
+        if (data.status == PollStatus.closed) {
+          await loadPollResultIfNeeded(pollId: data.id);
+        }
       },
       logPrefix: 'live poll update',
     );
 
-    // Realtime cập nhật kết quả vote
+    // nhận realtime khi kết quả vote thay đổi
     manager.subscribe<PollResultResponse>(
       topic: 'live-poll-result',
       fromJson: (json) => PollResultResponse.fromJson(json),
@@ -97,20 +128,48 @@ class LivePollCubit extends Cubit<LivePollState> {
       },
       logPrefix: 'poll result update',
     );
-
-    // Nếu backend có queue riêng theo user, có thể dùng thêm:
-    // manager.subscribeUserQueue<PollResultResponse>(
-    //   queue: 'live-poll-result',
-    //   fromJson: (json) => PollResultResponse.fromJson(json),
-    //   onData: (data) {
-    //     emit(state.copyWith(result: data, clearError: true));
-    //   },
-    //   logPrefix: 'user poll result update',
-    // );
   }
 
+  // lấy poll đang mở của livestream
+  Future<void> loadActivePoll() async {
+    final liveStreamId = state.liveStreamId;
+    if (liveStreamId == null) return;
+
+    emit(
+      state.copyWith(
+        loading: true,
+        clearError: true,
+      ),
+    );
+
+    try {
+      final poll = await repo.getActivePoll(liveStreamId: liveStreamId);
+
+      emit(
+        state.copyWith(
+          loading: false,
+          poll: poll,
+          selectedOptionIds: _sanitizeSelectedOptions(
+            selected: state.selectedOptionIds,
+            poll: poll,
+          ),
+        ),
+      );
+    } catch (e) {
+      emit(
+        state.copyWith(
+          loading: false,
+          poll: null,
+          result: null,
+          error: e.toString(),
+        ),
+      );
+    }
+  }
+
+  // lấy chi tiết poll theo id
   Future<void> loadPollDetail({
-    required String pollId,
+    required int pollId,
   }) async {
     final liveStreamId = state.liveStreamId;
     if (liveStreamId == null) return;
@@ -132,6 +191,10 @@ class LivePollCubit extends Cubit<LivePollState> {
         state.copyWith(
           loading: false,
           poll: poll,
+          selectedOptionIds: _sanitizeSelectedOptions(
+            selected: state.selectedOptionIds,
+            poll: poll,
+          ),
         ),
       );
     } catch (e) {
@@ -144,6 +207,7 @@ class LivePollCubit extends Cubit<LivePollState> {
     }
   }
 
+  // streamer tạo poll mới
   Future<void> createPoll({
     required CreateLivePollRequest request,
   }) async {
@@ -169,6 +233,8 @@ class LivePollCubit extends Cubit<LivePollState> {
           poll: poll,
           result: null,
           selectedOptionIds: const [],
+          votedOptionIds: const [],
+          hasVoted: false,
         ),
       );
     } catch (e) {
@@ -181,8 +247,9 @@ class LivePollCubit extends Cubit<LivePollState> {
     }
   }
 
+  // streamer mở poll để bắt đầu vote
   Future<void> openPoll({
-    required String pollId,
+    required int pollId,
   }) async {
     final liveStreamId = state.liveStreamId;
     if (liveStreamId == null) return;
@@ -207,7 +274,8 @@ class LivePollCubit extends Cubit<LivePollState> {
         ),
       );
 
-      await loadPollResult(pollId: pollId);
+      // load kết quả nếu setting cho phép
+      await loadPollResultIfNeeded(pollId: pollId);
     } catch (e) {
       emit(
         state.copyWith(
@@ -218,8 +286,9 @@ class LivePollCubit extends Cubit<LivePollState> {
     }
   }
 
+  // streamer đóng poll để kết thúc vote
   Future<void> closePoll({
-    required String pollId,
+    required int pollId,
   }) async {
     final liveStreamId = state.liveStreamId;
     if (liveStreamId == null) return;
@@ -244,7 +313,8 @@ class LivePollCubit extends Cubit<LivePollState> {
         ),
       );
 
-      await loadPollResult(pollId: pollId);
+      // poll đóng thì ép load kết quả
+      await loadPollResultIfNeeded(pollId: pollId, force: true);
     } catch (e) {
       emit(
         state.copyWith(
@@ -255,8 +325,9 @@ class LivePollCubit extends Cubit<LivePollState> {
     }
   }
 
+  // lấy kết quả poll
   Future<void> loadPollResult({
-    required String pollId,
+    required int pollId,
   }) async {
     final liveStreamId = state.liveStreamId;
     if (liveStreamId == null) return;
@@ -290,19 +361,56 @@ class LivePollCubit extends Cubit<LivePollState> {
     }
   }
 
+  // chỉ load kết quả khi đúng policy hiển thị
+  Future<void> loadPollResultIfNeeded({
+    required int pollId,
+    bool force = false,
+  }) async {
+    if (force || shouldShowResult) {
+      await loadPollResult(pollId: pollId);
+    }
+  }
+
+  // chọn hoặc bỏ chọn đáp án
   void toggleOption({
     required int optionId,
-    bool isMultipleChoice = false,
   }) {
+    final poll = state.poll;
+    if (poll == null) return;
+
+    // check poll đang mở
+    if (poll.status != PollStatus.open) {
+      emit(state.copyWith(error: 'Bình chọn chưa mở hoặc đã kết thúc'));
+      return;
+    }
+
+    // check đã vote và không cho đổi lựa chọn
+    if (state.hasVoted && !allowChangeVote) {
+      emit(state.copyWith(error: 'Bạn đã bình chọn và không thể thay đổi'));
+      return;
+    }
+
     final current = List<int>.from(state.selectedOptionIds);
 
+    // check chọn nhiều lựa chọn
     if (isMultipleChoice) {
       if (current.contains(optionId)) {
+        // bỏ chọn nếu đã chọn trước đó
         current.remove(optionId);
       } else {
+        // check số lượng lựa chọn tối đa
+        if (current.length >= maxChoices) {
+          emit(
+            state.copyWith(
+              error: 'Chỉ được chọn tối đa $maxChoices đáp án',
+            ),
+          );
+          return;
+        }
         current.add(optionId);
       }
     } else {
+      // poll chỉ cho chọn một đáp án
       if (current.contains(optionId)) {
         current.clear();
       } else {
@@ -312,21 +420,63 @@ class LivePollCubit extends Cubit<LivePollState> {
       }
     }
 
-    emit(state.copyWith(selectedOptionIds: current));
+    emit(
+      state.copyWith(
+        selectedOptionIds: current,
+        clearError: true,
+      ),
+    );
   }
 
+  // xóa toàn bộ lựa chọn hiện tại
   void clearSelectedOptions() {
     emit(state.copyWith(selectedOptionIds: const []));
   }
 
+  // gửi vote lên server
   Future<void> vote({
-    required String pollId,
+    required int pollId,
   }) async {
     final liveStreamId = state.liveStreamId;
     if (liveStreamId == null) return;
 
+    final poll = state.poll;
+    if (poll == null) {
+      emit(state.copyWith(error: 'Không tìm thấy poll'));
+      return;
+    }
+
+    // check poll đang mở
+    if (poll.status != PollStatus.open) {
+      emit(state.copyWith(error: 'Poll chưa mở hoặc đã kết thúc'));
+      return;
+    }
+
+    // check đã chọn ít nhất một đáp án
     if (state.selectedOptionIds.isEmpty) {
       emit(state.copyWith(error: 'Vui lòng chọn ít nhất 1 đáp án'));
+      return;
+    }
+
+    // check poll chỉ cho chọn một đáp án
+    if (!isMultipleChoice && state.selectedOptionIds.length != 1) {
+      emit(state.copyWith(error: 'Poll này chỉ cho chọn 1 đáp án'));
+      return;
+    }
+
+    // check số lượng đáp án tối đa
+    if (isMultipleChoice && state.selectedOptionIds.length > maxChoices) {
+      emit(
+        state.copyWith(
+          error: 'Bạn chỉ được chọn tối đa $maxChoices đáp án',
+        ),
+      );
+      return;
+    }
+
+    // check đã vote và không được đổi lựa chọn
+    if (state.hasVoted && !allowChangeVote) {
+      emit(state.copyWith(error: 'Bạn đã bình chọn rồi'));
       return;
     }
 
@@ -338,19 +488,26 @@ class LivePollCubit extends Cubit<LivePollState> {
     );
 
     try {
+      // lưu lại lựa chọn đang submit
+      final submitted = List<int>.from(state.selectedOptionIds);
+
       final result = await repo.vote(
         liveStreamId: liveStreamId,
         pollId: pollId,
-        optionIds: state.selectedOptionIds,
+        optionIds: submitted,
       );
 
       emit(
         state.copyWith(
           actionLoading: false,
           result: result,
-          selectedOptionIds: const [],
+          hasVoted: true,
+          votedOptionIds: submitted,
+          selectedOptionIds: submitted,
         ),
       );
+
+      // giữ result trong state, UI tự quyết định có hiển thị hay không
     } catch (e) {
       emit(
         state.copyWith(
@@ -361,10 +518,65 @@ class LivePollCubit extends Cubit<LivePollState> {
     }
   }
 
+  // check poll có cho chọn nhiều không
+  bool get isMultipleChoice =>
+      state.poll?.setting.multipleChoice ?? false;
+
+  // check có cho đổi lựa chọn sau khi vote không
+  bool get allowChangeVote =>
+      state.poll?.setting.allowChangeVote ?? false;
+
+  // lấy số lượng lựa chọn tối đa
+  int get maxChoices =>
+      state.poll?.setting.maxChoices ?? 1;
+
+  // check có được hiển thị kết quả không
+  bool get shouldShowResult {
+    final poll = state.poll;
+    if (poll == null) return false;
+
+    // streamer luôn được xem kết quả
+    if (state.isHost) return true;
+
+    final visibility = poll.setting.resultVisibility;
+
+    switch (visibility) {
+      case PollResultVisibility.always:
+        return true;
+      case PollResultVisibility.afterVote:
+        return state.hasVoted;
+      case PollResultVisibility.afterClose:
+        return poll.status == PollStatus.closed;
+    }
+  }
+
+  // lọc lại các đáp án đang chọn cho đúng setting hiện tại
+  List<int> _sanitizeSelectedOptions({
+    required List<int> selected,
+    required LivePollResponse poll,
+  }) {
+    // chỉ giữ các option còn tồn tại trong poll
+    final validIds = poll.options.map((e) => e.id).toSet();
+    final filtered = selected.where(validIds.contains).toList();
+
+    // poll một lựa chọn thì chỉ giữ lại một option
+    if (!poll.setting.multipleChoice) {
+      return filtered.isEmpty ? const [] : [filtered.first];
+    }
+
+    // poll nhiều lựa chọn thì cắt theo maxChoices
+    final limit = poll.setting.maxChoices;
+    if (filtered.length <= limit) return filtered;
+
+    return filtered.take(limit).toList();
+  }
+
+  // xóa lỗi hiện tại
   void clearError() {
     emit(state.copyWith(clearError: true));
   }
 
+  // ngắt kết nối websocket
   void disconnectSocket() {
     _wsManager?.disconnect();
     emit(state.copyWith(socketConnected: false));
