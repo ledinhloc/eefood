@@ -87,7 +87,9 @@ import '../../features/recipe/domain/repositories/shopping_repository.dart';
 import '../../features/recipe/presentation/provider/post_cubit.dart';
 import '../../features/recipe/presentation/provider/shopping_cubit.dart';
 import '../network/dio_client.dart';
-
+import 'package:eefood/features/profile/data/repo/settings_repository_impl.dart';
+import 'package:eefood/features/profile/domain/repositories/settings_repository.dart';
+import 'package:eefood/features/profile/presentation/provider/settings_cubit.dart';
 final GetIt getIt = GetIt.instance;
 
 Future<void> setupDependencies() async {
