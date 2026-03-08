@@ -9,11 +9,13 @@ import '../../../../core/widgets/snack_bar.dart';
 import '../../data/model/live_reaction_response.dart';
 import '../../data/model/live_stream_response.dart';
 import '../provider/block_user_cubit.dart';
+import '../provider/live_poll_cubit.dart';
 import '../provider/live_reaction_cubit.dart';
 import '../provider/live_reaction_state.dart';
 import '../provider/live_stream_cubit.dart';
 import '../provider/live_stream_state.dart';
 import '../provider/start_live_cubit.dart';
+import '../widgets/create_poll_bottom_sheet.dart';
 import '../widgets/live_comment_list.dart';
 import '../widgets/live_reaction_animation.dart';
 import '../widgets/live_status_timer.dart';
@@ -62,6 +64,19 @@ class _LiveStreamScreenState extends State<LiveStreamScreen> {
     // });
   }
 
+  void _showCreatePollSheet() {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (sheetContext) {
+        return BlocProvider.value(
+          value: context.read<LivePollCubit>(),
+          child: const CreatePollBottomSheet(),
+        );
+      },
+    );
+  }
   Future<void> _ensureTracksReady() async {
     final cubit = context.read<LiveStreamCubit>();
     final state = cubit.state;
@@ -352,6 +367,10 @@ class _LiveStreamScreenState extends State<LiveStreamScreen> {
       bottom: 120,
       child: Column(
         children: [
+          _buildRoundButton(
+            icon: Icons.poll_outlined,
+            onPressed: _showCreatePollSheet,
+          ),
           _buildRoundButton(
             icon: state.isCameraOn ? Icons.videocam : Icons.videocam_off,
             onPressed: () => context.read<LiveStreamCubit>().toggleCamera(),

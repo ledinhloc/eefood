@@ -8,7 +8,7 @@ part of 'live_poll_response.dart';
 
 LivePollResponse _$LivePollResponseFromJson(Map<String, dynamic> json) =>
     LivePollResponse(
-      id: json['id'] as String,
+      id: (json['id'] as num).toInt(),
       liveStreamId: (json['liveStreamId'] as num).toInt(),
       question: json['question'] as String,
       status: $enumDecode(_$PollStatusEnumMap, json['status']),

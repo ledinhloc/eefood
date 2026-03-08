@@ -8,10 +8,12 @@ import 'package:eefood/features/chatbot/domain/repositories/chatbot_repository.d
 import 'package:eefood/features/chatbot/presentation/provider/chatbot_cubit.dart';
 import 'package:eefood/features/livestream/data/repositoty/live_block_repository_impl.dart';
 import 'package:eefood/features/livestream/data/repositoty/live_comment_repo_impl.dart';
+import 'package:eefood/features/livestream/data/repositoty/live_poll_repository_impl.dart';
 import 'package:eefood/features/livestream/data/repositoty/live_reaction_repo_impl.dart';
 import 'package:eefood/features/livestream/data/repositoty/live_repository_impl.dart';
 import 'package:eefood/features/livestream/domain/repository/live_block_repository.dart';
 import 'package:eefood/features/livestream/domain/repository/live_comment_repo.dart';
+import 'package:eefood/features/livestream/domain/repository/live_poll_repository.dart';
 import 'package:eefood/features/livestream/domain/repository/live_reaction_repo.dart';
 import 'package:eefood/features/livestream/domain/repository/live_repository.dart';
 import 'package:eefood/features/livestream/presentation/provider/live_comment_cubit.dart';
@@ -275,13 +277,15 @@ Future<void> setupDependencies() async {
   getIt.registerLazySingleton<LiveReactionRepository>(
     () => LiveReactionRepositoryImpl(dio: getIt<DioClient>().dio),
   );
+  getIt.registerLazySingleton<LivePollRepository>(
+    () => LivePollRepositoryImpl(dio: getIt<DioClient>().dio),
+  );
   // report
   getIt.registerLazySingleton<ReportRepository>(
     () => ReportRepositoryImpl(dio: getIt<DioClient>().dio),
   );
 
   // chatbot
-
   getIt.registerLazySingleton<ChatbotRepository>(
     () => ChatbotRepositoryImpl(dio: getIt<DioClient>().dio),
   );

@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'package:eefood/features/livestream/presentation/provider/live_poll_cubit.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:livekit_client/livekit_client.dart';
@@ -133,8 +134,14 @@ class _LivePrepScreenState extends State<LivePrepScreen> {
                             startState.stream!.id,
                           ),
                         ),
+                        BlocProvider(create: (_) => BlockUserCubit()),
                         BlocProvider(
-                          create: (_) => BlockUserCubit(),
+                          create: (_) => LivePollCubit()
+                            ..init(
+                              liveStreamId: startState.stream!.id,
+                              isHost: true,
+                              connectSocket: true,
+                            ),
                         ),
                       ],
                       child: LiveStreamScreen(stream: startState.stream!),
@@ -144,9 +151,9 @@ class _LivePrepScreenState extends State<LivePrepScreen> {
               }
 
               if (startState.error != null) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(content: Text(startState.error!)),
-                );
+                ScaffoldMessenger.of(
+                  context,
+                ).showSnackBar(SnackBar(content: Text(startState.error!)));
               }
             },
           ),
@@ -168,15 +175,15 @@ class _LivePrepScreenState extends State<LivePrepScreen> {
                   child: state.localVideoTrack != null && state.isCameraOn
                       ? VideoTrackRenderer(state.localVideoTrack!)
                       : Container(
-                    color: Colors.black,
-                    child: const Center(
-                      child: Icon(
-                        Icons.videocam_off,
-                        color: Colors.white,
-                        size: 64,
-                      ),
-                    ),
-                  ),
+                          color: Colors.black,
+                          child: const Center(
+                            child: Icon(
+                              Icons.videocam_off,
+                              color: Colors.white,
+                              size: 64,
+                            ),
+                          ),
+                        ),
                 ),
 
                 // Top bar
@@ -223,10 +230,7 @@ class _LivePrepScreenState extends State<LivePrepScreen> {
                   children: [
                     Icon(Icons.lock, color: Colors.white, size: 16),
                     SizedBox(width: 4),
-                    Text(
-                      'Chỉ mình tôi',
-                      style: TextStyle(color: Colors.white),
-                    ),
+                    Text('Chỉ mình tôi', style: TextStyle(color: Colors.white)),
                   ],
                 ),
               ),
@@ -304,10 +308,7 @@ class _LivePrepScreenState extends State<LivePrepScreen> {
             const SizedBox(height: 8),
             Row(
               children: [
-                const CircleAvatar(
-                  radius: 20,
-                  child: Icon(Icons.person),
-                ),
+                const CircleAvatar(radius: 20, child: Icon(Icons.person)),
                 const SizedBox(width: 8),
                 const Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -319,10 +320,7 @@ class _LivePrepScreenState extends State<LivePrepScreen> {
                         fontWeight: FontWeight.bold,
                       ),
                     ),
-                    Text(
-                      'Tin: Bật',
-                      style: TextStyle(color: Colors.white70),
-                    ),
+                    Text('Tin: Bật', style: TextStyle(color: Colors.white70)),
                   ],
                 ),
                 const Spacer(),
@@ -351,17 +349,15 @@ class _LivePrepScreenState extends State<LivePrepScreen> {
                       ),
                     ),
                     child: startState.loading
-                        ? const CircularProgressIndicator(
-                      color: Colors.white,
-                    )
+                        ? const CircularProgressIndicator(color: Colors.white)
                         : const Text(
-                      'Phát trực tiếp',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
+                            'Phát trực tiếp',
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
                   ),
                 );
               },

@@ -229,7 +229,10 @@ class LivePollCubit extends Cubit<LivePollState> {
     required CreateLivePollRequest request,
   }) async {
     final liveStreamId = state.liveStreamId;
-    if (liveStreamId == null) return;
+    if (liveStreamId == null) {
+      emit(state.copyWith(error: 'Không tìm thấy liveStreamId'));
+      return;
+    }
 
     emit(
       state.copyWith(
