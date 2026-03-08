@@ -1,6 +1,9 @@
 // presentation/provider/live_viewer_cubit.dart
 import 'dart:developer' as developer;
+
 import 'package:flutter_bloc/flutter_bloc.dart';
+
+import '../../../../core/di/injection.dart';
 import '../../data/model/viewer_model.dart';
 import '../../data/model/viewer_update_message.dart';
 import '../../domain/repository/live_viewer_repository.dart';
@@ -9,35 +12,56 @@ import 'livestream_websocket_manager.dart';
 
 class LiveViewerCubit extends Cubit<LiveViewerState> {
   final LiveViewerRepository _repository;
-  late final LiveStreamWebSocketManager _wsManager;
+  final LiveStreamWebSocketManager _wsManager =
+      getIt<LiveStreamWebSocketManager>();
+
   final int liveStreamId;
 
-  LiveViewerCubit(
-      this._repository,
-      this.liveStreamId,
-      ) : super(LiveViewerState.initial()) {
-    _wsManager = LiveStreamWebSocketManager(
-      liveStreamId: liveStreamId,
-      logName: 'LiveViewer',
-      onError: (error) => emit(state.copyWith(error: error)),
-      onConnected: _onWebSocketConnected,
-    );
-
+  LiveViewerCubit(this._repository, this.liveStreamId)
+    : super(LiveViewerState.initial()) {
     developer.log(
       'LiveViewerCubit created for stream $liveStreamId',
       name: 'LiveViewer',
     );
 
-    _wsManager.connect();
+    _setupWebSocket();
     loadViewers();
   }
 
+  void _setupWebSocket() {
+    try {
+      _wsManager.connect(
+        logName: 'LiveViewer',
+        onError: (error) {
+          developer.log('WS Error: $error', name: 'LiveViewer');
+          if (!isClosed) {
+            emit(state.copyWith(error: error));
+          }
+        },
+        onConnected: _onWebSocketConnected,
+      );
+    } catch (e) {
+      developer.log('Error setting up WebSocket: $e', name: 'LiveViewer');
+      if (!isClosed) {
+        emit(state.copyWith(error: e.toString()));
+      }
+    }
+  }
+
   void _onWebSocketConnected() {
-    _wsManager.subscribe<ViewerUpdateMessage>(
+    _wsManager.subscribeTopic<ViewerUpdateMessage>(
+      liveStreamId: liveStreamId,
       topic: 'viewer-update',
       fromJson: ViewerUpdateMessage.fromJson,
       onData: _handleViewerUpdate,
+      logName: 'LiveViewer',
       logPrefix: 'viewer-update',
+      onError: (error) {
+        developer.log('Subscribe error: $error', name: 'LiveViewer');
+        if (!isClosed) {
+          emit(state.copyWith(error: error));
+        }
+      },
     );
   }
 
@@ -49,6 +73,7 @@ class LiveViewerCubit extends Cubit<LiveViewerState> {
       final viewers = await _repository.getViewers(liveStreamId);
 
       developer.log('Loaded ${viewers.length} viewers', name: 'LiveViewer');
+
       emit(state.copyWith(viewers: viewers, loading: false));
     } catch (e) {
       developer.log('Error loading viewers: $e', name: 'LiveViewer');
@@ -98,8 +123,9 @@ class LiveViewerCubit extends Cubit<LiveViewerState> {
 
   /// Thêm viewer mới
   void _addViewer(ViewerModel viewer) {
-    // Kiểm tra duplicate
-    if (state.viewers.any((v) => v.userId == viewer.userId)) {
+    final isDuplicate = state.viewers.any((v) => v.userId == viewer.userId);
+
+    if (isDuplicate) {
       developer.log(
         'Duplicate viewer ignored: ${viewer.userId}',
         name: 'LiveViewer',
@@ -126,7 +152,12 @@ class LiveViewerCubit extends Cubit<LiveViewerState> {
 
   @override
   Future<void> close() {
-    _wsManager.disconnect();
+    _wsManager.unsubscribeTopic(
+      liveStreamId: liveStreamId,
+      topic: 'viewer-update',
+      logName: 'LiveViewer',
+    );
+
     return super.close();
   }
 }

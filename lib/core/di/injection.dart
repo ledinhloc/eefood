@@ -75,6 +75,7 @@ import '../../features/auth/domain/usecases/auth_usecases.dart';
 import '../../features/livestream/data/repositoty/live_viewer_repository_impl.dart';
 import '../../features/livestream/domain/repository/live_viewer_repository.dart';
 import '../../features/livestream/presentation/provider/live_reaction_cubit.dart';
+import '../../features/livestream/presentation/provider/livestream_websocket_manager.dart';
 import '../../features/livestream/presentation/provider/watch_live_cubit.dart';
 import '../../features/post/data/repositories/search_repository.dart';
 import '../../features/post/presentation/provider/post_list_cubit.dart';
@@ -310,5 +311,9 @@ Future<void> setupDependencies() async {
 
   getIt.registerLazySingleton<SettingsCubit>(
     () => SettingsCubit(getIt<SettingsRepository>()),
+  );
+
+  getIt.registerLazySingleton<LiveStreamWebSocketManager>(
+        () => LiveStreamWebSocketManager(),
   );
 }

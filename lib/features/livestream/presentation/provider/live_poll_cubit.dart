@@ -14,12 +14,11 @@ import 'live_poll_state.dart';
 
 class LivePollCubit extends Cubit<LivePollState> {
   final LivePollRepository repo = getIt<LivePollRepository>();
-
-  LiveStreamWebSocketManager? _wsManager;
+  final LiveStreamWebSocketManager _wsManager =
+  getIt<LiveStreamWebSocketManager>();
 
   LivePollCubit() : super(const LivePollState());
 
-  // khởi tạo poll khi vào livestream
   Future<void> init({
     required int liveStreamId,
     bool connectSocket = true,
@@ -34,21 +33,17 @@ class LivePollCubit extends Cubit<LivePollState> {
       ),
     );
 
-    // kết nối websocket realtime
     if (connectSocket) {
       _connectWebSocket(liveStreamId);
     }
 
     try {
-      // có pollId thì load chi tiết poll
       if (pollId != null) {
         await loadPollDetail(pollId: pollId);
       } else {
-        // không có pollId thì lấy poll đang mở
         await loadActivePoll();
       }
 
-      // load kết quả nếu được phép hiển thị
       final currentPollId = state.poll?.id;
       if (currentPollId != null) {
         await loadPollResultIfNeeded(pollId: currentPollId);
@@ -58,16 +53,14 @@ class LivePollCubit extends Cubit<LivePollState> {
     }
   }
 
-  // mở kết nối websocket
   void _connectWebSocket(int liveStreamId) {
-    _wsManager?.disconnect();
+    _unsubscribePollTopics();
 
-    _wsManager = LiveStreamWebSocketManager(
-      liveStreamId: liveStreamId,
+    _wsManager.connect(
       logName: 'LivePollCubit',
       onConnected: () {
         emit(state.copyWith(socketConnected: true));
-        _subscribePollTopics();
+        _subscribePollTopics(liveStreamId);
       },
       onError: (error) {
         emit(
@@ -78,21 +71,14 @@ class LivePollCubit extends Cubit<LivePollState> {
         );
       },
     );
-
-    _wsManager!.connect();
   }
 
-  // đăng ký các topic realtime của poll
-  void _subscribePollTopics() {
-    final manager = _wsManager;
-    if (manager == null) return;
-
-    // nhận realtime khi poll create/open/close/update
-    manager.subscribe<LivePollResponse>(
+  void _subscribePollTopics(int liveStreamId) {
+    _wsManager.subscribeTopic<LivePollResponse>(
+      liveStreamId: liveStreamId,
       topic: 'live-poll',
       fromJson: (json) => LivePollResponse.fromJson(json),
       onData: (data) async {
-        // lọc lại các option đã chọn cho đúng poll mới nhất
         final nextSelected = _sanitizeSelectedOptions(
           selected: state.selectedOptionIds,
           poll: data,
@@ -106,16 +92,24 @@ class LivePollCubit extends Cubit<LivePollState> {
           ),
         );
 
-        // poll đóng thì kiểm tra load kết quả
         if (data.status == PollStatus.closed) {
           await loadPollResultIfNeeded(pollId: data.id);
         }
       },
+      logName: 'LivePollCubit',
       logPrefix: 'live poll update',
+      onError: (error) {
+        emit(
+          state.copyWith(
+            socketConnected: false,
+            error: error,
+          ),
+        );
+      },
     );
 
-    // nhận realtime khi kết quả vote thay đổi
-    manager.subscribe<PollResultResponse>(
+    _wsManager.subscribeTopic<PollResultResponse>(
+      liveStreamId: liveStreamId,
       topic: 'live-poll-result',
       fromJson: (json) => PollResultResponse.fromJson(json),
       onData: (data) {
@@ -126,11 +120,36 @@ class LivePollCubit extends Cubit<LivePollState> {
           ),
         );
       },
+      logName: 'LivePollCubit',
       logPrefix: 'poll result update',
+      onError: (error) {
+        emit(
+          state.copyWith(
+            socketConnected: false,
+            error: error,
+          ),
+        );
+      },
     );
   }
 
-  // lấy poll đang mở của livestream
+  void _unsubscribePollTopics() {
+    final liveStreamId = state.liveStreamId;
+    if (liveStreamId == null) return;
+
+    _wsManager.unsubscribeTopic(
+      liveStreamId: liveStreamId,
+      topic: 'live-poll',
+      logName: 'LivePollCubit',
+    );
+
+    _wsManager.unsubscribeTopic(
+      liveStreamId: liveStreamId,
+      topic: 'live-poll-result',
+      logName: 'LivePollCubit',
+    );
+  }
+
   Future<void> loadActivePoll() async {
     final liveStreamId = state.liveStreamId;
     if (liveStreamId == null) return;
@@ -167,7 +186,6 @@ class LivePollCubit extends Cubit<LivePollState> {
     }
   }
 
-  // lấy chi tiết poll theo id
   Future<void> loadPollDetail({
     required int pollId,
   }) async {
@@ -207,7 +225,6 @@ class LivePollCubit extends Cubit<LivePollState> {
     }
   }
 
-  // streamer tạo poll mới
   Future<void> createPoll({
     required CreateLivePollRequest request,
   }) async {
@@ -247,7 +264,6 @@ class LivePollCubit extends Cubit<LivePollState> {
     }
   }
 
-  // streamer mở poll để bắt đầu vote
   Future<void> openPoll({
     required int pollId,
   }) async {
@@ -274,7 +290,6 @@ class LivePollCubit extends Cubit<LivePollState> {
         ),
       );
 
-      // load kết quả nếu setting cho phép
       await loadPollResultIfNeeded(pollId: pollId);
     } catch (e) {
       emit(
@@ -286,7 +301,6 @@ class LivePollCubit extends Cubit<LivePollState> {
     }
   }
 
-  // streamer đóng poll để kết thúc vote
   Future<void> closePoll({
     required int pollId,
   }) async {
@@ -313,7 +327,6 @@ class LivePollCubit extends Cubit<LivePollState> {
         ),
       );
 
-      // poll đóng thì ép load kết quả
       await loadPollResultIfNeeded(pollId: pollId, force: true);
     } catch (e) {
       emit(
@@ -325,7 +338,6 @@ class LivePollCubit extends Cubit<LivePollState> {
     }
   }
 
-  // lấy kết quả poll
   Future<void> loadPollResult({
     required int pollId,
   }) async {
@@ -361,7 +373,6 @@ class LivePollCubit extends Cubit<LivePollState> {
     }
   }
 
-  // chỉ load kết quả khi đúng policy hiển thị
   Future<void> loadPollResultIfNeeded({
     required int pollId,
     bool force = false,
@@ -371,20 +382,17 @@ class LivePollCubit extends Cubit<LivePollState> {
     }
   }
 
-  // chọn hoặc bỏ chọn đáp án
   void toggleOption({
     required int optionId,
   }) {
     final poll = state.poll;
     if (poll == null) return;
 
-    // check poll đang mở
     if (poll.status != PollStatus.open) {
       emit(state.copyWith(error: 'Bình chọn chưa mở hoặc đã kết thúc'));
       return;
     }
 
-    // check đã vote và không cho đổi lựa chọn
     if (state.hasVoted && !allowChangeVote) {
       emit(state.copyWith(error: 'Bạn đã bình chọn và không thể thay đổi'));
       return;
@@ -392,13 +400,10 @@ class LivePollCubit extends Cubit<LivePollState> {
 
     final current = List<int>.from(state.selectedOptionIds);
 
-    // check chọn nhiều lựa chọn
     if (isMultipleChoice) {
       if (current.contains(optionId)) {
-        // bỏ chọn nếu đã chọn trước đó
         current.remove(optionId);
       } else {
-        // check số lượng lựa chọn tối đa
         if (current.length >= maxChoices) {
           emit(
             state.copyWith(
@@ -410,7 +415,6 @@ class LivePollCubit extends Cubit<LivePollState> {
         current.add(optionId);
       }
     } else {
-      // poll chỉ cho chọn một đáp án
       if (current.contains(optionId)) {
         current.clear();
       } else {
@@ -428,12 +432,10 @@ class LivePollCubit extends Cubit<LivePollState> {
     );
   }
 
-  // xóa toàn bộ lựa chọn hiện tại
   void clearSelectedOptions() {
     emit(state.copyWith(selectedOptionIds: const []));
   }
 
-  // gửi vote lên server
   Future<void> vote({
     required int pollId,
   }) async {
@@ -446,25 +448,21 @@ class LivePollCubit extends Cubit<LivePollState> {
       return;
     }
 
-    // check poll đang mở
     if (poll.status != PollStatus.open) {
       emit(state.copyWith(error: 'Poll chưa mở hoặc đã kết thúc'));
       return;
     }
 
-    // check đã chọn ít nhất một đáp án
     if (state.selectedOptionIds.isEmpty) {
       emit(state.copyWith(error: 'Vui lòng chọn ít nhất 1 đáp án'));
       return;
     }
 
-    // check poll chỉ cho chọn một đáp án
     if (!isMultipleChoice && state.selectedOptionIds.length != 1) {
       emit(state.copyWith(error: 'Poll này chỉ cho chọn 1 đáp án'));
       return;
     }
 
-    // check số lượng đáp án tối đa
     if (isMultipleChoice && state.selectedOptionIds.length > maxChoices) {
       emit(
         state.copyWith(
@@ -474,7 +472,6 @@ class LivePollCubit extends Cubit<LivePollState> {
       return;
     }
 
-    // check đã vote và không được đổi lựa chọn
     if (state.hasVoted && !allowChangeVote) {
       emit(state.copyWith(error: 'Bạn đã bình chọn rồi'));
       return;
@@ -488,7 +485,6 @@ class LivePollCubit extends Cubit<LivePollState> {
     );
 
     try {
-      // lưu lại lựa chọn đang submit
       final submitted = List<int>.from(state.selectedOptionIds);
 
       final result = await repo.vote(
@@ -506,8 +502,6 @@ class LivePollCubit extends Cubit<LivePollState> {
           selectedOptionIds: submitted,
         ),
       );
-
-      // giữ result trong state, UI tự quyết định có hiển thị hay không
     } catch (e) {
       emit(
         state.copyWith(
@@ -518,24 +512,19 @@ class LivePollCubit extends Cubit<LivePollState> {
     }
   }
 
-  // check poll có cho chọn nhiều không
   bool get isMultipleChoice =>
       state.poll?.setting.multipleChoice ?? false;
 
-  // check có cho đổi lựa chọn sau khi vote không
   bool get allowChangeVote =>
       state.poll?.setting.allowChangeVote ?? false;
 
-  // lấy số lượng lựa chọn tối đa
   int get maxChoices =>
       state.poll?.setting.maxChoices ?? 1;
 
-  // check có được hiển thị kết quả không
   bool get shouldShowResult {
     final poll = state.poll;
     if (poll == null) return false;
 
-    // streamer luôn được xem kết quả
     if (state.isHost) return true;
 
     final visibility = poll.setting.resultVisibility;
@@ -550,41 +539,35 @@ class LivePollCubit extends Cubit<LivePollState> {
     }
   }
 
-  // lọc lại các đáp án đang chọn cho đúng setting hiện tại
   List<int> _sanitizeSelectedOptions({
     required List<int> selected,
     required LivePollResponse poll,
   }) {
-    // chỉ giữ các option còn tồn tại trong poll
     final validIds = poll.options.map((e) => e.id).toSet();
     final filtered = selected.where(validIds.contains).toList();
 
-    // poll một lựa chọn thì chỉ giữ lại một option
     if (!poll.setting.multipleChoice) {
       return filtered.isEmpty ? const [] : [filtered.first];
     }
 
-    // poll nhiều lựa chọn thì cắt theo maxChoices
     final limit = poll.setting.maxChoices;
     if (filtered.length <= limit) return filtered;
 
     return filtered.take(limit).toList();
   }
 
-  // xóa lỗi hiện tại
   void clearError() {
     emit(state.copyWith(clearError: true));
   }
 
-  // ngắt kết nối websocket
   void disconnectSocket() {
-    _wsManager?.disconnect();
+    _unsubscribePollTopics();
     emit(state.copyWith(socketConnected: false));
   }
 
   @override
   Future<void> close() {
-    _wsManager?.disconnect();
+    _unsubscribePollTopics();
     return super.close();
   }
 }

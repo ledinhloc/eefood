@@ -69,7 +69,7 @@ class _LiveViewerScreenState extends State<LiveViewerScreen> {
   Future<void> _sendReaction(FoodEmotion emotion) async {
     try {
       await context.read<LiveReactionCubit>().createReaction(
-        widget.streamId,
+
         emotion,
       );
     } catch (e) {
