@@ -44,9 +44,9 @@ class _LiveViewerScreenState extends State<LiveViewerScreen> {
     context.read<LiveViewerCubit>().joinLiveStream();
 
     // Timer for UI updates
-    _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
-      if (mounted) setState(() {});
-    });
+    // _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
+    //   if (mounted) setState(() {});
+    // });
   }
 
   void _handleStreamEnded(String? message) {
@@ -69,7 +69,7 @@ class _LiveViewerScreenState extends State<LiveViewerScreen> {
   Future<void> _sendReaction(FoodEmotion emotion) async {
     try {
       await context.read<LiveReactionCubit>().createReaction(
-        widget.streamId,
+
         emotion,
       );
     } catch (e) {

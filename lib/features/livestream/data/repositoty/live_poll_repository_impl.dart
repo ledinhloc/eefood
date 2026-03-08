@@ -1,0 +1,116 @@
+import 'package:dio/dio.dart';
+import 'package:eefood/features/livestream/domain/enum/poll_status.dart';
+
+import '../../domain/repository/live_poll_repository.dart';
+import '../model/create_live_poll_request.dart';
+import '../model/live_poll_response.dart';
+import '../model/poll_result_response.dart';
+
+class LivePollRepositoryImpl extends LivePollRepository {
+  final Dio dio;
+
+  LivePollRepositoryImpl({required this.dio});
+
+  @override
+  Future<LivePollResponse> getActivePoll({
+    required int liveStreamId
+  }) async {
+    final res = await dio.get(
+      '/v1/livestreams/$liveStreamId/active'
+    );
+
+    return LivePollResponse.fromJson(res.data['data']);
+  }
+
+  @override
+  Future<LivePollResponse> createPoll({
+    required int liveStreamId,
+    required CreateLivePollRequest request,
+  }) async {
+    final res = await dio.post(
+      '/v1/livestreams/$liveStreamId/polls',
+      data: request.toJson(),
+    );
+
+    return LivePollResponse.fromJson(res.data['data']);
+  }
+
+  @override
+  Future<LivePollResponse> getPollDetail({
+    required int liveStreamId,
+    required int pollId,
+  }) async {
+    final res = await dio.get(
+      '/v1/livestreams/$liveStreamId/polls/$pollId',
+    );
+
+    return LivePollResponse.fromJson(res.data['data']);
+  }
+
+  Future<LivePollResponse> updatePollStatus({
+    required int liveStreamId,
+    required int pollId,
+    required PollStatus status,
+  }) async {
+    final res = await dio.patch(
+      '/v1/livestreams/$liveStreamId/polls/$pollId/status',
+      queryParameters: {
+        'status': status.name.toUpperCase(),
+      },
+    );
+
+    return LivePollResponse.fromJson(res.data['data']);
+  }
+
+  @override
+  Future<LivePollResponse> openPoll({
+    required int liveStreamId,
+    required int pollId,
+  }) async {
+    return updatePollStatus(
+      liveStreamId: liveStreamId,
+      pollId: pollId,
+      status: PollStatus.open,
+    );
+  }
+
+  @override
+  Future<LivePollResponse> closePoll({
+    required int liveStreamId,
+    required int pollId,
+  }) async {
+    return updatePollStatus(
+      liveStreamId: liveStreamId,
+      pollId: pollId,
+      status: PollStatus.closed,
+    );
+  }
+
+  @override
+  Future<PollResultResponse> vote({
+    required int liveStreamId,
+    required int pollId,
+    required List<int> optionIds,
+  }) async {
+    final res = await dio.post(
+      '/v1/livestreams/$liveStreamId/polls/$pollId/vote',
+      queryParameters: {
+        'optionIds': optionIds,
+      },
+    );
+
+    return PollResultResponse.fromJson(res.data['data']);
+  }
+
+  @override
+  Future<PollResultResponse> getPollResult({
+    required int liveStreamId,
+    required int pollId,
+  }) async {
+    final res = await dio.get(
+      '/v1/livestreams/$liveStreamId/polls/$pollId/result',
+    );
+
+    return PollResultResponse.fromJson(res.data['data']);
+  }
+}

@@ -1,6 +1,5 @@
 // presentation/screens/live_stream_screen.dart
 import 'dart:async';
-import 'dart:io';
 import 'package:eefood/features/livestream/presentation/provider/live_viewer_cubit.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -9,11 +8,14 @@ import '../../../../core/di/injection.dart';
 import '../../../../core/widgets/snack_bar.dart';
 import '../../data/model/live_reaction_response.dart';
 import '../../data/model/live_stream_response.dart';
+import '../provider/block_user_cubit.dart';
+import '../provider/live_poll_cubit.dart';
 import '../provider/live_reaction_cubit.dart';
 import '../provider/live_reaction_state.dart';
 import '../provider/live_stream_cubit.dart';
 import '../provider/live_stream_state.dart';
 import '../provider/start_live_cubit.dart';
+import '../widgets/create_poll_bottom_sheet.dart';
 import '../widgets/live_comment_list.dart';
 import '../widgets/live_reaction_animation.dart';
 import '../widgets/live_status_timer.dart';
@@ -55,13 +57,26 @@ class _LiveStreamScreenState extends State<LiveStreamScreen> {
     context.read<LiveViewerCubit>().joinLiveStream();
 
     // Timer cho UI refresh (LiveStatusTimer)
-    _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
-      if (mounted) {
-        setState(() {});
-      }
-    });
+    // _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
+    //   if (mounted) {
+    //     setState(() {});
+    //   }
+    // });
   }
 
+  void _showCreatePollSheet() {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (sheetContext) {
+        return BlocProvider.value(
+          value: context.read<LivePollCubit>(),
+          child: const CreatePollBottomSheet(),
+        );
+      },
+    );
+  }
   Future<void> _ensureTracksReady() async {
     final cubit = context.read<LiveStreamCubit>();
     final state = cubit.state;
@@ -76,6 +91,8 @@ class _LiveStreamScreenState extends State<LiveStreamScreen> {
           cameraPosition: state.isFrontCamera
               ? CameraPosition.front
               : CameraPosition.back,
+          params: VideoParametersPresets.h540_169,
+          maxFrameRate: 24,
         ),
       );
       print(' New video track created: ${videoTrack.sid}');
@@ -152,13 +169,17 @@ class _LiveStreamScreenState extends State<LiveStreamScreen> {
 
   void _showViewerList() {
     final viewerCubit = context.read<LiveViewerCubit>();
+    final blockCubit = context.read<BlockUserCubit>();
     showModalBottomSheet(
       context: context,
       backgroundColor: Colors.transparent,
       isScrollControlled: true,
       builder: (context) {
-        return BlocProvider.value(
-            value: viewerCubit,
+        return MultiBlocProvider(
+          providers: [
+            BlocProvider.value(value: viewerCubit),
+            BlocProvider.value(value: blockCubit),
+          ],
           child: const ViewerListBottomSheet(),
         );
       },
@@ -346,6 +367,10 @@ class _LiveStreamScreenState extends State<LiveStreamScreen> {
       bottom: 120,
       child: Column(
         children: [
+          _buildRoundButton(
+            icon: Icons.poll_outlined,
+            onPressed: _showCreatePollSheet,
+          ),
           _buildRoundButton(
             icon: state.isCameraOn ? Icons.videocam : Icons.videocam_off,
             onPressed: () => context.read<LiveStreamCubit>().toggleCamera(),

@@ -1,8 +1,9 @@
 // presentation/cubit/live_comment_cubit.dart
 import 'dart:developer' as developer;
-import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
+import 'package:flutter_bloc/flutter_bloc.dart';
+
+import '../../../../core/di/injection.dart';
 import '../../data/model/live_comment_response.dart';
 import '../../domain/repository/live_comment_repo.dart';
 import 'live_comment_state.dart';
@@ -10,34 +11,58 @@ import 'livestream_websocket_manager.dart';
 
 class LiveCommentCubit extends Cubit<LiveCommentState> {
   final LiveCommentRepository _repository;
-  late final LiveStreamWebSocketManager _wsManager;
+  final LiveStreamWebSocketManager _wsManager =
+  getIt<LiveStreamWebSocketManager>();
+
   final int liveStreamId;
 
   LiveCommentCubit(
       this._repository,
       this.liveStreamId,
       ) : super(LiveCommentState.initial()) {
-    _wsManager = LiveStreamWebSocketManager(
-      liveStreamId: liveStreamId,
-      logName: 'LiveComment',
-      onError: (error) => emit(state.copyWith(error: error)),
-      onConnected: _onWebSocketConnected,
+    developer.log(
+      'LiveCommentCubit created for stream $liveStreamId',
+      name: 'LiveComment',
     );
 
-    developer.log('LiveCommentCubit created for stream $liveStreamId',
-        name: 'LiveComment');
-
-    // Auto connect và load comments
-    _wsManager.connect();
+    _setupWebSocket();
     loadComments();
   }
 
+  void _setupWebSocket() {
+    try {
+      _wsManager.connect(
+        logName: 'LiveComment',
+        onError: (error) {
+          developer.log('WS Error: $error', name: 'LiveComment');
+          if (!isClosed) {
+            emit(state.copyWith(error: error));
+          }
+        },
+        onConnected: _onWebSocketConnected,
+      );
+    } catch (e) {
+      developer.log('Error setting up WebSocket: $e', name: 'LiveComment');
+      if (!isClosed) {
+        emit(state.copyWith(error: e.toString()));
+      }
+    }
+  }
+
   void _onWebSocketConnected() {
-    _wsManager.subscribe<LiveCommentResponse>(
+    _wsManager.subscribeTopic<LiveCommentResponse>(
+      liveStreamId: liveStreamId,
       topic: 'live-comment',
       fromJson: LiveCommentResponse.fromJson,
       onData: _addCommentFromWebSocket,
+      logName: 'LiveComment',
       logPrefix: 'comment',
+      onError: (error) {
+        developer.log('Subscribe error: $error', name: 'LiveComment');
+        if (!isClosed) {
+          emit(state.copyWith(error: error));
+        }
+      },
     );
   }
 
@@ -51,10 +76,16 @@ class LiveCommentCubit extends Cubit<LiveCommentState> {
 
     try {
       final comments = await _repository.getComments(liveStreamId);
-      emit(state.copyWith(comments: comments, loading: false));
+      emit(state.copyWith(
+        comments: comments,
+        loading: false,
+      ));
     } catch (e) {
       developer.log('Error loading comments: $e', name: 'LiveComment');
-      emit(state.copyWith(loading: false, error: e.toString()));
+      emit(state.copyWith(
+        loading: false,
+        error: e.toString(),
+      ));
     }
   }
 
@@ -65,10 +96,12 @@ class LiveCommentCubit extends Cubit<LiveCommentState> {
       name: 'LiveComment',
     );
 
-    // Check duplicate
-    if (state.comments.any((c) => c.id == comment.id)) {
-      developer.log('Duplicate comment ignored: ${comment.id}',
-          name: 'LiveComment');
+    final isDuplicate = state.comments.any((c) => c.id == comment.id);
+    if (isDuplicate) {
+      developer.log(
+        'Duplicate comment ignored: ${comment.id}',
+        name: 'LiveComment',
+      );
       return;
     }
 
@@ -77,7 +110,6 @@ class LiveCommentCubit extends Cubit<LiveCommentState> {
 
     emit(state.copyWith(comments: updatedComments));
 
-    // Auto limit comments
     _limitComments();
   }
 
@@ -89,7 +121,7 @@ class LiveCommentCubit extends Cubit<LiveCommentState> {
       await _repository.createComment(liveStreamId, message);
       developer.log('Comment sent: $message', name: 'LiveComment');
 
-      // Comment sẽ được nhận lại qua WebSocket
+      // Comment sẽ được server push lại qua WebSocket
     } catch (e) {
       developer.log('Error sending comment: $e', name: 'LiveComment');
       emit(state.copyWith(error: e.toString()));
@@ -108,7 +140,12 @@ class LiveCommentCubit extends Cubit<LiveCommentState> {
 
   @override
   Future<void> close() {
-    _wsManager.disconnect();
+    _wsManager.unsubscribeTopic(
+      liveStreamId: liveStreamId,
+      topic: 'live-comment',
+      logName: 'LiveComment',
+    );
+
     return super.close();
   }
 }

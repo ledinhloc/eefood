@@ -1,3 +1,4 @@
+import 'package:eefood/features/livestream/domain/repository/live_block_repository.dart';
 import 'package:eefood/features/livestream/domain/repository/live_comment_repo.dart';
 import 'package:eefood/features/livestream/domain/repository/live_reaction_repo.dart';
 import 'package:flutter/material.dart';
@@ -7,11 +8,13 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../../../../../core/di/injection.dart';
 import '../../../../livestream/data/model/live_stream_response.dart';
 import '../../../../livestream/domain/repository/live_viewer_repository.dart';
+import '../../../../livestream/presentation/provider/block_user_cubit.dart';
 import '../../../../livestream/presentation/provider/live_comment_cubit.dart';
 import '../../../../livestream/presentation/provider/live_reaction_cubit.dart';
 import '../../../../livestream/presentation/provider/live_viewer_cubit.dart';
 import '../../../../livestream/presentation/provider/watch_live_cubit.dart';
 import '../../../../livestream/presentation/screens/live_viewer_screen.dart';
+
 class LiveStatusBadge extends StatelessWidget {
   final LiveStreamResponse? stream;
 
@@ -27,24 +30,32 @@ class LiveStatusBadge extends StatelessWidget {
           context,
           MaterialPageRoute(
             builder: (_) => MultiBlocProvider(
-                providers: [
-                  BlocProvider(
-                      create: (_) => getIt<WatchLiveCubit>()
+              providers: [
+                BlocProvider(create: (_) => getIt<WatchLiveCubit>()),
+                BlocProvider(
+                  create: (_) => LiveCommentCubit(
+                    getIt<LiveCommentRepository>(),
+                    stream!.id,
                   ),
-                  BlocProvider(
-                    create: (_) => LiveCommentCubit(getIt<LiveCommentRepository>(), stream!.id),
+                ),
+                BlocProvider(
+                  create: (_) => LiveReactionCubit(
+                    getIt<LiveReactionRepository>(),
+                    stream!.id,
                   ),
-                  BlocProvider(
-                    create: (_) => LiveReactionCubit(getIt<LiveReactionRepository>(),  stream!.id)
+                ),
+                BlocProvider(
+                  create: (_) => LiveViewerCubit(
+                    getIt<LiveViewerRepository>(),
+                    stream!.id,
                   ),
-                  BlocProvider(
-                    create: (_) => LiveViewerCubit(
-                      getIt<LiveViewerRepository>(),
-                      stream!.id,
-                    ),
-                  ),
-                ],
-                child: LiveViewerScreen(streamId: stream!.id)),
+                ),
+                BlocProvider(
+                  create: (_) => BlockUserCubit(),
+                ),
+              ],
+              child: LiveViewerScreen(streamId: stream!.id),
+            ),
           ),
         );
       },
@@ -98,11 +109,7 @@ class LiveStatusBadge extends StatelessWidget {
               ),
             ),
             const SizedBox(width: 8),
-            const Icon(
-              Icons.play_circle_fill,
-              color: Colors.white,
-              size: 20,
-            ),
+            const Icon(Icons.play_circle_fill, color: Colors.white, size: 20),
           ],
         ),
       ),
