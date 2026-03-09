@@ -16,7 +16,7 @@ class LivePollRepositoryImpl extends LivePollRepository {
     required int liveStreamId
   }) async {
     final res = await dio.get(
-      '/v1/livestreams/$liveStreamId/active'
+      '/v1/livestreams/$liveStreamId/polls/active'
     );
 
     return LivePollResponse.fromJson(res.data['data']);
@@ -50,12 +50,12 @@ class LivePollRepositoryImpl extends LivePollRepository {
   Future<LivePollResponse> updatePollStatus({
     required int liveStreamId,
     required int pollId,
-    required PollStatus status,
+    required PollStatus pollStatus,
   }) async {
     final res = await dio.patch(
       '/v1/livestreams/$liveStreamId/polls/$pollId/status',
       queryParameters: {
-        'status': status.name.toUpperCase(),
+        'pollStatus': pollStatus.name.toUpperCase(),
       },
     );
 
@@ -70,7 +70,7 @@ class LivePollRepositoryImpl extends LivePollRepository {
     return updatePollStatus(
       liveStreamId: liveStreamId,
       pollId: pollId,
-      status: PollStatus.open,
+      pollStatus: PollStatus.open,
     );
   }
 
@@ -82,7 +82,7 @@ class LivePollRepositoryImpl extends LivePollRepository {
     return updatePollStatus(
       liveStreamId: liveStreamId,
       pollId: pollId,
-      status: PollStatus.closed,
+      pollStatus: PollStatus.closed,
     );
   }
 

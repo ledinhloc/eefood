@@ -6,7 +6,7 @@ part 'poll_result_response.g.dart';
 @JsonSerializable()
 class PollResultResponse {
 
-  final String pollId;
+  final int pollId;
   final int totalVotes;
   final List<LivePollOptionResponse> options;
 

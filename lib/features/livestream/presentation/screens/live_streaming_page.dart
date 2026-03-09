@@ -1,8 +1,11 @@
 // presentation/screens/live_stream_screen.dart
 import 'dart:async';
+
 import 'package:eefood/features/livestream/presentation/provider/live_viewer_cubit.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:livekit_client/livekit_client.dart';
+
 import '../../../../core/constants/app_keys.dart';
 import '../../../../core/di/injection.dart';
 import '../../../../core/widgets/snack_bar.dart';
@@ -10,6 +13,7 @@ import '../../data/model/live_reaction_response.dart';
 import '../../data/model/live_stream_response.dart';
 import '../provider/block_user_cubit.dart';
 import '../provider/live_poll_cubit.dart';
+import '../provider/live_poll_state.dart';
 import '../provider/live_reaction_cubit.dart';
 import '../provider/live_reaction_state.dart';
 import '../provider/live_stream_cubit.dart';
@@ -17,10 +21,10 @@ import '../provider/live_stream_state.dart';
 import '../provider/start_live_cubit.dart';
 import '../widgets/create_poll_bottom_sheet.dart';
 import '../widgets/live_comment_list.dart';
+import '../widgets/live_poll_banner.dart';
+import '../widgets/live_poll_manage_bottom_sheet.dart';
 import '../widgets/live_reaction_animation.dart';
 import '../widgets/live_status_timer.dart';
-import 'package:livekit_client/livekit_client.dart';
-
 import '../widgets/viewer_list_bottom_sheet.dart';
 
 class LiveStreamScreen extends StatefulWidget {
@@ -45,23 +49,8 @@ class _LiveStreamScreenState extends State<LiveStreamScreen> {
   void initState() {
     super.initState();
 
-    // _initializeTracks();
-
-    // Connect to room qua Cubit
-    // context.read<LiveStreamCubit>().connectToRoom(
-    //   AppKeys.livekitUrl,
-    //   widget.stream.livekitToken!,
-    // );
     _ensureTracksReady();
-
     context.read<LiveViewerCubit>().joinLiveStream();
-
-    // Timer cho UI refresh (LiveStatusTimer)
-    // _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
-    //   if (mounted) {
-    //     setState(() {});
-    //   }
-    // });
   }
 
   void _showCreatePollSheet() {
@@ -77,6 +66,21 @@ class _LiveStreamScreenState extends State<LiveStreamScreen> {
       },
     );
   }
+
+  void _showPollManageSheet() {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (sheetContext) {
+        return BlocProvider.value(
+          value: context.read<LivePollCubit>(),
+          child: const LivePollManageBottomSheet(),
+        );
+      },
+    );
+  }
+
   Future<void> _ensureTracksReady() async {
     final cubit = context.read<LiveStreamCubit>();
     final state = cubit.state;
@@ -239,18 +243,16 @@ class _LiveStreamScreenState extends State<LiveStreamScreen> {
                   child: state.localVideoTrack != null && state.isCameraOn
                       ? VideoTrackRenderer(state.localVideoTrack!)
                       : Container(
-                    color: Colors.black,
-                    child: const Center(
-                      child: Icon(
-                        Icons.videocam_off,
-                        color: Colors.white,
-                        size: 64,
-                      ),
-                    ),
-                  ),
+                          color: Colors.black,
+                          child: const Center(
+                            child: Icon(
+                              Icons.videocam_off,
+                              color: Colors.white,
+                              size: 64,
+                            ),
+                          ),
+                        ),
                 ),
-
-                // Reactions overlay
                 ..._activeReactions.map((reaction) {
                   return LiveReactionAnimation(
                     key: ValueKey(reaction.id),
@@ -314,48 +316,64 @@ class _LiveStreamScreenState extends State<LiveStreamScreen> {
       left: 0,
       right: 0,
       child: SafeArea(
-        child: Container(
-          padding: const EdgeInsets.all(12),
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              begin: Alignment.topCenter,
-              end: Alignment.bottomCenter,
-              colors: [Colors.black.withOpacity(0.6), Colors.transparent],
-            ),
-          ),
-          child: Row(
-            children: [
-              LiveStatusTimer(startTime: widget.stream.startedAt!),
-              const SizedBox(width: 8),
-              Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 10,
-                  vertical: 6,
+        child: BlocBuilder<LivePollCubit, LivePollState>(
+          builder: (context, pollState) {
+            return Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                  colors: [Colors.black.withOpacity(0.6), Colors.transparent],
                 ),
-                decoration: BoxDecoration(
-                  color: Colors.black54,
-                  borderRadius: BorderRadius.circular(4),
-                ),
-                child: const Row(
-                  children: [
-                    Icon(Icons.lock, color: Colors.white, size: 14),
-                    SizedBox(width: 4),
-                    Text(
-                      'Chỉ mình tôi',
-                      style: TextStyle(color: Colors.white, fontSize: 12),
+              ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Row(
+                    children: [
+                      LiveStatusTimer(startTime: widget.stream.startedAt!),
+                      const SizedBox(width: 8),
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 10,
+                          vertical: 6,
+                        ),
+                        decoration: BoxDecoration(
+                          color: Colors.black54,
+                          borderRadius: BorderRadius.circular(4),
+                        ),
+                        child: const Row(
+                          children: [
+                            Icon(Icons.lock, color: Colors.white, size: 14),
+                            SizedBox(width: 4),
+                            Text(
+                              'Chi minh toi',
+                              style: TextStyle(color: Colors.white, fontSize: 12),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      _buildUserInfo(participantCount),
+                      const Spacer(),
+                      IconButton(
+                        icon: const Icon(Icons.close, color: Colors.white),
+                        onPressed: _endLiveStream,
+                      ),
+                    ],
+                  ),
+                  if (pollState.poll != null) ...[
+                    const SizedBox(height: 10),
+                    LivePollBanner(
+                      poll: pollState.poll!,
+                      onTap: _showPollManageSheet,
                     ),
                   ],
-                ),
+                ],
               ),
-              const SizedBox(width: 8),
-              _buildUserInfo(participantCount),
-              const Spacer(),
-              IconButton(
-                icon: const Icon(Icons.close, color: Colors.white),
-                onPressed: _endLiveStream,
-              ),
-            ],
-          ),
+            );
+          },
         ),
       ),
     );
@@ -369,23 +387,31 @@ class _LiveStreamScreenState extends State<LiveStreamScreen> {
         children: [
           _buildRoundButton(
             icon: Icons.poll_outlined,
-            onPressed: _showCreatePollSheet,
+            onPressed: () {
+              final poll = context.read<LivePollCubit>().state.poll;
+              if (poll != null) {
+                _showPollManageSheet();
+                return;
+              }
+              _showCreatePollSheet();
+            },
           ),
+          const SizedBox(height: 10),
           _buildRoundButton(
             icon: state.isCameraOn ? Icons.videocam : Icons.videocam_off,
             onPressed: () => context.read<LiveStreamCubit>().toggleCamera(),
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: 10),
           _buildRoundButton(
             icon: Icons.cameraswitch,
             onPressed: () => context.read<LiveStreamCubit>().switchCamera(),
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: 10),
           _buildRoundButton(
             icon: state.isFlashOn ? Icons.flash_on : Icons.flash_off,
             onPressed: () => context.read<LiveStreamCubit>().toggleFlash(),
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: 10),
           _buildRoundButton(
             icon: state.isMicOn ? Icons.mic : Icons.mic_off,
             onPressed: () => context.read<LiveStreamCubit>().toggleMic(),

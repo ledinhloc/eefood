@@ -1,3 +1,4 @@
+import 'package:eefood/core/widgets/snack_bar.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
@@ -70,9 +71,9 @@ class _CreatePollBottomSheetState extends State<CreatePollBottomSheet> {
         .toList();
 
     if (options.length < 2) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Cần ít nhất 2 đáp án')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('Cần ít nhất 2 đáp án')));
       return;
     }
 
@@ -103,9 +104,10 @@ class _CreatePollBottomSheetState extends State<CreatePollBottomSheet> {
     final pollState = context.read<LivePollCubit>().state;
     if (pollState.error == null) {
       Navigator.pop(context);
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Tạo poll thành công')),
-      );
+      // ScaffoldMessenger.of(context).showSnackBar(
+      //   const SnackBar(content: Text('Tạo poll thành công')),
+      // );
+      showCustomSnackBar(context, 'Tạo poll thành công');
     }
   }
 
@@ -248,17 +250,18 @@ class _CreatePollBottomSheetState extends State<CreatePollBottomSheet> {
                         dropdownColor: const Color(0xFF2C2C2E),
                         style: const TextStyle(color: Colors.white),
                         decoration: _dropdownDecoration(),
-                        items: List.generate(
-                          _optionControllers.length - 1,
-                              (index) => index + 2,
-                        )
-                            .map(
-                              (e) => DropdownMenuItem<int>(
-                            value: e,
-                            child: Text('$e đáp án'),
-                          ),
-                        )
-                            .toList(),
+                        items:
+                            List.generate(
+                                  _optionControllers.length - 1,
+                                  (index) => index + 2,
+                                )
+                                .map(
+                                  (e) => DropdownMenuItem<int>(
+                                    value: e,
+                                    child: Text('$e đáp án'),
+                                  ),
+                                )
+                                .toList(),
                         onChanged: (value) {
                           if (value == null) return;
                           setState(() {
@@ -371,13 +374,13 @@ class _CreatePollBottomSheetState extends State<CreatePollBottomSheet> {
                         ),
                         child: state.actionLoading
                             ? const SizedBox(
-                          height: 20,
-                          width: 20,
-                          child: CircularProgressIndicator(
-                            strokeWidth: 2,
-                            color: Colors.white,
-                          ),
-                        )
+                                height: 20,
+                                width: 20,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                  color: Colors.white,
+                                ),
+                              )
                             : const Text('Tạo poll'),
                       ),
                     ),
