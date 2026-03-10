@@ -282,23 +282,23 @@ class _LiveViewerScreenState extends State<LiveViewerScreen> {
 
                 // Top bar
                 _buildTopBar(stream, participantCount),
-                BlocBuilder<LivePollCubit, LivePollState>(
-                  builder: (context, pollState) {
-                    final poll = pollState.poll;
-                    if (poll == null) return const SizedBox.shrink();
+                Positioned(
+                  top: 110,
+                  left: 10,
+                  right: 70,
+                  child: SafeArea(
+                    child: BlocBuilder<LivePollCubit, LivePollState>(
+                      builder: (context, pollState) {
+                        final poll = pollState.poll;
+                        if (poll == null) return const SizedBox.shrink();
 
-                    return Positioned(
-                      top: 110,
-                      left: 10,
-                      right: 70,
-                      child: SafeArea(
-                        child: LivePollViewerBanner(
+                        return LivePollViewerBanner(
                           poll: poll,
                           onTap: _showPollSheet,
-                        ),
-                      ),
-                    );
-                  },
+                        );
+                      },
+                    ),
+                  ),
                 ),
                 // Streamer info
                 _buildStreamerInfo(stream),

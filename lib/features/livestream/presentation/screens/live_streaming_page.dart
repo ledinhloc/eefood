@@ -77,7 +77,9 @@ class _LiveStreamScreenState extends State<LiveStreamScreen> {
       builder: (sheetContext) {
         return BlocProvider.value(
           value: context.read<LivePollCubit>(),
-          child: const LivePollManageBottomSheet(),
+          child: LivePollManageBottomSheet(
+            onCreateNewPoll: _showCreatePollSheet,
+          ),
         );
       },
     );

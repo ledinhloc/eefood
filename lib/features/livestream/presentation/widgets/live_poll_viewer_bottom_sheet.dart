@@ -77,6 +77,7 @@ class _PollViewerContent extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final cubit = context.read<LivePollCubit>();
+    final canShowResult = cubit.shouldShowResult;
 
     return SingleChildScrollView(
       child: Column(
@@ -102,7 +103,6 @@ class _PollViewerContent extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 16),
-
           Container(
             width: double.infinity,
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
@@ -118,9 +118,7 @@ class _PollViewerContent extends StatelessWidget {
               ),
             ),
           ),
-
           const SizedBox(height: 12),
-
           Container(
             width: double.infinity,
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
@@ -136,9 +134,7 @@ class _PollViewerContent extends StatelessWidget {
               ),
             ),
           ),
-
           const SizedBox(height: 16),
-
           if (poll.status == PollStatus.open) ...[
             const Text(
               'Chọn đáp án',
@@ -166,9 +162,7 @@ class _PollViewerContent extends StatelessWidget {
                         : const Color(0xFF2C2C2E),
                     borderRadius: BorderRadius.circular(12),
                     border: Border.all(
-                      color: isSelected
-                          ? Colors.orange
-                          : Colors.white12,
+                      color: isSelected ? Colors.orange : Colors.white12,
                     ),
                   ),
                   child: Row(
@@ -189,9 +183,7 @@ class _PollViewerContent extends StatelessWidget {
                 ),
               );
             }),
-
             const SizedBox(height: 8),
-
             SizedBox(
               width: double.infinity,
               child: ElevatedButton(
@@ -213,10 +205,8 @@ class _PollViewerContent extends StatelessWidget {
               ),
             ),
           ],
-
           const SizedBox(height: 16),
-
-          if (state.poll?.setting.resultVisibility == PollResultVisibility.always) ...[
+          if (canShowResult) ...[
             SizedBox(
               width: double.infinity,
               child: OutlinedButton(
@@ -228,11 +218,20 @@ class _PollViewerContent extends StatelessWidget {
                   side: const BorderSide(color: Colors.white24),
                   padding: const EdgeInsets.symmetric(vertical: 14),
                 ),
-                child: const Text('Xem kết quả'),
+                child: Text(
+                  state.result == null ? 'Xem ket qua' : 'Lam moi ket qua',
+                ),
               ),
             ),
             const SizedBox(height: 16),
-            if (state.result != null) ...[
+            if (state.loading && state.result == null)
+              const Center(
+                child: Padding(
+                  padding: EdgeInsets.symmetric(vertical: 12),
+                  child: CircularProgressIndicator(),
+                ),
+              )
+            else if (state.result != null) ...[
               const Text(
                 'Kết quả',
                 style: TextStyle(
@@ -240,6 +239,11 @@ class _PollViewerContent extends StatelessWidget {
                   fontWeight: FontWeight.w700,
                   fontSize: 16,
                 ),
+              ),
+              const SizedBox(height: 6),
+              Text(
+                'Tong so phieu: ${state.result!.totalVotes}',
+                style: const TextStyle(color: Colors.white70),
               ),
               const SizedBox(height: 10),
               ...state.result!.options.map(
@@ -274,8 +278,21 @@ class _PollViewerContent extends StatelessWidget {
                 ),
               ),
             ],
+          ] else ...[
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+              decoration: BoxDecoration(
+                color: const Color(0xFF2C2C2E),
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: Colors.white12),
+              ),
+              child: Text(
+                _resultVisibilityMessage(),
+                style: const TextStyle(color: Colors.white70),
+              ),
+            ),
           ],
-
           if (state.error != null) ...[
             const SizedBox(height: 12),
             Text(
@@ -307,6 +324,21 @@ class _PollViewerContent extends StatelessWidget {
         return Colors.orangeAccent;
       default:
         return Colors.white70;
+    }
+  }
+
+  String _resultVisibilityMessage() {
+    switch (poll.setting.resultVisibility) {
+      case PollResultVisibility.always:
+        return 'Ket qua se hien tai day.';
+      case PollResultVisibility.afterVote:
+        return state.hasVoted
+            ? 'Ket qua dang duoc cap nhat.'
+            : 'Ban can binh chon truoc khi xem ket qua.';
+      case PollResultVisibility.afterClose:
+        return poll.status == PollStatus.closed
+            ? 'Ket qua dang duoc cap nhat.'
+            : 'Ket qua se hien khi poll dong.';
     }
   }
 }
