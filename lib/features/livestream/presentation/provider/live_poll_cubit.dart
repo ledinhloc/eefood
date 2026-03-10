@@ -26,6 +26,7 @@ class LivePollCubit extends Cubit<LivePollState> {
         clearResult: true,
         selectedOptionIds: const [],
         votedOptionIds: const [],
+        actionLoading: false,
         hasVoted: false,
         clearError: true,
       ),
@@ -87,20 +88,25 @@ class LivePollCubit extends Cubit<LivePollState> {
       topic: 'live-poll',
       fromJson: (json) => LivePollResponse.fromJson(json),
       onData: (data) async {
-        final nextSelected = _sanitizeSelectedOptions(
-          selected: state.selectedOptionIds,
-          poll: data,
-        );
+        final isNewPoll = state.poll?.id != data.id;
 
-        emit(
-          state.copyWith(
-            poll: data,
-            selectedOptionIds: nextSelected,
-            clearError: true,
-          ),
-        );
+        if (isNewPoll) {
+          prepareForNewPoll();
+          emit(state.copyWith(poll: data, clearError: true));
+        } else {
+          emit(
+            state.copyWith(
+              poll: data,
+              selectedOptionIds: _sanitizeSelectedOptions(
+                selected: state.selectedOptionIds,
+                poll: data,
+              ),
+              clearError: true,
+            ),
+          );
+        }
 
-        if (data.status == PollStatus.closed) {
+        if (shouldShowResult) {
           await loadPollResultIfNeeded(pollId: data.id);
         }
       },
@@ -156,10 +162,14 @@ class LivePollCubit extends Cubit<LivePollState> {
         state.copyWith(
           loading: false,
           poll: poll,
+          clearResult: poll == null,
           selectedOptionIds: _sanitizeSelectedOptions(
             selected: state.selectedOptionIds,
             poll: poll,
           ),
+          hasVoted: poll == null ? false : state.hasVoted,
+          votedOptionIds: poll == null ? const [] : state.votedOptionIds,
+          actionLoading: false,
         ),
       );
     } catch (e) {
@@ -197,7 +207,17 @@ class LivePollCubit extends Cubit<LivePollState> {
         ),
       );
     } catch (e) {
-      emit(state.copyWith(loading: false, error: e.toString()));
+      emit(
+        state.copyWith(
+          loading: false,
+          clearPoll: true,
+          clearResult: true,
+          selectedOptionIds: const [],
+          votedOptionIds: const [],
+          hasVoted: false,
+          error: e.toString(),
+        ),
+      );
     }
   }
 
@@ -220,7 +240,7 @@ class LivePollCubit extends Cubit<LivePollState> {
         state.copyWith(
           actionLoading: false,
           poll: poll,
-          result: null,
+          clearResult: true,
           selectedOptionIds: const [],
           votedOptionIds: const [],
           hasVoted: false,
@@ -460,6 +480,7 @@ class LivePollCubit extends Cubit<LivePollState> {
   @override
   Future<void> close() {
     _unsubscribePollTopics();
+    emit(state.copyWith(socketConnected: false));
     return super.close();
   }
 }

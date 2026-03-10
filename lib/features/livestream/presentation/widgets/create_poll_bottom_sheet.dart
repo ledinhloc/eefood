@@ -149,7 +149,7 @@ class _CreatePollBottomSheetState extends State<CreatePollBottomSheet> {
                         fontSize: 18,
                         fontWeight: FontWeight.w700,
                       ),
-                    ),
+                    )
                     const SizedBox(height: 16),
 
                     _buildLabel('Câu hỏi'),
