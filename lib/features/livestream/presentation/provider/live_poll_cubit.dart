@@ -431,8 +431,10 @@ class LivePollCubit extends Cubit<LivePollState> {
 
   List<int> _sanitizeSelectedOptions({
     required List<int> selected,
-    required LivePollResponse poll,
+    required LivePollResponse? poll,
   }) {
+    if (poll == null) return const [];
+
     final validIds = poll.options.map((e) => e.id).toSet();
     final filtered = selected.where(validIds.contains).toList();
 

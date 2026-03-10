@@ -1,5 +1,10 @@
 // presentation/screens/live_viewer_screen.dart
 import 'dart:async';
+import 'package:eefood/core/widgets/snack_bar.dart';
+import 'package:eefood/features/livestream/presentation/provider/live_poll_cubit.dart';
+import 'package:eefood/features/livestream/presentation/provider/live_poll_state.dart';
+import 'package:eefood/features/livestream/presentation/widgets/live_poll_viewer_banner.dart';
+import 'package:eefood/features/livestream/presentation/widgets/live_poll_viewer_bottom_sheet.dart';
 import 'package:eefood/features/livestream/presentation/widgets/stream_ended_dialog.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -47,6 +52,20 @@ class _LiveViewerScreenState extends State<LiveViewerScreen> {
     // _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
     //   if (mounted) setState(() {});
     // });
+  }
+
+  void _showPollSheet() {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (_) {
+        return BlocProvider.value(
+          value: context.read<LivePollCubit>(),
+          child: const LivePollViewerBottomSheet(),
+        );
+      },
+    );
   }
 
   void _handleStreamEnded(String? message) {
@@ -114,6 +133,13 @@ class _LiveViewerScreenState extends State<LiveViewerScreen> {
   Widget build(BuildContext context) {
     return MultiBlocListener(
       listeners: [
+        BlocListener<LivePollCubit, LivePollState>(
+          listener: (context, pollState) {
+            if (pollState.error != null && pollState.error!.isNotEmpty) {
+              showCustomSnackBar(context, pollState.error!);
+            }
+          },
+        ),
         BlocListener<LiveReactionCubit, LiveReactionState>(
           listener: (context, reactionState) {
             if (reactionState.reactions.isNotEmpty) {
@@ -256,7 +282,24 @@ class _LiveViewerScreenState extends State<LiveViewerScreen> {
 
                 // Top bar
                 _buildTopBar(stream, participantCount),
+                BlocBuilder<LivePollCubit, LivePollState>(
+                  builder: (context, pollState) {
+                    final poll = pollState.poll;
+                    if (poll == null) return const SizedBox.shrink();
 
+                    return Positioned(
+                      top: 110,
+                      left: 10,
+                      right: 70,
+                      child: SafeArea(
+                        child: LivePollViewerBanner(
+                          poll: poll,
+                          onTap: _showPollSheet,
+                        ),
+                      ),
+                    );
+                  },
+                ),
                 // Streamer info
                 _buildStreamerInfo(stream),
 
@@ -345,7 +388,7 @@ class _LiveViewerScreenState extends State<LiveViewerScreen> {
 
   Widget _buildStreamerInfo(stream) {
     return Positioned(
-      top: 110,
+      top: 90,
       left: 10,
       child: Container(
         padding: const EdgeInsets.all(8),

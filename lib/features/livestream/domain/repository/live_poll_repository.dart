@@ -3,7 +3,7 @@ import '../../data/model/poll_result_response.dart';
 import '../../data/model/create_live_poll_request.dart';
 
 abstract class LivePollRepository {
-  Future<LivePollResponse> getActivePoll({
+  Future<LivePollResponse?> getActivePoll({
     required int liveStreamId
   });
 

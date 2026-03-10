@@ -100,6 +100,7 @@ class LiveViewerCubit extends Cubit<LiveViewerState> {
       await _repository.leaveLiveStream(liveStreamId);
 
       developer.log('Left livestream $liveStreamId', name: 'LiveViewer');
+      if (isClosed) return;
       emit(state.copyWith(isJoined: false));
     } catch (e) {
       developer.log('Error leaving livestream: $e', name: 'LiveViewer');

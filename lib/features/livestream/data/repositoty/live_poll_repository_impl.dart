@@ -12,14 +12,16 @@ class LivePollRepositoryImpl extends LivePollRepository {
   LivePollRepositoryImpl({required this.dio});
 
   @override
-  Future<LivePollResponse> getActivePoll({
+  Future<LivePollResponse?> getActivePoll({
     required int liveStreamId
   }) async {
     final res = await dio.get(
       '/v1/livestreams/$liveStreamId/polls/active'
     );
+    final data = res.data['data'];
+    if (data == null) return null;
 
-    return LivePollResponse.fromJson(res.data['data']);
+    return LivePollResponse.fromJson(data as Map<String, dynamic>);
   }
 
   @override

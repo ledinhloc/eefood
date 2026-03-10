@@ -45,12 +45,14 @@ class _LiveStreamScreenState extends State<LiveStreamScreen> {
   final List<LiveReactionResponse> _activeReactions = [];
   final ScrollController _scrollController = ScrollController();
 
+  late final LiveViewerCubit _liveViewerCubit;
   @override
   void initState() {
     super.initState();
+    _liveViewerCubit = context.read<LiveViewerCubit>();
 
     _ensureTracksReady();
-    context.read<LiveViewerCubit>().joinLiveStream();
+    _liveViewerCubit.joinLiveStream();
   }
 
   void _showCreatePollSheet() {
@@ -196,7 +198,7 @@ class _LiveStreamScreenState extends State<LiveStreamScreen> {
     _commentController.dispose();
     _scrollController.dispose();
 
-    context.read<LiveViewerCubit>().leaveLiveStream();
+    _liveViewerCubit.leaveLiveStream();
     super.dispose();
   }
 
