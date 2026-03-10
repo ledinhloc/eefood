@@ -46,11 +46,13 @@ class LivePollState extends Equatable {
     bool? isHost,
     String? error,
     bool clearError = false,
+    bool clearPoll = false,
+    bool clearResult = false,
   }) {
     return LivePollState(
       liveStreamId: liveStreamId ?? this.liveStreamId,
-      poll: poll ?? this.poll,
-      result: result ?? this.result,
+      poll: clearPoll ? null : (poll ?? this.poll),
+      result: clearResult ? null : (result ?? this.result),
       loading: loading ?? this.loading,
       actionLoading: actionLoading ?? this.actionLoading,
       socketConnected: socketConnected ?? this.socketConnected,

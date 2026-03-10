@@ -8,7 +8,7 @@ part of 'poll_result_response.dart';
 
 PollResultResponse _$PollResultResponseFromJson(Map<String, dynamic> json) =>
     PollResultResponse(
-      pollId: json['pollId'] as String,
+      pollId: (json['pollId'] as num).toInt(),
       totalVotes: (json['totalVotes'] as num).toInt(),
       options: (json['options'] as List<dynamic>)
           .map(
