@@ -58,20 +58,18 @@ class _LiveViewerScreenState extends State<LiveViewerScreen> {
       builder: (context) {
         return StreamEndedDialog(
           message: message,
-            onClose: () {
-              Navigator.pop(context);//dong diaglog
-              Navigator.pop(context); // thoat man hinh
-            },);
-      }
+          onClose: () {
+            Navigator.pop(context); //dong diaglog
+            Navigator.pop(context); // thoat man hinh
+          },
+        );
+      },
     );
   }
 
   Future<void> _sendReaction(FoodEmotion emotion) async {
     try {
-      await context.read<LiveReactionCubit>().createReaction(
-
-        emotion,
-      );
+      await context.read<LiveReactionCubit>().createReaction(emotion);
     } catch (e) {
       print('Error sending reaction: $e');
     }
@@ -133,7 +131,7 @@ class _LiveViewerScreenState extends State<LiveViewerScreen> {
         ),
         BlocListener<WatchLiveCubit, WatchLiveState>(
           listenWhen: (previous, current) =>
-          previous.isStreamEnded != current.isStreamEnded,
+              previous.isStreamEnded != current.isStreamEnded,
           listener: (context, state) {
             if (state.isStreamEnded) {
               _handleStreamEnded(state.streamEndMessage);
@@ -159,7 +157,11 @@ class _LiveViewerScreenState extends State<LiveViewerScreen> {
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    const Icon(Icons.error_outline, color: Colors.red, size: 64),
+                    const Icon(
+                      Icons.error_outline,
+                      color: Colors.red,
+                      size: 64,
+                    ),
                     const SizedBox(height: 16),
                     Text(
                       'Lỗi: ${state.error}',
@@ -169,7 +171,9 @@ class _LiveViewerScreenState extends State<LiveViewerScreen> {
                     const SizedBox(height: 16),
                     ElevatedButton(
                       onPressed: () {
-                        context.read<WatchLiveCubit>().loadLive(widget.streamId);
+                        context.read<WatchLiveCubit>().loadLive(
+                          widget.streamId,
+                        );
                       },
                       child: const Text('Thử lại'),
                     ),
@@ -192,7 +196,8 @@ class _LiveViewerScreenState extends State<LiveViewerScreen> {
           }
 
           final stream = state.stream!;
-          final participantCount = (state.room?.remoteParticipants.length ?? 0) + 1;
+          final participantCount =
+              (state.room?.remoteParticipants.length ?? 0) + 1;
 
           return Scaffold(
             backgroundColor: Colors.black,
@@ -203,39 +208,41 @@ class _LiveViewerScreenState extends State<LiveViewerScreen> {
                   child: state.remoteVideoTrack != null
                       ? VideoTrackRenderer(state.remoteVideoTrack!)
                       : Container(
-                    color: Colors.black,
-                    child: Center(
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Icon(
-                            state.isConnecting ? Icons.sync : Icons.videocam_off,
-                            color: Colors.white54,
-                            size: 64,
-                          ),
-                          const SizedBox(height: 16),
-                          Text(
-                            state.isConnecting
-                                ? 'Đang kết nối...'
-                                : state.isConnected
-                                ? 'Đang chờ video...'
-                                : 'Chưa kết nối',
-                            style: const TextStyle(
-                              color: Colors.white54,
-                              fontSize: 16,
+                          color: Colors.black,
+                          child: Center(
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Icon(
+                                  state.isConnecting
+                                      ? Icons.sync
+                                      : Icons.videocam_off,
+                                  color: Colors.white54,
+                                  size: 64,
+                                ),
+                                const SizedBox(height: 16),
+                                Text(
+                                  state.isConnecting
+                                      ? 'Đang kết nối...'
+                                      : state.isConnected
+                                      ? 'Đang chờ video...'
+                                      : 'Chưa kết nối',
+                                  style: const TextStyle(
+                                    color: Colors.white54,
+                                    fontSize: 16,
+                                  ),
+                                ),
+                                if (state.isConnecting)
+                                  const Padding(
+                                    padding: EdgeInsets.only(top: 16),
+                                    child: CircularProgressIndicator(
+                                      color: Colors.white54,
+                                    ),
+                                  ),
+                              ],
                             ),
                           ),
-                          if (state.isConnecting)
-                            const Padding(
-                              padding: EdgeInsets.only(top: 16),
-                              child: CircularProgressIndicator(
-                                color: Colors.white54,
-                              ),
-                            ),
-                        ],
-                      ),
-                    ),
-                  ),
+                        ),
                 ),
 
                 // Reactions
@@ -297,18 +304,28 @@ class _LiveViewerScreenState extends State<LiveViewerScreen> {
               GestureDetector(
                 onTap: _showViewerList,
                 child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 10,
+                    vertical: 6,
+                  ),
                   decoration: BoxDecoration(
                     color: Colors.black54,
                     borderRadius: BorderRadius.circular(4),
                   ),
                   child: Row(
                     children: [
-                      const Icon(Icons.visibility, color: Colors.white, size: 14),
+                      const Icon(
+                        Icons.visibility,
+                        color: Colors.white,
+                        size: 14,
+                      ),
                       const SizedBox(width: 4),
                       Text(
                         '$participantCount',
-                        style: const TextStyle(color: Colors.white, fontSize: 12),
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 12,
+                        ),
                       ),
                     ],
                   ),
@@ -341,8 +358,9 @@ class _LiveViewerScreenState extends State<LiveViewerScreen> {
             CircleAvatar(
               radius: 16,
               backgroundColor: Colors.blue,
-              backgroundImage:
-              stream.avatarUrl != null ? NetworkImage(stream.avatarUrl!) : null,
+              backgroundImage: stream.avatarUrl != null
+                  ? NetworkImage(stream.avatarUrl!)
+                  : null,
               child: stream.avatarUrl == null
                   ? const Icon(Icons.person, color: Colors.white, size: 20)
                   : null,

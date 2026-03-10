@@ -15,9 +15,22 @@ import 'live_poll_state.dart';
 class LivePollCubit extends Cubit<LivePollState> {
   final LivePollRepository repo = getIt<LivePollRepository>();
   final LiveStreamWebSocketManager _wsManager =
-  getIt<LiveStreamWebSocketManager>();
+      getIt<LiveStreamWebSocketManager>();
 
   LivePollCubit() : super(const LivePollState());
+
+  void prepareForNewPoll() {
+    emit(
+      state.copyWith(
+        clearPoll: true,
+        clearResult: true,
+        selectedOptionIds: const [],
+        votedOptionIds: const [],
+        hasVoted: false,
+        clearError: true,
+      ),
+    );
+  }
 
   Future<void> init({
     required int liveStreamId,
@@ -63,12 +76,7 @@ class LivePollCubit extends Cubit<LivePollState> {
         _subscribePollTopics(liveStreamId);
       },
       onError: (error) {
-        emit(
-          state.copyWith(
-            socketConnected: false,
-            error: error,
-          ),
-        );
+        emit(state.copyWith(socketConnected: false, error: error));
       },
     );
   }
@@ -99,12 +107,7 @@ class LivePollCubit extends Cubit<LivePollState> {
       logName: 'LivePollCubit',
       logPrefix: 'live poll update',
       onError: (error) {
-        emit(
-          state.copyWith(
-            socketConnected: false,
-            error: error,
-          ),
-        );
+        emit(state.copyWith(socketConnected: false, error: error));
       },
     );
 
@@ -113,22 +116,12 @@ class LivePollCubit extends Cubit<LivePollState> {
       topic: 'live-poll-result',
       fromJson: (json) => PollResultResponse.fromJson(json),
       onData: (data) {
-        emit(
-          state.copyWith(
-            result: data,
-            clearError: true,
-          ),
-        );
+        emit(state.copyWith(result: data, clearError: true));
       },
       logName: 'LivePollCubit',
       logPrefix: 'poll result update',
       onError: (error) {
-        emit(
-          state.copyWith(
-            socketConnected: false,
-            error: error,
-          ),
-        );
+        emit(state.copyWith(socketConnected: false, error: error));
       },
     );
   }
@@ -154,12 +147,7 @@ class LivePollCubit extends Cubit<LivePollState> {
     final liveStreamId = state.liveStreamId;
     if (liveStreamId == null) return;
 
-    emit(
-      state.copyWith(
-        loading: true,
-        clearError: true,
-      ),
-    );
+    emit(state.copyWith(loading: true, clearError: true));
 
     try {
       final poll = await repo.getActivePoll(liveStreamId: liveStreamId);
@@ -178,26 +166,19 @@ class LivePollCubit extends Cubit<LivePollState> {
       emit(
         state.copyWith(
           loading: false,
-          poll: null,
-          result: null,
+          clearPoll: true,
+          clearResult: true,
           error: e.toString(),
         ),
       );
     }
   }
 
-  Future<void> loadPollDetail({
-    required int pollId,
-  }) async {
+  Future<void> loadPollDetail({required int pollId}) async {
     final liveStreamId = state.liveStreamId;
     if (liveStreamId == null) return;
 
-    emit(
-      state.copyWith(
-        loading: true,
-        clearError: true,
-      ),
-    );
+    emit(state.copyWith(loading: true, clearError: true));
 
     try {
       final poll = await repo.getPollDetail(
@@ -216,30 +197,18 @@ class LivePollCubit extends Cubit<LivePollState> {
         ),
       );
     } catch (e) {
-      emit(
-        state.copyWith(
-          loading: false,
-          error: e.toString(),
-        ),
-      );
+      emit(state.copyWith(loading: false, error: e.toString()));
     }
   }
 
-  Future<void> createPoll({
-    required CreateLivePollRequest request,
-  }) async {
+  Future<void> createPoll({required CreateLivePollRequest request}) async {
     final liveStreamId = state.liveStreamId;
     if (liveStreamId == null) {
       emit(state.copyWith(error: 'Không tìm thấy liveStreamId'));
       return;
     }
 
-    emit(
-      state.copyWith(
-        actionLoading: true,
-        clearError: true,
-      ),
-    );
+    emit(state.copyWith(actionLoading: true, clearError: true));
 
     try {
       final poll = await repo.createPoll(
@@ -258,27 +227,15 @@ class LivePollCubit extends Cubit<LivePollState> {
         ),
       );
     } catch (e) {
-      emit(
-        state.copyWith(
-          actionLoading: false,
-          error: e.toString(),
-        ),
-      );
+      emit(state.copyWith(actionLoading: false, error: e.toString()));
     }
   }
 
-  Future<void> openPoll({
-    required int pollId,
-  }) async {
+  Future<void> openPoll({required int pollId}) async {
     final liveStreamId = state.liveStreamId;
     if (liveStreamId == null) return;
 
-    emit(
-      state.copyWith(
-        actionLoading: true,
-        clearError: true,
-      ),
-    );
+    emit(state.copyWith(actionLoading: true, clearError: true));
 
     try {
       final poll = await repo.openPoll(
@@ -286,36 +243,19 @@ class LivePollCubit extends Cubit<LivePollState> {
         pollId: pollId,
       );
 
-      emit(
-        state.copyWith(
-          actionLoading: false,
-          poll: poll,
-        ),
-      );
+      emit(state.copyWith(actionLoading: false, poll: poll));
 
       await loadPollResultIfNeeded(pollId: pollId);
     } catch (e) {
-      emit(
-        state.copyWith(
-          actionLoading: false,
-          error: e.toString(),
-        ),
-      );
+      emit(state.copyWith(actionLoading: false, error: e.toString()));
     }
   }
 
-  Future<void> closePoll({
-    required int pollId,
-  }) async {
+  Future<void> closePoll({required int pollId}) async {
     final liveStreamId = state.liveStreamId;
     if (liveStreamId == null) return;
 
-    emit(
-      state.copyWith(
-        actionLoading: true,
-        clearError: true,
-      ),
-    );
+    emit(state.copyWith(actionLoading: true, clearError: true));
 
     try {
       final poll = await repo.closePoll(
@@ -323,36 +263,19 @@ class LivePollCubit extends Cubit<LivePollState> {
         pollId: pollId,
       );
 
-      emit(
-        state.copyWith(
-          actionLoading: false,
-          poll: poll,
-        ),
-      );
+      emit(state.copyWith(actionLoading: false, poll: poll));
 
       await loadPollResultIfNeeded(pollId: pollId, force: true);
     } catch (e) {
-      emit(
-        state.copyWith(
-          actionLoading: false,
-          error: e.toString(),
-        ),
-      );
+      emit(state.copyWith(actionLoading: false, error: e.toString()));
     }
   }
 
-  Future<void> loadPollResult({
-    required int pollId,
-  }) async {
+  Future<void> loadPollResult({required int pollId}) async {
     final liveStreamId = state.liveStreamId;
     if (liveStreamId == null) return;
 
-    emit(
-      state.copyWith(
-        loading: true,
-        clearError: true,
-      ),
-    );
+    emit(state.copyWith(loading: true, clearError: true));
 
     try {
       final result = await repo.getPollResult(
@@ -360,19 +283,9 @@ class LivePollCubit extends Cubit<LivePollState> {
         pollId: pollId,
       );
 
-      emit(
-        state.copyWith(
-          loading: false,
-          result: result,
-        ),
-      );
+      emit(state.copyWith(loading: false, result: result));
     } catch (e) {
-      emit(
-        state.copyWith(
-          loading: false,
-          error: e.toString(),
-        ),
-      );
+      emit(state.copyWith(loading: false, error: e.toString()));
     }
   }
 
@@ -385,9 +298,7 @@ class LivePollCubit extends Cubit<LivePollState> {
     }
   }
 
-  void toggleOption({
-    required int optionId,
-  }) {
+  void toggleOption({required int optionId}) {
     final poll = state.poll;
     if (poll == null) return;
 
@@ -409,9 +320,7 @@ class LivePollCubit extends Cubit<LivePollState> {
       } else {
         if (current.length >= maxChoices) {
           emit(
-            state.copyWith(
-              error: 'Chỉ được chọn tối đa $maxChoices đáp án',
-            ),
+            state.copyWith(error: 'Chỉ được chọn tối đa $maxChoices đáp án'),
           );
           return;
         }
@@ -427,21 +336,14 @@ class LivePollCubit extends Cubit<LivePollState> {
       }
     }
 
-    emit(
-      state.copyWith(
-        selectedOptionIds: current,
-        clearError: true,
-      ),
-    );
+    emit(state.copyWith(selectedOptionIds: current, clearError: true));
   }
 
   void clearSelectedOptions() {
     emit(state.copyWith(selectedOptionIds: const []));
   }
 
-  Future<void> vote({
-    required int pollId,
-  }) async {
+  Future<void> vote({required int pollId}) async {
     final liveStreamId = state.liveStreamId;
     if (liveStreamId == null) return;
 
@@ -468,9 +370,7 @@ class LivePollCubit extends Cubit<LivePollState> {
 
     if (isMultipleChoice && state.selectedOptionIds.length > maxChoices) {
       emit(
-        state.copyWith(
-          error: 'Bạn chỉ được chọn tối đa $maxChoices đáp án',
-        ),
+        state.copyWith(error: 'Bạn chỉ được chọn tối đa $maxChoices đáp án'),
       );
       return;
     }
@@ -480,12 +380,7 @@ class LivePollCubit extends Cubit<LivePollState> {
       return;
     }
 
-    emit(
-      state.copyWith(
-        actionLoading: true,
-        clearError: true,
-      ),
-    );
+    emit(state.copyWith(actionLoading: true, clearError: true));
 
     try {
       final submitted = List<int>.from(state.selectedOptionIds);
@@ -506,23 +401,15 @@ class LivePollCubit extends Cubit<LivePollState> {
         ),
       );
     } catch (e) {
-      emit(
-        state.copyWith(
-          actionLoading: false,
-          error: e.toString(),
-        ),
-      );
+      emit(state.copyWith(actionLoading: false, error: e.toString()));
     }
   }
 
-  bool get isMultipleChoice =>
-      state.poll?.setting.multipleChoice ?? false;
+  bool get isMultipleChoice => state.poll?.setting.multipleChoice ?? false;
 
-  bool get allowChangeVote =>
-      state.poll?.setting.allowChangeVote ?? false;
+  bool get allowChangeVote => state.poll?.setting.allowChangeVote ?? false;
 
-  int get maxChoices =>
-      state.poll?.setting.maxChoices ?? 1;
+  int get maxChoices => state.poll?.setting.maxChoices ?? 1;
 
   bool get shouldShowResult {
     final poll = state.poll;

@@ -5,6 +5,7 @@ import '../../data/model/live_poll_response.dart';
 import '../../domain/enum/poll_status.dart';
 import '../provider/live_poll_cubit.dart';
 import '../provider/live_poll_state.dart';
+import 'create_poll_bottom_sheet.dart';
 
 class LivePollManageBottomSheet extends StatelessWidget {
   const LivePollManageBottomSheet({super.key});
@@ -26,9 +27,9 @@ class LivePollManageBottomSheet extends StatelessWidget {
             child: poll == null
                 ? const _EmptyPollView()
                 : _PollManageContent(
-              poll: poll,
-              state: state,
-            ),
+                    poll: poll,
+                    state: state,
+                  ),
           ),
         );
       },
@@ -41,11 +42,11 @@ class _EmptyPollView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const Column(
+    return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
-        SizedBox(height: 8),
-        Text(
+        const SizedBox(height: 8),
+        const Text(
           'Chưa có poll',
           style: TextStyle(
             color: Colors.white,
@@ -53,12 +54,42 @@ class _EmptyPollView extends StatelessWidget {
             fontWeight: FontWeight.w700,
           ),
         ),
-        SizedBox(height: 8),
-        Text(
-          'Hãy tạo poll trước để quản lý',
+        const SizedBox(height: 8),
+        const Text(
+          'Hãy tạo poll mới để bắt đầu',
           style: TextStyle(color: Colors.white70),
         ),
+        const SizedBox(height: 20),
+        SizedBox(
+          width: double.infinity,
+          child: ElevatedButton(
+            onPressed: () {
+              Navigator.pop(context);
+              _showCreatePollSheet(context);
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.orange,
+              foregroundColor: Colors.white,
+              padding: const EdgeInsets.symmetric(vertical: 14),
+            ),
+            child: const Text('Tạo poll mới'),
+          ),
+        ),
       ],
+    );
+  }
+
+  void _showCreatePollSheet(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (_) {
+        return BlocProvider.value(
+          value: context.read<LivePollCubit>(),
+          child: const CreatePollBottomSheet(),
+        );
+      },
     );
   }
 }
@@ -117,32 +148,6 @@ class _PollManageContent extends StatelessWidget {
             value: '${poll.options.length}',
           ),
 
-          const SizedBox(height: 16),
-          const Text(
-            'Danh sách đáp án',
-            style: TextStyle(
-              color: Colors.white,
-              fontWeight: FontWeight.w700,
-            ),
-          ),
-          const SizedBox(height: 8),
-
-          ...poll.options.map(
-                (option) => Container(
-              width: double.infinity,
-              margin: const EdgeInsets.only(bottom: 8),
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-              decoration: BoxDecoration(
-                color: const Color(0xFF2C2C2E),
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: Text(
-                option.text, 
-                style: const TextStyle(color: Colors.white),
-              ),
-            ),
-          ),
-
           const SizedBox(height: 20),
 
           Row(
@@ -194,19 +199,54 @@ class _PollManageContent extends StatelessWidget {
             ),
           ),
 
-          if (state.result != null) ...[
-            const SizedBox(height: 20),
-            const Text(
-              'Kết quả',
-              style: TextStyle(
-                color: Colors.white,
-                fontSize: 16,
-                fontWeight: FontWeight.w700,
+          const SizedBox(height: 12),
+
+          SizedBox(
+            width: double.infinity,
+            child: ElevatedButton(
+              onPressed: state.actionLoading
+                  ? null
+                  : () {
+                      cubit.prepareForNewPoll();
+                      Navigator.pop(context);
+                      _showCreatePollSheet(context);
+                    },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.orange,
+                foregroundColor: Colors.white,
+                padding: const EdgeInsets.symmetric(vertical: 14),
               ),
+              child: const Text('Tạo poll mới'),
             ),
-            const SizedBox(height: 10),
+          ),
+
+          const SizedBox(height: 20),
+          const Text(
+            'Kết quả',
+            style: TextStyle(
+              color: Colors.white,
+              fontSize: 16,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+          const SizedBox(height: 10),
+
+          if (state.result == null)
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
+              decoration: BoxDecoration(
+                color: const Color(0xFF2C2C2E),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: const Text(
+                'Chưa có dữ liệu kết quả. Nhấn "Xem kết quả" để tải.',
+                style: TextStyle(color: Colors.white70),
+              ),
+            )
+          else
             ...state.result!.options.map(
-                  (item) => Container(
+              (item) => Container(
                 width: double.infinity,
                 margin: const EdgeInsets.only(bottom: 8),
                 padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
@@ -233,7 +273,6 @@ class _PollManageContent extends StatelessWidget {
                 ),
               ),
             ),
-          ],
 
           if (state.error != null) ...[
             const SizedBox(height: 12),
@@ -244,6 +283,20 @@ class _PollManageContent extends StatelessWidget {
           ],
         ],
       ),
+    );
+  }
+
+  void _showCreatePollSheet(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (_) {
+        return BlocProvider.value(
+          value: context.read<LivePollCubit>(),
+          child: const CreatePollBottomSheet(),
+        );
+      },
     );
   }
 
@@ -262,7 +315,13 @@ class _PollManageContent extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(title, style: const TextStyle(color: Colors.white60, fontSize: 12)),
+          Text(
+            title,
+            style: const TextStyle(
+              color: Colors.white60,
+              fontSize: 12,
+            ),
+          ),
           const SizedBox(height: 4),
           Text(
             value,
