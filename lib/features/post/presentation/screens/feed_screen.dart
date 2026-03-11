@@ -414,17 +414,22 @@ class _FeedViewState extends State<FeedView> {
                     return;
                   }
 
+                  final liveStreamCubit = LiveStreamCubit();
+
                   Navigator.push(
                     context,
                     MaterialPageRoute(
                       builder: (_) => MultiBlocProvider(
-                          providers: [
-                            BlocProvider(create: (_) => LiveStreamCubit()),
-                            BlocProvider.value(value: getIt<StartLiveCubit>())
-                          ],
-                          child: const LivePrepScreen()),
+                        providers: [
+                          BlocProvider<LiveStreamCubit>.value(
+                            value: liveStreamCubit,
+                          ),
+                          BlocProvider.value(value: getIt<StartLiveCubit>()),
+                        ],
+                        child: const LivePrepScreen(),
                       ),
-                    );
+                    ),
+                  );
                 },
                 icon: const Icon(Icons.videocam),
               ),

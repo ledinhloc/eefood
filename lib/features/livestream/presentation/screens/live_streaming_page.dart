@@ -93,6 +93,15 @@ class _LiveStreamScreenState extends State<LiveStreamScreen> {
     print('   Video: ${state.localVideoTrack?.sid}');
     print('   Audio: ${state.localAudioTrack?.sid}');
 
+    if (state.localVideoTrack != null && state.localAudioTrack != null) {
+      print(' Reusing existing local tracks');
+      await cubit.connectToRoom(
+        AppKeys.livekitUrl,
+        widget.stream.livekitToken!,
+      );
+      return;
+    }
+
     try {
       final videoTrack = await LocalVideoTrack.createCameraTrack(
         CameraCaptureOptions(
@@ -115,8 +124,6 @@ class _LiveStreamScreenState extends State<LiveStreamScreen> {
       print(' New audio track created: ${audioTrack.sid}');
 
       cubit.setTracks(videoTrack, audioTrack);
-
-      await Future.delayed(const Duration(milliseconds: 300));
     } catch (e) {
       print(' Error creating tracks: $e');
       if (mounted) {
@@ -126,7 +133,7 @@ class _LiveStreamScreenState extends State<LiveStreamScreen> {
     }
     // Connect to room
     print('🔌 Connecting to room...');
-    cubit.connectToRoom(
+    await cubit.connectToRoom(
       AppKeys.livekitUrl,
       widget.stream.livekitToken!,
     );
@@ -278,6 +285,7 @@ class _LiveStreamScreenState extends State<LiveStreamScreen> {
                     controller: _commentController,
                     scrollController: _scrollController,
                     isStreamer: true,
+                    inputBackgroundColor: Colors.transparent,
                   ),
                 ),
 

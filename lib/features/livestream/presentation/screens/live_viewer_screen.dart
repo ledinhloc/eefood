@@ -312,6 +312,7 @@ class _LiveViewerScreenState extends State<LiveViewerScreen> {
                   child: LiveCommentList(
                     controller: _commentController,
                     scrollController: _scrollController,
+                    inputBackgroundColor: Colors.transparent,
                   ),
                 ),
 

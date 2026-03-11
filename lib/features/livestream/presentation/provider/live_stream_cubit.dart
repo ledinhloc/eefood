@@ -18,11 +18,18 @@ class LiveStreamCubit extends Cubit<LiveStreamState> {
     _safeEmit(state.copyWith(
       localVideoTrack: videoTrack,
       localAudioTrack: audioTrack,
+      isCameraOn: true,
+      isMicOn: true,
+      clearError: true,
     ));
   }
 
   /// Connect to LiveKit room
   Future<void> connectToRoom(String livekitUrl, String token) async {
+    if (state.isConnected && state.room != null) {
+      return;
+    }
+
     if (state.localVideoTrack == null || state.localAudioTrack == null) {
       _safeEmit(state.copyWith(error: 'Tracks not initialized'));
       return;
@@ -47,6 +54,7 @@ class LiveStreamCubit extends Cubit<LiveStreamState> {
       _safeEmit(state.copyWith(
         room: room,
         isConnected: true,
+        clearError: true,
       ));
     } catch (e) {
       _safeEmit(state.copyWith(error: 'Connection error: $e'));
@@ -166,6 +174,19 @@ class LiveStreamCubit extends Cubit<LiveStreamState> {
     await state.localAudioTrack?.stop();
     await state.localAudioTrack?.dispose();
     await _cameraController?.dispose();
+    _cameraController = null;
+
+    _safeEmit(state.copyWith(
+      clearVideoTrack: true,
+      clearAudioTrack: true,
+      isConnected: false,
+      isCameraOn: true,
+      isMicOn: true,
+      isFrontCamera: true,
+      isFlashOn: false,
+      viewerCount: 0,
+      clearError: true,
+    ));
   }
 
   /// Disconnect and cleanup
@@ -178,6 +199,20 @@ class LiveStreamCubit extends Cubit<LiveStreamState> {
     await state.room?.disconnect();
     await state.room?.dispose();
     await _cameraController?.dispose();
+    _cameraController = null;
+
+    _safeEmit(state.copyWith(
+      clearRoom: true,
+      clearVideoTrack: true,
+      clearAudioTrack: true,
+      isConnected: false,
+      viewerCount: 0,
+      isCameraOn: true,
+      isMicOn: true,
+      isFrontCamera: true,
+      isFlashOn: false,
+      clearError: true,
+    ));
   }
 
   @override

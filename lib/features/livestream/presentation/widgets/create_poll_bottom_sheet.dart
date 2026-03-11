@@ -149,7 +149,7 @@ class _CreatePollBottomSheetState extends State<CreatePollBottomSheet> {
                         fontSize: 18,
                         fontWeight: FontWeight.w700,
                       ),
-                    )
+                    ),
                     const SizedBox(height: 16),
 
                     _buildLabel('Câu hỏi'),
@@ -336,6 +336,10 @@ class _CreatePollBottomSheetState extends State<CreatePollBottomSheet> {
                         DropdownMenuItem(
                           value: PollOptionAddMode.hostOnly,
                           child: Text('Chỉ chủ live'),
+                        ),
+                        DropdownMenuItem(
+                          value: PollOptionAddMode.viewerWithApproval,
+                          child: Text('Người xem cần được chấp nhận.'),
                         ),
                         DropdownMenuItem(
                           value: PollOptionAddMode.viewerFree,

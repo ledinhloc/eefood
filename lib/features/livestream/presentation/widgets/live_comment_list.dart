@@ -9,12 +9,14 @@ class LiveCommentList extends StatelessWidget {
   final TextEditingController controller;
   final ScrollController scrollController;
   final bool isStreamer;
+  final Color inputBackgroundColor;
 
   const LiveCommentList({
     Key? key,
     required this.controller,
     required this.scrollController,
     this.isStreamer = false,
+    this.inputBackgroundColor = const Color(0x4D000000),
   }) : super(key: key);
 
   @override
@@ -96,7 +98,7 @@ class LiveCommentList extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
       decoration: BoxDecoration(
-        color: Colors.black.withOpacity(0.3),
+        color: inputBackgroundColor,
         borderRadius: BorderRadius.circular(25),
       ),
       child: Row(
@@ -108,7 +110,11 @@ class LiveCommentList extends StatelessWidget {
               decoration: const InputDecoration(
                 hintText: 'Thêm bình luận...',
                 hintStyle: TextStyle(color: Colors.white70),
+                filled: true,
+                fillColor: Colors.transparent,
                 border: InputBorder.none,
+                enabledBorder: InputBorder.none,
+                focusedBorder: InputBorder.none,
                 contentPadding: EdgeInsets.symmetric(horizontal: 16),
               ),
               onSubmitted: (_) => onSend(),
