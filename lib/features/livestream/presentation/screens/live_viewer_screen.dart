@@ -12,7 +12,6 @@ import 'package:livekit_client/livekit_client.dart';
 
 import '../../../../core/utils/food_emotion_helper.dart';
 import '../../data/model/live_reaction_response.dart';
-import '../provider/live_comment_cubit.dart';
 import '../provider/live_reaction_cubit.dart';
 import '../provider/live_reaction_state.dart';
 import '../provider/live_viewer_cubit.dart';
@@ -26,7 +25,7 @@ import '../widgets/viewer_list_bottom_sheet.dart';
 class LiveViewerScreen extends StatefulWidget {
   final int streamId;
 
-  const LiveViewerScreen({Key? key, required this.streamId}) : super(key: key);
+  const LiveViewerScreen({super.key, required this.streamId});
 
   @override
   State<LiveViewerScreen> createState() => _LiveViewerScreenState();
@@ -89,8 +88,7 @@ class _LiveViewerScreenState extends State<LiveViewerScreen> {
   Future<void> _sendReaction(FoodEmotion emotion) async {
     try {
       await context.read<LiveReactionCubit>().createReaction(emotion);
-    } catch (e) {
-      print('Error sending reaction: $e');
+    } catch (_) {
     }
   }
 
@@ -144,7 +142,9 @@ class _LiveViewerScreenState extends State<LiveViewerScreen> {
           listener: (context, reactionState) {
             if (reactionState.reactions.isNotEmpty) {
               final newReactions = reactionState.reactions
-                  .where((r) => !_activeReactions.contains(r))
+                  .where(
+                    (r) => !_activeReactions.any((active) => active.id == r.id),
+                  )
                   .toList();
 
               if (newReactions.isNotEmpty) {
@@ -338,7 +338,10 @@ class _LiveViewerScreenState extends State<LiveViewerScreen> {
             gradient: LinearGradient(
               begin: Alignment.topCenter,
               end: Alignment.bottomCenter,
-              colors: [Colors.black.withOpacity(0.6), Colors.transparent],
+              colors: [
+                Colors.black.withValues(alpha: 0.6),
+                Colors.transparent,
+              ],
             ),
           ),
           child: Row(
@@ -438,10 +441,14 @@ class _LiveViewerScreenState extends State<LiveViewerScreen> {
                 width: 52,
                 height: 52,
                 decoration: BoxDecoration(
-                  color: FoodEmotionHelper.getColor(emotion).withOpacity(0.3),
+                  color: FoodEmotionHelper.getColor(
+                    emotion,
+                  ).withValues(alpha: 0.3),
                   shape: BoxShape.circle,
                   border: Border.all(
-                    color: FoodEmotionHelper.getColor(emotion).withOpacity(0.6),
+                    color: FoodEmotionHelper.getColor(
+                      emotion,
+                    ).withValues(alpha: 0.6),
                     width: 2,
                   ),
                 ),

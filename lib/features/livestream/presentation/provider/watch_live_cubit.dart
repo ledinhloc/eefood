@@ -1,4 +1,3 @@
-// presentation/provider/watch_live_cubit.dart
 import 'dart:developer' as developer;
 
 import 'package:eefood/core/constants/app_keys.dart';
@@ -15,7 +14,7 @@ import 'watch_live_state.dart';
 class WatchLiveCubit extends Cubit<WatchLiveState> {
   final LiveRepository repository;
   final LiveStreamWebSocketManager _wsManager =
-  getIt<LiveStreamWebSocketManager>();
+      getIt<LiveStreamWebSocketManager>();
 
   EventsListener<RoomEvent>? _listener;
   int? _currentStreamId;
@@ -28,14 +27,17 @@ class WatchLiveCubit extends Cubit<WatchLiveState> {
 
   Future<void> loadLive(int id) async {
     try {
+      await disconnect();
+
       _safeEmit(state.copyWith(
         loading: true,
-        error: null,
         isStreamEnded: false,
-        streamEndMessage: null,
+        clearError: true,
+        clearStreamEndMessage: true,
+        clearRemoteVideoTrack: true,
+        clearRemoteAudioTrack: true,
       ));
 
-      // Nếu đang nghe stream cũ thì cleanup trước
       _cleanupCurrentWsSubscriptions();
 
       final res = await repository.getLiveStream(id);
@@ -46,10 +48,10 @@ class WatchLiveCubit extends Cubit<WatchLiveState> {
       _safeEmit(state.copyWith(
         loading: false,
         stream: res,
+        clearError: true,
       ));
 
       _setupWebSocket(id);
-
       await connectToRoom(res);
     } catch (e) {
       developer.log('Error loading stream: $e', name: 'WatchLive');
@@ -121,7 +123,7 @@ class WatchLiveCubit extends Cubit<WatchLiveState> {
     );
   }
 
-  void _handleStreamEnded(LiveStreamEndMessage message) async {
+  Future<void> _handleStreamEnded(LiveStreamEndMessage message) async {
     developer.log('Stream ended: ${message.message}', name: 'WatchLive');
 
     if (message.type == 'STREAM_ENDED') {
@@ -143,7 +145,12 @@ class WatchLiveCubit extends Cubit<WatchLiveState> {
     }
 
     developer.log('Connecting to room...', name: 'WatchLive');
-    _safeEmit(state.copyWith(isConnecting: true));
+    _safeEmit(state.copyWith(
+      isConnecting: true,
+      clearError: true,
+      clearRemoteVideoTrack: true,
+      clearRemoteAudioTrack: true,
+    ));
 
     try {
       final room = Room(
@@ -153,53 +160,80 @@ class WatchLiveCubit extends Cubit<WatchLiveState> {
         ),
       );
 
-      _listener = room.createListener();
-
-      _listener!
+      _listener = room.createListener()
         ..on<ParticipantConnectedEvent>((event) {
           developer.log(
             'Participant connected: ${event.participant.identity}',
             name: 'WatchLive',
           );
-          _handleRemoteParticipant(event.participant);
+          _syncParticipantTracks(event.participant);
+        })
+        ..on<TrackPublishedEvent>((event) {
+          developer.log(
+            'Track published: ${event.publication.kind}',
+            name: 'WatchLive',
+          );
+          _syncParticipantTracks(event.participant);
         })
         ..on<TrackSubscribedEvent>((event) {
           developer.log(
             'Track subscribed: ${event.track.kind}',
             name: 'WatchLive',
           );
-
-          if (event.track is RemoteVideoTrack) {
-            _safeEmit(state.copyWith(
-              remoteVideoTrack: event.track as RemoteVideoTrack,
-            ));
-          } else if (event.track is RemoteAudioTrack) {
-            _safeEmit(state.copyWith(
-              remoteAudioTrack: event.track as RemoteAudioTrack,
-            ));
-          }
+          _syncParticipantTracks(event.participant);
+        })
+        ..on<TrackUnpublishedEvent>((event) {
+          developer.log(
+            'Track unpublished: ${event.publication.kind}',
+            name: 'WatchLive',
+          );
+          _syncParticipantTracks(event.participant);
         })
         ..on<TrackUnsubscribedEvent>((event) {
           developer.log(
             'Track unsubscribed: ${event.track.kind}',
             name: 'WatchLive',
           );
-
-          if (event.track is RemoteVideoTrack) {
-            _safeEmit(state.copyWith(remoteVideoTrack: null));
-          } else if (event.track is RemoteAudioTrack) {
-            _safeEmit(state.copyWith(remoteAudioTrack: null));
+          _syncParticipantTracks(event.participant);
+        })
+        ..on<TrackMutedEvent>((event) {
+          developer.log(
+            'Track muted: ${event.publication.kind}',
+            name: 'WatchLive',
+          );
+          final participant = event.participant;
+          if (participant is RemoteParticipant) {
+            _syncParticipantTracks(participant);
           }
+        })
+        ..on<TrackUnmutedEvent>((event) {
+          developer.log(
+            'Track unmuted: ${event.publication.kind}',
+            name: 'WatchLive',
+          );
+          final participant = event.participant;
+          if (participant is RemoteParticipant) {
+            _syncParticipantTracks(participant);
+          }
+        })
+        ..on<ParticipantDisconnectedEvent>((event) {
+          developer.log(
+            'Participant disconnected: ${event.participant.identity}',
+            name: 'WatchLive',
+          );
+          _syncAllRemoteParticipants(room);
         })
         ..on<RoomDisconnectedEvent>((event) {
           developer.log(
             'Room disconnected: ${event.reason}',
             name: 'WatchLive',
           );
-
           _safeEmit(state.copyWith(
             isConnected: false,
             isConnecting: false,
+            clearRoom: true,
+            clearRemoteVideoTrack: true,
+            clearRemoteAudioTrack: true,
           ));
         });
 
@@ -218,13 +252,12 @@ class WatchLiveCubit extends Cubit<WatchLiveState> {
         room: room,
         isConnected: true,
         isConnecting: false,
+        clearError: true,
       ));
 
-      await Future.delayed(const Duration(seconds: 2));
-
-      for (final participant in room.remoteParticipants.values) {
-        _handleRemoteParticipant(participant);
-      }
+      _syncAllRemoteParticipants(room);
+      await Future.delayed(const Duration(milliseconds: 500));
+      _syncAllRemoteParticipants(room);
     } catch (e, stackTrace) {
       developer.log(
         'Connection error',
@@ -235,54 +268,53 @@ class WatchLiveCubit extends Cubit<WatchLiveState> {
 
       _safeEmit(state.copyWith(
         isConnecting: false,
-        error: 'Lỗi kết nối: $e',
+        error: 'Loi ket noi: $e',
       ));
     }
   }
 
-  void _handleRemoteParticipant(RemoteParticipant participant) {
+  void _syncAllRemoteParticipants(Room room) {
+    if (room.remoteParticipants.isEmpty) {
+      _safeEmit(state.copyWith(
+        clearRemoteVideoTrack: true,
+        clearRemoteAudioTrack: true,
+      ));
+      return;
+    }
+
+    for (final participant in room.remoteParticipants.values) {
+      _syncParticipantTracks(participant);
+    }
+  }
+
+  void _syncParticipantTracks(RemoteParticipant participant) {
     developer.log(
-      'Handling participant: ${participant.identity}',
+      'Sync participant tracks: ${participant.identity}',
       name: 'WatchLive',
     );
 
-    participant.addListener(() {
-      for (final pub in participant.videoTrackPublications) {
-        if (pub.track != null && pub.subscribed && !pub.muted) {
-          if (state.remoteVideoTrack != pub.track) {
-            _safeEmit(state.copyWith(
-              remoteVideoTrack: pub.track as RemoteVideoTrack,
-            ));
-          }
-        }
+    RemoteVideoTrack? nextVideoTrack;
+    RemoteAudioTrack? nextAudioTrack;
+
+    for (final publication in participant.trackPublications.values) {
+      final track = publication.track;
+      if (track == null || !publication.subscribed || publication.muted) {
+        continue;
       }
 
-      for (final pub in participant.audioTrackPublications) {
-        if (pub.track != null && pub.subscribed) {
-          if (state.remoteAudioTrack != pub.track) {
-            _safeEmit(state.copyWith(
-              remoteAudioTrack: pub.track as RemoteAudioTrack,
-            ));
-          }
-        }
-      }
-    });
-
-    for (final pub in participant.videoTrackPublications) {
-      if (pub.track != null && pub.subscribed) {
-        _safeEmit(state.copyWith(
-          remoteVideoTrack: pub.track as RemoteVideoTrack,
-        ));
+      if (track is RemoteVideoTrack && nextVideoTrack == null) {
+        nextVideoTrack = track;
+      } else if (track is RemoteAudioTrack && nextAudioTrack == null) {
+        nextAudioTrack = track;
       }
     }
 
-    for (final pub in participant.audioTrackPublications) {
-      if (pub.track != null && pub.subscribed) {
-        _safeEmit(state.copyWith(
-          remoteAudioTrack: pub.track as RemoteAudioTrack,
-        ));
-      }
-    }
+    _safeEmit(state.copyWith(
+      remoteVideoTrack: nextVideoTrack,
+      remoteAudioTrack: nextAudioTrack,
+      clearRemoteVideoTrack: nextVideoTrack == null,
+      clearRemoteAudioTrack: nextAudioTrack == null,
+    ));
   }
 
   Future<void> disconnect() async {
@@ -293,11 +325,11 @@ class WatchLiveCubit extends Cubit<WatchLiveState> {
     await state.room?.dispose();
 
     _safeEmit(state.copyWith(
-      room: null,
+      clearRoom: true,
       isConnected: false,
       isConnecting: false,
-      remoteVideoTrack: null,
-      remoteAudioTrack: null,
+      clearRemoteVideoTrack: true,
+      clearRemoteAudioTrack: true,
     ));
   }
 

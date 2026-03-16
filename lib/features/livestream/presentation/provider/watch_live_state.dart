@@ -39,16 +39,28 @@ class WatchLiveState {
     RemoteAudioTrack? remoteAudioTrack,
     bool? isConnected,
     bool? isConnecting,
+    bool clearStream = false,
+    bool clearError = false,
+    bool clearStreamEndMessage = false,
+    bool clearRoom = false,
+    bool clearRemoteVideoTrack = false,
+    bool clearRemoteAudioTrack = false,
   }) {
     return WatchLiveState(
       loading: loading ?? this.loading,
-      stream: stream ?? this.stream,
-      error: error,
+      stream: clearStream ? null : (stream ?? this.stream),
+      error: clearError ? null : error,
       isStreamEnded: isStreamEnded ?? this.isStreamEnded,
-      streamEndMessage: streamEndMessage,
-      room: room ?? this.room,
-      remoteVideoTrack: remoteVideoTrack ?? this.remoteVideoTrack,
-      remoteAudioTrack: remoteAudioTrack ?? this.remoteAudioTrack,
+      streamEndMessage: clearStreamEndMessage
+          ? null
+          : (streamEndMessage ?? this.streamEndMessage),
+      room: clearRoom ? null : (room ?? this.room),
+      remoteVideoTrack: clearRemoteVideoTrack
+          ? null
+          : (remoteVideoTrack ?? this.remoteVideoTrack),
+      remoteAudioTrack: clearRemoteAudioTrack
+          ? null
+          : (remoteAudioTrack ?? this.remoteAudioTrack),
       isConnected: isConnected ?? this.isConnected,
       isConnecting: isConnecting ?? this.isConnecting,
     );

@@ -20,6 +20,7 @@ class LiveStreamWebSocketManager {
   bool _isConnecting = false;
 
   final Map<String, UnsubscribeFn> _subscriptions = {};
+  final List<void Function()> _pendingOnConnected = [];
 
   bool get isConnected => _stompClient?.connected == true;
 
@@ -36,6 +37,9 @@ class LiveStreamWebSocketManager {
 
     if (_isConnecting) {
       developer.log('WebSocket is connecting...', name: logName);
+      if (onConnected != null) {
+        _pendingOnConnected.add(onConnected);
+      }
       return;
     }
 
@@ -46,6 +50,9 @@ class LiveStreamWebSocketManager {
     }
 
     _isConnecting = true;
+    if (onConnected != null) {
+      _pendingOnConnected.add(onConnected);
+    }
 
     _stompClient = StompClient(
       config: StompConfig.sockJS(
@@ -55,10 +62,15 @@ class LiveStreamWebSocketManager {
         onConnect: (frame) {
           _isConnecting = false;
           developer.log('WebSocket connected', name: logName);
-          onConnected?.call();
+          final callbacks = List<void Function()>.from(_pendingOnConnected);
+          _pendingOnConnected.clear();
+          for (final callback in callbacks) {
+            callback();
+          }
         },
         onWebSocketError: (err) {
           _isConnecting = false;
+          _pendingOnConnected.clear();
           developer.log('WS error: $err', name: logName);
           onError?.call('WebSocket error: $err');
         },
@@ -68,6 +80,7 @@ class LiveStreamWebSocketManager {
         },
         onDisconnect: (frame) {
           _isConnecting = false;
+          _pendingOnConnected.clear();
           developer.log('WebSocket disconnected', name: logName);
         },
       ),
