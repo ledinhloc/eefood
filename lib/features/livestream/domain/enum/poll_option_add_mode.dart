@@ -5,9 +5,6 @@ enum PollOptionAddMode {
   @JsonValue('HOST_ONLY')
   hostOnly,
 
-  @JsonValue('MOD_ONLY')
-  modOnly,
-
   @JsonValue('VIEWER_WITH_APPROVAL')
   viewerWithApproval,
 
