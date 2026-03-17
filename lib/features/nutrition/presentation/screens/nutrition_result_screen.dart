@@ -6,6 +6,7 @@ import 'package:eefood/features/nutrition/presentation/provider/nutrition_cubit.
 import 'package:eefood/features/nutrition/presentation/provider/nutrition_state.dart';
 import 'package:eefood/features/nutrition/presentation/widgets/display_nutrition/orbital_loading_painter.dart';
 import 'package:eefood/features/nutrition/presentation/widgets/nutrition_sections.dart';
+import 'package:eefood/l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
@@ -201,6 +202,7 @@ class _LoadingView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final textColor = isDark ? Colors.white : const Color(0xFF1A1A1A);
     final subtitleColor = isDark ? Colors.white54 : Colors.black45;
 
@@ -223,7 +225,7 @@ class _LoadingView extends StatelessWidget {
           ),
           const SizedBox(height: 32),
           Text(
-            state.statusMessage ?? 'Đang xử lý...',
+            state.statusMessage ?? l10n.processingNutrition,
             style: TextStyle(
               color: textColor,
               fontSize: 17,
@@ -234,8 +236,8 @@ class _LoadingView extends StatelessWidget {
           const SizedBox(height: 10),
           Text(
             state.status == NutritionStatus.uploading
-                ? 'Tải ảnh lên hệ thống phân tích'
-                : 'AI đang nhận diện thành phần dinh dưỡng',
+                ? l10n.loadingNutrition
+                : l10n.loadingDetectNutrition,
             style: TextStyle(color: subtitleColor, fontSize: 14),
           ),
           const SizedBox(height: 20),
@@ -284,7 +286,7 @@ class _ErrorView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final textColor = isDark ? Colors.white : const Color(0xFF1A1A1A);
-
+    final l10n = AppLocalizations.of(context)!;
     return Center(
       child: Padding(
         padding: const EdgeInsets.all(32),
@@ -305,7 +307,7 @@ class _ErrorView extends StatelessWidget {
             ),
             const SizedBox(height: 20),
             Text(
-              'Phân tích thất bại',
+              l10n.failAnalysis,
               style: TextStyle(
                 color: textColor,
                 fontSize: 20,
@@ -314,7 +316,7 @@ class _ErrorView extends StatelessWidget {
             ),
             const SizedBox(height: 10),
             Text(
-              error ?? 'Vui lòng thử lại với ảnh rõ hơn.',
+              error ?? l10n.retryAnalyzeImage,
               textAlign: TextAlign.center,
               style: TextStyle(color: textColor.withOpacity(0.6), fontSize: 14),
             ),
@@ -332,8 +334,8 @@ class _ErrorView extends StatelessWidget {
                   borderRadius: BorderRadius.circular(14),
                 ),
               ),
-              child: const Text(
-                'Chụp lại',
+              child: Text(
+                l10n.retryCapture,
                 style: TextStyle(fontWeight: FontWeight.w700),
               ),
             ),

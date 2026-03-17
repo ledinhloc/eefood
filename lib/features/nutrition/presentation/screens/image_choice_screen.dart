@@ -1,6 +1,7 @@
-import 'package:eefood/features/nutrition/presentation/widgets/choice_card.dart';
 import 'package:eefood/features/nutrition/presentation/screens/nutrition_camera_screen.dart';
+import 'package:eefood/features/nutrition/presentation/widgets/choice_card.dart';
 import 'package:eefood/features/post/presentation/widgets/post/image_search/image_search_page.dart';
+import 'package:eefood/l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
 
 class ImageChoiceScreen extends StatefulWidget {
@@ -10,7 +11,8 @@ class ImageChoiceScreen extends StatefulWidget {
   State<ImageChoiceScreen> createState() => _ImageChoiceScreenState();
 }
 
-class _ImageChoiceScreenState extends State<ImageChoiceScreen> with SingleTickerProviderStateMixin {
+class _ImageChoiceScreenState extends State<ImageChoiceScreen>
+    with SingleTickerProviderStateMixin {
   late AnimationController _animController;
   late Animation<double> _fadeAnim;
   late Animation<Offset> _slideCard1;
@@ -56,6 +58,7 @@ class _ImageChoiceScreenState extends State<ImageChoiceScreen> with SingleTicker
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
 
@@ -75,7 +78,7 @@ class _ImageChoiceScreenState extends State<ImageChoiceScreen> with SingleTicker
         title: FadeTransition(
           opacity: _fadeAnim,
           child: Text(
-            'Chọn chức năng',
+            l10n.optionTitle,
             style: TextStyle(
               color: textColor,
               fontWeight: FontWeight.w700,
@@ -94,7 +97,7 @@ class _ImageChoiceScreenState extends State<ImageChoiceScreen> with SingleTicker
             FadeTransition(
               opacity: _fadeAnim,
               child: Text(
-                'Bạn muốn làm gì với hình ảnh?',
+                l10n.subOptionTitle,
                 style: TextStyle(
                   color: subtitleColor,
                   fontSize: 15,
@@ -113,9 +116,8 @@ class _ImageChoiceScreenState extends State<ImageChoiceScreen> with SingleTicker
                   curve: const Interval(0.2, 0.7),
                 ),
                 child: ChoiceCard(
-                  title: 'Tìm kiếm món ăn',
-                  subtitle:
-                      'Chụp hoặc chọn ảnh để tìm kiếm công thức nấu ăn liên quan',
+                  title: l10n.lookUpTitle,
+                  subtitle: l10n.lookUpSubtitle,
                   icon: Icons.image_search_rounded,
                   accentColor: const Color(0xFFFF6B00),
                   backgroundColor: cardBg1,
@@ -141,9 +143,8 @@ class _ImageChoiceScreenState extends State<ImageChoiceScreen> with SingleTicker
                   curve: const Interval(0.3, 0.8),
                 ),
                 child: ChoiceCard(
-                  title: 'Phân tích dinh dưỡng',
-                  subtitle:
-                      'Phân tích chi tiết calo, protein, chất béo và các vi chất',
+                  title: l10n.analyzeTitle,
+                  subtitle: l10n.analyzeSubtitle,
                   icon: Icons.analytics_rounded,
                   accentColor: const Color(0xFF00C896),
                   backgroundColor: cardBg2,

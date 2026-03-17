@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 
 List<MacroData> buildMacroData(NutritionAnalysisModel data) {
   final items = [
+    MacroData('Năng lượng', data.totalCalories ?? 0, const Color(0xFFFF8F00), 'g'),
     MacroData('Protein', data.totalProtein ?? 0, const Color(0xFF4FC3F7), 'g'),
     MacroData('Chất béo', data.totalFat ?? 0, const Color(0xFFFFB74D), 'g'),
     MacroData('Carb', data.totalCarb ?? 0, const Color(0xFF81C784), 'g'),
@@ -55,6 +56,20 @@ List<NutrientItem> buildNutrientItems(NutritionAnalysisModel data) {
       'g',
       const Color(0xFFF06292),
       Icons.icecream_rounded,
+    ),
+    NutrientItem(
+      'Calcium',
+      data.totalCalcium,
+      'mg',
+      const Color(0xFF64B5F6), 
+      Icons.health_and_safety_rounded, 
+    ),
+    NutrientItem(
+      'Sodium',
+      data.totalSodium,
+      'mg',
+      const Color(0xFF90A4AE), 
+      Icons.science_rounded, 
     ),
   ];
 }

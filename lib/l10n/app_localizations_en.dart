@@ -270,4 +270,64 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get languagePageSubTile => 'Choose the display language in the app.';
+
+  @override
+  String get optionTitle => 'Choose a feature';
+
+  @override
+  String get subOptionTitle => 'What would you like to do with the image?';
+
+  @override
+  String get lookUpTitle => 'Find a dish';
+
+  @override
+  String get lookUpSubtitle => 'Take or select a photo to find related recipes';
+
+  @override
+  String get analyzeTitle => 'Nutrition analysis';
+
+  @override
+  String get analyzeSubtitle => 'Analyze calories, protein, fat, and micronutrients in detail';
+
+  @override
+  String get analyzeNutritionTitle => 'Nutrition analysis';
+
+  @override
+  String get analyzeNutritionSubtitle => 'Place the dish within the frame to analyze';
+
+  @override
+  String get processingNutrition => 'Processing...';
+
+  @override
+  String get loadingNutrition => 'Uploading image for analysis';
+
+  @override
+  String get loadingDetectNutrition => 'AI is detecting nutritional components';
+
+  @override
+  String get failAnalysis => 'Analysis failed';
+
+  @override
+  String get retryAnalyzeImage => 'Please try again with a clearer image.';
+
+  @override
+  String get retryCapture => 'Retake photo';
+
+  @override
+  String get healthyScoreTitle => 'Health Score';
+
+  @override
+  String get allocateNutrient => 'Nutrient Distribution';
+
+  @override
+  String get interactChart => 'Tap the chart to see details';
+
+  @override
+  String get elementNutrient => 'Nutritional Components';
+
+  @override
+  String get adviceOfPhD => 'AI Expert Advice';
+
+  @override
+  String get nutrientOfIngredient => 'Nutrition by Ingredients';
 }

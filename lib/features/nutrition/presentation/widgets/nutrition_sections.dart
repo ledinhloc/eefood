@@ -6,6 +6,7 @@ import 'package:eefood/features/nutrition/presentation/utils/nutrition_helpers.d
 import 'package:eefood/features/nutrition/presentation/widgets/display_nutrition/ingredient_nutrition_card.dart';
 import 'package:eefood/features/nutrition/presentation/widgets/display_nutrition/nutrient_card.dart';
 import 'package:eefood/features/nutrition/presentation/widgets/display_nutrition/pie_chart_widgets.dart';
+import 'package:eefood/l10n/app_localizations.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 
@@ -21,6 +22,7 @@ class HealthScoreBanner extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final score = (data.healthScore ?? 0.0).clamp(0.0, 10.0);
     final color = healthScoreColor(score);
     final cardBg = isDark ? const Color(0xFF1A1A1A) : Colors.white;
@@ -72,7 +74,7 @@ class HealthScoreBanner extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    'Chỉ số sức khỏe',
+                    l10n.healthyScoreTitle,
                     style: TextStyle(
                       color: isDark ? Colors.white54 : Colors.black45,
                       fontSize: 13,
@@ -134,6 +136,7 @@ class _NutritionPieChartSectionState extends State<NutritionPieChartSection> {
     final macros = buildMacroData(widget.data);
     final cardBg = widget.isDark ? const Color(0xFF1A1A1A) : Colors.white;
     final textColor = widget.isDark ? Colors.white : const Color(0xFF1A1A1A);
+    final l10n = AppLocalizations.of(context)!;
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -147,7 +150,7 @@ class _NutritionPieChartSectionState extends State<NutritionPieChartSection> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              'Phân bổ dinh dưỡng',
+              l10n.allocateNutrient,
               style: TextStyle(
                 color: textColor,
                 fontSize: 16,
@@ -218,7 +221,7 @@ class _NutritionPieChartSectionState extends State<NutritionPieChartSection> {
                 ),
                 const SizedBox(width: 4),
                 Text(
-                  'Nhấn vào biểu đồ để xem chi tiết',
+                  l10n.interactChart,
                   style: TextStyle(
                     color: widget.isDark ? Colors.white38 : Colors.black38,
                     fontSize: 12,
@@ -287,7 +290,7 @@ class NutrientGridSection extends StatelessWidget {
     final nutrients = buildNutrientItems(data);
     final cardBg = isDark ? const Color(0xFF1A1A1A) : Colors.white;
     final textColor = isDark ? Colors.white : const Color(0xFF1A1A1A);
-
+    final l10n = AppLocalizations.of(context)!;
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16),
       child: Column(
@@ -296,7 +299,7 @@ class NutrientGridSection extends StatelessWidget {
           Padding(
             padding: const EdgeInsets.only(left: 4, bottom: 12),
             child: Text(
-              'Thành phần dinh dưỡng',
+              l10n.elementNutrient,
               style: TextStyle(
                 color: textColor,
                 fontSize: 16,
@@ -341,7 +344,7 @@ class NutritionSummarySection extends StatelessWidget {
   Widget build(BuildContext context) {
     final cardBg = isDark ? const Color(0xFF1A1A1A) : Colors.white;
     final textColor = isDark ? Colors.white : const Color(0xFF1A1A1A);
-
+    final l10n = AppLocalizations.of(context)!;
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16),
       child: Container(
@@ -373,7 +376,7 @@ class NutritionSummarySection extends StatelessWidget {
                 ),
                 const SizedBox(width: 12),
                 Text(
-                  'Lời khuyên từ chuyên gia AI',
+                  l10n.adviceOfPhD,
                   style: TextStyle(
                     color: textColor,
                     fontSize: 16,
@@ -412,6 +415,7 @@ class IngredientListSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final ingredients = data.ingredientDetails;
     if (ingredients == null || ingredients.isEmpty)
       return const SizedBox.shrink();
@@ -426,7 +430,7 @@ class IngredientListSection extends StatelessWidget {
           Padding(
             padding: const EdgeInsets.only(left: 4, bottom: 12),
             child: Text(
-              'Dinh dưỡng theo nguyên liệu',
+              l10n.nutrientOfIngredient,
               style: TextStyle(
                 color: textColor,
                 fontSize: 16,

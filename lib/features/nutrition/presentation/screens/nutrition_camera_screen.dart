@@ -5,6 +5,7 @@ import 'package:eefood/core/di/injection.dart';
 import 'package:eefood/features/nutrition/presentation/provider/nutrition_cubit.dart';
 import 'package:eefood/features/nutrition/presentation/screens/nutrition_result_screen.dart';
 import 'package:eefood/features/nutrition/presentation/widgets/scan_overlay_painter.dart';
+import 'package:eefood/l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:image_gallery_saver_plus/image_gallery_saver_plus.dart';
@@ -158,24 +159,25 @@ class _NutritionCameraScreenState extends State<NutritionCameraScreen>
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
 
     return Scaffold(
-      backgroundColor: Colors.black,
+      backgroundColor: theme.scaffoldBackgroundColor,
       extendBodyBehindAppBar: true,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
-        title: const Text(
-          'Phân tích dinh dưỡng',
+        title: Text(
+          l10n.analyzeNutritionTitle,
           style: TextStyle(
-            color: Colors.white,
+            color: theme.colorScheme.onSurface,
             fontWeight: FontWeight.w700,
             fontSize: 17,
           ),
         ),
-        iconTheme: const IconThemeData(color: Colors.white),
+        iconTheme: IconThemeData(color: theme.colorScheme.onSurface),
         actions: [
           IconButton(
             icon: AnimatedSwitcher(
@@ -183,7 +185,9 @@ class _NutritionCameraScreenState extends State<NutritionCameraScreen>
               child: Icon(
                 _isFlashOn ? Icons.flash_on_rounded : Icons.flash_off_rounded,
                 key: ValueKey(_isFlashOn),
-                color: _isFlashOn ? const Color(0xFFFF6B00) : Colors.white70,
+                color: _isFlashOn
+                    ? const Color(0xFFFF6B00)
+                    : theme.colorScheme.onSurface,
               ),
             ),
             onPressed: _toggleFlash,
@@ -220,10 +224,10 @@ class _NutritionCameraScreenState extends State<NutritionCameraScreen>
                     color: Colors.black54,
                     borderRadius: BorderRadius.circular(20),
                   ),
-                  child: const Text(
-                    'Đặt món ăn vào khung để phân tích',
+                  child: Text(
+                    l10n.analyzeNutritionSubtitle,
                     style: TextStyle(
-                      color: Colors.white,
+                      color: theme.colorScheme.onSurface,
                       fontSize: 13,
                       fontWeight: FontWeight.w500,
                     ),
