@@ -267,4 +267,7 @@ class AppLocalizationsVi extends AppLocalizations {
 
   @override
   String get saveFailed => 'Lưu thất bại!';
+
+  @override
+  String get languagePageSubTile => 'Chọn ngôn ngữ hiển thị trong ứng dụng.';
 }

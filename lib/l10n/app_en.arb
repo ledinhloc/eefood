@@ -99,5 +99,6 @@
   "dietaryTitle": "Select your preferred dietary plan",
   "dietaryDesc": "Choose your current dietary plan.\nYou can skip this step.",
   "saveSuccess": "Saved successfully",
-  "saveFailed": "Save failed!"
+  "saveFailed": "Save failed!",
+  "languagePageSubTile": "Choose the display language in the app."
 }

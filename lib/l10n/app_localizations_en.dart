@@ -267,4 +267,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get saveFailed => 'Save failed!';
+
+  @override
+  String get languagePageSubTile => 'Choose the display language in the app.';
 }

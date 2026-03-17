@@ -610,6 +610,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Save failed!'**
   String get saveFailed;
+
+  /// No description provided for @languagePageSubTile.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose the display language in the app.'**
+  String get languagePageSubTile;
 }
 
 class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {
