@@ -36,17 +36,23 @@ class LiveStreamState {
     bool? isConnected,
     String? error,
     int? viewerCount,
+    bool clearRoom = false,
+    bool clearVideoTrack = false,
+    bool clearAudioTrack = false,
+    bool clearError = false,
   }) {
     return LiveStreamState(
-      room: room ?? this.room,
-      localVideoTrack: localVideoTrack ?? this.localVideoTrack,
-      localAudioTrack: localAudioTrack ?? this.localAudioTrack,
+      room: clearRoom ? null : (room ?? this.room),
+      localVideoTrack:
+          clearVideoTrack ? null : (localVideoTrack ?? this.localVideoTrack),
+      localAudioTrack:
+          clearAudioTrack ? null : (localAudioTrack ?? this.localAudioTrack),
       isCameraOn: isCameraOn ?? this.isCameraOn,
       isMicOn: isMicOn ?? this.isMicOn,
       isFrontCamera: isFrontCamera ?? this.isFrontCamera,
       isFlashOn: isFlashOn ?? this.isFlashOn,
       isConnected: isConnected ?? this.isConnected,
-      error: error,
+      error: clearError ? null : error,
       viewerCount: viewerCount ?? this.viewerCount,
     );
   }
