@@ -1,11 +1,13 @@
 import 'package:eefood/features/livestream/domain/enum/poll_result_visibility.dart';
+import 'package:eefood/features/livestream/domain/enum/poll_voter_visibility.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
-import '../../data/model/live_poll_response.dart';
-import '../../domain/enum/poll_status.dart';
-import '../provider/live_poll_cubit.dart';
-import '../provider/live_poll_state.dart';
+import '../../../data/model/live_poll_response.dart';
+import '../../../domain/enum/poll_status.dart';
+import '../../provider/live_poll_cubit.dart';
+import '../../provider/live_poll_state.dart';
+import 'option_voters_bottom_sheet.dart';
 
 class LivePollViewerBottomSheet extends StatelessWidget {
   const LivePollViewerBottomSheet({super.key});
@@ -26,10 +28,7 @@ class LivePollViewerBottomSheet extends StatelessWidget {
             top: false,
             child: poll == null
                 ? const _NoPollView()
-                : _PollViewerContent(
-                    poll: poll,
-                    state: state,
-                  ),
+                : _PollViewerContent(poll: poll, state: state),
           ),
         );
       },
@@ -69,15 +68,38 @@ class _PollViewerContent extends StatelessWidget {
   final LivePollResponse poll;
   final LivePollState state;
 
-  const _PollViewerContent({
-    required this.poll,
-    required this.state,
-  });
+  const _PollViewerContent({required this.poll, required this.state});
+
+  Future<void> _showOptionVoters(
+    BuildContext context, {
+    required int optionId,
+    required String optionText,
+  }) async {
+    final cubit = context.read<LivePollCubit>();
+    cubit.clearOptionVoters();
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (_) => BlocProvider.value(
+        value: cubit,
+        child: OptionVotersBottomSheet(
+          optionId: optionId,
+          optionText: optionText,
+        ),
+      ),
+    );
+
+    await cubit.loadOptionVoters(optionId: optionId, pollId: poll.id);
+  }
 
   @override
   Widget build(BuildContext context) {
     final cubit = context.read<LivePollCubit>();
     final canShowResult = cubit.shouldShowResult;
+    final canShowVoters =
+        poll.setting.voterVisibility == PollVoterVisibility.public;
 
     return SingleChildScrollView(
       child: Column(
@@ -158,7 +180,7 @@ class _PollViewerContent extends StatelessWidget {
                   ),
                   decoration: BoxDecoration(
                     color: isSelected
-                        ? Colors.orange.withOpacity(0.22)
+                        ? Colors.orange.withValues(alpha: 0.22)
                         : const Color(0xFF2C2C2E),
                     borderRadius: BorderRadius.circular(12),
                     border: Border.all(
@@ -174,10 +196,7 @@ class _PollViewerContent extends StatelessWidget {
                         ),
                       ),
                       if (isSelected)
-                        const Icon(
-                          Icons.check_circle,
-                          color: Colors.orange,
-                        ),
+                        const Icon(Icons.check_circle, color: Colors.orange),
                     ],
                   ),
                 ),
@@ -247,33 +266,49 @@ class _PollViewerContent extends StatelessWidget {
               ),
               const SizedBox(height: 10),
               ...state.result!.options.map(
-                (item) => Container(
-                  width: double.infinity,
-                  margin: const EdgeInsets.only(bottom: 8),
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 12,
-                    vertical: 10,
-                  ),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFF2C2C2E),
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: Row(
-                    children: [
-                      Expanded(
-                        child: Text(
-                          item.text,
-                          style: const TextStyle(color: Colors.white),
+                (item) => GestureDetector(
+                  onTap: canShowVoters
+                      ? () => _showOptionVoters(
+                          context,
+                          optionId: item.id,
+                          optionText: item.text,
+                        )
+                      : null,
+                  child: Container(
+                    width: double.infinity,
+                    margin: const EdgeInsets.only(bottom: 8),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 10,
+                    ),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF2C2C2E),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Row(
+                      children: [
+                        Expanded(
+                          child: Text(
+                            item.text,
+                            style: const TextStyle(color: Colors.white),
+                          ),
                         ),
-                      ),
-                      Text(
-                        '${item.count}',
-                        style: const TextStyle(
-                          color: Colors.orangeAccent,
-                          fontWeight: FontWeight.w700,
+                        Text(
+                          '${item.count}',
+                          style: const TextStyle(
+                            color: Colors.orangeAccent,
+                            fontWeight: FontWeight.w700,
+                          ),
                         ),
-                      ),
-                    ],
+                        if (canShowVoters) ...[
+                          const SizedBox(width: 8),
+                          const Icon(
+                            Icons.chevron_right,
+                            color: Colors.white54,
+                          ),
+                        ],
+                      ],
+                    ),
                   ),
                 ),
               ),
@@ -295,10 +330,7 @@ class _PollViewerContent extends StatelessWidget {
           ],
           if (state.error != null) ...[
             const SizedBox(height: 12),
-            Text(
-              state.error!,
-              style: const TextStyle(color: Colors.redAccent),
-            ),
+            Text(state.error!, style: const TextStyle(color: Colors.redAccent)),
           ],
         ],
       ),

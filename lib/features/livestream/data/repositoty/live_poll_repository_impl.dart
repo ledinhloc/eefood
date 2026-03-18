@@ -1,4 +1,5 @@
 import 'package:dio/dio.dart';
+import 'package:eefood/features/livestream/data/model/live_poll_option_voters_response.dart';
 import 'package:eefood/features/livestream/domain/enum/poll_status.dart';
 
 import '../../domain/repository/live_poll_repository.dart';
@@ -10,6 +11,21 @@ class LivePollRepositoryImpl extends LivePollRepository {
   final Dio dio;
 
   LivePollRepositoryImpl({required this.dio});
+
+  @override
+  Future<PollOptionVotersResponse?> getOptionVoters({
+    required int liveStreamId,
+    required int pollId,
+    required int optionId
+  }) async {
+    final res = await dio.get(
+      '/v1/livestreams/$liveStreamId/polls/$pollId/options/$optionId/voters'
+    );
+    final data = res.data['data'];
+    if (data == null) return null;
+
+    return PollOptionVotersResponse.fromJson(data);
+  }
 
   @override
   Future<LivePollResponse?> getActivePoll({

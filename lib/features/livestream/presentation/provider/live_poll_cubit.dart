@@ -24,9 +24,11 @@ class LivePollCubit extends Cubit<LivePollState> {
       state.copyWith(
         clearPoll: true,
         clearResult: true,
+        clearOptionVoters: true,
         selectedOptionIds: const [],
         votedOptionIds: const [],
         actionLoading: false,
+        optionVotersLoading: false,
         hasVoted: false,
         clearError: true,
       ),
@@ -97,6 +99,7 @@ class LivePollCubit extends Cubit<LivePollState> {
           emit(
             state.copyWith(
               poll: data,
+              clearOptionVoters: true,
               selectedOptionIds: _sanitizeSelectedOptions(
                 selected: state.selectedOptionIds,
                 poll: data,
@@ -122,7 +125,13 @@ class LivePollCubit extends Cubit<LivePollState> {
       topic: 'live-poll-result',
       fromJson: (json) => PollResultResponse.fromJson(json),
       onData: (data) {
-        emit(state.copyWith(result: data, clearError: true));
+        emit(
+          state.copyWith(
+            result: data,
+            clearOptionVoters: true,
+            clearError: true,
+          ),
+        );
       },
       logName: 'LivePollCubit',
       logPrefix: 'poll result update',
@@ -163,6 +172,7 @@ class LivePollCubit extends Cubit<LivePollState> {
           loading: false,
           poll: poll,
           clearResult: poll == null,
+          clearOptionVoters: true,
           selectedOptionIds: _sanitizeSelectedOptions(
             selected: state.selectedOptionIds,
             poll: poll,
@@ -178,6 +188,7 @@ class LivePollCubit extends Cubit<LivePollState> {
           loading: false,
           clearPoll: true,
           clearResult: true,
+          clearOptionVoters: true,
           error: e.toString(),
         ),
       );
@@ -200,6 +211,7 @@ class LivePollCubit extends Cubit<LivePollState> {
         state.copyWith(
           loading: false,
           poll: poll,
+          clearOptionVoters: true,
           selectedOptionIds: _sanitizeSelectedOptions(
             selected: state.selectedOptionIds,
             poll: poll,
@@ -212,6 +224,7 @@ class LivePollCubit extends Cubit<LivePollState> {
           loading: false,
           clearPoll: true,
           clearResult: true,
+          clearOptionVoters: true,
           selectedOptionIds: const [],
           votedOptionIds: const [],
           hasVoted: false,
@@ -241,6 +254,7 @@ class LivePollCubit extends Cubit<LivePollState> {
           actionLoading: false,
           poll: poll,
           clearResult: true,
+          clearOptionVoters: true,
           selectedOptionIds: const [],
           votedOptionIds: const [],
           hasVoted: false,
@@ -283,7 +297,11 @@ class LivePollCubit extends Cubit<LivePollState> {
         pollId: pollId,
       );
 
-      emit(state.copyWith(actionLoading: false, poll: poll));
+      emit(state.copyWith(
+        actionLoading: false,
+        poll: poll,
+        clearOptionVoters: true,
+      ));
 
       await loadPollResultIfNeeded(pollId: pollId, force: true);
     } catch (e) {
@@ -303,10 +321,71 @@ class LivePollCubit extends Cubit<LivePollState> {
         pollId: pollId,
       );
 
-      emit(state.copyWith(loading: false, result: result));
+      emit(state.copyWith(
+        loading: false,
+        result: result,
+        clearOptionVoters: true,
+      ));
     } catch (e) {
       emit(state.copyWith(loading: false, error: e.toString()));
     }
+  }
+
+  Future<void> loadOptionVoters({
+    required int optionId,
+    int? pollId,
+  }) async {
+    final liveStreamId = state.liveStreamId;
+    final resolvedPollId = pollId ?? state.result?.pollId ?? state.poll?.id;
+
+    if (liveStreamId == null) {
+      emit(state.copyWith(error: 'Khong tim thay liveStreamId'));
+      return;
+    }
+
+    if (resolvedPollId == null) {
+      emit(state.copyWith(error: 'Khong tim thay pollId'));
+      return;
+    }
+
+    emit(
+      state.copyWith(
+        optionVotersLoading: true,
+        clearError: true,
+      ),
+    );
+
+    try {
+      final optionVoters = await repo.getOptionVoters(
+        liveStreamId: liveStreamId,
+        pollId: resolvedPollId,
+        optionId: optionId,
+      );
+
+      emit(
+        state.copyWith(
+          optionVotersLoading: false,
+          optionVoters: optionVoters,
+          clearError: true,
+        ),
+      );
+    } catch (e) {
+      emit(
+        state.copyWith(
+          optionVotersLoading: false,
+          error: e.toString(),
+        ),
+      );
+    }
+  }
+
+  void clearOptionVoters() {
+    emit(
+      state.copyWith(
+        clearOptionVoters: true,
+        optionVotersLoading: false,
+      ),
+    );
   }
 
   Future<void> loadPollResultIfNeeded({
