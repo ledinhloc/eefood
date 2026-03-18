@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
 
-import '../../data/model/live_poll_response.dart';
-import '../../domain/enum/poll_status.dart';
+import '../../../data/model/live_poll_response.dart';
+import '../../../domain/enum/poll_status.dart';
 
-class LivePollViewerBanner extends StatelessWidget {
+class LivePollBanner extends StatelessWidget {
   final LivePollResponse poll;
   final VoidCallback onTap;
 
-  const LivePollViewerBanner({
+  const LivePollBanner({
     super.key,
     required this.poll,
     required this.onTap,
@@ -15,8 +15,6 @@ class LivePollViewerBanner extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final statusColor = _statusColor(poll.status);
-
     return GestureDetector(
       onTap: onTap,
       child: Container(
@@ -24,11 +22,17 @@ class LivePollViewerBanner extends StatelessWidget {
         decoration: BoxDecoration(
           color: Colors.black.withOpacity(0.6),
           borderRadius: BorderRadius.circular(14),
-          border: Border.all(color: statusColor.withOpacity(0.7)),
+          border: Border.all(
+            color: _statusColor(poll.status).withOpacity(0.7),
+          ),
         ),
         child: Row(
           children: [
-            Icon(Icons.poll_outlined, color: statusColor, size: 20),
+            Icon(
+              Icons.poll_outlined,
+              color: _statusColor(poll.status),
+              size: 20,
+            ),
             const SizedBox(width: 10),
             Expanded(
               child: Column(
@@ -40,6 +44,7 @@ class LivePollViewerBanner extends StatelessWidget {
                     overflow: TextOverflow.ellipsis,
                     style: const TextStyle(
                       color: Colors.white,
+                      fontSize: 14,
                       fontWeight: FontWeight.w600,
                     ),
                   ),
@@ -47,7 +52,7 @@ class LivePollViewerBanner extends StatelessWidget {
                   Text(
                     _statusText(poll.status),
                     style: TextStyle(
-                      color: statusColor,
+                      color: _statusColor(poll.status),
                       fontSize: 12,
                       fontWeight: FontWeight.w500,
                     ),
@@ -56,7 +61,10 @@ class LivePollViewerBanner extends StatelessWidget {
               ),
             ),
             const SizedBox(width: 8),
-            const Icon(Icons.chevron_right, color: Colors.white70),
+            const Icon(
+              Icons.chevron_right,
+              color: Colors.white70,
+            ),
           ],
         ),
       ),
@@ -66,11 +74,11 @@ class LivePollViewerBanner extends StatelessWidget {
   String _statusText(PollStatus status) {
     switch (status) {
       case PollStatus.open:
-        return 'Poll đang mở - nhấn để bình chọn';
+        return 'Đang mở bình chọn';
       case PollStatus.closed:
-        return 'Poll đã đóng - nhấn để xem kết quả';
+        return 'Đã đóng bình chọn';
       default:
-        return 'Poll chưa mở';
+        return 'Chưa mở bình chọn';
     }
   }
 
@@ -79,9 +87,9 @@ class LivePollViewerBanner extends StatelessWidget {
       case PollStatus.open:
         return Colors.greenAccent;
       case PollStatus.closed:
-        return Colors.orangeAccent;
+        return Colors.redAccent;
       default:
-        return Colors.white70;
+        return Colors.orangeAccent;
     }
   }
 }
