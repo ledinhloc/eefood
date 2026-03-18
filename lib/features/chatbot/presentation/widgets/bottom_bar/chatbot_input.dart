@@ -55,7 +55,7 @@ class _ChatbotInputState extends State<ChatbotInput> {
     super.dispose();
   }
 
-  void _handleSendMessage() async {
+  void _handleSendMessage() {
     final message = _textController.text.trim();
     final cubit = context.read<ChatbotCubit>();
     final hasSelectedPosts = cubit.state.hasSelectedPosts;
@@ -74,7 +74,7 @@ class _ChatbotInputState extends State<ChatbotInput> {
       });
     }
 
-    await cubit.loadChatHistory(widget.userId!);
+    //await cubit.loadChatHistory(widget.userId!);
   }
 
   Future<void> _pickImage() async {

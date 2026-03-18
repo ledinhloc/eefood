@@ -13,6 +13,7 @@ import 'package:eefood/features/chatbot/presentation/provider/chatbot_cubit.dart
 import 'package:eefood/features/chatbot/presentation/screens/chatbot_main_srcreen.dart';
 import 'package:eefood/features/noti/presentation/screens/notification_screen.dart';
 import 'package:eefood/features/noti/presentation/screens/ntofication_settings_screen.dart';
+import 'package:eefood/features/nutrition/presentation/screens/image_choice_screen.dart';
 import 'package:eefood/features/post/presentation/provider/follow_cubit.dart';
 import 'package:eefood/features/post/presentation/provider/story_list_cubit.dart';
 import 'package:eefood/features/post/presentation/provider/story_setting_cubit.dart';
@@ -97,6 +98,9 @@ class AppRoutes {
   // settings
   static const language = '/language';
   static const display = '/display';
+
+  // image search
+  static const imageChoiceScreen = '/imageChoiceScreen';
 
   // Danh sách các widget cho BottomNavigationBar trong main page
   static List<Widget> widgetOptions = <Widget>[
@@ -272,6 +276,9 @@ class AppRoutes {
         value: getIt<SettingsCubit>(),
         child: const DisplayPage(),
       );
+    },
+    imageChoiceScreen: (context) {
+      return ImageChoiceScreen();
     },
   };
 }

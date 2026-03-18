@@ -92,6 +92,9 @@ dependencies:
   flutter_localizations:
     sdk: flutter
   intl: ^0.20.2 # multi language
+
+  fl_chart: ^0.71.0 # chart
+
 dev_dependencies:
   flutter_test:
     sdk: flutter

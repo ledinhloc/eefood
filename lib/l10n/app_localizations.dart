@@ -610,6 +610,132 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Save failed!'**
   String get saveFailed;
+
+  /// No description provided for @languagePageSubTile.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose the display language in the app.'**
+  String get languagePageSubTile;
+
+  /// No description provided for @optionTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose a feature'**
+  String get optionTitle;
+
+  /// No description provided for @subOptionTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'What would you like to do with the image?'**
+  String get subOptionTitle;
+
+  /// No description provided for @lookUpTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Find a dish'**
+  String get lookUpTitle;
+
+  /// No description provided for @lookUpSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Take or select a photo to find related recipes'**
+  String get lookUpSubtitle;
+
+  /// No description provided for @analyzeTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Nutrition analysis'**
+  String get analyzeTitle;
+
+  /// No description provided for @analyzeSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Analyze calories, protein, fat, and micronutrients in detail'**
+  String get analyzeSubtitle;
+
+  /// No description provided for @analyzeNutritionTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Nutrition analysis'**
+  String get analyzeNutritionTitle;
+
+  /// No description provided for @analyzeNutritionSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Place the dish within the frame to analyze'**
+  String get analyzeNutritionSubtitle;
+
+  /// No description provided for @processingNutrition.
+  ///
+  /// In en, this message translates to:
+  /// **'Processing...'**
+  String get processingNutrition;
+
+  /// No description provided for @loadingNutrition.
+  ///
+  /// In en, this message translates to:
+  /// **'Uploading image for analysis'**
+  String get loadingNutrition;
+
+  /// No description provided for @loadingDetectNutrition.
+  ///
+  /// In en, this message translates to:
+  /// **'AI is detecting nutritional components'**
+  String get loadingDetectNutrition;
+
+  /// No description provided for @failAnalysis.
+  ///
+  /// In en, this message translates to:
+  /// **'Analysis failed'**
+  String get failAnalysis;
+
+  /// No description provided for @retryAnalyzeImage.
+  ///
+  /// In en, this message translates to:
+  /// **'Please try again with a clearer image.'**
+  String get retryAnalyzeImage;
+
+  /// No description provided for @retryCapture.
+  ///
+  /// In en, this message translates to:
+  /// **'Retake photo'**
+  String get retryCapture;
+
+  /// No description provided for @healthyScoreTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Health Score'**
+  String get healthyScoreTitle;
+
+  /// No description provided for @allocateNutrient.
+  ///
+  /// In en, this message translates to:
+  /// **'Nutrient Distribution'**
+  String get allocateNutrient;
+
+  /// No description provided for @interactChart.
+  ///
+  /// In en, this message translates to:
+  /// **'Tap the chart to see details'**
+  String get interactChart;
+
+  /// No description provided for @elementNutrient.
+  ///
+  /// In en, this message translates to:
+  /// **'Nutritional Components'**
+  String get elementNutrient;
+
+  /// No description provided for @adviceOfPhD.
+  ///
+  /// In en, this message translates to:
+  /// **'AI Expert Advice'**
+  String get adviceOfPhD;
+
+  /// No description provided for @nutrientOfIngredient.
+  ///
+  /// In en, this message translates to:
+  /// **'Nutrition by Ingredients'**
+  String get nutrientOfIngredient;
 }
 
 class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {
