@@ -96,9 +96,6 @@ class _StatusBubble extends StatelessWidget {
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          // Dots animation
-          const DotsLoadingIndicator(color: Color(0xFFFF6B35), dotSize: 6),
-          const SizedBox(width: 10),
           // Status text với animated switcher (smooth khi đổi text)
           Flexible(
             child: AnimatedSwitcher(
@@ -125,6 +122,9 @@ class _StatusBubble extends StatelessWidget {
               ),
             ),
           ),
+          // Dots animation
+          const SizedBox(width: 10),
+          const DotsLoadingIndicator(color: Color(0xFFFF6B35), dotSize: 6),
         ],
       ),
     );

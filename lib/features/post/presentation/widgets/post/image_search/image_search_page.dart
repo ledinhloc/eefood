@@ -178,6 +178,7 @@ class _ImageSearchScreenState extends State<ImageSearchScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     return Scaffold(
       appBar: AppBar(
         title: const Text('Tìm kiếm bằng hình ảnh'),
@@ -188,7 +189,7 @@ class _ImageSearchScreenState extends State<ImageSearchScreen> {
           ),
         ],
       ),
-      backgroundColor: Colors.black,
+      backgroundColor: theme.scaffoldBackgroundColor,
       body: Stack(
         fit: StackFit.expand,
         children: [
@@ -220,7 +221,7 @@ class _ImageSearchScreenState extends State<ImageSearchScreen> {
               ),
             ),
 
-          // --- Thanh dưới: thư viện + chụp ---
+          // Thanh dưới: thư viện + chụp
           Positioned(
             bottom: 40,
             left: 0,

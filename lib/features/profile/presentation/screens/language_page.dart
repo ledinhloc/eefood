@@ -20,7 +20,6 @@ class LanguagePage extends StatelessWidget {
           backgroundColor: theme.scaffoldBackgroundColor,
           body: CustomScrollView(
             slivers: [
-              // ── App Bar đẹp ──────────────────────────────────
               SliverAppBar(
                 expandedHeight: 140,
                 pinned: true,
@@ -79,7 +78,7 @@ class LanguagePage extends StatelessWidget {
                     vertical: 4,
                   ),
                   child: Text(
-                    'Chọn ngôn ngữ hiển thị trong ứng dụng',
+                    l10n.languagePageSubTile,
                     style: TextStyle(
                       color: theme.colorScheme.onSurface.withOpacity(0.5),
                       fontSize: 14,

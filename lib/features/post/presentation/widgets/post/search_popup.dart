@@ -194,7 +194,7 @@ class _SearchPopupState extends State<SearchPopup> {
                               onPressed: () async {
                                 await Navigator.pushNamed(
                                   context,
-                                  AppRoutes.imageSearchPage,
+                                  AppRoutes.imageChoiceScreen,
                                 );
                                 Navigator.of(context).pop();
                               },

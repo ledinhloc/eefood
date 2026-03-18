@@ -267,4 +267,67 @@ class AppLocalizationsVi extends AppLocalizations {
 
   @override
   String get saveFailed => 'Lưu thất bại!';
+
+  @override
+  String get languagePageSubTile => 'Chọn ngôn ngữ hiển thị trong ứng dụng.';
+
+  @override
+  String get optionTitle => 'Chọn chức năng';
+
+  @override
+  String get subOptionTitle => 'Bạn muốn làm gì với hình ảnh?';
+
+  @override
+  String get lookUpTitle => 'Tìm kiếm món ăn';
+
+  @override
+  String get lookUpSubtitle => 'Chụp hoặc chọn ảnh để tìm kiếm công thức nấu ăn liên quan';
+
+  @override
+  String get analyzeTitle => 'Phân tích dinh dưỡng';
+
+  @override
+  String get analyzeSubtitle => 'Phân tích chi tiết calo, protein, chất béo và các vi chất';
+
+  @override
+  String get analyzeNutritionTitle => 'Phân tích dinh dưỡng';
+
+  @override
+  String get analyzeNutritionSubtitle => 'Đặt món ăn vào khung để phân tích';
+
+  @override
+  String get processingNutrition => 'Đang xử lý...';
+
+  @override
+  String get loadingNutrition => 'Tải ảnh lên hệ thống phân tích';
+
+  @override
+  String get loadingDetectNutrition => 'AI đang nhận diện thành phần dinh dưỡng';
+
+  @override
+  String get failAnalysis => 'Phân tích thất bại';
+
+  @override
+  String get retryAnalyzeImage => 'Vui lòng thử lại với ảnh rõ hơn.';
+
+  @override
+  String get retryCapture => 'Chụp lại';
+
+  @override
+  String get healthyScoreTitle => 'Chỉ số sức khỏe';
+
+  @override
+  String get allocateNutrient => 'Phân bổ dinh dưỡng';
+
+  @override
+  String get interactChart => 'Nhấn vào biểu đồ để xem chi tiết';
+
+  @override
+  String get elementNutrient => 'Thành phần dinh dưỡng';
+
+  @override
+  String get adviceOfPhD => 'Lời khuyên từ chuyên gia AI';
+
+  @override
+  String get nutrientOfIngredient => 'Dinh dưỡng theo nguyên liệu';
 }
