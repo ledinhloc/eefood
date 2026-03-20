@@ -23,7 +23,9 @@ class LivePollOptionProposalCubit extends Cubit<LivePollOptionProposalState> {
       state.copyWith(
         liveStreamId: liveStreamId,
         pollId: pollId,
+        clearProposals: true,
         clearError: true,
+        clearLatestProposal: true,
       ),
     );
 
@@ -31,11 +33,7 @@ class LivePollOptionProposalCubit extends Cubit<LivePollOptionProposalState> {
       _connectProposalSocket(liveStreamId);
     }
 
-    await loadOptionProposals(
-      liveStreamId: liveStreamId,
-      pollId: pollId,
-      status: PollOptionProposalStatus.pending,
-    );
+    await loadOptionProposals(liveStreamId: liveStreamId, pollId: pollId);
   }
 
   void _connectProposalSocket(int liveStreamId) {
@@ -75,7 +73,6 @@ class LivePollOptionProposalCubit extends Cubit<LivePollOptionProposalState> {
   Future<void> loadOptionProposals({
     required int liveStreamId,
     required int pollId,
-    PollOptionProposalStatus? status,
   }) async {
     emit(
       state.copyWith(
@@ -90,7 +87,6 @@ class LivePollOptionProposalCubit extends Cubit<LivePollOptionProposalState> {
       final proposals = await repo.getOptionProposals(
         liveStreamId: liveStreamId,
         pollId: pollId,
-        status: status,
       );
 
       emit(
@@ -126,7 +122,7 @@ class LivePollOptionProposalCubit extends Cubit<LivePollOptionProposalState> {
         state.copyWith(
           actionLoading: false,
           latestProposal: proposal,
-          proposals: _removeProposal(proposal.id),
+          proposals: _upsertProposal(proposal),
           clearError: true,
         ),
       );
@@ -162,9 +158,7 @@ class LivePollOptionProposalCubit extends Cubit<LivePollOptionProposalState> {
         state.copyWith(
           actionLoading: false,
           latestProposal: proposal,
-          proposals: proposal.status == PollOptionProposalStatus.pending
-              ? _upsertProposal(proposal)
-              : _removeProposal(proposal.id),
+          proposals: _upsertProposal(proposal),
           clearError: true,
         ),
       );
@@ -179,6 +173,15 @@ class LivePollOptionProposalCubit extends Cubit<LivePollOptionProposalState> {
 
   void clearError() {
     emit(state.copyWith(clearError: true));
+  }
+
+  void setSelectedStatus(PollOptionProposalStatus? status) {
+    emit(
+      state.copyWith(
+        selectedStatus: status,
+        clearSelectedStatus: status == null,
+      ),
+    );
   }
 
   void reset() {
@@ -204,10 +207,6 @@ class LivePollOptionProposalCubit extends Cubit<LivePollOptionProposalState> {
         .toList();
 
     return [proposal, ...updated];
-  }
-
-  List<LivePollOptionProposalResponse> _removeProposal(int proposalId) {
-    return state.proposals.where((item) => item.id != proposalId).toList();
   }
 
   @override

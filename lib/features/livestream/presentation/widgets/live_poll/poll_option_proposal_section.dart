@@ -119,8 +119,19 @@ class _PollOptionProposalSectionState extends State<PollOptionProposalSection> {
                     firstChild: const SizedBox.shrink(),
                     secondChild: Padding(
                       padding: const EdgeInsets.only(top: 10),
-                      child: state.loading && state.proposals.isEmpty
-                          ? const Padding(
+                      child: Column(
+                        children: [
+                          _ProposalStatusFilter(
+                            selectedStatus: state.selectedStatus,
+                            onSelected: (status) {
+                              context
+                                  .read<LivePollOptionProposalCubit>()
+                                  .setSelectedStatus(status);
+                            },
+                          ),
+                          const SizedBox(height: 10),
+                          if (state.loading && state.proposals.isEmpty)
+                            const Padding(
                               padding: EdgeInsets.symmetric(vertical: 16),
                               child: Center(
                                 child: CircularProgressIndicator(
@@ -128,8 +139,8 @@ class _PollOptionProposalSectionState extends State<PollOptionProposalSection> {
                                 ),
                               ),
                             )
-                          : state.proposals.isEmpty
-                          ? Container(
+                          else if (state.displayedProposals.isEmpty)
+                            Container(
                               width: double.infinity,
                               padding: const EdgeInsets.symmetric(
                                 horizontal: 12,
@@ -139,26 +150,105 @@ class _PollOptionProposalSectionState extends State<PollOptionProposalSection> {
                                 color: const Color(0xFF2C2C2E),
                                 borderRadius: BorderRadius.circular(12),
                               ),
-                              child: const Text(
-                                'Chưa có đề xuất đáp án mới.',
-                                style: TextStyle(color: Colors.white70),
+                              child: Text(
+                                _emptyMessage(state.selectedStatus),
+                                style: const TextStyle(color: Colors.white70),
                               ),
                             )
-                          : Column(
-                              children: state.proposals.map((proposal) {
+                          else
+                            Column(
+                              children: state.displayedProposals.map((
+                                proposal,
+                              ) {
                                 return PollOptionProposalItem(
+                                  key: ValueKey(proposal.id),
                                   proposal: proposal,
                                   poll: widget.poll,
                                   actionLoading: state.actionLoading,
                                 );
                               }).toList(),
                             ),
+                        ],
+                      ),
                     ),
                   ),
                 ],
               );
             },
           ),
+    );
+  }
+
+  String _emptyMessage(PollOptionProposalStatus? status) {
+    switch (status) {
+      case null:
+        return 'Chưa có đề xuất đáp án nào.';
+      case PollOptionProposalStatus.pending:
+        return 'Chưa có đề xuất nào đang chờ duyệt.';
+      case PollOptionProposalStatus.approved:
+        return 'Chưa có đề xuất nào đã được chấp nhận.';
+      case PollOptionProposalStatus.rejected:
+        return 'Chưa có đề xuất nào đã bị từ chối.';
+    }
+  }
+}
+
+class _ProposalStatusFilter extends StatelessWidget {
+  final PollOptionProposalStatus? selectedStatus;
+  final ValueChanged<PollOptionProposalStatus?> onSelected;
+
+  const _ProposalStatusFilter({
+    required this.selectedStatus,
+    required this.onSelected,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return SingleChildScrollView(
+      scrollDirection: Axis.horizontal,
+      child: Row(
+        children: [
+          _buildChip(label: 'Tất cả', value: null),
+          const SizedBox(width: 8),
+          _buildChip(
+            label: 'Chờ duyệt',
+            value: PollOptionProposalStatus.pending,
+          ),
+          const SizedBox(width: 8),
+          _buildChip(
+            label: 'Đã chấp nhận',
+            value: PollOptionProposalStatus.approved,
+          ),
+          const SizedBox(width: 8),
+          _buildChip(
+            label: 'Đã từ chối',
+            value: PollOptionProposalStatus.rejected,
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildChip({
+    required String label,
+    required PollOptionProposalStatus? value,
+  }) {
+    final isSelected = selectedStatus == value;
+
+    return ChoiceChip(
+      label: Text(label),
+      selected: isSelected,
+      onSelected: (_) => onSelected(value),
+      labelStyle: TextStyle(
+        color: isSelected ? Colors.black : Colors.white,
+        fontWeight: FontWeight.w600,
+      ),
+      backgroundColor: const Color(0xFF2C2C2E),
+      selectedColor: Colors.white,
+      side: const BorderSide(color: Colors.white12),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(999)),
+      showCheckmark: false,
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
     );
   }
 }

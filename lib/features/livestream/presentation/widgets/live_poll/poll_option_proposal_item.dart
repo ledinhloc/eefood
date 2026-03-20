@@ -71,64 +71,126 @@ class PollOptionProposalItem extends StatelessWidget {
                   ],
                 ),
               ),
+              const SizedBox(width: 8),
+              _ProposalStatusBadge(status: proposal.status),
             ],
           ),
           const SizedBox(height: 10),
           Text(proposal.text, style: const TextStyle(color: Colors.white70)),
-          const SizedBox(height: 12),
-          Row(
-            children: [
-              Expanded(
-                child: OutlinedButton(
-                  onPressed: actionLoading
-                      ? null
-                      : () => context
-                            .read<LivePollOptionProposalCubit>()
-                            .updateOptionProposalStatus(
-                              liveStreamId: poll.liveStreamId,
-                              pollId: poll.id,
-                              proposalId: proposal.id,
-                              status: PollOptionProposalStatus.rejected,
-                            ),
-                  style: OutlinedButton.styleFrom(
-                    foregroundColor: Colors.white,
-                    side: const BorderSide(color: Colors.white24),
-                    padding: const EdgeInsets.symmetric(vertical: 12),
+          if (proposal.status == PollOptionProposalStatus.pending) ...[
+            const SizedBox(height: 12),
+            Row(
+              children: [
+                Expanded(
+                  child: OutlinedButton(
+                    onPressed: actionLoading
+                        ? null
+                        : () => context
+                              .read<LivePollOptionProposalCubit>()
+                              .updateOptionProposalStatus(
+                                liveStreamId: poll.liveStreamId,
+                                pollId: poll.id,
+                                proposalId: proposal.id,
+                                status: PollOptionProposalStatus.rejected,
+                              ),
+                    style: OutlinedButton.styleFrom(
+                      foregroundColor: Colors.white,
+                      side: const BorderSide(color: Colors.white24),
+                      padding: const EdgeInsets.symmetric(vertical: 12),
+                    ),
+                    child: const Text('Từ chối'),
                   ),
-                  child: const Text('Từ chối'),
                 ),
-              ),
-              const SizedBox(width: 10),
-              Expanded(
-                child: ElevatedButton(
-                  onPressed: actionLoading
-                      ? null
-                      : () => context
-                            .read<LivePollOptionProposalCubit>()
-                            .updateOptionProposalStatus(
-                              liveStreamId: poll.liveStreamId,
-                              pollId: poll.id,
-                              proposalId: proposal.id,
-                              status: PollOptionProposalStatus.approved,
-                            ),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.green,
-                    foregroundColor: Colors.white,
-                    padding: const EdgeInsets.symmetric(vertical: 12),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: ElevatedButton(
+                    onPressed: actionLoading
+                        ? null
+                        : () => context
+                              .read<LivePollOptionProposalCubit>()
+                              .updateOptionProposalStatus(
+                                liveStreamId: poll.liveStreamId,
+                                pollId: poll.id,
+                                proposalId: proposal.id,
+                                status: PollOptionProposalStatus.approved,
+                              ),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.green,
+                      foregroundColor: Colors.white,
+                      padding: const EdgeInsets.symmetric(vertical: 12),
+                    ),
+                    child: actionLoading
+                        ? const SizedBox(
+                            height: 18,
+                            width: 18,
+                            child: CircularProgressIndicator(strokeWidth: 2),
+                          )
+                        : const Text('Chấp nhận'),
                   ),
-                  child: actionLoading
-                      ? const SizedBox(
-                          height: 18,
-                          width: 18,
-                          child: CircularProgressIndicator(strokeWidth: 2),
-                        )
-                      : const Text('Chấp nhận'),
                 ),
-              ),
-            ],
-          ),
+              ],
+            ),
+          ],
         ],
       ),
     );
+  }
+}
+
+class _ProposalStatusBadge extends StatelessWidget {
+  final PollOptionProposalStatus status;
+
+  const _ProposalStatusBadge({required this.status});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+      decoration: BoxDecoration(
+        color: _backgroundColor,
+        borderRadius: BorderRadius.circular(999),
+      ),
+      child: Text(
+        _label,
+        style: TextStyle(
+          color: _foregroundColor,
+          fontSize: 12,
+          fontWeight: FontWeight.w700,
+        ),
+      ),
+    );
+  }
+
+  String get _label {
+    switch (status) {
+      case PollOptionProposalStatus.pending:
+        return 'Chờ duyệt';
+      case PollOptionProposalStatus.approved:
+        return 'Đã chấp nhận';
+      case PollOptionProposalStatus.rejected:
+        return 'Đã từ chối';
+    }
+  }
+
+  Color get _backgroundColor {
+    switch (status) {
+      case PollOptionProposalStatus.pending:
+        return Colors.orange.withValues(alpha: 0.22);
+      case PollOptionProposalStatus.approved:
+        return Colors.green.withValues(alpha: 0.22);
+      case PollOptionProposalStatus.rejected:
+        return Colors.red.withValues(alpha: 0.22);
+    }
+  }
+
+  Color get _foregroundColor {
+    switch (status) {
+      case PollOptionProposalStatus.pending:
+        return Colors.orange.shade200;
+      case PollOptionProposalStatus.approved:
+        return Colors.green.shade200;
+      case PollOptionProposalStatus.rejected:
+        return Colors.red.shade200;
+    }
   }
 }
