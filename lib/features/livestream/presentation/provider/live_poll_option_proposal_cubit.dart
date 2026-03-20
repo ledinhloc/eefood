@@ -2,14 +2,75 @@ import 'package:eefood/core/di/injection.dart';
 import 'package:eefood/features/livestream/data/model/live_poll_option_proposal_response.dart';
 import 'package:eefood/features/livestream/domain/enum/poll_option_proposal_status.dart';
 import 'package:eefood/features/livestream/domain/repository/live_poll_repository.dart';
+import 'package:eefood/features/livestream/presentation/provider/livestream_websocket_manager.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import 'live_poll_option_proposal_state.dart';
 
 class LivePollOptionProposalCubit extends Cubit<LivePollOptionProposalState> {
   final LivePollRepository repo = getIt<LivePollRepository>();
+  final LiveStreamWebSocketManager _wsManager =
+      getIt<LiveStreamWebSocketManager>();
 
   LivePollOptionProposalCubit() : super(const LivePollOptionProposalState());
+
+  Future<void> init({
+    required int liveStreamId,
+    required int pollId,
+    bool connectSocket = true,
+  }) async {
+    emit(
+      state.copyWith(
+        liveStreamId: liveStreamId,
+        pollId: pollId,
+        clearError: true,
+      ),
+    );
+
+    if (connectSocket) {
+      _connectProposalSocket(liveStreamId);
+    }
+
+    await loadOptionProposals(
+      liveStreamId: liveStreamId,
+      pollId: pollId,
+      status: PollOptionProposalStatus.pending,
+    );
+  }
+
+  void _connectProposalSocket(int liveStreamId) {
+    _unsubscribeProposalTopic();
+
+    _wsManager.connect(
+      logName: 'LivePollOptionProposalCubit',
+      onConnected: () {
+        _wsManager.subscribeTopic<LivePollOptionProposalResponse>(
+          liveStreamId: liveStreamId,
+          topic: 'live-poll-proposal',
+          fromJson: LivePollOptionProposalResponse.fromJson,
+          onData: _handleIncomingProposal,
+          logName: 'LivePollOptionProposalCubit',
+          logPrefix: 'poll-proposal',
+          onError: (error) {
+            emit(state.copyWith(error: error));
+          },
+        );
+      },
+      onError: (error) {
+        emit(state.copyWith(error: error));
+      },
+    );
+  }
+
+  void _handleIncomingProposal(LivePollOptionProposalResponse proposal) {
+    if (state.pollId != null && proposal.pollId != state.pollId) {
+      return;
+    }
+
+    emit(
+      state.copyWith(proposals: _upsertProposal(proposal), clearError: true),
+    );
+  }
 
   Future<void> loadOptionProposals({
     required int liveStreamId,
@@ -65,7 +126,7 @@ class LivePollOptionProposalCubit extends Cubit<LivePollOptionProposalState> {
         state.copyWith(
           actionLoading: false,
           latestProposal: proposal,
-          proposals: _upsertProposal(proposal),
+          proposals: _removeProposal(proposal.id),
           clearError: true,
         ),
       );
@@ -101,7 +162,9 @@ class LivePollOptionProposalCubit extends Cubit<LivePollOptionProposalState> {
         state.copyWith(
           actionLoading: false,
           latestProposal: proposal,
-          proposals: _upsertProposal(proposal),
+          proposals: proposal.status == PollOptionProposalStatus.pending
+              ? _upsertProposal(proposal)
+              : _removeProposal(proposal.id),
           clearError: true,
         ),
       );
@@ -122,6 +185,17 @@ class LivePollOptionProposalCubit extends Cubit<LivePollOptionProposalState> {
     emit(const LivePollOptionProposalState());
   }
 
+  void _unsubscribeProposalTopic() {
+    final liveStreamId = state.liveStreamId;
+    if (liveStreamId == null) return;
+
+    _wsManager.unsubscribeTopic(
+      liveStreamId: liveStreamId,
+      topic: 'live-poll-proposal',
+      logName: 'LivePollOptionProposalCubit',
+    );
+  }
+
   List<LivePollOptionProposalResponse> _upsertProposal(
     LivePollOptionProposalResponse proposal,
   ) {
@@ -130,5 +204,15 @@ class LivePollOptionProposalCubit extends Cubit<LivePollOptionProposalState> {
         .toList();
 
     return [proposal, ...updated];
+  }
+
+  List<LivePollOptionProposalResponse> _removeProposal(int proposalId) {
+    return state.proposals.where((item) => item.id != proposalId).toList();
+  }
+
+  @override
+  Future<void> close() {
+    _unsubscribeProposalTopic();
+    return super.close();
   }
 }

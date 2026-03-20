@@ -2,50 +2,45 @@ import 'package:eefood/features/livestream/presentation/widgets/live_poll/option
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
-import '../../../../../app_routes.dart';
-import '../../../../../core/di/injection.dart';
-import '../../../../auth/domain/entities/user.dart';
-import '../../../../profile/domain/usecases/profile_usecase.dart';
-import '../../../data/model/live_poll_option_voter_response.dart';
 import '../../../data/model/live_poll_response.dart';
 import '../../../domain/enum/poll_status.dart';
 import '../../provider/live_poll_cubit.dart';
+import '../../provider/live_poll_option_proposal_cubit.dart';
 import '../../provider/live_poll_state.dart';
+import 'poll_option_proposal_section.dart';
 
 class LivePollManageBottomSheet extends StatelessWidget {
   final VoidCallback onCreateNewPoll;
 
-  const LivePollManageBottomSheet({
-    super.key,
-    required this.onCreateNewPoll,
-  });
+  const LivePollManageBottomSheet({super.key, required this.onCreateNewPoll});
 
   @override
   Widget build(BuildContext context) {
-    return BlocBuilder<LivePollCubit, LivePollState>(
-      builder: (context, state) {
-        final poll = state.poll;
+    return BlocProvider(
+      create: (_) => LivePollOptionProposalCubit(),
+      child: BlocBuilder<LivePollCubit, LivePollState>(
+        builder: (context, state) {
+          final poll = state.poll;
 
-        return Container(
-          padding: const EdgeInsets.fromLTRB(16, 16, 16, 24),
-          decoration: const BoxDecoration(
-            color: Color(0xFF1C1C1E),
-            borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-          ),
-          child: SafeArea(
-            top: false,
-            child: poll == null
-                ? _EmptyPollView(
-                    onCreateNewPoll: onCreateNewPoll,
-                  )
-                : _PollManageContent(
-                    poll: poll,
-                    state: state,
-                    onCreateNewPoll: onCreateNewPoll,
-                  ),
-          ),
-        );
-      },
+          return Container(
+            padding: const EdgeInsets.fromLTRB(16, 16, 16, 24),
+            decoration: const BoxDecoration(
+              color: Color(0xFF1C1C1E),
+              borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+            ),
+            child: SafeArea(
+              top: false,
+              child: poll == null
+                  ? _EmptyPollView(onCreateNewPoll: onCreateNewPoll)
+                  : _PollManageContent(
+                      poll: poll,
+                      state: state,
+                      onCreateNewPoll: onCreateNewPoll,
+                    ),
+            ),
+          );
+        },
+      ),
     );
   }
 }
@@ -53,9 +48,7 @@ class LivePollManageBottomSheet extends StatelessWidget {
 class _EmptyPollView extends StatelessWidget {
   final VoidCallback onCreateNewPoll;
 
-  const _EmptyPollView({
-    required this.onCreateNewPoll,
-  });
+  const _EmptyPollView({required this.onCreateNewPoll});
 
   @override
   Widget build(BuildContext context) {
@@ -129,10 +122,7 @@ class _PollManageContent extends StatelessWidget {
       ),
     );
 
-    await cubit.loadOptionVoters(
-      optionId: optionId,
-      pollId: poll.id,
-    );
+    await cubit.loadOptionVoters(optionId: optionId, pollId: poll.id);
   }
 
   @override
@@ -163,27 +153,22 @@ class _PollManageContent extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 16),
-          _buildInfoCard(
-            title: 'Cau hoi',
-            value: poll.question,
-          ),
+          _buildInfoCard(title: 'Câu hỏi', value: poll.question),
           const SizedBox(height: 12),
           _buildInfoCard(
-            title: 'Trang thai',
+            title: 'Trạng thái',
             value: _statusText(poll.status),
             valueColor: _statusColor(poll.status),
           ),
           const SizedBox(height: 12),
-          _buildInfoCard(
-            title: 'So dap an',
-            value: '${poll.options.length}',
-          ),
+          _buildInfoCard(title: 'Số đáp án', value: '${poll.options.length}'),
           const SizedBox(height: 20),
           Row(
             children: [
               Expanded(
                 child: ElevatedButton(
-                  onPressed: state.actionLoading || poll.status == PollStatus.open
+                  onPressed:
+                      state.actionLoading || poll.status == PollStatus.open
                       ? null
                       : () => cubit.openPoll(pollId: poll.id),
                   style: ElevatedButton.styleFrom(
@@ -199,8 +184,8 @@ class _PollManageContent extends StatelessWidget {
                 child: ElevatedButton(
                   onPressed:
                       state.actionLoading || poll.status == PollStatus.closed
-                          ? null
-                          : () => cubit.closePoll(pollId: poll.id),
+                      ? null
+                      : () => cubit.closePoll(pollId: poll.id),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.red,
                     foregroundColor: Colors.white,
@@ -215,8 +200,9 @@ class _PollManageContent extends StatelessWidget {
           SizedBox(
             width: double.infinity,
             child: OutlinedButton(
-              onPressed:
-                  state.loading ? null : () => cubit.loadPollResult(pollId: poll.id),
+              onPressed: state.loading
+                  ? null
+                  : () => cubit.loadPollResult(pollId: poll.id),
               style: OutlinedButton.styleFrom(
                 foregroundColor: Colors.white,
                 side: const BorderSide(color: Colors.white24),
@@ -244,7 +230,6 @@ class _PollManageContent extends StatelessWidget {
               child: const Text('Tao poll moi'),
             ),
           ),
-          const SizedBox(height: 20),
           const Text(
             'Ket qua',
             style: TextStyle(
@@ -302,21 +287,17 @@ class _PollManageContent extends StatelessWidget {
                         ),
                       ),
                       const SizedBox(width: 8),
-                      const Icon(
-                        Icons.chevron_right,
-                        color: Colors.white54,
-                      ),
+                      const Icon(Icons.chevron_right, color: Colors.white54),
                     ],
                   ),
                 ),
               ),
             ),
+          const SizedBox(height: 20),
+          PollOptionProposalSection(poll: poll),
           if (state.error != null) ...[
             const SizedBox(height: 12),
-            Text(
-              state.error!,
-              style: const TextStyle(color: Colors.redAccent),
-            ),
+            Text(state.error!, style: const TextStyle(color: Colors.redAccent)),
           ],
         ],
       ),
@@ -340,10 +321,7 @@ class _PollManageContent extends StatelessWidget {
         children: [
           Text(
             title,
-            style: const TextStyle(
-              color: Colors.white60,
-              fontSize: 12,
-            ),
+            style: const TextStyle(color: Colors.white60, fontSize: 12),
           ),
           const SizedBox(height: 4),
           Text(
