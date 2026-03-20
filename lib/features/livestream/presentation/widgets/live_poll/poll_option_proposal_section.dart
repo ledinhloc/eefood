@@ -56,19 +56,19 @@ class _PollOptionProposalSectionState extends State<PollOptionProposalSection> {
           previous.error != current.error,
       listener: (context, state) {
         final latestProposal = state.latestProposal;
-        if (latestProposal != null &&
-            latestProposal.status == PollOptionProposalStatus.approved) {
-          showCustomSnackBar(context, 'Đã chấp nhận đề xuất');
-          context.read<LivePollOptionProposalCubit>().clearLatestProposal();
-          return;
-        }
+        // if (latestProposal != null &&
+        //     latestProposal.status == PollOptionProposalStatus.approved) {
+        //   showCustomSnackBar(context, 'Đã chấp nhận đề xuất');
+        //   context.read<LivePollOptionProposalCubit>().clearLatestProposal();
+        //   return;
+        // }
 
-        if (latestProposal != null &&
-            latestProposal.status == PollOptionProposalStatus.rejected) {
-          showCustomSnackBar(context, 'Đã từ chối đề xuất');
-          context.read<LivePollOptionProposalCubit>().clearLatestProposal();
-          return;
-        }
+        // if (latestProposal != null &&
+        //     latestProposal.status == PollOptionProposalStatus.rejected) {
+        //   showCustomSnackBar(context, 'Đã từ chối đề xuất');
+        //   context.read<LivePollOptionProposalCubit>().clearLatestProposal();
+        //   return;
+        // }
 
         if (state.error != null && state.error!.isNotEmpty) {
           showCustomSnackBar(context, state.error!, isError: true);

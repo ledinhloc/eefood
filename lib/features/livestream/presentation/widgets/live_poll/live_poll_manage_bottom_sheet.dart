@@ -3,7 +3,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../data/model/live_poll_response.dart';
+import '../../../domain/enum/poll_option_add_mode.dart';
+import '../../../domain/enum/poll_result_visibility.dart';
 import '../../../domain/enum/poll_status.dart';
+import '../../../domain/enum/poll_voter_visibility.dart';
 import '../../provider/live_poll_cubit.dart';
 import '../../provider/live_poll_option_proposal_cubit.dart';
 import '../../provider/live_poll_state.dart';
@@ -57,7 +60,7 @@ class _EmptyPollView extends StatelessWidget {
       children: [
         const SizedBox(height: 8),
         const Text(
-          'Chua co poll',
+          'Chưa có poll',
           style: TextStyle(
             color: Colors.white,
             fontSize: 18,
@@ -66,7 +69,7 @@ class _EmptyPollView extends StatelessWidget {
         ),
         const SizedBox(height: 8),
         const Text(
-          'Hay tao poll moi de bat dau',
+          'Hãy tạo poll mới để bắt đầu',
           style: TextStyle(color: Colors.white70),
         ),
         const SizedBox(height: 20),
@@ -82,7 +85,7 @@ class _EmptyPollView extends StatelessWidget {
               foregroundColor: Colors.white,
               padding: const EdgeInsets.symmetric(vertical: 14),
             ),
-            child: const Text('Tao poll moi'),
+            child: const Text('Tạo poll mới'),
           ),
         ),
       ],
@@ -128,6 +131,9 @@ class _PollManageContent extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final cubit = context.read<LivePollCubit>();
+    final setting = poll.setting;
+    final canOpen = poll.status == PollStatus.draft;
+    final canClose = poll.status == PollStatus.open;
 
     return SingleChildScrollView(
       child: Column(
@@ -145,7 +151,7 @@ class _PollManageContent extends StatelessWidget {
           ),
           const SizedBox(height: 16),
           const Text(
-            'Quan ly poll',
+            'Quản lý poll',
             style: TextStyle(
               color: Colors.white,
               fontSize: 18,
@@ -163,40 +169,76 @@ class _PollManageContent extends StatelessWidget {
           const SizedBox(height: 12),
           _buildInfoCard(title: 'Số đáp án', value: '${poll.options.length}'),
           const SizedBox(height: 20),
-          Row(
-            children: [
-              Expanded(
-                child: ElevatedButton(
-                  onPressed:
-                      state.actionLoading || poll.status == PollStatus.open
-                      ? null
-                      : () => cubit.openPoll(pollId: poll.id),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.green,
-                    foregroundColor: Colors.white,
-                    padding: const EdgeInsets.symmetric(vertical: 14),
-                  ),
-                  child: const Text('Mo poll'),
-                ),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: ElevatedButton(
-                  onPressed:
-                      state.actionLoading || poll.status == PollStatus.closed
-                      ? null
-                      : () => cubit.closePoll(pollId: poll.id),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.red,
-                    foregroundColor: Colors.white,
-                    padding: const EdgeInsets.symmetric(vertical: 14),
-                  ),
-                  child: const Text('Dong poll'),
-                ),
-              ),
-            ],
+          const Text(
+            'Cài đặt hiện tại',
+            style: TextStyle(
+              color: Colors.white,
+              fontSize: 16,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+          const SizedBox(height: 10),
+          _buildInfoCard(
+            title: 'Kiểu bình chọn',
+            value: setting.multipleChoice
+                ? 'Nhiều lựa chọn, tối đa ${setting.maxChoices} đáp án'
+                : 'Chỉ chọn 1 đáp án',
           ),
           const SizedBox(height: 12),
+          _buildInfoCard(
+            title: 'Đổi bình chọn',
+            value: setting.allowChangeVote ? 'Được phép đổi' : 'Không được đổi',
+          ),
+          const SizedBox(height: 12),
+          _buildInfoCard(
+            title: 'Hiển thị kết quả',
+            value: _resultVisibilityText(setting.resultVisibility),
+          ),
+          const SizedBox(height: 12),
+          _buildInfoCard(
+            title: 'Hiển thị người bình chọn',
+            value: _voterVisibilityText(setting.voterVisibility),
+          ),
+          const SizedBox(height: 12),
+          _buildInfoCard(
+            title: 'Thêm đáp án',
+            value: _optionAddModeText(setting.optionAddMode),
+          ),
+          const SizedBox(height: 20),
+          if (canOpen || canClose)
+            Row(
+              children: [
+                if (canOpen)
+                  Expanded(
+                    child: ElevatedButton(
+                      onPressed: state.actionLoading
+                          ? null
+                          : () => cubit.openPoll(pollId: poll.id),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.green,
+                        foregroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(vertical: 14),
+                      ),
+                      child: const Text('Mở poll'),
+                    ),
+                  ),
+                if (canClose)
+                  Expanded(
+                    child: ElevatedButton(
+                      onPressed: state.actionLoading
+                          ? null
+                          : () => cubit.closePoll(pollId: poll.id),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.red,
+                        foregroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(vertical: 14),
+                      ),
+                      child: const Text('Đóng poll'),
+                    ),
+                  ),
+              ],
+            ),
+          if (canOpen || canClose) const SizedBox(height: 12),
           SizedBox(
             width: double.infinity,
             child: OutlinedButton(
@@ -208,7 +250,7 @@ class _PollManageContent extends StatelessWidget {
                 side: const BorderSide(color: Colors.white24),
                 padding: const EdgeInsets.symmetric(vertical: 14),
               ),
-              child: const Text('Xem ket qua'),
+              child: const Text('Xem kết quả'),
             ),
           ),
           const SizedBox(height: 12),
@@ -227,11 +269,12 @@ class _PollManageContent extends StatelessWidget {
                 foregroundColor: Colors.white,
                 padding: const EdgeInsets.symmetric(vertical: 14),
               ),
-              child: const Text('Tao poll moi'),
+              child: const Text('Tạo poll mới'),
             ),
           ),
+          const SizedBox(height: 20),
           const Text(
-            'Ket qua',
+            'Kết quả',
             style: TextStyle(
               color: Colors.white,
               fontSize: 16,
@@ -248,7 +291,7 @@ class _PollManageContent extends StatelessWidget {
                 borderRadius: BorderRadius.circular(12),
               ),
               child: const Text(
-                'Chua co du lieu ket qua. Nhan "Xem ket qua" de tai.',
+                'Chưa có dữ liệu kết quả. Nhấn "Xem kết quả" để tải.',
                 style: TextStyle(color: Colors.white70),
               ),
             )
@@ -339,11 +382,11 @@ class _PollManageContent extends StatelessWidget {
   String _statusText(PollStatus status) {
     switch (status) {
       case PollStatus.open:
-        return 'Dang mo';
+        return 'Đang mở';
       case PollStatus.closed:
-        return 'Da dong';
-      default:
-        return 'Chua mo';
+        return 'Đã đóng';
+      case PollStatus.draft:
+        return 'Chưa mở';
     }
   }
 
@@ -353,8 +396,39 @@ class _PollManageContent extends StatelessWidget {
         return Colors.greenAccent;
       case PollStatus.closed:
         return Colors.redAccent;
-      default:
+      case PollStatus.draft:
         return Colors.orangeAccent;
+    }
+  }
+
+  String _resultVisibilityText(PollResultVisibility visibility) {
+    switch (visibility) {
+      case PollResultVisibility.always:
+        return 'Luôn hiển thị';
+      case PollResultVisibility.afterVote:
+        return 'Hiển thị sau khi bình chọn';
+      case PollResultVisibility.afterClose:
+        return 'Hiển thị sau khi đóng poll';
+    }
+  }
+
+  String _voterVisibilityText(PollVoterVisibility visibility) {
+    switch (visibility) {
+      case PollVoterVisibility.anonymous:
+        return 'Ẩn danh';
+      case PollVoterVisibility.public:
+        return 'Công khai';
+    }
+  }
+
+  String _optionAddModeText(PollOptionAddMode mode) {
+    switch (mode) {
+      case PollOptionAddMode.hostOnly:
+        return 'Chỉ host được thêm đáp án';
+      case PollOptionAddMode.viewerWithApproval:
+        return 'Viewer đề xuất, host duyệt';
+      case PollOptionAddMode.viewerFree:
+        return 'Viewer được thêm tự do';
     }
   }
 }
