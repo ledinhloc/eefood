@@ -6,7 +6,9 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../data/model/live_poll_response.dart';
 import '../../../domain/enum/poll_status.dart';
 import '../../provider/live_poll_cubit.dart';
+import '../../provider/live_poll_option_proposal_cubit.dart';
 import '../../provider/live_poll_state.dart';
+import 'option_proposal_composer.dart';
 import 'option_voters_bottom_sheet.dart';
 
 class LivePollViewerBottomSheet extends StatelessWidget {
@@ -14,24 +16,27 @@ class LivePollViewerBottomSheet extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return BlocBuilder<LivePollCubit, LivePollState>(
-      builder: (context, state) {
-        final poll = state.poll;
+    return BlocProvider(
+      create: (_) => LivePollOptionProposalCubit(),
+      child: BlocBuilder<LivePollCubit, LivePollState>(
+        builder: (context, state) {
+          final poll = state.poll;
 
-        return Container(
-          padding: const EdgeInsets.fromLTRB(16, 16, 16, 24),
-          decoration: const BoxDecoration(
-            color: Color(0xFF1C1C1E),
-            borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-          ),
-          child: SafeArea(
-            top: false,
-            child: poll == null
-                ? const _NoPollView()
-                : _PollViewerContent(poll: poll, state: state),
-          ),
-        );
-      },
+          return Container(
+            padding: const EdgeInsets.fromLTRB(16, 16, 16, 24),
+            decoration: const BoxDecoration(
+              color: Color(0xFF1C1C1E),
+              borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+            ),
+            child: SafeArea(
+              top: false,
+              child: poll == null
+                  ? const _NoPollView()
+                  : _PollViewerContent(poll: poll, state: state),
+            ),
+          );
+        },
+      ),
     );
   }
 }
@@ -223,6 +228,8 @@ class _PollViewerContent extends StatelessWidget {
                     : Text(state.hasVoted ? 'Bình chọn lại' : 'Gửi bình chọn'),
               ),
             ),
+            const SizedBox(height: 12),
+            OptionProposalComposer(pollId: poll.id),
           ],
           const SizedBox(height: 16),
           if (canShowResult) ...[

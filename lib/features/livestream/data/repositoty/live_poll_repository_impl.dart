@@ -1,5 +1,7 @@
 import 'package:dio/dio.dart';
+import 'package:eefood/features/livestream/data/model/live_poll_option_proposal_response.dart';
 import 'package:eefood/features/livestream/data/model/live_poll_option_voters_response.dart';
+import 'package:eefood/features/livestream/domain/enum/poll_option_proposal_status.dart';
 import 'package:eefood/features/livestream/domain/enum/poll_status.dart';
 
 import '../../domain/repository/live_poll_repository.dart';
@@ -130,5 +132,57 @@ class LivePollRepositoryImpl extends LivePollRepository {
     );
 
     return PollResultResponse.fromJson(res.data['data']);
+  }
+
+  @override
+  Future<LivePollOptionProposalResponse> createOptionProposal({
+    required int liveStreamId,
+    required int pollId,
+    required String req,
+  }) async {
+    final res = await dio.post(
+      '/v1/livestreams/$liveStreamId/polls/$pollId/option-proposals',
+      queryParameters: {'req': req},
+    );
+
+    return LivePollOptionProposalResponse.fromJson(res.data['data']);
+  }
+
+  @override
+  Future<List<LivePollOptionProposalResponse>> getOptionProposals({
+    required int liveStreamId,
+    required int pollId,
+    PollOptionProposalStatus? status,
+  }) async {
+    final res = await dio.get(
+      '/v1/livestreams/$liveStreamId/polls/$pollId/option-proposals',
+      queryParameters: {
+        if (status != null) 'status': status.name.toUpperCase(),
+      },
+    );
+
+    final data = (res.data['data'] as List<dynamic>? ?? const []);
+    return data
+        .map(
+          (item) => LivePollOptionProposalResponse.fromJson(
+            item as Map<String, dynamic>,
+          ),
+        )
+        .toList();
+  }
+
+  @override
+  Future<LivePollOptionProposalResponse> updateOptionProposalStatus({
+    required int liveStreamId,
+    required int pollId,
+    required int proposalId,
+    required PollOptionProposalStatus status,
+  }) async {
+    final res = await dio.patch(
+      '/v1/livestreams/$liveStreamId/polls/$pollId/option-proposals/$proposalId/status',
+      queryParameters: {'status': status.name.toUpperCase()},
+    );
+
+    return LivePollOptionProposalResponse.fromJson(res.data['data']);
   }
 }
