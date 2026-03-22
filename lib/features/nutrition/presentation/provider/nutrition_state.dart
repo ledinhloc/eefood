@@ -1,17 +1,21 @@
 import 'package:eefood/features/nutrition/data/models/nutrition_analysis_model.dart';
 
-enum NutritionStatus { idle, uploading, analyzing, success, error }
+enum NutritionStatus { idle, uploading, analyzing, partialSuccess,success, error }
+
+enum NutritionRenderPhase { none, nutritionReady, analysisReady }
 
 class NutritionState {
   final NutritionStatus status;
   final String? statusMessage;
   final NutritionAnalysisModel? result;
+  final NutritionRenderPhase renderPhase;
   final String? error;
 
   const NutritionState({
     this.status = NutritionStatus.idle,
     this.statusMessage,
     this.result,
+    this.renderPhase = NutritionRenderPhase.none,
     this.error,
   });
 
@@ -19,12 +23,14 @@ class NutritionState {
     NutritionStatus? status,
     String? statusMessage,
     NutritionAnalysisModel? result,
+    NutritionRenderPhase? renderPhase,
     String? error,
   }) {
     return NutritionState(
       status: status ?? this.status,
       statusMessage: statusMessage,
       result: result ?? this.result,
+      renderPhase: renderPhase ?? this.renderPhase,
       error: error,
     );
   }
@@ -33,6 +39,9 @@ class NutritionState {
       status == NutritionStatus.uploading ||
       status == NutritionStatus.analyzing;
 
-  @override
-  List<Object?> get props => [status, statusMessage, result, error];
+  bool get hasNutritionData =>
+      renderPhase == NutritionRenderPhase.nutritionReady ||
+      renderPhase == NutritionRenderPhase.analysisReady;
+
+  bool get hasAnalysisData => renderPhase == NutritionRenderPhase.analysisReady;
 }

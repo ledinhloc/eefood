@@ -22,11 +22,11 @@ class NutritionCubit extends Cubit<NutritionState> {
         statusMessage: 'Đang tải ảnh lên...',
         error: null,
         result: null,
+        renderPhase: NutritionRenderPhase.none,
       ),
     );
 
     try {
-      final imageUrl = await _fileUploader.uploadFile(imageFile);
 
       emit(
         state.copyWith(
@@ -35,7 +35,7 @@ class NutritionCubit extends Cubit<NutritionState> {
         ),
       );
 
-      await for (final event in _repository.analyzeStreamByImageUrl(imageUrl)) {
+      await for (final event in _repository.analyzeStreamByImage(imageFile)) {
         _handleStreamEvent(event);
         if (state.status == NutritionStatus.error) break;
       }
@@ -53,7 +53,18 @@ class NutritionCubit extends Cubit<NutritionState> {
         );
 
       case NutritionEventType.nutrition:
-        emit(state.copyWith(statusMessage: 'AI đang phân tích chi tiết...'));
+        if (event.data != null) {
+          emit(
+            state.copyWith(
+              status: NutritionStatus.partialSuccess,
+              result: event.data,
+              renderPhase: NutritionRenderPhase.nutritionReady,
+              statusMessage: 'AI đang phân tích chi tiết...',
+            ),
+          );
+        } else {
+          emit(state.copyWith(statusMessage: 'AI đang phân tích chi tiết...'));
+        }
 
       case NutritionEventType.analysis:
         // Full data — có cả AI summary, emit success
@@ -62,6 +73,7 @@ class NutritionCubit extends Cubit<NutritionState> {
             state.copyWith(
               status: NutritionStatus.success,
               result: event.data,
+              renderPhase: NutritionRenderPhase.analysisReady,
               statusMessage: null,
             ),
           );
