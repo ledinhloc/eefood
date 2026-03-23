@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'dart:ui' as ui;
 
+import 'package:eefood/core/utils/save_file_media.dart';
 import 'package:eefood/core/widgets/snack_bar.dart';
 import 'package:eefood/features/recipe/presentation/widgets/qr_code/action_button.dart';
 import 'package:flutter/material.dart';
@@ -82,8 +83,8 @@ class _QRViewScreenState extends State<QRViewScreen>
     }
   }
 
-  /// Tải QR code về bộ nhớ máy
-  Future<void> _downloadQR() async {
+  // Tải QR code về bộ nhớ máy
+   Future<void> _downloadQR() async {
     if (_isSaving) return;
     setState(() => _isSaving = true);
 
@@ -91,14 +92,21 @@ class _QRViewScreenState extends State<QRViewScreen>
       final bytes = await _captureQRImage();
       if (bytes == null) throw Exception('Không thể tạo ảnh QR');
 
-      final directory = await getApplicationDocumentsDirectory();
-      final fileName =
-          'qr_${widget.recipeId}_${DateTime.now().millisecondsSinceEpoch}.png';
-      final file = File('${directory.path}/$fileName');
-      await file.writeAsBytes(bytes);
+      // Ghi tạm ra file rồi nhờ SaveFileMedia lưu vào gallery
+      final tempDir = await getTemporaryDirectory();
+      final tempFile = File(
+        '${tempDir.path}/qr_${widget.recipeId}_${DateTime.now().millisecondsSinceEpoch}.png',
+      );
+      await tempFile.writeAsBytes(bytes);
+
+      final savedPath = await SaveFileMedia.saveFileToGallery(tempFile);
 
       if (mounted) {
-        showCustomSnackBar(context, 'Đã lưu QR ${directory.path}');
+        if (savedPath != null) {
+          showCustomSnackBar(context, 'Đã lưu QR vào thư viện ảnh');
+        } else {
+          showCustomSnackBar(context, 'Lưu thất bại', isError: true);
+        }
       }
     } catch (e) {
       if (mounted) {

@@ -120,5 +120,7 @@
   "interactChart": "Nhấn vào biểu đồ để xem chi tiết",
   "elementNutrient": "Thành phần dinh dưỡng",
   "adviceOfPhD": "Lời khuyên từ chuyên gia AI",
-  "nutrientOfIngredient": "Dinh dưỡng theo nguyên liệu"
+  "nutrientOfIngredient": "Dinh dưỡng theo nguyên liệu",
+  "qrTitle": "Quét mã QR",
+  "qrSubtitle": "Xem thông tin món ăn từ mã QR"
 }

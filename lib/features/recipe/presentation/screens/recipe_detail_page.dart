@@ -145,7 +145,7 @@ class _RecipeDetailPageState extends State<RecipeDetailPage> {
                         ),
                         onPressed: () {
                           final deepLink =
-                              AppKeys.webDeloyUrl + '/recipe/${recipe.id}';
+                              AppKeys.webDeloyUrl + '/recipes/${recipe.id}';
                           Navigator.pushNamed(
                             context,
                             AppRoutes.qrCodeScreen,

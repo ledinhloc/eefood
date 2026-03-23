@@ -736,6 +736,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Nutrition by Ingredients'**
   String get nutrientOfIngredient;
+
+  /// No description provided for @qrTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Scan QR'**
+  String get qrTitle;
+
+  /// No description provided for @qrSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'View recipe detail from QR Code'**
+  String get qrSubtitle;
 }
 
 class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {

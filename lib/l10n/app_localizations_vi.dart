@@ -330,4 +330,10 @@ class AppLocalizationsVi extends AppLocalizations {
 
   @override
   String get nutrientOfIngredient => 'Dinh dưỡng theo nguyên liệu';
+
+  @override
+  String get qrTitle => 'Quét mã QR';
+
+  @override
+  String get qrSubtitle => 'Xem thông tin món ăn từ mã QR';
 }
