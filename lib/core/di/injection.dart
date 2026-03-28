@@ -16,6 +16,8 @@ import 'package:eefood/features/livestream/domain/repository/live_poll_repositor
 import 'package:eefood/features/livestream/domain/repository/live_reaction_repo.dart';
 import 'package:eefood/features/livestream/domain/repository/live_repository.dart';
 import 'package:eefood/features/livestream/presentation/provider/start_live_cubit.dart';
+import 'package:eefood/features/meal_plan/data/repository/meal_plan_repository_impl.dart';
+import 'package:eefood/features/meal_plan/domain/repository/meal_plan_repository.dart';
 import 'package:eefood/features/noti/data/repositories/notification_repository_impl.dart';
 import 'package:eefood/features/noti/domain/repositories/notification_repository.dart';
 import 'package:eefood/features/noti/presentation/provider/notification_cubit.dart';
@@ -121,6 +123,10 @@ Future<void> setupDependencies() async {
 
   getIt.registerLazySingleton<RecipeRepository>(
     () => RecipeRepositoryImpl(dio: getIt<DioClient>().dio),
+  );
+
+  getIt.registerLazySingleton<MealPlanRepository>(
+    () => MealPlanRepositoryImpl(dio: getIt<DioClient>().dio),
   );
 
   getIt.registerLazySingleton(() => FileUploader(dio: getIt<DioClient>().dio));
