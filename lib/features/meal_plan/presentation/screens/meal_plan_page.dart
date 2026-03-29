@@ -4,6 +4,7 @@ import 'package:eefood/features/meal_plan/domain/repository/meal_plan_repository
 import 'package:eefood/features/meal_plan/presentation/provider/meal_plan_cubit.dart';
 import 'package:eefood/features/meal_plan/presentation/provider/meal_plan_state.dart';
 import 'package:eefood/features/meal_plan/presentation/widgets/meal_plan_action_button.dart';
+import 'package:eefood/features/meal_plan/presentation/widgets/meal_plan_day_items_section.dart';
 import 'package:eefood/features/meal_plan/presentation/widgets/meal_plan_generate_sheet.dart';
 import 'package:eefood/features/meal_plan/presentation/widgets/daily_summary_card.dart';
 import 'package:flutter/material.dart';
@@ -202,13 +203,13 @@ class _MealPlanViewState extends State<_MealPlanView> {
     return RefreshIndicator(
       color: primaryWarm,
       onRefresh: () => context.read<MealPlanCubit>().loadOverview(),
-      child: ListView(
+        child: ListView(
         controller: _scrollController,
         physics: const AlwaysScrollableScrollPhysics(),
-        padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
+        padding: const EdgeInsets.fromLTRB(16, 6, 16, 20),
         children: [
           Container(
-            padding: const EdgeInsets.all(18),
+            padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
               gradient: LinearGradient(
                 colors: [primaryWarm, accentWarm],
@@ -257,7 +258,7 @@ class _MealPlanViewState extends State<_MealPlanView> {
                     height: 1.2,
                   ),
                 ),
-                const SizedBox(height: 14),
+                const SizedBox(height: 12),
                 Row(
                   children: [
                     const Icon(
@@ -278,7 +279,7 @@ class _MealPlanViewState extends State<_MealPlanView> {
                   ],
                 ),
                 if (plan.note?.trim().isNotEmpty == true) ...[
-                  const SizedBox(height: 14),
+                  const SizedBox(height: 12),
                   Text(
                     plan.note!.trim(),
                     style: const TextStyle(
@@ -290,60 +291,17 @@ class _MealPlanViewState extends State<_MealPlanView> {
               ],
             ),
           ),
-          const SizedBox(height: 20),
-          Container(
-            padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              color: softCream,
-              borderRadius: BorderRadius.circular(20),
-              border: Border.all(color: const Color(0xFFF4D7B8)),
-            ),
-            child: Row(
-              children: [
-                Container(
-                  padding: const EdgeInsets.all(10),
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(14),
-                  ),
-                  child: Icon(Icons.today_outlined, color: primaryWarm),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'Ngay dang chon',
-                        style: theme.textTheme.bodySmall?.copyWith(
-                          color: Colors.brown.shade600,
-                          fontWeight: FontWeight.w700,
-                        ),
-                      ),
-                      const SizedBox(height: 4),
-                      Text(
-                        _formatDate(state.selectedDate),
-                        style: theme.textTheme.titleMedium?.copyWith(
-                          fontWeight: FontWeight.w800,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(height: 20),
+          const SizedBox(height: 14),
           Text(
             'Tong quan tung ngay',
             style: theme.textTheme.titleMedium?.copyWith(
               fontWeight: FontWeight.w800,
             ),
           ),
-          const SizedBox(height: 12),
+          const SizedBox(height: 8),
           if (state.dailySummaries.isEmpty)
             Container(
-              padding: const EdgeInsets.all(20),
+              padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
                 color: Colors.white,
                 borderRadius: BorderRadius.circular(18),
@@ -356,32 +314,60 @@ class _MealPlanViewState extends State<_MealPlanView> {
             )
           else
             ...state.dailySummaries.map(
-              (summary) => Padding(
-                padding: const EdgeInsets.only(bottom: 12),
-                child: DailySummaryCard(
-                  summary: summary,
-                  isSelected: _sameDay(summary.planDate, state.selectedDate),
-                  isHighlighted: _isHighlightedDate(
-                    state.highlightedDates,
-                    summary.planDate,
+              (summary) {
+                final isSelected = _sameDay(summary.planDate, state.selectedDate);
+
+                return Container(
+                  margin: const EdgeInsets.only(bottom: 8),
+                  padding: EdgeInsets.fromLTRB(0, 0, 0, isSelected ? 10 : 0),
+                  decoration: BoxDecoration(
+                    color: isSelected ? softCream.withValues(alpha: 0.55) : null,
+                    borderRadius: BorderRadius.circular(24),
+                    border: isSelected
+                        ? Border.all(
+                            color: primaryWarm.withValues(alpha: 0.18),
+                          )
+                        : null,
                   ),
-                  onTap: () {
-                    final date = summary.planDate;
-                    if (date != null) {
-                      context.read<MealPlanCubit>().selectDate(date);
-                    }
-                  },
-                  chipDate: _formatChipDate(summary.planDate),
-                  weekday: _weekdayLabel(summary.planDate),
-                  caloriesText: _value(summary.calories, suffix: ' kcal'),
-                  proteinText: _value(summary.protein, suffix: ' g'),
-                  carbsText: _value(summary.carbs, suffix: ' g'),
-                  fatText: _value(summary.fat, suffix: ' g'),
-                  fiberText: _value(summary.fiber, suffix: ' g'),
-                  primaryWarm: primaryWarm,
-                  accentWarm: accentWarm,
-                ),
-              ),
+                  child: Column(
+                    children: [
+                      DailySummaryCard(
+                        summary: summary,
+                        isSelected: isSelected,
+                        isHighlighted: _isHighlightedDate(
+                          state.highlightedDates,
+                          summary.planDate,
+                        ),
+                        onTap: () async {
+                          final date = summary.planDate;
+                          if (date != null) {
+                            await context.read<MealPlanCubit>().toggleDate(date);
+                          }
+                        },
+                        chipDate: _formatChipDate(summary.planDate),
+                        weekday: _weekdayLabel(summary.planDate),
+                        caloriesText: _value(summary.calories, suffix: ' kcal'),
+                        proteinText: _value(summary.protein, suffix: ' g'),
+                        carbsText: _value(summary.carbs, suffix: ' g'),
+                        fatText: _value(summary.fat, suffix: ' g'),
+                        fiberText: _value(summary.fiber, suffix: ' g'),
+                        primaryWarm: primaryWarm,
+                        accentWarm: accentWarm,
+                      ),
+                      if (isSelected)
+                        Padding(
+                          padding: const EdgeInsets.fromLTRB(10, 0, 10, 0),
+                          child: MealPlanDayItemsSection(
+                            isLoading: state.isLoadingItems,
+                            items: state.dayItems,
+                            primaryWarm: primaryWarm,
+                            softCream: softCream,
+                          ),
+                        ),
+                    ],
+                  ),
+                );
+              },
             ),
         ],
       ),

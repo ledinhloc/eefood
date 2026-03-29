@@ -1,5 +1,6 @@
 import 'package:eefood/features/meal_plan/data/model/meal_plan_daily_summary_response.dart';
 import 'package:flutter/material.dart';
+
 class DailySummaryCard extends StatelessWidget {
   final MealPlanDailySummaryResponse summary;
   final bool isSelected;
@@ -42,7 +43,7 @@ class DailySummaryCard extends StatelessWidget {
         borderRadius: BorderRadius.circular(22),
         onTap: onTap,
         child: Ink(
-          padding: const EdgeInsets.all(16),
+          padding: const EdgeInsets.all(14),
           decoration: BoxDecoration(
             color: isSelected ? const Color(0xFFFFF4E6) : Colors.white,
             borderRadius: BorderRadius.circular(22),
@@ -96,7 +97,7 @@ class DailySummaryCard extends StatelessWidget {
                       ],
                     ),
                   ),
-                  const SizedBox(width: 12),
+                  const SizedBox(width: 10),
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -107,7 +108,7 @@ class DailySummaryCard extends StatelessWidget {
                             fontWeight: FontWeight.w800,
                           ),
                         ),
-                        const SizedBox(height: 4),
+                        const SizedBox(height: 2),
                         Text(
                           isSelected
                               ? 'Dang duoc chon de xem chi tiet ngay'
@@ -157,10 +158,10 @@ class DailySummaryCard extends StatelessWidget {
                           fontSize: 12,
                         ),
                       ),
-                    ),
+                  ),
                 ],
               ),
-              const SizedBox(height: 14),
+              const SizedBox(height: 10),
               Row(
                 children: [
                   _MacroPill(
@@ -168,13 +169,13 @@ class DailySummaryCard extends StatelessWidget {
                     value: proteinText,
                     color: const Color(0xFFD94841),
                   ),
-                  const SizedBox(width: 8),
+                  const SizedBox(width: 6),
                   _MacroPill(
                     label: 'Tinh bot',
                     value: carbsText,
                     color: const Color(0xFFF48C06),
                   ),
-                  const SizedBox(width: 8),
+                  const SizedBox(width: 6),
                   _MacroPill(
                     label: 'Chat beo',
                     value: fatText,
@@ -182,7 +183,7 @@ class DailySummaryCard extends StatelessWidget {
                   ),
                 ],
               ),
-              const SizedBox(height: 8),
+              const SizedBox(height: 6),
               Row(
                 children: [
                   _MacroPill(
@@ -215,7 +216,7 @@ class _MacroPill extends StatelessWidget {
   Widget build(BuildContext context) {
     return Expanded(
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
         decoration: BoxDecoration(
           color: color.withValues(alpha: 0.10),
           borderRadius: BorderRadius.circular(14),
@@ -231,7 +232,7 @@ class _MacroPill extends StatelessWidget {
                 fontWeight: FontWeight.w700,
               ),
             ),
-            const SizedBox(height: 4),
+            const SizedBox(height: 2),
             Text(
               value,
               style: TextStyle(

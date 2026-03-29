@@ -95,6 +95,22 @@ class MealPlanCubit extends Cubit<MealPlanState> {
     );
   }
 
+  DateTime? _resolveInitialSelectedDate(
+    List<MealPlanDailySummaryResponse> summaries,
+    MealPlanResponse plan,
+  ) {
+    if (summaries.isEmpty) return plan.startDate;
+
+    final today = DateTime.now();
+    for (final summary in summaries) {
+      if (_sameDay(summary.planDate, today)) {
+        return summary.planDate;
+      }
+    }
+
+    return summaries.first.planDate ?? plan.startDate;
+  }
+
   // Load dữ liệu overview của màn Meal Plan:
   // - metadata plan hiện tại
   // - daily summary của tất cả ngày
@@ -109,13 +125,7 @@ class MealPlanCubit extends Cubit<MealPlanState> {
 
       final plan = results[0] as MealPlanResponse;
       final summaries = results[1] as List<MealPlanDailySummaryResponse>;
-
-      DateTime? selectedDate;
-      if (summaries.isNotEmpty) {
-        selectedDate = summaries.first.planDate;
-      } else {
-        selectedDate = plan.startDate;
-      }
+      final selectedDate = _resolveInitialSelectedDate(summaries, plan);
 
       final selectedDaySummary = _findSummaryByDate(summaries, selectedDate);
 
@@ -131,6 +141,10 @@ class MealPlanCubit extends Cubit<MealPlanState> {
           highlightedDates: const [],
         ),
       );
+
+      if (selectedDate != null) {
+        await loadItemsByDate(selectedDate);
+      }
     } catch (e) {
       emit(state.copyWith(isLoading: false, error: e.toString()));
     }
@@ -147,6 +161,24 @@ class MealPlanCubit extends Cubit<MealPlanState> {
         clearSelectedItem: true,
       ),
     );
+  }
+
+  Future<void> toggleDate(DateTime date) async {
+    if (_sameDay(state.selectedDate, date)) {
+      emit(
+        state.copyWith(
+          clearSelectedDate: true,
+          clearSelectedDaySummary: true,
+          dayItems: const [],
+          clearSelectedItem: true,
+          isLoadingItems: false,
+        ),
+      );
+      return;
+    }
+
+    selectDate(date);
+    await loadItemsByDate(date);
   }
 
   // Load item của một ngày cụ thể.
