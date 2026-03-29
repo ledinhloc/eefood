@@ -197,6 +197,14 @@ class ProfilePage extends StatelessWidget {
                   onTap: () =>
                       Navigator.pushNamed(context, AppRoutes.foodPreference),
                 ),
+                ListTile(
+                  leading: const Icon(Icons.calendar_month_outlined),
+                  title: const Text('Meal Plan'),
+                  subtitle: const Text('Xem k\u1ebf ho\u1ea1ch b\u1eefa \u0103n v\u00e0 t\u1ed5ng h\u1ee3p t\u1eebng ng\u00e0y'),
+                  trailing: const Icon(Icons.chevron_right_rounded),
+                  onTap: () =>
+                      Navigator.pushNamed(context, AppRoutes.mealPlan),
+                ),
 
                 // const ListTile(
                 //   leading: Icon(Icons.restore),

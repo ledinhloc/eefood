@@ -13,6 +13,7 @@ import 'package:eefood/features/chatbot/presentation/provider/chatbot_cubit.dart
 import 'package:eefood/features/chatbot/presentation/screens/chatbot_main_srcreen.dart';
 import 'package:eefood/features/noti/presentation/screens/notification_screen.dart';
 import 'package:eefood/features/noti/presentation/screens/ntofication_settings_screen.dart';
+import 'package:eefood/features/meal_plan/presentation/screens/meal_plan_page.dart';
 import 'package:eefood/features/nutrition/presentation/screens/image_choice_screen.dart';
 import 'package:eefood/features/post/presentation/provider/follow_cubit.dart';
 import 'package:eefood/features/post/presentation/provider/story_list_cubit.dart';
@@ -67,6 +68,7 @@ class AppRoutes {
   static const mediaView = '/mediaView';
   static const termOfServicePage = '/termOfServicePage';
   static const commingSoonPage = '/commingSoonPage';
+  static const mealPlan = '/mealPlan';
 
   /* feat recipe */
   static const recipeCrudPage = '/recipeCrudPage';
@@ -124,6 +126,7 @@ class AppRoutes {
       return EditProfilePage(user: user);
     },
     foodPreference: (context) => const FoodPreferencesPage(),
+    mealPlan: (context) => const MealPlanPage(),
     register: (context) => RegisterPage(),
     verifyOtp: (context) {
       final args =
