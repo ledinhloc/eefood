@@ -12,6 +12,7 @@ class MealPlanState {
   final MealPlanDailySummaryResponse? selectedDaySummary;
   final List<MealPlanItemResponse> dayItems;
   final MealPlanItemResponse? selectedItem;
+  final List<DateTime> highlightedDates;
   final String? error;
 
   const MealPlanState({
@@ -24,6 +25,7 @@ class MealPlanState {
     this.selectedDaySummary,
     this.dayItems = const [],
     this.selectedItem,
+    this.highlightedDates = const [],
     this.error,
   });
 
@@ -40,6 +42,7 @@ class MealPlanState {
     List<MealPlanItemResponse>? dayItems,
     MealPlanItemResponse? selectedItem,
     bool clearSelectedItem = false,
+    List<DateTime>? highlightedDates,
     String? error,
     bool clearError = false,
   }) {
@@ -59,6 +62,7 @@ class MealPlanState {
       selectedItem: clearSelectedItem
           ? null
           : (selectedItem ?? this.selectedItem),
+      highlightedDates: highlightedDates ?? this.highlightedDates,
       error: clearError ? null : (error ?? this.error),
     );
   }

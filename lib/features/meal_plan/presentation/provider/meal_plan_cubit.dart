@@ -87,6 +87,14 @@ class MealPlanCubit extends Cubit<MealPlanState> {
     return next;
   }
 
+  List<DateTime> _buildHighlightedDates(DateTime? startDate, int? days) {
+    if (startDate == null || days == null || days <= 0) return const [];
+    return List.generate(
+      days,
+      (index) => DateTime(startDate.year, startDate.month, startDate.day + index),
+    );
+  }
+
   // Load dữ liệu overview của màn Meal Plan:
   // - metadata plan hiện tại
   // - daily summary của tất cả ngày
@@ -120,6 +128,7 @@ class MealPlanCubit extends Cubit<MealPlanState> {
           selectedDaySummary: selectedDaySummary,
           dayItems: const [],
           clearSelectedItem: true,
+          highlightedDates: const [],
         ),
       );
     } catch (e) {
@@ -223,12 +232,13 @@ class MealPlanCubit extends Cubit<MealPlanState> {
 
   // Generate meal plan ban đầu.
   // Sau khi generate xong, load lại daily summary để overview phản ánh dữ liệu mới nhất.
-  Future<void> generateMealPlan(MealPlanGenerateRequest request) async {
+  Future<bool> generateMealPlan(MealPlanGenerateRequest request) async {
     emit(state.copyWith(isSubmitting: true, clearError: true));
     try {
       final plan = await repository.generateMealPlan(request);
       final summaries = await repository.getDailySummary();
-      final selectedDate = summaries.isNotEmpty ? summaries.first.planDate : plan.startDate;
+      final selectedDate = request.startDate ??
+          (summaries.isNotEmpty ? summaries.first.planDate : plan.startDate);
       emit(
         state.copyWith(
           isSubmitting: false,
@@ -238,10 +248,21 @@ class MealPlanCubit extends Cubit<MealPlanState> {
           selectedDaySummary: _findSummaryByDate(summaries, selectedDate),
           dayItems: const [],
           clearSelectedItem: true,
+          highlightedDates: _buildHighlightedDates(
+            request.startDate ?? selectedDate,
+            request.days,
+          ),
         ),
       );
+      return true;
     } catch (e) {
-      emit(state.copyWith(isSubmitting: false, error: e.toString()));
+      emit(
+        state.copyWith(
+          isSubmitting: false,
+          error: 'Chua tao duoc ke hoach, vui long thu lai',
+        ),
+      );
+      return false;
     }
   }
 

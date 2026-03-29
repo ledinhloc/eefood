@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 class DailySummaryCard extends StatelessWidget {
   final MealPlanDailySummaryResponse summary;
   final bool isSelected;
+  final bool isHighlighted;
   final VoidCallback onTap;
   final String chipDate;
   final String weekday;
@@ -15,8 +16,10 @@ class DailySummaryCard extends StatelessWidget {
   final Color accentWarm;
 
   const DailySummaryCard({
+    super.key,
     required this.summary,
     required this.isSelected,
+    this.isHighlighted = false,
     required this.onTap,
     required this.chipDate,
     required this.weekday,
@@ -44,13 +47,17 @@ class DailySummaryCard extends StatelessWidget {
             color: isSelected ? const Color(0xFFFFF4E6) : Colors.white,
             borderRadius: BorderRadius.circular(22),
             border: Border.all(
-              color: isSelected ? accentWarm : const Color(0xFFF1E5D8),
-              width: isSelected ? 1.4 : 1,
+              color: isSelected
+                  ? accentWarm
+                  : (isHighlighted ? primaryWarm : const Color(0xFFF1E5D8)),
+              width: isSelected || isHighlighted ? 1.4 : 1,
             ),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withValues(alpha: 0.04),
-                blurRadius: 16,
+                color: isHighlighted
+                    ? primaryWarm.withValues(alpha: 0.18)
+                    : Colors.black.withValues(alpha: 0.04),
+                blurRadius: isHighlighted ? 20 : 16,
                 offset: const Offset(0, 6),
               ),
             ],
@@ -125,6 +132,25 @@ class DailySummaryCard extends StatelessWidget {
                       ),
                       child: const Text(
                         'Dang xem',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.w700,
+                          fontSize: 12,
+                        ),
+                      ),
+                    ),
+                  if (!isSelected && isHighlighted)
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 10,
+                        vertical: 6,
+                      ),
+                      decoration: BoxDecoration(
+                        color: accentWarm,
+                        borderRadius: BorderRadius.circular(999),
+                      ),
+                      child: const Text(
+                        'Moi',
                         style: TextStyle(
                           color: Colors.white,
                           fontWeight: FontWeight.w700,
