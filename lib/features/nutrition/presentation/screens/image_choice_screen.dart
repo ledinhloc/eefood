@@ -1,4 +1,5 @@
 import 'package:eefood/features/nutrition/presentation/screens/nutrition_camera_screen.dart';
+import 'package:eefood/features/nutrition/presentation/screens/qr_scanner_screen.dart';
 import 'package:eefood/features/nutrition/presentation/widgets/choice_card.dart';
 import 'package:eefood/features/post/presentation/widgets/post/image_search/image_search_page.dart';
 import 'package:eefood/l10n/app_localizations.dart';
@@ -17,6 +18,7 @@ class _ImageChoiceScreenState extends State<ImageChoiceScreen>
   late Animation<double> _fadeAnim;
   late Animation<Offset> _slideCard1;
   late Animation<Offset> _slideCard2;
+  late Animation<Offset> _slideCard3;
 
   @override
   void initState() {
@@ -47,6 +49,14 @@ class _ImageChoiceScreenState extends State<ImageChoiceScreen>
           ),
         );
 
+    _slideCard3 = Tween<Offset>(begin: const Offset(-0.3, 0), end: Offset.zero)
+        .animate(
+          CurvedAnimation(
+            parent: _animController,
+            curve: const Interval(0.4, 0.9, curve: Curves.easeOutCubic),
+          ),
+        );
+
     _animController.forward();
   }
 
@@ -65,6 +75,7 @@ class _ImageChoiceScreenState extends State<ImageChoiceScreen>
     final bgColor = isDark ? const Color(0xFF0F0F0F) : Colors.white;
     final cardBg1 = isDark ? const Color(0xFF1A1A1A) : const Color(0xFFFFF8F3);
     final cardBg2 = isDark ? const Color(0xFF1A1A1A) : const Color(0xFFF5F5F5);
+    final cardBg3 = isDark ? const Color(0xFF1A1A1A) : const Color(0xFFF3F8FF);
     final textColor = isDark ? Colors.white : const Color(0xFF1A1A1A);
     final subtitleColor = isDark
         ? Colors.white60
@@ -105,7 +116,7 @@ class _ImageChoiceScreenState extends State<ImageChoiceScreen>
                 ),
               ),
             ),
-            const SizedBox(height: 40),
+            const SizedBox(height: 20),
 
             // Card 1: Tìm kiếm
             SlideTransition(
@@ -154,6 +165,33 @@ class _ImageChoiceScreenState extends State<ImageChoiceScreen>
                   onTap: () => Navigator.push(
                     context,
                     _buildPageRoute(const NutritionCameraScreen()),
+                  ),
+                ),
+              ),
+            ),
+
+            const SizedBox(height: 16),
+
+            // Card 3: Quét mã QR
+            SlideTransition(
+              position: _slideCard3,
+              child: FadeTransition(
+                opacity: CurvedAnimation(
+                  parent: _animController,
+                  curve: const Interval(0.4, 0.9),
+                ),
+                child: ChoiceCard(
+                  title: l10n.qrTitle,
+                  subtitle: l10n.qrSubtitle,
+                  icon: Icons.qr_code_2_outlined,
+                  accentColor: const Color(0xFF3B82F6),
+                  backgroundColor: cardBg3,
+                  textColor: textColor,
+                  subtitleColor: subtitleColor,
+                  isDark: isDark,
+                  onTap: () => Navigator.push(
+                    context,
+                    _buildPageRoute(const QrScannerScreen()),
                   ),
                 ),
               ),

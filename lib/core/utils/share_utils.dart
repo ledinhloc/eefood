@@ -1,12 +1,12 @@
+import 'dart:developer';
 import 'dart:io';
 
 import 'package:dio/dio.dart';
 import 'package:eefood/core/constants/app_keys.dart';
-import 'package:share_plus/share_plus.dart';
 import 'package:flutter/services.dart';
-import 'dart:developer';
-import 'package:url_launcher/url_launcher.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:share_plus/share_plus.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class ShareUtils {
   static const String baseUrl = AppKeys.webDeloyUrl;
@@ -33,7 +33,7 @@ class ShareUtils {
       final shareUri = Uri(
         scheme: 'https',
         host: AppKeys.hostDeloy,
-        path: '/posts/$recipeId',
+        path: '/recipes/$recipeId',
         queryParameters: {'title': title, 'desc': desc, 'img': imageUrl},
       );
       final shareUrl = shareUri.toString(); // Không cần encodeFull nữa

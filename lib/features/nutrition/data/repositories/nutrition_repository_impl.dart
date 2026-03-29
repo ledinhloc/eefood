@@ -1,23 +1,37 @@
 import 'dart:async';
 import 'dart:convert';
+import 'dart:io';
 
 import 'package:dio/dio.dart';
 import 'package:eefood/features/nutrition/data/models/nutrition_analysis_model.dart';
 import 'package:eefood/features/nutrition/data/models/nutrition_stream_event.dart';
 import 'package:eefood/features/nutrition/domain/repositories/nutrition_repository.dart';
+import 'package:http_parser/http_parser.dart';
 
 class NutritionRepositoryImpl extends NutritionRepository {
   final Dio dio;
   NutritionRepositoryImpl({required this.dio});
 
   @override
-  Stream<NutritionStreamEvent> analyzeStreamByImageUrl(
-    String imageUrl
+  Stream<NutritionStreamEvent> analyzeStreamByImage(
+    File imageFile
   ) async* {
+
+    final String fileName = imageFile.path.split('/').last;
+
+    final formData = FormData.fromMap({
+      'image': await MultipartFile.fromFile(
+        imageFile.path,
+        filename: fileName,
+        contentType: MediaType('image', 'jpeg'),
+      ),
+    });
+
     final response = await dio.post<ResponseBody>(
       "/v1/nutrition/image/stream",
-      data: {'imageUrl': imageUrl},
+      data: formData,
       options: Options(
+        contentType: 'multipart/form-data',
         responseType: ResponseType.stream,
         headers: {"Accept": "text/event-stream", "Cache-Control": "no-cache"},
       ),

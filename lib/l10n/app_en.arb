@@ -120,5 +120,7 @@
   "interactChart": "Tap the chart to see details",
   "elementNutrient": "Nutritional Components",
   "adviceOfPhD": "AI Expert Advice",
-  "nutrientOfIngredient": "Nutrition by Ingredients"
+  "nutrientOfIngredient": "Nutrition by Ingredients",
+  "qrTitle": "Scan QR", 
+  "qrSubtitle": "View recipe detail from QR Code"
 }
