@@ -1,4 +1,6 @@
+import 'package:eefood/core/widgets/media_view_page.dart';
 import 'package:eefood/features/meal_plan/data/model/meal_plan_item_response.dart';
+import 'package:eefood/features/recipe/presentation/screens/recipe_detail_page.dart';
 import 'package:flutter/material.dart';
 
 class MealPlanDayItemsSection extends StatelessWidget {
@@ -51,6 +53,37 @@ class MealPlanDayItemsSection extends StatelessWidget {
     return '$formatted$suffix';
   }
 
+  String _itemTitle(MealPlanItemResponse item) {
+    if (item.recipeTitle?.trim().isNotEmpty == true) {
+      return item.recipeTitle!.trim();
+    }
+    if (item.customMealName?.trim().isNotEmpty == true) {
+      return item.customMealName!.trim();
+    }
+    return 'Món ăn không tên';
+  }
+
+  void _openImage(BuildContext context, String imageUrl) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => MediaViewPage(
+          url: imageUrl,
+          isVideo: false,
+        ),
+      ),
+    );
+  }
+
+  void _openRecipeDetail(BuildContext context, int recipeId) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => RecipeDetailPage(recipeId: recipeId),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
@@ -92,31 +125,38 @@ class MealPlanDayItemsSection extends StatelessWidget {
               ),
               child: Row(
                 children: [
-                  Container(
-                    width: 54,
-                    height: 54,
-                    decoration: BoxDecoration(
-                      color: softCream,
-                      borderRadius: BorderRadius.circular(16),
-                    ),
-                    child: item.imageUrl != null && item.imageUrl!.isNotEmpty
-                        ? ClipRRect(
-                            borderRadius: BorderRadius.circular(16),
-                            child: Image.network(
-                              item.imageUrl!,
-                              fit: BoxFit.cover,
-                              errorBuilder: (_, __, ___) => Icon(
-                                Icons.fastfood_outlined,
-                                color: primaryWarm,
+                  GestureDetector(
+                    onTap: item.imageUrl?.isNotEmpty == true
+                        ? () => _openImage(context, item.imageUrl!)
+                        : null,
+                    child: Container(
+                      width: 84,
+                      height: 84,
+                      decoration: BoxDecoration(
+                        color: softCream,
+                        borderRadius: BorderRadius.circular(18),
+                      ),
+                      child: item.imageUrl != null && item.imageUrl!.isNotEmpty
+                          ? ClipRRect(
+                              borderRadius: BorderRadius.circular(18),
+                              child: Image.network(
+                                item.imageUrl!,
+                                fit: BoxFit.cover,
+                                errorBuilder: (_, __, ___) => Icon(
+                                  Icons.fastfood_outlined,
+                                  color: primaryWarm,
+                                  size: 28,
+                                ),
                               ),
+                            )
+                          : Icon(
+                              Icons.fastfood_outlined,
+                              color: primaryWarm,
+                              size: 28,
                             ),
-                          )
-                        : Icon(
-                            Icons.fastfood_outlined,
-                            color: primaryWarm,
-                          ),
+                    ),
                   ),
-                  const SizedBox(width: 10),
+                  const SizedBox(width: 12),
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -156,14 +196,25 @@ class MealPlanDayItemsSection extends StatelessWidget {
                           ],
                         ),
                         const SizedBox(height: 6),
-                        Text(
-                          item.recipeTitle?.trim().isNotEmpty == true
-                              ? item.recipeTitle!.trim()
-                              : (item.customMealName?.trim().isNotEmpty == true
-                                  ? item.customMealName!.trim()
-                                  : 'Món ăn không tên'),
-                          style: theme.textTheme.titleSmall?.copyWith(
-                            fontWeight: FontWeight.w800,
+                        GestureDetector(
+                          onTap: item.recipeId != null
+                              ? () => _openRecipeDetail(
+                                    context,
+                                    item.recipeId!,
+                                  )
+                              : null,
+                          child: Text(
+                            _itemTitle(item),
+                            style: theme.textTheme.titleSmall?.copyWith(
+                              fontWeight: FontWeight.w800,
+                              color: item.recipeId != null ? primaryWarm : null,
+                              decoration: item.recipeId != null
+                                  ? TextDecoration.underline
+                                  : TextDecoration.none,
+                              decorationColor: item.recipeId != null
+                                  ? primaryWarm
+                                  : null,
+                            ),
                           ),
                         ),
                         const SizedBox(height: 2),
