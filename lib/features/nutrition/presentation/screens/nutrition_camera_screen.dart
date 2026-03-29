@@ -211,7 +211,7 @@ class _NutritionCameraScreenState extends State<NutritionCameraScreen>
           // Instruction text
           if (_isInitialized)
             Positioned(
-              bottom: 160,
+              bottom: 200,
               left: 0,
               right: 0,
               child: Center(
@@ -221,7 +221,7 @@ class _NutritionCameraScreenState extends State<NutritionCameraScreen>
                     vertical: 8,
                   ),
                   decoration: BoxDecoration(
-                    color: Colors.black54,
+                    color: theme.colorScheme.surface,
                     borderRadius: BorderRadius.circular(20),
                   ),
                   child: Text(

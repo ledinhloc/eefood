@@ -34,6 +34,7 @@ import 'package:eefood/features/profile/presentation/screens/language_page.dart'
 import 'package:eefood/features/profile/presentation/screens/personal_user_page.dart';
 import 'package:eefood/features/profile/presentation/screens/terms_of_service_page.dart';
 import 'package:eefood/features/recipe/data/models/recipe_model.dart';
+import 'package:eefood/features/recipe/presentation/screens/qr_view_screen.dart';
 import 'package:eefood/features/recipe/presentation/screens/recipe_crud_page.dart';
 import 'package:eefood/features/recipe/presentation/screens/recipe_detail_page.dart';
 import 'package:eefood/main_screen.dart';
@@ -103,6 +104,9 @@ class AppRoutes {
 
   // image search
   static const imageChoiceScreen = '/imageChoiceScreen';
+
+  // qr screen
+  static const qrCodeScreen = '/qrCodeScreen';
 
   // Danh sách các widget cho BottomNavigationBar trong main page
   static List<Widget> widgetOptions = <Widget>[
@@ -282,6 +286,19 @@ class AppRoutes {
     },
     imageChoiceScreen: (context) {
       return ImageChoiceScreen();
+    },
+    qrCodeScreen: (context) {
+      final args =
+          ModalRoute.of(context)!.settings.arguments as Map<String, dynamic>;
+      final recipeId = args['recipeId'];
+      final recipeUrl = args['recipeUrl'];
+      final recipeTitle = args['recipeTitle'];
+
+      return QRViewScreen(
+        recipeId: recipeId,
+        recipeUrl: recipeUrl,
+        recipeTitle: recipeTitle,
+      );
     },
   };
 }

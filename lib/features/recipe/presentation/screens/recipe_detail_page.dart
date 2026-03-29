@@ -1,3 +1,4 @@
+import 'package:eefood/core/constants/app_keys.dart';
 import 'package:eefood/core/di/injection.dart';
 import 'package:eefood/core/widgets/show_login_required.dart';
 import 'package:eefood/core/widgets/snack_bar.dart';
@@ -138,9 +139,28 @@ class _RecipeDetailPageState extends State<RecipeDetailPage> {
                     ),
                     actions: [
                       IconButton(
+                        icon: const Icon(
+                          Icons.qr_code_2_rounded,
+                          color: Colors.white,
+                        ),
+                        onPressed: () {
+                          final deepLink =
+                              AppKeys.webDeloyUrl + '/recipes/${recipe.id}';
+                          Navigator.pushNamed(
+                            context,
+                            AppRoutes.qrCodeScreen,
+                            arguments: {
+                              'recipeId': recipe.id,
+                              'recipeUrl': deepLink,
+                              'recipeTitle': recipe.title,
+                            },
+                          );
+                        },
+                      ),
+                      IconButton(
                         icon: const Icon(Icons.more_vert, color: Colors.white),
                         onPressed: () {
-                          _showRecipeOption(context, recipe.id!);
+                          _showRecipeOption(context, recipe.title, recipe.id!);
                         },
                       ),
                     ],
@@ -372,12 +392,12 @@ class _RecipeDetailPageState extends State<RecipeDetailPage> {
                           _iconText(
                             Icons.schedule,
                             "Prep: ${recipe.prepTime ?? 0} min",
-                            context
+                            context,
                           ),
                           _iconText(
                             Icons.local_dining,
                             "Cook: ${recipe.cookTime ?? 0} min",
-                            context
+                            context,
                           ),
                         ],
                       ),
@@ -408,7 +428,7 @@ class _RecipeDetailPageState extends State<RecipeDetailPage> {
                             ),
                             padding: const EdgeInsets.all(12),
                             child: Row(
-                              children:  [
+                              children: [
                                 Icon(
                                   Icons.play_circle_fill,
                                   color: Colors.orange,
@@ -420,7 +440,7 @@ class _RecipeDetailPageState extends State<RecipeDetailPage> {
                                   style: TextStyle(
                                     fontSize: 16,
                                     fontWeight: FontWeight.w500,
-                                    color: theme.colorScheme.onSurface
+                                    color: theme.colorScheme.onSurface,
                                   ),
                                 ),
                               ],
@@ -551,6 +571,7 @@ class _RecipeDetailPageState extends State<RecipeDetailPage> {
 
   void _showRecipeOption(
     BuildContext context,
+    String recipeTitle,
     int recipeId, {
     bool isAuthor = false,
   }) async {
@@ -570,9 +591,9 @@ class _RecipeDetailPageState extends State<RecipeDetailPage> {
         },
       ),
       BottomSheetOption(
-        icon: const Icon(Icons.share_outlined),
+        icon: const Icon(Icons.qr_code_2_rounded),
         title: 'Chia sẻ',
-        onTap: () => {},
+        onTap: () {},
       ),
       BottomSheetOption(
         icon: const Icon(Icons.search),

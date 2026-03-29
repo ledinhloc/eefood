@@ -6,6 +6,8 @@ import 'package:eefood/features/nutrition/presentation/provider/nutrition_cubit.
 import 'package:eefood/features/nutrition/presentation/provider/nutrition_state.dart';
 import 'package:eefood/features/nutrition/presentation/widgets/display_nutrition/orbital_loading_painter.dart';
 import 'package:eefood/features/nutrition/presentation/widgets/nutrition_sections.dart';
+import 'package:eefood/features/nutrition/presentation/widgets/skeleton/analysis_skeleton.dart';
+import 'package:eefood/features/nutrition/presentation/widgets/skeleton/sumary_skeleton.dart';
 import 'package:eefood/l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -74,7 +76,7 @@ class _NutritionResultScreenState extends State<NutritionResultScreen>
       backgroundColor: bgColor,
       body: BlocConsumer<NutritionCubit, NutritionState>(
         listener: (_, state) {
-          if (state.status == NutritionStatus.success) _onSuccess();
+          if (state.hasNutritionData) _onSuccess();
         },
         builder: (_, state) => CustomScrollView(
           physics: state.isLoading
@@ -98,13 +100,13 @@ class _NutritionResultScreenState extends State<NutritionResultScreen>
               SliverFillRemaining(
                 child: _ErrorView(error: state.error, isDark: isDark),
               )
-            else if (state.status == NutritionStatus.success &&
-                state.result != null)
+            else if (state.hasNutritionData && state.result != null)
               _ResultSliver(
                 data: state.result!,
                 isDark: isDark,
                 fadeAnimation: _contentFade,
                 slideAnimation: _contentSlide,
+                renderPhase: state.renderPhase,
               )
             else
               const SliverToBoxAdapter(child: SizedBox.shrink()),
@@ -351,16 +353,20 @@ class _ResultSliver extends StatelessWidget {
   final bool isDark;
   final Animation<double> fadeAnimation;
   final Animation<Offset> slideAnimation;
+  final NutritionRenderPhase renderPhase;
 
   const _ResultSliver({
     required this.data,
     required this.isDark,
     required this.fadeAnimation,
     required this.slideAnimation,
+    required this.renderPhase,
   });
 
   @override
   Widget build(BuildContext context) {
+    final analysisReady = renderPhase == NutritionRenderPhase.analysisReady;
+
     return SliverToBoxAdapter(
       child: FadeTransition(
         opacity: fadeAnimation,
@@ -369,13 +375,23 @@ class _ResultSliver extends StatelessWidget {
           child: Column(
             children: [
               const SizedBox(height: 20),
-              HealthScoreBanner(data: data, isDark: isDark),
+              if (analysisReady)
+                HealthScoreBanner(data: data, isDark: isDark)
+              else
+                AnalysisSkeleton(isDark: isDark),
+
               const SizedBox(height: 20),
+
               NutritionPieChartSection(data: data, isDark: isDark),
               const SizedBox(height: 20),
               NutrientGridSection(data: data, isDark: isDark),
               const SizedBox(height: 20),
-              NutritionSummarySection(data: data, isDark: isDark),
+
+              if (analysisReady)
+                NutritionSummarySection(data: data, isDark: isDark)
+              else
+                SumarySkeleton(isDark: isDark),
+
               const SizedBox(height: 20),
               IngredientListSection(data: data, isDark: isDark),
               const SizedBox(height: 40),

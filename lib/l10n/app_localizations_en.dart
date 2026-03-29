@@ -330,4 +330,10 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get nutrientOfIngredient => 'Nutrition by Ingredients';
+
+  @override
+  String get qrTitle => 'Scan QR';
+
+  @override
+  String get qrSubtitle => 'View recipe detail from QR Code';
 }

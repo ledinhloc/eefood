@@ -24,6 +24,9 @@ class HealthScoreBanner extends StatelessWidget {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final score = (data.healthScore ?? 0.0).clamp(0.0, 10.0);
+    final displayScore = score % 1 == 0
+        ? score.toInt().toString()
+        : score.toString();
     final color = healthScoreColor(score);
     final cardBg = isDark ? const Color(0xFF1A1A1A) : Colors.white;
 
@@ -58,7 +61,7 @@ class HealthScoreBanner extends StatelessWidget {
                     valueColor: AlwaysStoppedAnimation(color),
                   ),
                   Text(
-                    score.toStringAsFixed(1),
+                    displayScore,
                     style: TextStyle(
                       color: color,
                       fontSize: 18,
@@ -98,8 +101,8 @@ class HealthScoreBanner extends StatelessWidget {
                       fontSize: 13,
                       height: 1.4,
                     ),
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
+                    //overflow: TextOverflow.ellipsis,
+                    textAlign: TextAlign.justify,
                   ),
                 ],
               ),
