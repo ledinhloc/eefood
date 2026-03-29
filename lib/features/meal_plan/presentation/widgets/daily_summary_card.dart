@@ -108,16 +108,6 @@ class DailySummaryCard extends StatelessWidget {
                             fontWeight: FontWeight.w800,
                           ),
                         ),
-                        const SizedBox(height: 2),
-                        Text(
-                          isSelected
-                              ? 'Dang duoc chon de xem chi tiet ngay'
-                              : 'Cham de chon ngay nay',
-                          style: theme.textTheme.bodySmall?.copyWith(
-                            color: Colors.brown.shade600,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
                       ],
                     ),
                   ),
@@ -132,7 +122,7 @@ class DailySummaryCard extends StatelessWidget {
                         borderRadius: BorderRadius.circular(999),
                       ),
                       child: const Text(
-                        'Dang xem',
+                        'Đang xem',
                         style: TextStyle(
                           color: Colors.white,
                           fontWeight: FontWeight.w700,
@@ -151,7 +141,7 @@ class DailySummaryCard extends StatelessWidget {
                         borderRadius: BorderRadius.circular(999),
                       ),
                       child: const Text(
-                        'Moi',
+                        'Mới',
                         style: TextStyle(
                           color: Colors.white,
                           fontWeight: FontWeight.w700,
@@ -165,19 +155,19 @@ class DailySummaryCard extends StatelessWidget {
               Row(
                 children: [
                   _MacroPill(
-                    label: 'Chat dam',
+                    label: 'Chất đạm',
                     value: proteinText,
                     color: const Color(0xFFD94841),
                   ),
                   const SizedBox(width: 6),
                   _MacroPill(
-                    label: 'Tinh bot',
+                    label: 'Tinh bột',
                     value: carbsText,
                     color: const Color(0xFFF48C06),
                   ),
                   const SizedBox(width: 6),
                   _MacroPill(
-                    label: 'Chat beo',
+                    label: 'Chất béo',
                     value: fatText,
                     color: const Color(0xFF6A994E),
                   ),
@@ -187,7 +177,7 @@ class DailySummaryCard extends StatelessWidget {
               Row(
                 children: [
                   _MacroPill(
-                    label: 'Chat xo',
+                    label: 'Chất xơ',
                     value: fiberText,
                     color: const Color(0xFF577590),
                   ),

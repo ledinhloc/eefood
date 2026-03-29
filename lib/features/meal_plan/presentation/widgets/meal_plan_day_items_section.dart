@@ -18,13 +18,13 @@ class MealPlanDayItemsSection extends StatelessWidget {
   String _mealSlotLabel(String value) {
     switch (value) {
       case 'BREAKFAST':
-        return 'Bua sang';
+        return 'Bữa sáng';
       case 'LUNCH':
-        return 'Bua trua';
+        return 'Bữa trưa';
       case 'DINNER':
-        return 'Bua toi';
+        return 'Bữa tối';
       case 'SNACK':
-        return 'Bua phu';
+        return 'Bữa phụ';
       default:
         return value;
     }
@@ -33,11 +33,11 @@ class MealPlanDayItemsSection extends StatelessWidget {
   String _statusLabel(String value) {
     switch (value) {
       case 'PLANNED':
-        return 'Da len ke hoach';
+        return 'Đã lên kế hoạch';
       case 'DONE':
-        return 'Da an';
+        return 'Đã ăn';
       case 'SKIPPED':
-        return 'Da bo qua';
+        return 'Đã bỏ qua';
       default:
         return value;
     }
@@ -66,7 +66,7 @@ class MealPlanDayItemsSection extends StatelessWidget {
       return Padding(
         padding: const EdgeInsets.all(14),
         child: Text(
-          'Ngay nay chua co mon an.',
+          'Ngày này chưa có món ăn.',
           style: theme.textTheme.bodyMedium,
         ),
       );
@@ -161,14 +161,14 @@ class MealPlanDayItemsSection extends StatelessWidget {
                               ? item.recipeTitle!.trim()
                               : (item.customMealName?.trim().isNotEmpty == true
                                   ? item.customMealName!.trim()
-                                  : 'Mon an khong ten'),
+                                  : 'Món ăn không tên'),
                           style: theme.textTheme.titleSmall?.copyWith(
                             fontWeight: FontWeight.w800,
                           ),
                         ),
                         const SizedBox(height: 2),
                         Text(
-                          'Khau phan: ${item.actualServings ?? item.plannedServings ?? '--'}',
+                          'Khẩu phần: ${item.actualServings ?? item.plannedServings ?? '--'}',
                           style: theme.textTheme.bodySmall?.copyWith(
                             color: Colors.brown.shade600,
                           ),

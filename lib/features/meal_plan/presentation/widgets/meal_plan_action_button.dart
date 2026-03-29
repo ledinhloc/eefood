@@ -15,12 +15,12 @@ class MealPlanActionButton extends StatelessWidget {
     await showCustomBottomSheet(context, [
       BottomSheetOption(
         icon: const Icon(Icons.auto_awesome_outlined, color: Colors.orange),
-        title: 'Tao plan AI',
+        title: 'Tạo plan AI',
         onTap: onGenerateTap,
       ),
       BottomSheetOption(
         icon: const Icon(Icons.delete_outline, color: Colors.red),
-        title: 'Xoa meal plan',
+        title: 'Xóa meal plan',
         onTap: onDeleteTap,
       ),
     ]);
@@ -31,7 +31,7 @@ class MealPlanActionButton extends StatelessWidget {
     return IconButton(
       onPressed: () => _openActions(context),
       icon: const Icon(Icons.more_horiz_rounded),
-      tooltip: 'Thao tac meal plan',
+      tooltip: 'Thao tác meal plan',
     );
   }
 }

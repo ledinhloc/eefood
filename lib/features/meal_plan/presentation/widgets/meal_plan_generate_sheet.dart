@@ -71,7 +71,7 @@ Future<void> showMealPlanGenerateSheet({
                   ),
                   const SizedBox(height: 18),
                   const Text(
-                    'Tao plan AI',
+                    'Tạo plan AI',
                     style: TextStyle(
                       fontSize: 20,
                       fontWeight: FontWeight.w800,
@@ -79,15 +79,15 @@ Future<void> showMealPlanGenerateSheet({
                   ),
                   const SizedBox(height: 8),
                   Text(
-                    'Nhap muc tieu, ngay bat dau va so ngay de AI tao ke hoach bua an.',
+                    'Nhập mục tiêu, ngày bắt đầu và số ngày để AI tạo kế hoạch bữa ăn.',
                     style: TextStyle(color: Colors.grey.shade700, height: 1.4),
                   ),
                   const SizedBox(height: 18),
                   TextField(
                     controller: goalController,
                     decoration: InputDecoration(
-                      labelText: 'Goal',
-                      hintText: 'Vi du: Giam can, an can bang, tang co...',
+                      labelText: 'Mục tiêu',
+                      hintText: 'Ví dụ: Giảm cân, ăn cân bằng, tăng cơ...',
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(16),
                       ),
@@ -105,7 +105,7 @@ Future<void> showMealPlanGenerateSheet({
                       );
                     },
                     decoration: InputDecoration(
-                      labelText: 'Ngay bat dau',
+                      labelText: 'Ngày bắt đầu',
                       suffixIcon: const Icon(Icons.calendar_month_outlined),
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(16),
@@ -117,8 +117,8 @@ Future<void> showMealPlanGenerateSheet({
                     controller: daysController,
                     keyboardType: TextInputType.number,
                     decoration: InputDecoration(
-                      labelText: 'So ngay',
-                      hintText: 'Toi da 5 ngay moi lan tao',
+                      labelText: 'Số ngày',
+                      hintText: 'Tối đa 5 ngày mỗi lần tạo',
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(16),
                       ),
@@ -143,7 +143,7 @@ Future<void> showMealPlanGenerateSheet({
                         if (rawGoal.isEmpty || rawDays == null || rawDays <= 0) {
                           showCustomSnackBar(
                             context,
-                            'Vui long nhap day du thong tin hop le',
+                            'Vui lòng nhập đầy đủ thông tin hợp lệ',
                             isError: true,
                           );
                           return;
@@ -164,7 +164,7 @@ Future<void> showMealPlanGenerateSheet({
                         }
                       },
                       child: const Text(
-                        'Tao ke hoach',
+                        'Tạo kế hoạch',
                         style: TextStyle(fontWeight: FontWeight.w700),
                       ),
                     ),

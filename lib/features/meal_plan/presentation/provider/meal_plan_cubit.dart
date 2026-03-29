@@ -291,7 +291,7 @@ class MealPlanCubit extends Cubit<MealPlanState> {
       emit(
         state.copyWith(
           isSubmitting: false,
-          error: 'Chua tao duoc ke hoach, vui long thu lai',
+          error: 'Chưa tạo được kế hoạch, vui lòng thử lại',
         ),
       );
       return false;

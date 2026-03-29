@@ -95,7 +95,7 @@ class _MealPlanViewState extends State<_MealPlanView> {
   void _handleDeleteTap(BuildContext context) {
     showCustomSnackBar(
       context,
-      'Backend chua ho tro xoa meal plan',
+      'Backend chưa hỗ trợ xóa meal plan',
       isError: true,
     );
   }
@@ -113,7 +113,7 @@ class _MealPlanViewState extends State<_MealPlanView> {
         backgroundColor: Colors.transparent,
         elevation: 0,
         title: const Text(
-          'Ke hoach bua an',
+          'Kế hoạch bữa ăn',
           style: TextStyle(fontWeight: FontWeight.w800),
         ),
         actions: [
@@ -182,7 +182,7 @@ class _MealPlanViewState extends State<_MealPlanView> {
               ),
               const SizedBox(height: 16),
               Text(
-                'Chua co ke hoach an uong hien tai.',
+                'Chưa có kế hoạch ăn uống hiện tại.',
                 style: theme.textTheme.titleMedium?.copyWith(
                   fontWeight: FontWeight.w700,
                 ),
@@ -192,7 +192,7 @@ class _MealPlanViewState extends State<_MealPlanView> {
               ElevatedButton.icon(
                 onPressed: () => _handleGenerateTap(context),
                 icon: const Icon(Icons.auto_awesome_outlined),
-                label: const Text('Tao plan AI'),
+                label: const Text('Tạo plan AI'),
               ),
             ],
           ),
@@ -238,7 +238,7 @@ class _MealPlanViewState extends State<_MealPlanView> {
                     borderRadius: BorderRadius.circular(999),
                   ),
                   child: const Text(
-                    'Ke hoach hien tai',
+                    'Kế hoạch hiện tại',
                     style: TextStyle(
                       color: Colors.white,
                       fontWeight: FontWeight.w700,
@@ -250,7 +250,7 @@ class _MealPlanViewState extends State<_MealPlanView> {
                 Text(
                   plan.goal?.trim().isNotEmpty == true
                       ? plan.goal!.trim()
-                      : 'Duy tri bua an can bang moi ngay',
+                      : 'Duy trì bữa ăn cân bằng mỗi ngày',
                   style: const TextStyle(
                     color: Colors.white,
                     fontSize: 24,
@@ -293,7 +293,7 @@ class _MealPlanViewState extends State<_MealPlanView> {
           ),
           const SizedBox(height: 14),
           Text(
-            'Tong quan tung ngay',
+            'Tổng quan từng ngày',
             style: theme.textTheme.titleMedium?.copyWith(
               fontWeight: FontWeight.w800,
             ),
@@ -308,7 +308,7 @@ class _MealPlanViewState extends State<_MealPlanView> {
                 border: Border.all(color: const Color(0xFFF2E6D9)),
               ),
               child: Text(
-                'Chua co tong hop dinh duong theo ngay cho meal plan hien tai.',
+                'Chưa có tổng hợp dinh dưỡng theo ngày cho meal plan hiện tại.',
                 style: theme.textTheme.bodyMedium,
               ),
             )
