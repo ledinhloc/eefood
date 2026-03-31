@@ -21,18 +21,6 @@ class MealPlanCubit extends Cubit<MealPlanState> {
   }
 
   // Tìm summary ứng với ngày đang chọn để UI có thể đọc nhanh mà không phải tự lọc list.
-  MealPlanDailySummaryResponse? _findSummaryByDate(
-    List<MealPlanDailySummaryResponse> summaries,
-    DateTime? date,
-  ) {
-    for (final summary in summaries) {
-      if (_sameDay(summary.planDate, date)) {
-        return summary;
-      }
-    }
-    return null;
-  }
-
   // Cập nhật hoặc chèn thêm summary của một ngày sau khi item trong ngày đó thay đổi.
   List<MealPlanDailySummaryResponse> _mergeSummary(
     List<MealPlanDailySummaryResponse> summaries,
@@ -127,17 +115,13 @@ class MealPlanCubit extends Cubit<MealPlanState> {
       final summaries = results[1] as List<MealPlanDailySummaryResponse>;
       final selectedDate = _resolveInitialSelectedDate(summaries, plan);
 
-      final selectedDaySummary = _findSummaryByDate(summaries, selectedDate);
-
       emit(
         state.copyWith(
           isLoading: false,
           plan: plan,
           dailySummaries: summaries,
           selectedDate: selectedDate,
-          selectedDaySummary: selectedDaySummary,
           dayItems: const [],
-          clearSelectedItem: true,
           highlightedDates: const [],
         ),
       );
@@ -156,9 +140,7 @@ class MealPlanCubit extends Cubit<MealPlanState> {
     emit(
       state.copyWith(
         selectedDate: date,
-        selectedDaySummary: _findSummaryByDate(state.dailySummaries, date),
         dayItems: const [],
-        clearSelectedItem: true,
       ),
     );
   }
@@ -168,9 +150,7 @@ class MealPlanCubit extends Cubit<MealPlanState> {
       emit(
         state.copyWith(
           clearSelectedDate: true,
-          clearSelectedDaySummary: true,
           dayItems: const [],
-          clearSelectedItem: true,
           isLoadingItems: false,
         ),
       );
@@ -191,7 +171,6 @@ class MealPlanCubit extends Cubit<MealPlanState> {
       state.copyWith(
         isLoadingItems: true,
         selectedDate: targetDate,
-        selectedDaySummary: _findSummaryByDate(state.dailySummaries, targetDate),
         clearError: true,
       ),
     );
@@ -217,7 +196,6 @@ class MealPlanCubit extends Cubit<MealPlanState> {
       emit(
         state.copyWith(
           isSubmitting: false,
-          selectedItem: item,
           dayItems: _upsertItemInList(state.dayItems, item),
         ),
       );
@@ -238,7 +216,6 @@ class MealPlanCubit extends Cubit<MealPlanState> {
       emit(
         state.copyWith(
           dailySummaries: merged,
-          selectedDaySummary: _findSummaryByDate(merged, targetDate),
         ),
       );
     } catch (e) {
@@ -277,9 +254,7 @@ class MealPlanCubit extends Cubit<MealPlanState> {
           plan: plan,
           dailySummaries: summaries,
           selectedDate: selectedDate,
-          selectedDaySummary: _findSummaryByDate(summaries, selectedDate),
           dayItems: const [],
-          clearSelectedItem: true,
           highlightedDates: _buildHighlightedDates(
             request.startDate ?? selectedDate,
             request.days,
@@ -311,7 +286,6 @@ class MealPlanCubit extends Cubit<MealPlanState> {
           plan: plan,
           dailySummaries: summaries,
           selectedDate: selectedDate,
-          selectedDaySummary: _findSummaryByDate(summaries, selectedDate),
         ),
       );
     } catch (e) {
@@ -330,7 +304,6 @@ class MealPlanCubit extends Cubit<MealPlanState> {
       emit(
         state.copyWith(
           isSubmitting: false,
-          selectedItem: item,
           selectedDate: targetDate ?? state.selectedDate,
           dayItems: _upsertItemInList(state.dayItems, item),
         ),
@@ -354,7 +327,6 @@ class MealPlanCubit extends Cubit<MealPlanState> {
           isSubmitting: false,
           plan: plan,
           dayItems: updatedItems,
-          clearSelectedItem: state.selectedItem?.id == id,
         ),
       );
       await refreshDailySummaryByDate();
