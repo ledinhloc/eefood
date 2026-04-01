@@ -5,8 +5,8 @@ import 'package:eefood/features/meal_plan/presentation/provider/meal_plan_cubit.
 import 'package:eefood/features/meal_plan/presentation/provider/meal_plan_state.dart';
 import 'package:eefood/features/meal_plan/presentation/widgets/meal_plan_action_button.dart';
 import 'package:eefood/features/meal_plan/presentation/widgets/meal_plan_day_items_section.dart';
-import 'package:eefood/features/meal_plan/presentation/widgets/meal_plan_generate_sheet.dart';
 import 'package:eefood/features/meal_plan/presentation/widgets/daily_summary_card.dart';
+import 'package:eefood/features/meal_plan/presentation/widgets/meal_plan_generate_sheet.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
@@ -75,23 +75,7 @@ class _MealPlanViewState extends State<_MealPlanView> {
     return false;
   }
 
-  Future<void> _handleGenerateTap(BuildContext context) async {
-    await showMealPlanGenerateSheet(
-      context: context,
-      cubit: context.read<MealPlanCubit>(),
-      onSuccess: () async {
-        await Future<void>.delayed(const Duration(milliseconds: 120));
-        if (_scrollController.hasClients) {
-          await _scrollController.animateTo(
-            0,
-            duration: const Duration(milliseconds: 350),
-            curve: Curves.easeOutCubic,
-          );
-        }
-      },
-    );
-  }
-
+  // ignore: unused_element
   void _handleDeleteTap(BuildContext context) {
     showCustomSnackBar(
       context,
@@ -116,11 +100,8 @@ class _MealPlanViewState extends State<_MealPlanView> {
           'Kế hoạch bữa ăn',
           style: TextStyle(fontWeight: FontWeight.w800),
         ),
-        actions: [
-          MealPlanActionButton(
-            onGenerateTap: () => _handleGenerateTap(context),
-            onDeleteTap: () => _handleDeleteTap(context),
-          ),
+        actions: const [
+          MealPlanActionButton(),
         ],
       ),
       body: BlocListener<MealPlanCubit, MealPlanState>(
@@ -190,7 +171,10 @@ class _MealPlanViewState extends State<_MealPlanView> {
               ),
               const SizedBox(height: 16),
               ElevatedButton.icon(
-                onPressed: () => _handleGenerateTap(context),
+                onPressed: () => showMealPlanGenerateSheet(
+                  context: context,
+                  cubit: context.read<MealPlanCubit>(),
+                ),
                 icon: const Icon(Icons.auto_awesome_outlined),
                 label: const Text('Tạo plan AI'),
               ),

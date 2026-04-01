@@ -7,7 +7,6 @@ import 'package:intl/intl.dart';
 Future<void> showMealPlanGenerateSheet({
   required BuildContext context,
   required MealPlanCubit cubit,
-  required Future<void> Function() onSuccess,
 }) async {
   final goalController = TextEditingController();
   final startDateController = TextEditingController(
@@ -158,10 +157,6 @@ Future<void> showMealPlanGenerateSheet({
                         );
 
                         if (!context.mounted) return;
-                        if (success) {
-                          Navigator.pop(context);
-                          await onSuccess();
-                        }
                       },
                       child: const Text(
                         'Tạo kế hoạch',

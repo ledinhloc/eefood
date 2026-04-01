@@ -20,35 +20,6 @@ class MealPlanCubit extends Cubit<MealPlanState> {
     return a.year == b.year && a.month == b.month && a.day == b.day;
   }
 
-  // Tìm summary ứng với ngày đang chọn để UI có thể đọc nhanh mà không phải tự lọc list.
-  // Cập nhật hoặc chèn thêm summary của một ngày sau khi item trong ngày đó thay đổi.
-  List<MealPlanDailySummaryResponse> _mergeSummary(
-    List<MealPlanDailySummaryResponse> summaries,
-    MealPlanDailySummaryResponse updated,
-  ) {
-    var replaced = false;
-    final next = summaries.map((summary) {
-      if (_sameDay(summary.planDate, updated.planDate)) {
-        replaced = true;
-        return updated;
-      }
-      return summary;
-    }).toList();
-
-    if (!replaced) {
-      next.add(updated);
-      next.sort((a, b) {
-        final left = a.planDate;
-        final right = b.planDate;
-        if (left == null && right == null) return 0;
-        if (left == null) return 1;
-        if (right == null) return -1;
-        return left.compareTo(right);
-      });
-    }
-    return next;
-  }
-
   // Upsert item vào list ngày hiện tại và sắp xếp lại theo meal slot rồi itemOrder.
   List<MealPlanItemResponse> _upsertItemInList(
     List<MealPlanItemResponse> items,
@@ -100,9 +71,6 @@ class MealPlanCubit extends Cubit<MealPlanState> {
   }
 
   // Load dữ liệu overview của màn Meal Plan:
-  // - metadata plan hiện tại
-  // - daily summary của tất cả ngày
-  // Không load item list ở bước này để vào màn hình nhanh hơn.
   Future<void> loadOverview() async {
     emit(state.copyWith(isLoading: true, clearError: true));
     try {
@@ -134,17 +102,7 @@ class MealPlanCubit extends Cubit<MealPlanState> {
     }
   }
 
-  // Chỉ đổi ngày đang chọn trên UI.
   // Khi đổi ngày, xóa item cache của ngày cũ để buộc màn chi tiết ngày load lại đúng dữ liệu.
-  void selectDate(DateTime date) {
-    emit(
-      state.copyWith(
-        selectedDate: date,
-        dayItems: const [],
-      ),
-    );
-  }
-
   Future<void> toggleDate(DateTime date) async {
     if (_sameDay(state.selectedDate, date)) {
       emit(
@@ -157,7 +115,12 @@ class MealPlanCubit extends Cubit<MealPlanState> {
       return;
     }
 
-    selectDate(date);
+    emit(
+      state.copyWith(
+        selectedDate: date,
+        dayItems: const [],
+      ),
+    );
     await loadItemsByDate(date);
   }
 
@@ -170,7 +133,6 @@ class MealPlanCubit extends Cubit<MealPlanState> {
     emit(
       state.copyWith(
         isLoadingItems: true,
-        selectedDate: targetDate,
         clearError: true,
       ),
     );
@@ -188,7 +150,6 @@ class MealPlanCubit extends Cubit<MealPlanState> {
   }
 
   // Load chi tiết một item khi user mở item detail/bottom sheet.
-  // Đồng thời cập nhật lại item đó trong dayItems để tránh dữ liệu cũ.
   Future<void> loadItemDetail(int id) async {
     emit(state.copyWith(isSubmitting: true, clearError: true));
     try {
@@ -206,16 +167,12 @@ class MealPlanCubit extends Cubit<MealPlanState> {
 
   // Refresh summary của đúng một ngày sau khi item trong ngày đó bị thêm/sửa/xóa.
   // Đây là granularity quan trọng để không phải reload toàn bộ plan.
-  Future<void> refreshDailySummaryByDate([DateTime? date]) async {
-    final targetDate = date ?? state.selectedDate;
-    if (targetDate == null) return;
-
+  Future<void> refreshDailySummaryByDate([DateTime? _]) async {
     try {
-      final summary = await repository.getDailySummaryByDate(targetDate);
-      final merged = _mergeSummary(state.dailySummaries, summary);
+      final summaries = await repository.getDailySummary();
       emit(
         state.copyWith(
-          dailySummaries: merged,
+          dailySummaries: summaries,
         ),
       );
     } catch (e) {
