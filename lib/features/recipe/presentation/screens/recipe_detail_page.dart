@@ -3,6 +3,13 @@ import 'package:eefood/core/di/injection.dart';
 import 'package:eefood/core/widgets/show_login_required.dart';
 import 'package:eefood/core/widgets/snack_bar.dart';
 import 'package:eefood/features/auth/domain/usecases/auth_usecases.dart';
+import 'package:eefood/features/meal_plan/data/model/meal_plan_item_response.dart';
+import 'package:eefood/features/meal_plan/domain/enum/meal_plan_item_source.dart';
+import 'package:eefood/features/meal_plan/domain/enum/meal_plan_item_status.dart';
+import 'package:eefood/features/meal_plan/domain/enum/meal_slot.dart';
+import 'package:eefood/features/meal_plan/domain/repository/meal_plan_repository.dart';
+import 'package:eefood/features/meal_plan/presentation/provider/meal_plan_cubit.dart';
+import 'package:eefood/features/meal_plan/presentation/widgets/meal_plan_item_upsert_sheet.dart';
 import 'package:eefood/features/post/presentation/provider/follow_cubit.dart';
 import 'package:eefood/features/recipe/presentation/provider/shopping_cubit.dart';
 import 'package:flutter/material.dart';
@@ -12,6 +19,7 @@ import '../../../../app_routes.dart';
 import '../../../../core/widgets/custom_bottom_sheet.dart';
 import '../../../auth/domain/entities/user.dart';
 import '../../../profile/domain/usecases/profile_usecase.dart';
+import '../../data/models/recipe_detail_model.dart';
 import '../provider/recipe_detail_cubit.dart';
 import '../widgets/category_list_widget.dart';
 import '../widgets/instructions_tab.dart';
@@ -78,6 +86,46 @@ class _RecipeDetailPageState extends State<RecipeDetailPage> {
       if (mounted) {
         setState(() => _isLoadingFollow = false);
       }
+    }
+  }
+
+  Future<void> _openAddToMealPlanSheet(
+    BuildContext context,
+    RecipeDetailModel recipe,
+  ) async {
+    final recipeId = recipe.id;
+    if (recipeId == null) {
+      showCustomSnackBar(
+        context,
+        'Không thể thêm công thức này vào plan',
+        isError: true,
+      );
+      return;
+    }
+
+    final now = DateTime.now();
+    final selectedDate = DateTime(now.year, now.month, now.day);
+    final mealPlanCubit = MealPlanCubit(
+      repository: getIt<MealPlanRepository>(),
+    );
+
+    try {
+      await showMealPlanItemUpsertSheet(
+        context: context,
+        cubit: mealPlanCubit,
+        selectedDate: selectedDate,
+        item: MealPlanItemResponse(
+          planDate: selectedDate,
+          mealSlot: MealSlot.breakfast,
+          itemSource: MealPlanItemSource.recipe,
+          recipeId: recipeId,
+          status: MealPlanItemStatus.planned,
+          recipeTitle: recipe.title,
+          imageUrl: recipe.imageUrl,
+        ),
+      );
+    } finally {
+      await mealPlanCubit.close();
     }
   }
 
@@ -160,7 +208,12 @@ class _RecipeDetailPageState extends State<RecipeDetailPage> {
                       IconButton(
                         icon: const Icon(Icons.more_vert, color: Colors.white),
                         onPressed: () {
-                          _showRecipeOption(context, recipe.title, recipe.id!);
+                          _showRecipeOption(
+                            context,
+                            recipe.title,
+                            recipe.id!,
+                            recipe: recipe,
+                          );
                         },
                       ),
                     ],
@@ -573,6 +626,7 @@ class _RecipeDetailPageState extends State<RecipeDetailPage> {
     BuildContext context,
     String recipeTitle,
     int recipeId, {
+    RecipeDetailModel? recipe,
     bool isAuthor = false,
   }) async {
     final user = await getIt<GetCurrentUser>().call();
@@ -590,6 +644,14 @@ class _RecipeDetailPageState extends State<RecipeDetailPage> {
           showCustomSnackBar(context, "Thêm thành công");
         },
       ),
+      if (recipe != null)
+        BottomSheetOption(
+          icon: const Icon(Icons.calendar_month_outlined, color: Colors.orange),
+          title: 'Thêm vào kế hoạch bữa ăn',
+          onTap: () {
+            _openAddToMealPlanSheet(context, recipe);
+          },
+        ),
       BottomSheetOption(
         icon: const Icon(Icons.qr_code_2_rounded),
         title: 'Chia sẻ',
