@@ -344,6 +344,7 @@ class _MealPlanViewState extends State<_MealPlanView> {
                           child: MealPlanDayItemsSection(
                             isLoading: state.isLoadingItems,
                             items: state.dayItems,
+                            selectedDate: state.selectedDate,
                             primaryWarm: primaryWarm,
                             softCream: softCream,
                           ),

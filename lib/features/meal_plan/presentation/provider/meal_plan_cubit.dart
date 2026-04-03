@@ -258,13 +258,19 @@ class MealPlanCubit extends Cubit<MealPlanState> {
     try {
       final item = await repository.upsertMealPlanItem(request);
       final targetDate = item.planDate ?? request.planDate ?? state.selectedDate;
+      final shouldPatchCurrentList = _sameDay(targetDate, state.selectedDate);
       emit(
         state.copyWith(
           isSubmitting: false,
           selectedDate: targetDate ?? state.selectedDate,
-          dayItems: _upsertItemInList(state.dayItems, item),
+          dayItems: shouldPatchCurrentList
+              ? _upsertItemInList(state.dayItems, item)
+              : const [],
         ),
       );
+      if (!shouldPatchCurrentList && targetDate != null) {
+        await loadItemsByDate(targetDate);
+      }
       await refreshDailySummaryByDate(targetDate);
     } catch (e) {
       emit(state.copyWith(isSubmitting: false, error: e.toString()));

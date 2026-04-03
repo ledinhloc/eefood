@@ -15,3 +15,16 @@ enum MealPlanItemStatus {
 
   final String value;
 }
+
+extension MealPlanItemStatusX on MealPlanItemStatus {
+  String get label {
+    switch (this) {
+      case MealPlanItemStatus.planned:
+        return 'Đã lên kế hoạch';
+      case MealPlanItemStatus.done:
+        return 'Đã ăn';
+      case MealPlanItemStatus.skipped:
+        return 'Đã bỏ qua';
+    }
+  }
+}
