@@ -4,6 +4,7 @@ import 'package:eefood/features/meal_plan/presentation/provider/meal_plan_cubit.
 import 'package:eefood/features/meal_plan/presentation/widgets/meal_plan_continue_sheet.dart';
 import 'package:eefood/features/meal_plan/presentation/widgets/meal_plan_generate_sheet.dart';
 import 'package:eefood/features/meal_plan/presentation/widgets/meal_plan_upsert_sheet.dart';
+import 'package:eefood/l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
@@ -18,13 +19,10 @@ class MealPlanActionButton extends StatelessWidget {
   }
 
   Future<void> _handleEditTap(BuildContext context) async {
+    final l10n = AppLocalizations.of(context)!;
     final plan = context.read<MealPlanCubit>().state.plan;
     if (plan == null) {
-      showCustomSnackBar(
-        context,
-        'Chua co meal plan de cap nhat',
-        isError: true,
-      );
+      showCustomSnackBar(context, l10n.mealPlanNoPlanToUpdate, isError: true);
       return;
     }
 
@@ -36,14 +34,11 @@ class MealPlanActionButton extends StatelessWidget {
   }
 
   Future<void> _handleContinueTap(BuildContext context) async {
+    final l10n = AppLocalizations.of(context)!;
     final cubit = context.read<MealPlanCubit>();
     final plan = cubit.state.plan;
     if (plan == null) {
-      showCustomSnackBar(
-        context,
-        'Chưa có meal plan để sinh tiếp',
-        isError: true,
-      );
+      showCustomSnackBar(context, l10n.mealPlanNoPlanToContinue, isError: true);
       return;
     }
 
@@ -51,33 +46,31 @@ class MealPlanActionButton extends StatelessWidget {
   }
 
   void _handleDeleteTap(BuildContext context) {
-    showCustomSnackBar(
-      context,
-      'Backend chưa hỗ trợ xóa meal plan',
-      isError: true,
-    );
+    final l10n = AppLocalizations.of(context)!;
+    showCustomSnackBar(context, l10n.mealPlanDeleteNotSupported, isError: true);
   }
 
   Future<void> _openActions(BuildContext context) async {
+    final l10n = AppLocalizations.of(context)!;
     await showCustomBottomSheet(context, [
       BottomSheetOption(
         icon: const Icon(Icons.edit_outlined, color: Colors.blueGrey),
-        title: 'Cập nhật meal plan',
+        title: l10n.mealPlanUpdateAction,
         onTap: () => _handleEditTap(context),
       ),
       BottomSheetOption(
         icon: const Icon(Icons.auto_awesome_outlined, color: Colors.orange),
-        title: 'Tạo plan AI',
+        title: l10n.mealPlanCreateAi,
         onTap: () => _handleGenerateTap(context),
       ),
       BottomSheetOption(
         icon: const Icon(Icons.update_outlined, color: Colors.deepOrange),
-        title: 'Sinh tiếp meal plan',
+        title: l10n.mealPlanContinueAction,
         onTap: () => _handleContinueTap(context),
       ),
       BottomSheetOption(
         icon: const Icon(Icons.delete_outline, color: Colors.red),
-        title: 'Xóa meal plan',
+        title: l10n.mealPlanDeleteAction,
         onTap: () => _handleDeleteTap(context),
       ),
     ]);
@@ -88,7 +81,7 @@ class MealPlanActionButton extends StatelessWidget {
     return IconButton(
       onPressed: () => _openActions(context),
       icon: const Icon(Icons.more_horiz_rounded),
-      tooltip: 'Thao tác meal plan',
+      tooltip: AppLocalizations.of(context)!.mealPlanActionTooltip,
     );
   }
 }

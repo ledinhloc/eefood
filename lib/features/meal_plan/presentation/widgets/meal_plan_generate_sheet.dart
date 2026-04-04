@@ -1,6 +1,7 @@
 import 'package:eefood/core/widgets/snack_bar.dart';
 import 'package:eefood/features/meal_plan/data/model/meal_plan_generate_request.dart';
 import 'package:eefood/features/meal_plan/presentation/provider/meal_plan_cubit.dart';
+import 'package:eefood/l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
@@ -8,6 +9,7 @@ Future<void> showMealPlanGenerateSheet({
   required BuildContext context,
   required MealPlanCubit cubit,
 }) async {
+  final l10n = AppLocalizations.of(context)!;
   final goalController = TextEditingController();
   final startDateController = TextEditingController(
     text: DateFormat('dd/MM/yyyy').format(DateTime.now()),
@@ -69,24 +71,24 @@ Future<void> showMealPlanGenerateSheet({
                     ),
                   ),
                   const SizedBox(height: 18),
-                  const Text(
-                    'Tạo plan AI',
-                    style: TextStyle(
+                  Text(
+                    l10n.mealPlanGenerateTitle,
+                    style: const TextStyle(
                       fontSize: 20,
                       fontWeight: FontWeight.w800,
                     ),
                   ),
                   const SizedBox(height: 8),
                   Text(
-                    'Nhập mục tiêu, ngày bắt đầu và số ngày để AI tạo kế hoạch bữa ăn.',
+                    l10n.mealPlanGenerateSubtitle,
                     style: TextStyle(color: Colors.grey.shade700, height: 1.4),
                   ),
                   const SizedBox(height: 18),
                   TextField(
                     controller: goalController,
                     decoration: InputDecoration(
-                      labelText: 'Mục tiêu',
-                      hintText: 'Ví dụ: Giảm cân, ăn cân bằng, tăng cơ...',
+                      labelText: l10n.mealPlanGoal,
+                      hintText: l10n.mealPlanGoalHint,
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(16),
                       ),
@@ -104,7 +106,7 @@ Future<void> showMealPlanGenerateSheet({
                       );
                     },
                     decoration: InputDecoration(
-                      labelText: 'Ngày bắt đầu',
+                      labelText: l10n.mealPlanStartDate,
                       suffixIcon: const Icon(Icons.calendar_month_outlined),
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(16),
@@ -116,8 +118,8 @@ Future<void> showMealPlanGenerateSheet({
                     controller: daysController,
                     keyboardType: TextInputType.number,
                     decoration: InputDecoration(
-                      labelText: 'Số ngày',
-                      hintText: 'Tối đa 5 ngày mỗi lần tạo',
+                      labelText: l10n.mealPlanDays,
+                      hintText: l10n.mealPlanDaysHint,
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(16),
                       ),
@@ -142,13 +144,13 @@ Future<void> showMealPlanGenerateSheet({
                         if (rawGoal.isEmpty || rawDays == null || rawDays <= 0) {
                           showCustomSnackBar(
                             context,
-                            'Vui lòng nhập đầy đủ thông tin hợp lệ',
+                            l10n.mealPlanInvalidGenerateInput,
                             isError: true,
                           );
                           return;
                         }
 
-                        final success = await cubit.generateMealPlan(
+                        await cubit.generateMealPlan(
                           MealPlanGenerateRequest(
                             goal: rawGoal,
                             startDate: selectedDate,
@@ -158,9 +160,9 @@ Future<void> showMealPlanGenerateSheet({
 
                         if (!context.mounted) return;
                       },
-                      child: const Text(
-                        'Tạo kế hoạch',
-                        style: TextStyle(fontWeight: FontWeight.w700),
+                      child: Text(
+                        l10n.mealPlanCreateButton,
+                        style: const TextStyle(fontWeight: FontWeight.w700),
                       ),
                     ),
                   ),

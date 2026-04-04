@@ -2,6 +2,7 @@ import 'package:eefood/core/widgets/snack_bar.dart';
 import 'package:eefood/features/meal_plan/data/model/meal_plan_response.dart';
 import 'package:eefood/features/meal_plan/presentation/provider/meal_plan_cubit.dart';
 import 'package:eefood/features/meal_plan/presentation/provider/meal_plan_state.dart';
+import 'package:eefood/l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
@@ -11,6 +12,7 @@ Future<void> showMealPlanContinueSheet({
   required MealPlanCubit cubit,
   required MealPlanResponse plan,
 }) async {
+  final l10n = AppLocalizations.of(context)!;
   final today = DateTime.now();
   final normalizedToday = DateTime(today.year, today.month, today.day);
   final nextPlanDate = plan.endDate != null
@@ -77,13 +79,16 @@ Future<void> showMealPlanContinueSheet({
                     ),
                   ),
                   const SizedBox(height: 18),
-                  const Text(
-                    'Sinh tiếp meal plan',
-                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.w800),
+                  Text(
+                    l10n.mealPlanContinueTitle,
+                    style: const TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.w800,
+                    ),
                   ),
                   const SizedBox(height: 8),
                   Text(
-                    'Chọn ngày bắt đầu và số ngày để AI tiếp tục.',
+                    l10n.mealPlanContinueSubtitle,
                     style: TextStyle(color: Colors.grey.shade700, height: 1.4),
                   ),
                   const SizedBox(height: 18),
@@ -98,7 +103,7 @@ Future<void> showMealPlanContinueSheet({
                       );
                     },
                     decoration: InputDecoration(
-                      labelText: 'Ngày bắt đầu',
+                      labelText: l10n.mealPlanStartDate,
                       suffixIcon: const Icon(Icons.calendar_month_outlined),
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(16),
@@ -110,8 +115,8 @@ Future<void> showMealPlanContinueSheet({
                     controller: daysController,
                     keyboardType: TextInputType.number,
                     decoration: InputDecoration(
-                      labelText: 'Số ngày',
-                      hintText: 'Ví dụ: 3',
+                      labelText: l10n.mealPlanDays,
+                      hintText: l10n.mealPlanDaysExample,
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(16),
                       ),
@@ -141,7 +146,7 @@ Future<void> showMealPlanContinueSheet({
                                   if (rawDays == null || rawDays <= 0) {
                                     showCustomSnackBar(
                                       context,
-                                      'Vui lòng nhập số ngày hợp lệ',
+                                      l10n.mealPlanInvalidDays,
                                       isError: true,
                                     );
                                     return;
@@ -166,9 +171,11 @@ Future<void> showMealPlanContinueSheet({
                                     ),
                                   ),
                                 )
-                              : const Text(
-                                  'Sinh tiếp',
-                                  style: TextStyle(fontWeight: FontWeight.w700),
+                              : Text(
+                                  l10n.mealPlanContinueButton,
+                                  style: const TextStyle(
+                                    fontWeight: FontWeight.w700,
+                                  ),
                                 ),
                         ),
                       );

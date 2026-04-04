@@ -6,8 +6,10 @@ import 'package:eefood/features/meal_plan/data/model/meal_plan_item_upsert_reque
 import 'package:eefood/features/meal_plan/domain/enum/meal_plan_item_source.dart';
 import 'package:eefood/features/meal_plan/domain/enum/meal_plan_item_status.dart';
 import 'package:eefood/features/meal_plan/domain/enum/meal_slot.dart';
+import 'package:eefood/features/meal_plan/presentation/meal_plan_localizations.dart';
 import 'package:eefood/features/meal_plan/presentation/provider/meal_plan_cubit.dart';
 import 'package:eefood/features/meal_plan/presentation/widgets/meal_plan_ingredients_editor.dart';
+import 'package:eefood/l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
@@ -135,9 +137,10 @@ class _MealPlanItemUpsertSheetContentState
   }
 
   Future<void> _save() async {
+    final l10n = AppLocalizations.of(context)!;
     final customMealName = _customMealNameController.text.trim();
     if (_source == MealPlanItemSource.custom && customMealName.isEmpty) {
-      showCustomSnackBar(context, 'Vui lòng nhập tên món ăn', isError: true);
+      showCustomSnackBar(context, l10n.mealPlanItemNameRequired, isError: true);
       return;
     }
 
@@ -181,14 +184,14 @@ class _MealPlanItemUpsertSheetContentState
     Navigator.pop(context);
     showCustomSnackBar(
       widget.parentContext,
-      _isEditing
-          ? 'Đã cập nhật món ăn trong plan'
-          : 'Đã thêm món ăn vào plan',
+      _isEditing ? l10n.mealPlanItemUpdated : l10n.mealPlanItemAdded,
     );
   }
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
@@ -213,8 +216,8 @@ class _MealPlanItemUpsertSheetContentState
             const SizedBox(height: 18),
             Text(
               _isEditing
-                  ? 'Chỉnh sửa món ăn trong plan'
-                  : 'Thêm món ăn vào plan',
+                  ? l10n.mealPlanEditItemTitle
+                  : l10n.mealPlanAddItemTitle,
               style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w800),
             ),
             const SizedBox(height: 18),
@@ -223,7 +226,7 @@ class _MealPlanItemUpsertSheetContentState
               readOnly: true,
               onTap: _pickDate,
               decoration: InputDecoration(
-                labelText: 'Ngày áp dụng',
+                labelText: l10n.mealPlanApplyDate,
                 suffixIcon: const Icon(Icons.calendar_month_outlined),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(16),
@@ -234,15 +237,17 @@ class _MealPlanItemUpsertSheetContentState
             DropdownButtonFormField<MealSlot>(
               value: _mealSlot,
               decoration: InputDecoration(
-                labelText: 'Buổi ăn',
+                labelText: l10n.mealPlanMealSlot,
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(16),
                 ),
               ),
               items: MealSlot.values
                   .map(
-                    (slot) =>
-                        DropdownMenuItem(value: slot, child: Text(slot.label)),
+                    (slot) => DropdownMenuItem(
+                      value: slot,
+                      child: Text(slot.localizedLabel(l10n)),
+                    ),
                   )
                   .toList(),
               onChanged: (value) {
@@ -255,8 +260,8 @@ class _MealPlanItemUpsertSheetContentState
               TextField(
                 controller: _customMealNameController,
                 decoration: InputDecoration(
-                  labelText: 'Tên món ăn',
-                  hintText: 'Ví dụ: Salad gà nướng',
+                  labelText: l10n.mealPlanItemName,
+                  hintText: l10n.mealPlanItemNameHint,
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(16),
                   ),
@@ -264,11 +269,12 @@ class _MealPlanItemUpsertSheetContentState
               ),
             ] else ...[
               TextFormField(
-                initialValue: widget.item?.recipeTitle ?? 'Món ăn liên kết',
+                initialValue:
+                    widget.item?.recipeTitle ?? l10n.mealPlanLinkedMeal,
                 readOnly: true,
                 decoration: InputDecoration(
-                  labelText: 'Món ăn',
-                  helperText: 'Không sửa món liên kết ở đây',
+                  labelText: l10n.mealPlanLinkedMeal,
+                  helperText: l10n.mealPlanLinkedMealHelper,
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(16),
                   ),
@@ -283,7 +289,7 @@ class _MealPlanItemUpsertSheetContentState
                     controller: _plannedServingsController,
                     keyboardType: TextInputType.number,
                     decoration: InputDecoration(
-                      labelText: 'Khẩu phần dự kiến',
+                      labelText: l10n.mealPlanPlannedServings,
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(16),
                       ),
@@ -296,7 +302,7 @@ class _MealPlanItemUpsertSheetContentState
                     controller: _actualServingsController,
                     keyboardType: TextInputType.number,
                     decoration: InputDecoration(
-                      labelText: 'Khẩu phần thực tế',
+                      labelText: l10n.mealPlanActualServings,
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(16),
                       ),
@@ -309,7 +315,7 @@ class _MealPlanItemUpsertSheetContentState
             DropdownButtonFormField<MealPlanItemStatus>(
               value: _status,
               decoration: InputDecoration(
-                labelText: 'Trạng thái',
+                labelText: l10n.mealPlanStatus,
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(16),
                 ),
@@ -318,7 +324,7 @@ class _MealPlanItemUpsertSheetContentState
                   .map(
                     (itemStatus) => DropdownMenuItem(
                       value: itemStatus,
-                      child: Text(itemStatus.label),
+                      child: Text(itemStatus.localizedLabel(l10n)),
                     ),
                   )
                   .toList(),
@@ -333,7 +339,7 @@ class _MealPlanItemUpsertSheetContentState
               minLines: 2,
               maxLines: 4,
               decoration: InputDecoration(
-                labelText: 'Ghi chú',
+                labelText: l10n.mealPlanNote,
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(16),
                 ),
@@ -367,7 +373,9 @@ class _MealPlanItemUpsertSheetContentState
                   ),
                 ),
                 onPressed: _save,
-                child: Text(_isEditing ? 'Lưu thay đổi' : 'Thêm món ăn'),
+                child: Text(
+                  _isEditing ? l10n.mealPlanSaveChanges : l10n.mealPlanAddItem,
+                ),
               ),
             ),
           ],

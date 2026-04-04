@@ -1,11 +1,11 @@
 import 'package:eefood/core/widgets/media_view_page.dart';
 import 'package:eefood/core/widgets/snack_bar.dart';
 import 'package:eefood/features/meal_plan/data/model/meal_plan_item_response.dart';
-import 'package:eefood/features/meal_plan/domain/enum/meal_plan_item_status.dart';
-import 'package:eefood/features/meal_plan/domain/enum/meal_slot.dart';
+import 'package:eefood/features/meal_plan/presentation/meal_plan_localizations.dart';
 import 'package:eefood/features/meal_plan/presentation/provider/meal_plan_cubit.dart';
 import 'package:eefood/features/meal_plan/presentation/widgets/meal_plan_item_upsert_sheet.dart';
 import 'package:eefood/features/recipe/presentation/screens/recipe_detail_page.dart';
+import 'package:eefood/l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
@@ -33,24 +33,21 @@ class MealPlanDayItemsSection extends StatelessWidget {
     return '$formatted$suffix';
   }
 
-  String _itemTitle(MealPlanItemResponse item) {
+  String _itemTitle(BuildContext context, MealPlanItemResponse item) {
     if (item.recipeTitle?.trim().isNotEmpty == true) {
       return item.recipeTitle!.trim();
     }
     if (item.customMealName?.trim().isNotEmpty == true) {
       return item.customMealName!.trim();
     }
-    return 'Món ăn không tên';
+    return AppLocalizations.of(context)!.mealPlanUnnamedItem;
   }
 
   void _openImage(BuildContext context, String imageUrl) {
     Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (_) => MediaViewPage(
-          url: imageUrl,
-          isVideo: false,
-        ),
+        builder: (_) => MediaViewPage(url: imageUrl, isVideo: false),
       ),
     );
   }
@@ -58,9 +55,7 @@ class MealPlanDayItemsSection extends StatelessWidget {
   void _openRecipeDetail(BuildContext context, int recipeId) {
     Navigator.push(
       context,
-      MaterialPageRoute(
-        builder: (_) => RecipeDetailPage(recipeId: recipeId),
-      ),
+      MaterialPageRoute(builder: (_) => RecipeDetailPage(recipeId: recipeId)),
     );
   }
 
@@ -83,13 +78,10 @@ class MealPlanDayItemsSection extends StatelessWidget {
     BuildContext context,
     MealPlanItemResponse item,
   ) async {
+    final l10n = AppLocalizations.of(context)!;
     final itemId = item.id;
     if (itemId == null) {
-      showCustomSnackBar(
-        context,
-        'Không thể xóa món ăn này',
-        isError: true,
-      );
+      showCustomSnackBar(context, l10n.mealPlanCannotDeleteItem, isError: true);
       return;
     }
 
@@ -97,14 +89,14 @@ class MealPlanDayItemsSection extends StatelessWidget {
       context: context,
       builder: (dialogContext) {
         return AlertDialog(
-          title: const Text('Xóa món ăn'),
+          title: Text(l10n.mealPlanDeleteItemTitle),
           content: Text(
-            'Bạn có chắc muốn xóa "${_itemTitle(item)}" khỏi meal plan không?',
+            l10n.mealPlanDeleteItemMessage(_itemTitle(context, item)),
           ),
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(dialogContext, false),
-              child: const Text('Hủy'),
+              child: Text(l10n.cancel),
             ),
             ElevatedButton(
               onPressed: () => Navigator.pop(dialogContext, true),
@@ -112,7 +104,7 @@ class MealPlanDayItemsSection extends StatelessWidget {
                 backgroundColor: Colors.red,
                 foregroundColor: Colors.white,
               ),
-              child: const Text('Xóa'),
+              child: Text(l10n.mealPlanDeleteAction),
             ),
           ],
         );
@@ -120,17 +112,12 @@ class MealPlanDayItemsSection extends StatelessWidget {
     );
 
     if (confirmed != true || !context.mounted) return;
-
     await context.read<MealPlanCubit>().deleteMealPlanItem(itemId);
-    if (!context.mounted) return;
-
-    // if (context.read<MealPlanCubit>().state.error == null) {
-    //   showCustomSnackBar(context, 'Đã xóa món ăn khỏi meal plan');
-    // }
   }
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final theme = Theme.of(context);
 
     if (isLoading) {
@@ -147,13 +134,12 @@ class MealPlanDayItemsSection extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             _SectionHeader(
-              onAdd: selectedDate == null ? null : () => _openUpsertSheet(context),
+              onAdd: selectedDate == null
+                  ? null
+                  : () => _openUpsertSheet(context),
             ),
             const SizedBox(height: 10),
-            Text(
-              'Ngày này chưa có món ăn.',
-              style: theme.textTheme.bodyMedium,
-            ),
+            Text(l10n.mealPlanNoItemsForDay, style: theme.textTheme.bodyMedium),
           ],
         ),
       );
@@ -232,7 +218,7 @@ class MealPlanDayItemsSection extends StatelessWidget {
                               borderRadius: BorderRadius.circular(999),
                             ),
                             child: Text(
-                              item.mealSlot.label,
+                              item.mealSlot.localizedLabel(l10n),
                               style: TextStyle(
                                 color: primaryWarm,
                                 fontSize: 12,
@@ -243,7 +229,7 @@ class MealPlanDayItemsSection extends StatelessWidget {
                           const SizedBox(width: 6),
                           Expanded(
                             child: Text(
-                              item.status.label,
+                              item.status.localizedLabel(l10n),
                               style: TextStyle(
                                 color: Colors.brown.shade600,
                                 fontSize: 12,
@@ -253,15 +239,16 @@ class MealPlanDayItemsSection extends StatelessWidget {
                             ),
                           ),
                           IconButton(
-                            onPressed: () => _openUpsertSheet(context, item: item),
+                            onPressed: () =>
+                                _openUpsertSheet(context, item: item),
                             icon: const Icon(Icons.edit_outlined, size: 20),
-                            tooltip: 'Chỉnh sửa món ăn',
+                            tooltip: l10n.mealPlanEditItemTooltip,
                             color: primaryWarm,
                           ),
                           IconButton(
                             onPressed: () => _handleDeleteItem(context, item),
                             icon: const Icon(Icons.delete_outline, size: 20),
-                            tooltip: 'Xóa món ăn',
+                            tooltip: l10n.mealPlanDeleteItemTooltip,
                             color: Colors.red.shade400,
                           ),
                         ],
@@ -269,13 +256,10 @@ class MealPlanDayItemsSection extends StatelessWidget {
                       const SizedBox(height: 6),
                       GestureDetector(
                         onTap: item.recipeId != null
-                            ? () => _openRecipeDetail(
-                                  context,
-                                  item.recipeId!,
-                                )
+                            ? () => _openRecipeDetail(context, item.recipeId!)
                             : null,
                         child: Text(
-                          _itemTitle(item),
+                          _itemTitle(context, item),
                           style: theme.textTheme.titleSmall?.copyWith(
                             fontWeight: FontWeight.w800,
                             color: item.recipeId != null ? primaryWarm : null,
@@ -290,7 +274,9 @@ class MealPlanDayItemsSection extends StatelessWidget {
                       ),
                       const SizedBox(height: 2),
                       Text(
-                        'Khẩu phần: ${item.actualServings ?? item.plannedServings ?? '--'}',
+                        l10n.mealPlanServings(
+                          '${item.actualServings ?? item.plannedServings ?? '--'}',
+                        ),
                         style: theme.textTheme.bodySmall?.copyWith(
                           color: Colors.brown.shade600,
                         ),
@@ -324,21 +310,19 @@ class _SectionHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Row(
       children: [
-        const Expanded(
+        Expanded(
           child: Text(
-            'Món ăn trong ngày',
-            style: TextStyle(
-              fontWeight: FontWeight.w800,
-              fontSize: 15,
-            ),
+            l10n.mealPlanDayItemsTitle,
+            style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 15),
           ),
         ),
         TextButton.icon(
           onPressed: onAdd,
           icon: const Icon(Icons.add_circle_outline),
-          label: const Text('Thêm món'),
+          label: Text(l10n.mealPlanAddItem),
         ),
       ],
     );

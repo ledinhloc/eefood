@@ -151,7 +151,6 @@ class MealPlanCubit extends Cubit<MealPlanState> {
   }
 
   // Refresh summary của đúng một ngày sau khi item trong ngày đó bị thêm/sửa/xóa.
-  // Đây là granularity quan trọng để không phải reload toàn bộ plan.
   Future<void> refreshDailySummaryByDate([DateTime? _]) async {
     try {
       final summaries = await repository.getDailySummary();

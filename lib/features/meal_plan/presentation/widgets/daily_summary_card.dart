@@ -1,4 +1,5 @@
 import 'package:eefood/features/meal_plan/data/model/meal_plan_daily_summary_response.dart';
+import 'package:eefood/l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
 
 class DailySummaryCard extends StatelessWidget {
@@ -35,6 +36,7 @@ class DailySummaryCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final theme = Theme.of(context);
 
     return Material(
@@ -121,9 +123,9 @@ class DailySummaryCard extends StatelessWidget {
                         color: primaryWarm,
                         borderRadius: BorderRadius.circular(999),
                       ),
-                      child: const Text(
-                        'Đang xem',
-                        style: TextStyle(
+                      child: Text(
+                        l10n.mealPlanViewing,
+                        style: const TextStyle(
                           color: Colors.white,
                           fontWeight: FontWeight.w700,
                           fontSize: 12,
@@ -140,34 +142,34 @@ class DailySummaryCard extends StatelessWidget {
                         color: accentWarm,
                         borderRadius: BorderRadius.circular(999),
                       ),
-                      child: const Text(
-                        'Mới',
-                        style: TextStyle(
+                      child: Text(
+                        l10n.mealPlanNew,
+                        style: const TextStyle(
                           color: Colors.white,
                           fontWeight: FontWeight.w700,
                           fontSize: 12,
                         ),
                       ),
-                  ),
+                    ),
                 ],
               ),
               const SizedBox(height: 10),
               Row(
                 children: [
                   _MacroPill(
-                    label: 'Chất đạm',
+                    label: l10n.mealPlanProtein,
                     value: proteinText,
                     color: const Color(0xFFD94841),
                   ),
                   const SizedBox(width: 6),
                   _MacroPill(
-                    label: 'Tinh bột',
+                    label: l10n.mealPlanCarbs,
                     value: carbsText,
                     color: const Color(0xFFF48C06),
                   ),
                   const SizedBox(width: 6),
                   _MacroPill(
-                    label: 'Chất béo',
+                    label: l10n.mealPlanFat,
                     value: fatText,
                     color: const Color(0xFF6A994E),
                   ),
@@ -177,7 +179,7 @@ class DailySummaryCard extends StatelessWidget {
               Row(
                 children: [
                   _MacroPill(
-                    label: 'Chất xơ',
+                    label: l10n.mealPlanFiber,
                     value: fiberText,
                     color: const Color(0xFF577590),
                   ),
@@ -225,10 +227,7 @@ class _MacroPill extends StatelessWidget {
             const SizedBox(height: 2),
             Text(
               value,
-              style: TextStyle(
-                color: color,
-                fontWeight: FontWeight.w800,
-              ),
+              style: TextStyle(color: color, fontWeight: FontWeight.w800),
             ),
           ],
         ),

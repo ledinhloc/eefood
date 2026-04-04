@@ -3,10 +3,11 @@ import 'package:eefood/core/widgets/snack_bar.dart';
 import 'package:eefood/features/meal_plan/domain/repository/meal_plan_repository.dart';
 import 'package:eefood/features/meal_plan/presentation/provider/meal_plan_cubit.dart';
 import 'package:eefood/features/meal_plan/presentation/provider/meal_plan_state.dart';
+import 'package:eefood/features/meal_plan/presentation/widgets/daily_summary_card.dart';
 import 'package:eefood/features/meal_plan/presentation/widgets/meal_plan_action_button.dart';
 import 'package:eefood/features/meal_plan/presentation/widgets/meal_plan_day_items_section.dart';
-import 'package:eefood/features/meal_plan/presentation/widgets/daily_summary_card.dart';
 import 'package:eefood/features/meal_plan/presentation/widgets/meal_plan_generate_sheet.dart';
+import 'package:eefood/l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
@@ -50,9 +51,12 @@ class _MealPlanViewState extends State<_MealPlanView> {
     return DateFormat('dd/MM').format(date);
   }
 
-  String _weekdayLabel(DateTime? date) {
+  String _weekdayLabel(BuildContext context, DateTime? date) {
     if (date == null) return '';
-    return DateFormat('EEE', 'en').format(date);
+    return DateFormat(
+      'EEE',
+      Localizations.localeOf(context).languageCode,
+    ).format(date);
   }
 
   String _value(num? value, {String suffix = ''}) {
@@ -75,18 +79,10 @@ class _MealPlanViewState extends State<_MealPlanView> {
     return false;
   }
 
-  // ignore: unused_element
-  void _handleDeleteTap(BuildContext context) {
-    showCustomSnackBar(
-      context,
-      'Backend chưa hỗ trợ xóa meal plan',
-      isError: true,
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final l10n = AppLocalizations.of(context)!;
     final primaryWarm = const Color(0xFFE85D04);
     final accentWarm = const Color(0xFFFFBA08);
     final softCream = const Color(0xFFFFF4E6);
@@ -96,13 +92,11 @@ class _MealPlanViewState extends State<_MealPlanView> {
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
-        title: const Text(
-          'Kế hoạch bữa ăn',
-          style: TextStyle(fontWeight: FontWeight.w800),
+        title: Text(
+          l10n.mealPlanTitle,
+          style: const TextStyle(fontWeight: FontWeight.w800),
         ),
-        actions: const [
-          MealPlanActionButton(),
-        ],
+        actions: const [MealPlanActionButton()],
       ),
       body: BlocListener<MealPlanCubit, MealPlanState>(
         listenWhen: (previous, current) =>
@@ -148,6 +142,7 @@ class _MealPlanViewState extends State<_MealPlanView> {
     Color accentWarm,
     Color softCream,
   ) {
+    final l10n = AppLocalizations.of(context)!;
     final plan = state.plan;
     if (plan == null) {
       return Center(
@@ -163,7 +158,7 @@ class _MealPlanViewState extends State<_MealPlanView> {
               ),
               const SizedBox(height: 16),
               Text(
-                'Chưa có kế hoạch ăn uống hiện tại.',
+                l10n.mealPlanNoPlan,
                 style: theme.textTheme.titleMedium?.copyWith(
                   fontWeight: FontWeight.w700,
                 ),
@@ -176,7 +171,7 @@ class _MealPlanViewState extends State<_MealPlanView> {
                   cubit: context.read<MealPlanCubit>(),
                 ),
                 icon: const Icon(Icons.auto_awesome_outlined),
-                label: const Text('Tạo plan AI'),
+                label: Text(l10n.mealPlanCreateAi),
               ),
             ],
           ),
@@ -187,7 +182,7 @@ class _MealPlanViewState extends State<_MealPlanView> {
     return RefreshIndicator(
       color: primaryWarm,
       onRefresh: () => context.read<MealPlanCubit>().loadOverview(),
-        child: ListView(
+      child: ListView(
         controller: _scrollController,
         physics: const AlwaysScrollableScrollPhysics(),
         padding: const EdgeInsets.fromLTRB(16, 6, 16, 20),
@@ -221,9 +216,9 @@ class _MealPlanViewState extends State<_MealPlanView> {
                     color: Colors.white.withValues(alpha: 0.22),
                     borderRadius: BorderRadius.circular(999),
                   ),
-                  child: const Text(
-                    'Kế hoạch hiện tại',
-                    style: TextStyle(
+                  child: Text(
+                    l10n.mealPlanCurrentTag,
+                    style: const TextStyle(
                       color: Colors.white,
                       fontWeight: FontWeight.w700,
                       fontSize: 12,
@@ -234,7 +229,7 @@ class _MealPlanViewState extends State<_MealPlanView> {
                 Text(
                   plan.goal?.trim().isNotEmpty == true
                       ? plan.goal!.trim()
-                      : 'Duy trì bữa ăn cân bằng mỗi ngày',
+                      : l10n.mealPlanDefaultGoal,
                   style: const TextStyle(
                     color: Colors.white,
                     fontSize: 24,
@@ -266,10 +261,7 @@ class _MealPlanViewState extends State<_MealPlanView> {
                   const SizedBox(height: 12),
                   Text(
                     plan.note!.trim(),
-                    style: const TextStyle(
-                      color: Colors.white,
-                      height: 1.35,
-                    ),
+                    style: const TextStyle(color: Colors.white, height: 1.35),
                   ),
                 ],
               ],
@@ -277,7 +269,7 @@ class _MealPlanViewState extends State<_MealPlanView> {
           ),
           const SizedBox(height: 14),
           Text(
-            'Tổng quan từng ngày',
+            l10n.mealPlanOverviewByDay,
             style: theme.textTheme.titleMedium?.copyWith(
               fontWeight: FontWeight.w800,
             ),
@@ -292,68 +284,64 @@ class _MealPlanViewState extends State<_MealPlanView> {
                 border: Border.all(color: const Color(0xFFF2E6D9)),
               ),
               child: Text(
-                'Chưa có tổng hợp dinh dưỡng theo ngày cho meal plan hiện tại.',
+                l10n.mealPlanNoDailySummary,
                 style: theme.textTheme.bodyMedium,
               ),
             )
           else
-            ...state.dailySummaries.map(
-              (summary) {
-                final isSelected = _sameDay(summary.planDate, state.selectedDate);
+            ...state.dailySummaries.map((summary) {
+              final isSelected = _sameDay(summary.planDate, state.selectedDate);
 
-                return Container(
-                  margin: const EdgeInsets.only(bottom: 8),
-                  padding: EdgeInsets.fromLTRB(0, 0, 0, isSelected ? 10 : 0),
-                  decoration: BoxDecoration(
-                    color: isSelected ? softCream.withValues(alpha: 0.55) : null,
-                    borderRadius: BorderRadius.circular(24),
-                    border: isSelected
-                        ? Border.all(
-                            color: primaryWarm.withValues(alpha: 0.18),
-                          )
-                        : null,
-                  ),
-                  child: Column(
-                    children: [
-                      DailySummaryCard(
-                        summary: summary,
-                        isSelected: isSelected,
-                        isHighlighted: _isHighlightedDate(
-                          state.highlightedDates,
-                          summary.planDate,
-                        ),
-                        onTap: () async {
-                          final date = summary.planDate;
-                          if (date != null) {
-                            await context.read<MealPlanCubit>().toggleDate(date);
-                          }
-                        },
-                        chipDate: _formatChipDate(summary.planDate),
-                        weekday: _weekdayLabel(summary.planDate),
-                        caloriesText: _value(summary.calories, suffix: ' kcal'),
-                        proteinText: _value(summary.protein, suffix: ' g'),
-                        carbsText: _value(summary.carbs, suffix: ' g'),
-                        fatText: _value(summary.fat, suffix: ' g'),
-                        fiberText: _value(summary.fiber, suffix: ' g'),
-                        primaryWarm: primaryWarm,
-                        accentWarm: accentWarm,
+              return Container(
+                margin: const EdgeInsets.only(bottom: 8),
+                padding: EdgeInsets.fromLTRB(0, 0, 0, isSelected ? 10 : 0),
+                decoration: BoxDecoration(
+                  color: isSelected ? softCream.withValues(alpha: 0.55) : null,
+                  borderRadius: BorderRadius.circular(24),
+                  border: isSelected
+                      ? Border.all(color: primaryWarm.withValues(alpha: 0.18))
+                      : null,
+                ),
+                child: Column(
+                  children: [
+                    DailySummaryCard(
+                      summary: summary,
+                      isSelected: isSelected,
+                      isHighlighted: _isHighlightedDate(
+                        state.highlightedDates,
+                        summary.planDate,
                       ),
-                      if (isSelected)
-                        Padding(
-                          padding: const EdgeInsets.fromLTRB(10, 0, 10, 0),
-                          child: MealPlanDayItemsSection(
-                            isLoading: state.isLoadingItems,
-                            items: state.dayItems,
-                            selectedDate: state.selectedDate,
-                            primaryWarm: primaryWarm,
-                            softCream: softCream,
-                          ),
+                      onTap: () async {
+                        final date = summary.planDate;
+                        if (date != null) {
+                          await context.read<MealPlanCubit>().toggleDate(date);
+                        }
+                      },
+                      chipDate: _formatChipDate(summary.planDate),
+                      weekday: _weekdayLabel(context, summary.planDate),
+                      caloriesText: _value(summary.calories, suffix: ' kcal'),
+                      proteinText: _value(summary.protein, suffix: ' g'),
+                      carbsText: _value(summary.carbs, suffix: ' g'),
+                      fatText: _value(summary.fat, suffix: ' g'),
+                      fiberText: _value(summary.fiber, suffix: ' g'),
+                      primaryWarm: primaryWarm,
+                      accentWarm: accentWarm,
+                    ),
+                    if (isSelected)
+                      Padding(
+                        padding: const EdgeInsets.fromLTRB(10, 0, 10, 0),
+                        child: MealPlanDayItemsSection(
+                          isLoading: state.isLoadingItems,
+                          items: state.dayItems,
+                          selectedDate: state.selectedDate,
+                          primaryWarm: primaryWarm,
+                          softCream: softCream,
                         ),
-                    ],
-                  ),
-                );
-              },
-            ),
+                      ),
+                  ],
+                ),
+              );
+            }),
         ],
       ),
     );

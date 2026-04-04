@@ -122,5 +122,109 @@
   "adviceOfPhD": "Lời khuyên từ chuyên gia AI",
   "nutrientOfIngredient": "Dinh dưỡng theo nguyên liệu",
   "qrTitle": "Quét mã QR",
-  "qrSubtitle": "Xem thông tin món ăn từ mã QR"
+  "qrSubtitle": "Xem thông tin món ăn từ mã QR",
+  "mealPlanTitle": "Kế hoạch bữa ăn",
+  "mealPlanNoPlan": "Chưa có kế hoạch ăn uống hiện tại.",
+  "mealPlanCreateAi": "Tạo plan AI",
+  "mealPlanCurrentTag": "Kế hoạch hiện tại",
+  "mealPlanDefaultGoal": "Duy trì bữa ăn cân bằng mỗi ngày",
+  "mealPlanOverviewByDay": "Tổng quan từng ngày",
+  "mealPlanNoDailySummary": "Chưa có tổng hợp dinh dưỡng theo ngày cho meal plan hiện tại.",
+  "mealPlanActionTooltip": "Thao tác meal plan",
+  "mealPlanNoPlanToUpdate": "Chưa có meal plan để cập nhật",
+  "mealPlanNoPlanToContinue": "Chưa có meal plan để sinh tiếp",
+  "mealPlanDeleteNotSupported": "Backend chưa hỗ trợ xóa meal plan",
+  "mealPlanUpdateAction": "Cập nhật meal plan",
+  "mealPlanContinueAction": "Sinh tiếp meal plan",
+  "mealPlanDeleteAction": "Xóa meal plan",
+  "mealPlanContinueTitle": "Sinh tiếp meal plan",
+  "mealPlanContinueSubtitle": "Chọn ngày bắt đầu và số ngày để AI tiếp tục.",
+  "mealPlanStartDate": "Ngày bắt đầu",
+  "mealPlanDays": "Số ngày",
+  "mealPlanDaysExample": "Ví dụ: 3",
+  "mealPlanInvalidDays": "Vui lòng nhập số ngày hợp lệ",
+  "mealPlanContinueButton": "Sinh tiếp",
+  "mealPlanGenerateTitle": "Tạo plan AI",
+  "mealPlanGenerateSubtitle": "Nhập mục tiêu, ngày bắt đầu và số ngày để AI tạo kế hoạch bữa ăn.",
+  "mealPlanGoal": "Mục tiêu",
+  "mealPlanGoalHint": "Ví dụ: Giảm cân, ăn cân bằng, tăng cơ...",
+  "mealPlanDaysHint": "Tối đa 5 ngày mỗi lần tạo",
+  "mealPlanInvalidGenerateInput": "Vui lòng nhập đầy đủ thông tin hợp lệ",
+  "mealPlanCreateButton": "Tạo kế hoạch",
+  "mealPlanUpdateTitle": "Cập nhật meal plan",
+  "mealPlanUpdateButton": "Lưu cập nhật",
+  "mealPlanGoalHintShort": "Ví dụ: Ăn cân bằng, tăng cơ, giảm cân",
+  "mealPlanEndDate": "Ngày kết thúc",
+  "mealPlanNote": "Ghi chú",
+  "mealPlanHealthNote": "Ghi chú sức khỏe",
+  "mealPlanEndDateInvalid": "Ngày kết thúc phải lớn hơn hoặc bằng ngày bắt đầu",
+  "mealPlanCurrentSummaryTitle": "Kế hoạch hiện tại",
+  "mealPlanViewing": "Đang xem",
+  "mealPlanNew": "Mới",
+  "mealPlanProtein": "Chất đạm",
+  "mealPlanCarbs": "Tinh bột",
+  "mealPlanFat": "Chất béo",
+  "mealPlanFiber": "Chất xơ",
+  "mealPlanUnnamedItem": "Món ăn không tên",
+  "mealPlanCannotDeleteItem": "Không thể xóa món ăn này",
+  "mealPlanDeleteItemTitle": "Xóa món ăn",
+  "mealPlanDeleteItemMessage": "Bạn có chắc muốn xóa \"{itemName}\" khỏi meal plan không?",
+  "@mealPlanDeleteItemMessage": {
+    "placeholders": {
+      "itemName": {
+        "type": "String"
+      }
+    }
+  },
+  "mealPlanNoItemsForDay": "Ngày này chưa có món ăn.",
+  "mealPlanEditItemTooltip": "Chỉnh sửa món ăn",
+  "mealPlanDeleteItemTooltip": "Xóa món ăn",
+  "mealPlanServings": "Khẩu phần: {count}",
+  "@mealPlanServings": {
+    "placeholders": {
+      "count": {
+        "type": "String"
+      }
+    }
+  },
+  "mealPlanDayItemsTitle": "Món ăn trong ngày",
+  "mealPlanAddItem": "Thêm món",
+  "mealPlanIngredientsTitle": "Nguyên liệu",
+  "mealPlanNoIngredients": "Chưa có nguyên liệu nào cho món này.",
+  "mealPlanAdd": "Thêm",
+  "mealPlanIngredientNumber": "Nguyên liệu {index}",
+  "@mealPlanIngredientNumber": {
+    "placeholders": {
+      "index": {
+        "type": "int"
+      }
+    }
+  },
+  "mealPlanDeleteIngredientTooltip": "Xóa nguyên liệu",
+  "mealPlanIngredientName": "Tên nguyên liệu",
+  "mealPlanIngredientQuantity": "Số lượng",
+  "mealPlanIngredientUnit": "Đơn vị",
+  "mealPlanIngredientNote": "Ghi chú nguyên liệu",
+  "mealPlanItemNameRequired": "Vui lòng nhập tên món ăn",
+  "mealPlanItemUpdated": "Đã cập nhật món ăn trong plan",
+  "mealPlanItemAdded": "Đã thêm món ăn vào plan",
+  "mealPlanEditItemTitle": "Chỉnh sửa món ăn trong plan",
+  "mealPlanAddItemTitle": "Thêm món ăn vào plan",
+  "mealPlanApplyDate": "Ngày áp dụng",
+  "mealPlanMealSlot": "Buổi ăn",
+  "mealPlanItemName": "Tên món ăn",
+  "mealPlanItemNameHint": "Ví dụ: Salad gà nướng",
+  "mealPlanLinkedMeal": "Món ăn",
+  "mealPlanLinkedMealHelper": "Không sửa món liên kết ở đây",
+  "mealPlanPlannedServings": "Khẩu phần dự kiến",
+  "mealPlanActualServings": "Khẩu phần thực tế",
+  "mealPlanStatus": "Trạng thái",
+  "mealPlanSaveChanges": "Lưu thay đổi",
+  "mealPlanMealSlotBreakfast": "Bữa sáng",
+  "mealPlanMealSlotLunch": "Bữa trưa",
+  "mealPlanMealSlotDinner": "Bữa tối",
+  "mealPlanMealSlotSnack": "Bữa phụ",
+  "mealPlanStatusPlanned": "Đã lên kế hoạch",
+  "mealPlanStatusDone": "Đã ăn",
+  "mealPlanStatusSkipped": "Đã bỏ qua"
 }

@@ -2,6 +2,7 @@ import 'package:eefood/core/widgets/snack_bar.dart';
 import 'package:eefood/features/meal_plan/data/model/meal_plan_response.dart';
 import 'package:eefood/features/meal_plan/data/model/meal_plan_upsert_request.dart';
 import 'package:eefood/features/meal_plan/presentation/provider/meal_plan_cubit.dart';
+import 'package:eefood/l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
@@ -11,6 +12,7 @@ Future<void> showMealPlanUpsertSheet({
   required MealPlanResponse plan,
   Future<void> Function()? onSuccess,
 }) async {
+  final l10n = AppLocalizations.of(context)!;
   final goalController = TextEditingController(text: plan.goal ?? '');
   final startDateController = TextEditingController(
     text: _formatDate(plan.startDate),
@@ -87,9 +89,9 @@ Future<void> showMealPlanUpsertSheet({
                       ),
                     ),
                     const SizedBox(height: 18),
-                    const Text(
-                      'Cap nhat meal plan',
-                      style: TextStyle(
+                    Text(
+                      l10n.mealPlanUpdateTitle,
+                      style: const TextStyle(
                         fontSize: 20,
                         fontWeight: FontWeight.w800,
                       ),
@@ -98,8 +100,8 @@ Future<void> showMealPlanUpsertSheet({
                     TextField(
                       controller: goalController,
                       decoration: InputDecoration(
-                        labelText: 'Muc tieu',
-                        hintText: 'Vi du: An can bang, tang co, giam can',
+                        labelText: l10n.mealPlanGoal,
+                        hintText: l10n.mealPlanGoalHintShort,
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(16),
                         ),
@@ -129,7 +131,7 @@ Future<void> showMealPlanUpsertSheet({
                         );
                       },
                       decoration: InputDecoration(
-                        labelText: 'Ngay bat dau',
+                        labelText: l10n.mealPlanStartDate,
                         suffixIcon: const Icon(Icons.calendar_month_outlined),
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(16),
@@ -144,7 +146,8 @@ Future<void> showMealPlanUpsertSheet({
                         await pickDate(
                           context: context,
                           initialDate: initialEndDate,
-                          firstDate: selectedStartDate ?? DateTime(now.year - 1),
+                          firstDate:
+                              selectedStartDate ?? DateTime(now.year - 1),
                           lastDate: DateTime(now.year + 2),
                           controller: endDateController,
                           onPicked: (value) {
@@ -153,7 +156,7 @@ Future<void> showMealPlanUpsertSheet({
                         );
                       },
                       decoration: InputDecoration(
-                        labelText: 'Ngay ket thuc',
+                        labelText: l10n.mealPlanEndDate,
                         suffixIcon: const Icon(Icons.event_outlined),
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(16),
@@ -166,7 +169,7 @@ Future<void> showMealPlanUpsertSheet({
                       minLines: 2,
                       maxLines: 4,
                       decoration: InputDecoration(
-                        labelText: 'Ghi chu',
+                        labelText: l10n.mealPlanNote,
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(16),
                         ),
@@ -178,7 +181,7 @@ Future<void> showMealPlanUpsertSheet({
                       minLines: 2,
                       maxLines: 4,
                       decoration: InputDecoration(
-                        labelText: 'Ghi chu suc khoe',
+                        labelText: l10n.mealPlanHealthNote,
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(16),
                         ),
@@ -202,7 +205,7 @@ Future<void> showMealPlanUpsertSheet({
                               selectedEndDate!.isBefore(selectedStartDate!)) {
                             showCustomSnackBar(
                               context,
-                              'Ngay ket thuc phai lon hon hoac bang ngay bat dau',
+                              l10n.mealPlanEndDateInvalid,
                               isError: true,
                             );
                             return;
@@ -210,8 +213,8 @@ Future<void> showMealPlanUpsertSheet({
 
                           final goal = goalController.text.trim();
                           final note = noteController.text.trim();
-                          final userHealthNote =
-                              userHealthNoteController.text.trim();
+                          final userHealthNote = userHealthNoteController.text
+                              .trim();
 
                           await cubit.upsertMealPlan(
                             MealPlanUpsertRequest(
@@ -229,9 +232,9 @@ Future<void> showMealPlanUpsertSheet({
                           Navigator.pop(context);
                           await onSuccess?.call();
                         },
-                        child: const Text(
-                          'Luu cap nhat',
-                          style: TextStyle(fontWeight: FontWeight.w700),
+                        child: Text(
+                          l10n.mealPlanUpdateButton,
+                          style: const TextStyle(fontWeight: FontWeight.w700),
                         ),
                       ),
                     ),

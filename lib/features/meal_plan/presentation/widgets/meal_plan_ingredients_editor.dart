@@ -1,5 +1,6 @@
 import 'package:eefood/features/meal_plan/data/model/meal_plan_item_ingredient_response.dart';
 import 'package:eefood/features/meal_plan/data/model/meal_plan_item_ingredient_upsert_request.dart';
+import 'package:eefood/l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
 
 class MealPlanIngredientDraft {
@@ -78,6 +79,7 @@ class MealPlanIngredientsEditor extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -93,7 +95,7 @@ class MealPlanIngredientsEditor extends StatelessWidget {
               border: Border.all(color: const Color(0xFFF2E6D9)),
             ),
             child: Text(
-              'Chưa có nguyên liệu nào cho món này.',
+              l10n.mealPlanNoIngredients,
               style: TextStyle(color: Colors.brown.shade600),
             ),
           )
@@ -121,18 +123,19 @@ class _IngredientSectionHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Row(
       children: [
-        const Expanded(
+        Expanded(
           child: Text(
-            'Nguyên liệu',
-            style: TextStyle(fontSize: 15, fontWeight: FontWeight.w800),
+            l10n.mealPlanIngredientsTitle,
+            style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w800),
           ),
         ),
         TextButton.icon(
           onPressed: onAdd,
           icon: const Icon(Icons.add, size: 18),
-          label: const Text('Thêm'),
+          label: Text(l10n.mealPlanAdd),
         ),
       ],
     );
@@ -152,6 +155,7 @@ class _IngredientEditorCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
@@ -165,21 +169,21 @@ class _IngredientEditorCard extends StatelessWidget {
             children: [
               Expanded(
                 child: Text(
-                  'Nguyên liệu ${index + 1}',
+                  l10n.mealPlanIngredientNumber(index + 1),
                   style: const TextStyle(fontWeight: FontWeight.w700),
                 ),
               ),
               IconButton(
                 onPressed: onRemove,
                 icon: const Icon(Icons.delete_outline),
-                tooltip: 'Xóa nguyên liệu',
+                tooltip: l10n.mealPlanDeleteIngredientTooltip,
               ),
             ],
           ),
           TextField(
             controller: draft.nameController,
             decoration: InputDecoration(
-              labelText: 'Tên nguyên liệu',
+              labelText: l10n.mealPlanIngredientName,
               isDense: true,
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(12),
@@ -193,7 +197,7 @@ class _IngredientEditorCard extends StatelessWidget {
                 child: TextField(
                   controller: draft.quantityController,
                   decoration: InputDecoration(
-                    labelText: 'Số lượng',
+                    labelText: l10n.mealPlanIngredientQuantity,
                     isDense: true,
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(12),
@@ -206,7 +210,7 @@ class _IngredientEditorCard extends StatelessWidget {
                 child: TextField(
                   controller: draft.unitController,
                   decoration: InputDecoration(
-                    labelText: 'Đơn vị',
+                    labelText: l10n.mealPlanIngredientUnit,
                     isDense: true,
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(12),
@@ -222,7 +226,7 @@ class _IngredientEditorCard extends StatelessWidget {
             minLines: 1,
             maxLines: 2,
             decoration: InputDecoration(
-              labelText: 'Ghi chú nguyên liệu',
+              labelText: l10n.mealPlanIngredientNote,
               isDense: true,
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(12),
