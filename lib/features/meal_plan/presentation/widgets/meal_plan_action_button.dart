@@ -52,6 +52,7 @@ class MealPlanActionButton extends StatelessWidget {
 
   Future<void> _openActions(BuildContext context) async {
     final l10n = AppLocalizations.of(context)!;
+    final colorScheme = Theme.of(context).colorScheme;
     await showCustomBottomSheet(context, [
       BottomSheetOption(
         icon: const Icon(Icons.edit_outlined, color: Colors.blueGrey),

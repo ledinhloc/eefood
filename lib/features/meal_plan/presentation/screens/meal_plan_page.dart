@@ -83,12 +83,18 @@ class _MealPlanViewState extends State<_MealPlanView> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final l10n = AppLocalizations.of(context)!;
-    final primaryWarm = const Color(0xFFE85D04);
-    final accentWarm = const Color(0xFFFFBA08);
-    final softCream = const Color(0xFFFFF4E6);
+    final isDark = theme.brightness == Brightness.dark;
+    final colorScheme = theme.colorScheme;
+    final primaryWarm = colorScheme.primary;
+    final accentWarm = colorScheme.secondary == colorScheme.primary
+        ? colorScheme.primaryContainer
+        : colorScheme.secondary;
+    final softCream = isDark
+        ? colorScheme.primaryContainer.withValues(alpha: 0.32)
+        : const Color(0xFFFFF4E6);
 
     return Scaffold(
-      backgroundColor: const Color(0xFFFFFBF7),
+      backgroundColor: theme.scaffoldBackgroundColor,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
@@ -122,7 +128,9 @@ class _MealPlanViewState extends State<_MealPlanView> {
                 if (state.isSubmitting)
                   Positioned.fill(
                     child: ColoredBox(
-                      color: Colors.black.withValues(alpha: 0.18),
+                      color: Colors.black.withValues(
+                        alpha: isDark ? 0.34 : 0.18,
+                      ),
                       child: const Center(child: CircularProgressIndicator()),
                     ),
                   ),
@@ -143,6 +151,15 @@ class _MealPlanViewState extends State<_MealPlanView> {
     Color softCream,
   ) {
     final l10n = AppLocalizations.of(context)!;
+    final isDark = theme.brightness == Brightness.dark;
+    final colorScheme = theme.colorScheme;
+    final emptyCardColor = colorScheme.surface;
+    final emptyCardBorderColor = isDark
+        ? colorScheme.onSurface.withValues(alpha: 0.14)
+        : const Color(0xFFF2E6D9);
+    final selectedDayBorderColor = isDark
+        ? accentWarm.withValues(alpha: 0.32)
+        : primaryWarm.withValues(alpha: 0.18);
     final plan = state.plan;
     if (plan == null) {
       return Center(
@@ -154,7 +171,7 @@ class _MealPlanViewState extends State<_MealPlanView> {
               Icon(
                 Icons.restaurant_menu_outlined,
                 size: 56,
-                color: Colors.orange.shade300,
+                color: colorScheme.primary.withValues(alpha: 0.72),
               ),
               const SizedBox(height: 16),
               Text(
@@ -279,9 +296,9 @@ class _MealPlanViewState extends State<_MealPlanView> {
             Container(
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
-                color: Colors.white,
+                color: emptyCardColor,
                 borderRadius: BorderRadius.circular(18),
-                border: Border.all(color: const Color(0xFFF2E6D9)),
+                border: Border.all(color: emptyCardBorderColor),
               ),
               child: Text(
                 l10n.mealPlanNoDailySummary,
@@ -299,7 +316,7 @@ class _MealPlanViewState extends State<_MealPlanView> {
                   color: isSelected ? softCream.withValues(alpha: 0.55) : null,
                   borderRadius: BorderRadius.circular(24),
                   border: isSelected
-                      ? Border.all(color: primaryWarm.withValues(alpha: 0.18))
+                      ? Border.all(color: selectedDayBorderColor)
                       : null,
                 ),
                 child: Column(

@@ -50,10 +50,15 @@ Future<void> showMealPlanGenerateSheet({
         ),
         child: StatefulBuilder(
           builder: (context, setModalState) {
+            final theme = Theme.of(context);
+            final colorScheme = theme.colorScheme;
+            final isDark = theme.brightness == Brightness.dark;
+            final primaryColor = colorScheme.primary;
+            final onPrimaryColor = colorScheme.onPrimary;
             return Container(
               padding: const EdgeInsets.all(20),
               decoration: BoxDecoration(
-                color: Colors.white,
+                color: colorScheme.surface,
                 borderRadius: BorderRadius.circular(28),
               ),
               child: Column(
@@ -65,7 +70,9 @@ Future<void> showMealPlanGenerateSheet({
                       width: 44,
                       height: 5,
                       decoration: BoxDecoration(
-                        color: Colors.grey.shade300,
+                        color: colorScheme.onSurface.withValues(
+                          alpha: isDark ? 0.26 : 0.18,
+                        ),
                         borderRadius: BorderRadius.circular(999),
                       ),
                     ),
@@ -81,7 +88,10 @@ Future<void> showMealPlanGenerateSheet({
                   const SizedBox(height: 8),
                   Text(
                     l10n.mealPlanGenerateSubtitle,
-                    style: TextStyle(color: Colors.grey.shade700, height: 1.4),
+                    style: theme.textTheme.bodyMedium?.copyWith(
+                      color: colorScheme.onSurface.withValues(alpha: 0.72),
+                      height: 1.4,
+                    ),
                   ),
                   const SizedBox(height: 18),
                   TextField(
@@ -130,8 +140,8 @@ Future<void> showMealPlanGenerateSheet({
                     width: double.infinity,
                     child: ElevatedButton(
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFFE85D04),
-                        foregroundColor: Colors.white,
+                        backgroundColor: primaryColor,
+                        foregroundColor: onPrimaryColor,
                         padding: const EdgeInsets.symmetric(vertical: 14),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(16),

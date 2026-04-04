@@ -38,6 +38,27 @@ class DailySummaryCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+    final colorScheme = theme.colorScheme;
+    final cardColor = isSelected
+        ? colorScheme.primaryContainer.withValues(alpha: isDark ? 0.34 : 0.22)
+        : colorScheme.surface;
+    final defaultBorderColor = isDark
+        ? colorScheme.onSurface.withValues(alpha: 0.14)
+        : const Color(0xFFF1E5D8);
+    final shadowColor = isHighlighted
+        ? primaryWarm.withValues(alpha: isDark ? 0.24 : 0.18)
+        : Colors.black.withValues(alpha: isDark ? 0.16 : 0.04);
+    final proteinColor = isDark
+        ? const Color(0xFFFF8A80)
+        : const Color(0xFFD95D5D);
+    final carbsColor = isDark
+        ? const Color(0xFFFFCC80)
+        : const Color(0xFFF29F05);
+    final fatColor = isDark ? const Color(0xFFA5D6A7) : const Color(0xFF5C9E6A);
+    final fiberColor = isDark
+        ? const Color(0xFF90CAF9)
+        : const Color(0xFF5B8DEF);
 
     return Material(
       color: Colors.transparent,
@@ -47,19 +68,17 @@ class DailySummaryCard extends StatelessWidget {
         child: Ink(
           padding: const EdgeInsets.all(14),
           decoration: BoxDecoration(
-            color: isSelected ? const Color(0xFFFFF4E6) : Colors.white,
+            color: cardColor,
             borderRadius: BorderRadius.circular(22),
             border: Border.all(
               color: isSelected
                   ? accentWarm
-                  : (isHighlighted ? primaryWarm : const Color(0xFFF1E5D8)),
+                  : (isHighlighted ? primaryWarm : defaultBorderColor),
               width: isSelected || isHighlighted ? 1.4 : 1,
             ),
             boxShadow: [
               BoxShadow(
-                color: isHighlighted
-                    ? primaryWarm.withValues(alpha: 0.18)
-                    : Colors.black.withValues(alpha: 0.04),
+                color: shadowColor,
                 blurRadius: isHighlighted ? 20 : 16,
                 offset: const Offset(0, 6),
               ),
@@ -108,6 +127,7 @@ class DailySummaryCard extends StatelessWidget {
                           caloriesText,
                           style: theme.textTheme.titleMedium?.copyWith(
                             fontWeight: FontWeight.w800,
+                            color: colorScheme.onSurface,
                           ),
                         ),
                       ],
@@ -159,19 +179,19 @@ class DailySummaryCard extends StatelessWidget {
                   _MacroPill(
                     label: l10n.mealPlanProtein,
                     value: proteinText,
-                    color: const Color(0xFFD94841),
+                    color: proteinColor,
                   ),
                   const SizedBox(width: 6),
                   _MacroPill(
                     label: l10n.mealPlanCarbs,
                     value: carbsText,
-                    color: const Color(0xFFF48C06),
+                    color: carbsColor,
                   ),
                   const SizedBox(width: 6),
                   _MacroPill(
                     label: l10n.mealPlanFat,
                     value: fatText,
-                    color: const Color(0xFF6A994E),
+                    color: fatColor,
                   ),
                 ],
               ),
@@ -181,7 +201,7 @@ class DailySummaryCard extends StatelessWidget {
                   _MacroPill(
                     label: l10n.mealPlanFiber,
                     value: fiberText,
-                    color: const Color(0xFF577590),
+                    color: fiberColor,
                   ),
                 ],
               ),

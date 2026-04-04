@@ -80,6 +80,16 @@ class MealPlanIngredientsEditor extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+    final colorScheme = theme.colorScheme;
+    final cardColor = colorScheme.surface;
+    final borderColor = isDark
+        ? colorScheme.onSurface.withValues(alpha: 0.14)
+        : const Color(0xFFF2E6D9);
+    final secondaryTextColor = isDark
+        ? colorScheme.onSurface.withValues(alpha: 0.72)
+        : Colors.brown.shade600;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -90,13 +100,13 @@ class MealPlanIngredientsEditor extends StatelessWidget {
             margin: const EdgeInsets.only(top: 10),
             padding: const EdgeInsets.all(14),
             decoration: BoxDecoration(
-              color: const Color(0xFFFFFBF7),
+              color: cardColor,
               borderRadius: BorderRadius.circular(16),
-              border: Border.all(color: const Color(0xFFF2E6D9)),
+              border: Border.all(color: borderColor),
             ),
             child: Text(
               l10n.mealPlanNoIngredients,
-              style: TextStyle(color: Colors.brown.shade600),
+              style: TextStyle(color: secondaryTextColor),
             ),
           )
         else
@@ -156,12 +166,19 @@ class _IngredientEditorCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+    final colorScheme = theme.colorScheme;
+    final cardColor = colorScheme.surface;
+    final borderColor = isDark
+        ? colorScheme.onSurface.withValues(alpha: 0.14)
+        : const Color(0xFFF2E6D9);
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: const Color(0xFFFFFBF7),
+        color: cardColor,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: const Color(0xFFF2E6D9)),
+        border: Border.all(color: borderColor),
       ),
       child: Column(
         children: [

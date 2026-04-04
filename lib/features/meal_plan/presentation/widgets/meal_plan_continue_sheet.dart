@@ -58,10 +58,15 @@ Future<void> showMealPlanContinueSheet({
         ),
         child: StatefulBuilder(
           builder: (context, setModalState) {
+            final theme = Theme.of(context);
+            final colorScheme = theme.colorScheme;
+            final isDark = theme.brightness == Brightness.dark;
+            final primaryColor = colorScheme.primary;
+            final onPrimaryColor = colorScheme.onPrimary;
             return Container(
               padding: const EdgeInsets.all(20),
               decoration: BoxDecoration(
-                color: Colors.white,
+                color: colorScheme.surface,
                 borderRadius: BorderRadius.circular(28),
               ),
               child: Column(
@@ -73,7 +78,9 @@ Future<void> showMealPlanContinueSheet({
                       width: 44,
                       height: 5,
                       decoration: BoxDecoration(
-                        color: Colors.grey.shade300,
+                        color: colorScheme.onSurface.withValues(
+                          alpha: isDark ? 0.26 : 0.18,
+                        ),
                         borderRadius: BorderRadius.circular(999),
                       ),
                     ),
@@ -89,7 +96,10 @@ Future<void> showMealPlanContinueSheet({
                   const SizedBox(height: 8),
                   Text(
                     l10n.mealPlanContinueSubtitle,
-                    style: TextStyle(color: Colors.grey.shade700, height: 1.4),
+                    style: theme.textTheme.bodyMedium?.copyWith(
+                      color: colorScheme.onSurface.withValues(alpha: 0.72),
+                      height: 1.4,
+                    ),
                   ),
                   const SizedBox(height: 18),
                   TextField(
@@ -130,8 +140,8 @@ Future<void> showMealPlanContinueSheet({
                         width: double.infinity,
                         child: ElevatedButton(
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: const Color(0xFFE85D04),
-                            foregroundColor: Colors.white,
+                            backgroundColor: primaryColor,
+                            foregroundColor: onPrimaryColor,
                             padding: const EdgeInsets.symmetric(vertical: 14),
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(16),
@@ -161,13 +171,13 @@ Future<void> showMealPlanContinueSheet({
                                   Navigator.pop(context);
                                 },
                           child: state.isSubmitting
-                              ? const SizedBox(
+                              ? SizedBox(
                                   width: 20,
                                   height: 20,
                                   child: CircularProgressIndicator(
                                     strokeWidth: 2,
                                     valueColor: AlwaysStoppedAnimation<Color>(
-                                      Colors.white,
+                                      onPrimaryColor,
                                     ),
                                   ),
                                 )

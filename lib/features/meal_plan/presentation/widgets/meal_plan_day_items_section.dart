@@ -101,8 +101,8 @@ class MealPlanDayItemsSection extends StatelessWidget {
             ElevatedButton(
               onPressed: () => Navigator.pop(dialogContext, true),
               style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.red,
-                foregroundColor: Colors.white,
+                backgroundColor: Theme.of(dialogContext).colorScheme.error,
+                foregroundColor: Theme.of(dialogContext).colorScheme.onError,
               ),
               child: Text(l10n.mealPlanDeleteAction),
             ),
@@ -119,6 +119,19 @@ class MealPlanDayItemsSection extends StatelessWidget {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+    final colorScheme = theme.colorScheme;
+    final cardColor = colorScheme.surface;
+    final borderColor = isDark
+        ? colorScheme.onSurface.withValues(alpha: 0.14)
+        : const Color(0xFFF2E6D9);
+    final secondaryTextColor = isDark
+        ? colorScheme.onSurface.withValues(alpha: 0.72)
+        : Colors.brown.shade600;
+    final tertiaryTextColor = isDark
+        ? colorScheme.onSurface.withValues(alpha: 0.84)
+        : Colors.brown.shade700;
+    final shadowColor = Colors.black.withValues(alpha: isDark ? 0.16 : 0.04);
 
     if (isLoading) {
       return const Padding(
@@ -157,12 +170,12 @@ class MealPlanDayItemsSection extends StatelessWidget {
             margin: const EdgeInsets.only(bottom: 8),
             padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
-              color: Colors.white,
+              color: cardColor,
               borderRadius: BorderRadius.circular(18),
-              border: Border.all(color: const Color(0xFFF2E6D9)),
+              border: Border.all(color: borderColor),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.04),
+                  color: shadowColor,
                   blurRadius: 14,
                   offset: const Offset(0, 4),
                 ),
@@ -231,7 +244,7 @@ class MealPlanDayItemsSection extends StatelessWidget {
                             child: Text(
                               item.status.localizedLabel(l10n),
                               style: TextStyle(
-                                color: Colors.brown.shade600,
+                                color: secondaryTextColor,
                                 fontSize: 12,
                                 fontWeight: FontWeight.w600,
                               ),
@@ -249,7 +262,7 @@ class MealPlanDayItemsSection extends StatelessWidget {
                             onPressed: () => _handleDeleteItem(context, item),
                             icon: const Icon(Icons.delete_outline, size: 20),
                             tooltip: l10n.mealPlanDeleteItemTooltip,
-                            color: Colors.red.shade400,
+                            color: colorScheme.error,
                           ),
                         ],
                       ),
@@ -278,7 +291,7 @@ class MealPlanDayItemsSection extends StatelessWidget {
                           '${item.actualServings ?? item.plannedServings ?? '--'}',
                         ),
                         style: theme.textTheme.bodySmall?.copyWith(
-                          color: Colors.brown.shade600,
+                          color: secondaryTextColor,
                         ),
                       ),
                       if (item.calories != null) ...[
@@ -286,7 +299,7 @@ class MealPlanDayItemsSection extends StatelessWidget {
                         Text(
                           _value(item.calories, suffix: ' kcal'),
                           style: theme.textTheme.bodySmall?.copyWith(
-                            color: Colors.brown.shade700,
+                            color: tertiaryTextColor,
                             fontWeight: FontWeight.w600,
                           ),
                         ),

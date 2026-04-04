@@ -191,11 +191,16 @@ class _MealPlanItemUpsertSheetContentState
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    final isDark = theme.brightness == Brightness.dark;
+    final primaryColor = colorScheme.primary;
+    final onPrimaryColor = colorScheme.onPrimary;
 
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: colorScheme.surface,
         borderRadius: BorderRadius.circular(28),
       ),
       child: SingleChildScrollView(
@@ -208,7 +213,9 @@ class _MealPlanItemUpsertSheetContentState
                 width: 44,
                 height: 5,
                 decoration: BoxDecoration(
-                  color: Colors.grey.shade300,
+                  color: colorScheme.onSurface.withValues(
+                    alpha: isDark ? 0.26 : 0.18,
+                  ),
                   borderRadius: BorderRadius.circular(999),
                 ),
               ),
@@ -365,8 +372,8 @@ class _MealPlanItemUpsertSheetContentState
               width: double.infinity,
               child: ElevatedButton(
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFFE85D04),
-                  foregroundColor: Colors.white,
+                  backgroundColor: primaryColor,
+                  foregroundColor: onPrimaryColor,
                   padding: const EdgeInsets.symmetric(vertical: 14),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(16),
