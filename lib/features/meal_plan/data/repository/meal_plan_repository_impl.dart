@@ -41,20 +41,20 @@ class MealPlanRepositoryImpl implements MealPlanRepository {
     }
   }
 
-  @override
-  Future<MealPlanDailySummaryResponse> getDailySummaryByDate(
-    DateTime date,
-  ) async {
-    try {
-      final response = await dio.get(
-        '/v1/meal-plan/daily-summary/by-date',
-        queryParameters: {'date': _localDate(date)},
-      );
-      return MealPlanDailySummaryResponse.fromJson(response.data['data']);
-    } catch (err) {
-      throw Exception('Get meal plan daily summary by date failed: $err');
-    }
-  }
+  // @override
+  // Future<MealPlanDailySummaryResponse> getDailySummaryByDate(
+  //   DateTime date,
+  // ) async {
+  //   try {
+  //     final response = await dio.get(
+  //       '/v1/meal-plan/daily-summary/by-date',
+  //       queryParameters: {'date': _localDate(date)},
+  //     );
+  //     return MealPlanDailySummaryResponse.fromJson(response.data['data']);
+  //   } catch (err) {
+  //     throw Exception('Get meal plan daily summary by date failed: $err');
+  //   }
+  // }
 
   @override
   Future<MealPlanResponse> upsertMealPlan(MealPlanUpsertRequest request) async {
@@ -87,11 +87,15 @@ class MealPlanRepositoryImpl implements MealPlanRepository {
   }
 
   @override
-  Future<MealPlanResponse> continueMealPlan({int? days}) async {
+  Future<MealPlanResponse> continueMealPlan({
+    required DateTime startDate,
+    int? days,
+  }) async {
     try {
       final response = await dio.post(
         '/v1/meal-plan/continue',
         queryParameters: {
+          'startDate': _localDate(startDate),
           if (days != null) 'days': days,
         },
       );

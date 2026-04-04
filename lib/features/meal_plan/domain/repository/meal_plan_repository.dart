@@ -10,13 +10,16 @@ abstract class MealPlanRepository {
 
   Future<List<MealPlanDailySummaryResponse>> getDailySummary();
 
-  Future<MealPlanDailySummaryResponse> getDailySummaryByDate(DateTime date);
+  // Future<MealPlanDailySummaryResponse> getDailySummaryByDate(DateTime date);
 
   Future<MealPlanResponse> upsertMealPlan(MealPlanUpsertRequest request);
 
   Future<MealPlanResponse> generateMealPlan(MealPlanGenerateRequest request);
 
-  Future<MealPlanResponse> continueMealPlan({int? days});
+  Future<MealPlanResponse> continueMealPlan({
+    required DateTime startDate,
+    int? days,
+  });
 
   Future<MealPlanItemResponse> upsertMealPlanItem(
     MealPlanItemUpsertRequest request,

@@ -115,12 +115,7 @@ class MealPlanCubit extends Cubit<MealPlanState> {
       return;
     }
 
-    emit(
-      state.copyWith(
-        selectedDate: date,
-        dayItems: const [],
-      ),
-    );
+    emit(state.copyWith(selectedDate: date, dayItems: const []));
     await loadItemsByDate(date);
   }
 
@@ -130,20 +125,10 @@ class MealPlanCubit extends Cubit<MealPlanState> {
     final targetDate = date ?? state.selectedDate;
     if (targetDate == null) return;
 
-    emit(
-      state.copyWith(
-        isLoadingItems: true,
-        clearError: true,
-      ),
-    );
+    emit(state.copyWith(isLoadingItems: true, clearError: true));
     try {
       final items = await repository.getMealPlanItemsByDate(targetDate);
-      emit(
-        state.copyWith(
-          isLoadingItems: false,
-          dayItems: items,
-        ),
-      );
+      emit(state.copyWith(isLoadingItems: false, dayItems: items));
     } catch (e) {
       emit(state.copyWith(isLoadingItems: false, error: e.toString()));
     }
@@ -170,11 +155,7 @@ class MealPlanCubit extends Cubit<MealPlanState> {
   Future<void> refreshDailySummaryByDate([DateTime? _]) async {
     try {
       final summaries = await repository.getDailySummary();
-      emit(
-        state.copyWith(
-          dailySummaries: summaries,
-        ),
-      );
+      emit(state.copyWith(dailySummaries: summaries));
     } catch (e) {
       emit(state.copyWith(error: e.toString()));
     }
@@ -185,12 +166,7 @@ class MealPlanCubit extends Cubit<MealPlanState> {
     emit(state.copyWith(isSubmitting: true, clearError: true));
     try {
       final plan = await repository.upsertMealPlan(request);
-      emit(
-        state.copyWith(
-          isSubmitting: false,
-          plan: plan,
-        ),
-      );
+      emit(state.copyWith(isSubmitting: false, plan: plan));
     } catch (e) {
       emit(state.copyWith(isSubmitting: false, error: e.toString()));
     }
@@ -231,20 +207,29 @@ class MealPlanCubit extends Cubit<MealPlanState> {
   }
 
   // Sinh tiếp thêm ngày cho plan hiện tại rồi refresh lại phần overview.
-  Future<void> continueMealPlan({int? days}) async {
+  Future<void> continueMealPlan({
+    required DateTime startDate,
+    int? days,
+  }) async {
     emit(state.copyWith(isSubmitting: true, clearError: true));
     try {
-      final plan = await repository.continueMealPlan(days: days);
+      final plan = await repository.continueMealPlan(
+        startDate: startDate,
+        days: days,
+      );
       final summaries = await repository.getDailySummary();
-      final selectedDate = state.selectedDate ?? (summaries.isNotEmpty ? summaries.first.planDate : plan.startDate);
+      final selectedDate = startDate;
       emit(
         state.copyWith(
           isSubmitting: false,
           plan: plan,
           dailySummaries: summaries,
           selectedDate: selectedDate,
+          dayItems: const [],
+          highlightedDates: _buildHighlightedDates(startDate, days),
         ),
       );
+      await loadItemsByDate(selectedDate);
     } catch (e) {
       emit(state.copyWith(isSubmitting: false, error: e.toString()));
     }
@@ -257,7 +242,8 @@ class MealPlanCubit extends Cubit<MealPlanState> {
     emit(state.copyWith(isSubmitting: true, clearError: true));
     try {
       final item = await repository.upsertMealPlanItem(request);
-      final targetDate = item.planDate ?? request.planDate ?? state.selectedDate;
+      final targetDate =
+          item.planDate ?? request.planDate ?? state.selectedDate;
       final shouldPatchCurrentList = _sameDay(targetDate, state.selectedDate);
       emit(
         state.copyWith(
@@ -284,13 +270,11 @@ class MealPlanCubit extends Cubit<MealPlanState> {
     emit(state.copyWith(isSubmitting: true, clearError: true));
     try {
       final plan = await repository.deleteMealPlanItem(id);
-      final updatedItems = state.dayItems.where((item) => item.id != id).toList();
+      final updatedItems = state.dayItems
+          .where((item) => item.id != id)
+          .toList();
       emit(
-        state.copyWith(
-          isSubmitting: false,
-          plan: plan,
-          dayItems: updatedItems,
-        ),
+        state.copyWith(isSubmitting: false, plan: plan, dayItems: updatedItems),
       );
       await refreshDailySummaryByDate();
     } catch (e) {
