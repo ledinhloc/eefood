@@ -55,10 +55,16 @@ Future<void> showMealPlanGenerateSheet({
             final isDark = theme.brightness == Brightness.dark;
             final primaryColor = colorScheme.primary;
             final onPrimaryColor = colorScheme.onPrimary;
+            final sheetBackground = isDark
+                ? Color.alphaBlend(
+                    colorScheme.onSurface.withValues(alpha: 0.04),
+                    colorScheme.surface,
+                  )
+                : colorScheme.surface;
             return Container(
               padding: const EdgeInsets.all(20),
               decoration: BoxDecoration(
-                color: colorScheme.surface,
+                color: sheetBackground,
                 borderRadius: BorderRadius.circular(28),
               ),
               child: Column(
