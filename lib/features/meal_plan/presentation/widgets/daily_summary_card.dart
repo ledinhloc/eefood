@@ -40,9 +40,7 @@ class DailySummaryCard extends StatelessWidget {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
     final colorScheme = theme.colorScheme;
-    final cardColor = isSelected
-        ? colorScheme.primaryContainer.withValues(alpha: isDark ? 0.34 : 0.22)
-        : colorScheme.surface;
+    final cardColor = colorScheme.surface;
     final defaultBorderColor = isDark
         ? colorScheme.onSurface.withValues(alpha: 0.14)
         : const Color(0xFFF1E5D8);
@@ -71,10 +69,8 @@ class DailySummaryCard extends StatelessWidget {
             color: cardColor,
             borderRadius: BorderRadius.circular(22),
             border: Border.all(
-              color: isSelected
-                  ? accentWarm
-                  : (isHighlighted ? primaryWarm : defaultBorderColor),
-              width: isSelected || isHighlighted ? 1.4 : 1,
+              color: isHighlighted ? primaryWarm : defaultBorderColor,
+              width: isHighlighted ? 1.4 : 1,
             ),
             boxShadow: [
               BoxShadow(

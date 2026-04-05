@@ -85,16 +85,21 @@ class _MealPlanViewState extends State<_MealPlanView> {
     final l10n = AppLocalizations.of(context)!;
     final isDark = theme.brightness == Brightness.dark;
     final colorScheme = theme.colorScheme;
-    final primaryWarm = colorScheme.primary;
-    final accentWarm = colorScheme.secondary == colorScheme.primary
-        ? colorScheme.primaryContainer
-        : colorScheme.secondary;
+    final pageBackground = isDark
+        ? theme.scaffoldBackgroundColor
+        : const Color(0xFFFFFBF7);
+    final primaryWarm = isDark ? colorScheme.primary : const Color(0xFFE85D04);
+    final accentWarm = isDark
+        ? (colorScheme.secondary == colorScheme.primary
+              ? colorScheme.primaryContainer
+              : colorScheme.secondary)
+        : const Color(0xFFF48C06);
     final softCream = isDark
         ? colorScheme.primaryContainer.withValues(alpha: 0.32)
         : const Color(0xFFFFF4E6);
 
     return Scaffold(
-      backgroundColor: theme.scaffoldBackgroundColor,
+      backgroundColor: pageBackground,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
@@ -153,13 +158,13 @@ class _MealPlanViewState extends State<_MealPlanView> {
     final l10n = AppLocalizations.of(context)!;
     final isDark = theme.brightness == Brightness.dark;
     final colorScheme = theme.colorScheme;
-    final emptyCardColor = colorScheme.surface;
+    final emptyCardColor = isDark ? colorScheme.surface : Colors.white;
     final emptyCardBorderColor = isDark
         ? colorScheme.onSurface.withValues(alpha: 0.14)
         : const Color(0xFFF2E6D9);
     final selectedDayBorderColor = isDark
-        ? accentWarm.withValues(alpha: 0.32)
-        : primaryWarm.withValues(alpha: 0.18);
+        ? const Color(0xFFC9A789)
+        : const Color(0xFFF1D8C0);
     final plan = state.plan;
     if (plan == null) {
       return Center(
@@ -311,14 +316,14 @@ class _MealPlanViewState extends State<_MealPlanView> {
 
               return Container(
                 margin: const EdgeInsets.only(bottom: 8),
-                padding: EdgeInsets.fromLTRB(0, 0, 0, isSelected ? 10 : 0),
+                padding: EdgeInsets.all(isSelected ? 1.2 : 0),
                 decoration: BoxDecoration(
-                  color: isSelected ? softCream.withValues(alpha: 0.55) : null,
                   borderRadius: BorderRadius.circular(24),
                   border: isSelected
                       ? Border.all(color: selectedDayBorderColor)
                       : null,
                 ),
+                clipBehavior: Clip.antiAlias,
                 child: Column(
                   children: [
                     DailySummaryCard(
@@ -346,7 +351,7 @@ class _MealPlanViewState extends State<_MealPlanView> {
                     ),
                     if (isSelected)
                       Padding(
-                        padding: const EdgeInsets.fromLTRB(10, 0, 10, 0),
+                        padding: const EdgeInsets.fromLTRB(10, 6, 10, 10),
                         child: MealPlanDayItemsSection(
                           isLoading: state.isLoadingItems,
                           items: state.dayItems,
