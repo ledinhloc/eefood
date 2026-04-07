@@ -336,4 +336,259 @@ class AppLocalizationsVi extends AppLocalizations {
 
   @override
   String get qrSubtitle => 'Xem thông tin món ăn từ mã QR';
+
+  @override
+  String get mealPlanTitle => 'Kế hoạch bữa ăn';
+
+  @override
+  String get mealPlanNoPlan => 'Chưa có kế hoạch ăn uống hiện tại.';
+
+  @override
+  String get mealPlanCreateAi => 'Tạo plan AI';
+
+  @override
+  String get mealPlanCurrentTag => 'Kế hoạch hiện tại';
+
+  @override
+  String get mealPlanDefaultGoal => 'Duy trì bữa ăn cân bằng mỗi ngày';
+
+  @override
+  String get mealPlanOverviewByDay => 'Tổng quan từng ngày';
+
+  @override
+  String get mealPlanNoDailySummary => 'Chưa có tổng hợp dinh dưỡng theo ngày cho meal plan hiện tại.';
+
+  @override
+  String get mealPlanActionTooltip => 'Thao tác meal plan';
+
+  @override
+  String get mealPlanNoPlanToUpdate => 'Chưa có meal plan để cập nhật';
+
+  @override
+  String get mealPlanNoPlanToContinue => 'Chưa có meal plan để sinh tiếp';
+
+  @override
+  String get mealPlanDeleteNotSupported => 'Backend chưa hỗ trợ xóa meal plan';
+
+  @override
+  String get mealPlanUpdateAction => 'Cập nhật meal plan';
+
+  @override
+  String get mealPlanContinueAction => 'Sinh tiếp meal plan';
+
+  @override
+  String get mealPlanDeleteAction => 'Xóa meal plan';
+
+  @override
+  String get mealPlanContinueTitle => 'Sinh tiếp meal plan';
+
+  @override
+  String get mealPlanContinueSubtitle => 'Chọn ngày bắt đầu và số ngày để AI tiếp tục.';
+
+  @override
+  String get mealPlanStartDate => 'Ngày bắt đầu';
+
+  @override
+  String get mealPlanDays => 'Số ngày';
+
+  @override
+  String get mealPlanDaysExample => 'Ví dụ: 3';
+
+  @override
+  String get mealPlanInvalidDays => 'Vui lòng nhập số ngày hợp lệ';
+
+  @override
+  String get mealPlanContinueButton => 'Sinh tiếp';
+
+  @override
+  String get mealPlanGenerateTitle => 'Tạo plan AI';
+
+  @override
+  String get mealPlanGenerateSubtitle => 'Nhập mục tiêu, ngày bắt đầu và số ngày để AI tạo kế hoạch bữa ăn.';
+
+  @override
+  String get mealPlanGoal => 'Mục tiêu';
+
+  @override
+  String get mealPlanGoalHint => 'Ví dụ: Giảm cân, ăn cân bằng, tăng cơ...';
+
+  @override
+  String get mealPlanDaysHint => 'Tối đa 5 ngày mỗi lần tạo';
+
+  @override
+  String get mealPlanInvalidGenerateInput => 'Vui lòng nhập đầy đủ thông tin hợp lệ';
+
+  @override
+  String get mealPlanCreateButton => 'Tạo kế hoạch';
+
+  @override
+  String get mealPlanUpdateTitle => 'Cập nhật meal plan';
+
+  @override
+  String get mealPlanUpdateButton => 'Lưu cập nhật';
+
+  @override
+  String get mealPlanGoalHintShort => 'Ví dụ: Ăn cân bằng, tăng cơ, giảm cân';
+
+  @override
+  String get mealPlanEndDate => 'Ngày kết thúc';
+
+  @override
+  String get mealPlanNote => 'Ghi chú';
+
+  @override
+  String get mealPlanHealthNote => 'Ghi chú sức khỏe';
+
+  @override
+  String get mealPlanEndDateInvalid => 'Ngày kết thúc phải lớn hơn hoặc bằng ngày bắt đầu';
+
+  @override
+  String get mealPlanCurrentSummaryTitle => 'Kế hoạch hiện tại';
+
+  @override
+  String get mealPlanViewing => 'Đang xem';
+
+  @override
+  String get mealPlanNew => 'Mới';
+
+  @override
+  String get mealPlanProtein => 'Chất đạm';
+
+  @override
+  String get mealPlanCarbs => 'Tinh bột';
+
+  @override
+  String get mealPlanFat => 'Chất béo';
+
+  @override
+  String get mealPlanFiber => 'Chất xơ';
+
+  @override
+  String get mealPlanUnnamedItem => 'Món ăn không tên';
+
+  @override
+  String get mealPlanCannotDeleteItem => 'Không thể xóa món ăn này';
+
+  @override
+  String get mealPlanDeleteItemTitle => 'Xóa món ăn';
+
+  @override
+  String mealPlanDeleteItemMessage(String itemName) {
+    return 'Bạn có chắc muốn xóa \"$itemName\" khỏi meal plan không?';
+  }
+
+  @override
+  String get mealPlanNoItemsForDay => 'Ngày này chưa có món ăn.';
+
+  @override
+  String get mealPlanEditItemTooltip => 'Chỉnh sửa món ăn';
+
+  @override
+  String get mealPlanDeleteItemTooltip => 'Xóa món ăn';
+
+  @override
+  String mealPlanServings(String count) {
+    return 'Khẩu phần: $count';
+  }
+
+  @override
+  String get mealPlanDayItemsTitle => 'Món ăn trong ngày';
+
+  @override
+  String get mealPlanAddItem => 'Thêm món';
+
+  @override
+  String get mealPlanIngredientsTitle => 'Nguyên liệu';
+
+  @override
+  String get mealPlanNoIngredients => 'Chưa có nguyên liệu nào cho món này.';
+
+  @override
+  String get mealPlanAdd => 'Thêm';
+
+  @override
+  String mealPlanIngredientNumber(int index) {
+    return 'Nguyên liệu $index';
+  }
+
+  @override
+  String get mealPlanDeleteIngredientTooltip => 'Xóa nguyên liệu';
+
+  @override
+  String get mealPlanIngredientName => 'Tên nguyên liệu';
+
+  @override
+  String get mealPlanIngredientQuantity => 'Số lượng';
+
+  @override
+  String get mealPlanIngredientUnit => 'Đơn vị';
+
+  @override
+  String get mealPlanIngredientNote => 'Ghi chú nguyên liệu';
+
+  @override
+  String get mealPlanItemNameRequired => 'Vui lòng nhập tên món ăn';
+
+  @override
+  String get mealPlanItemUpdated => 'Đã cập nhật món ăn trong plan';
+
+  @override
+  String get mealPlanItemAdded => 'Đã thêm món ăn vào plan';
+
+  @override
+  String get mealPlanEditItemTitle => 'Chỉnh sửa món ăn trong plan';
+
+  @override
+  String get mealPlanAddItemTitle => 'Thêm món ăn vào plan';
+
+  @override
+  String get mealPlanApplyDate => 'Ngày áp dụng';
+
+  @override
+  String get mealPlanMealSlot => 'Buổi ăn';
+
+  @override
+  String get mealPlanItemName => 'Tên món ăn';
+
+  @override
+  String get mealPlanItemNameHint => 'Ví dụ: Salad gà nướng';
+
+  @override
+  String get mealPlanLinkedMeal => 'Món ăn';
+
+  @override
+  String get mealPlanLinkedMealHelper => 'Không sửa món liên kết ở đây';
+
+  @override
+  String get mealPlanPlannedServings => 'Khẩu phần dự kiến';
+
+  @override
+  String get mealPlanActualServings => 'Khẩu phần thực tế';
+
+  @override
+  String get mealPlanStatus => 'Trạng thái';
+
+  @override
+  String get mealPlanSaveChanges => 'Lưu thay đổi';
+
+  @override
+  String get mealPlanMealSlotBreakfast => 'Bữa sáng';
+
+  @override
+  String get mealPlanMealSlotLunch => 'Bữa trưa';
+
+  @override
+  String get mealPlanMealSlotDinner => 'Bữa tối';
+
+  @override
+  String get mealPlanMealSlotSnack => 'Bữa phụ';
+
+  @override
+  String get mealPlanStatusPlanned => 'Đã lên kế hoạch';
+
+  @override
+  String get mealPlanStatusDone => 'Đã ăn';
+
+  @override
+  String get mealPlanStatusSkipped => 'Đã bỏ qua';
 }

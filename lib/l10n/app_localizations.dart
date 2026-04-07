@@ -748,6 +748,504 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'View recipe detail from QR Code'**
   String get qrSubtitle;
+
+  /// No description provided for @mealPlanTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Meal Plan'**
+  String get mealPlanTitle;
+
+  /// No description provided for @mealPlanNoPlan.
+  ///
+  /// In en, this message translates to:
+  /// **'There is no current meal plan yet.'**
+  String get mealPlanNoPlan;
+
+  /// No description provided for @mealPlanCreateAi.
+  ///
+  /// In en, this message translates to:
+  /// **'Create AI plan'**
+  String get mealPlanCreateAi;
+
+  /// No description provided for @mealPlanCurrentTag.
+  ///
+  /// In en, this message translates to:
+  /// **'Current plan'**
+  String get mealPlanCurrentTag;
+
+  /// No description provided for @mealPlanDefaultGoal.
+  ///
+  /// In en, this message translates to:
+  /// **'Maintain balanced meals every day'**
+  String get mealPlanDefaultGoal;
+
+  /// No description provided for @mealPlanOverviewByDay.
+  ///
+  /// In en, this message translates to:
+  /// **'Daily overview'**
+  String get mealPlanOverviewByDay;
+
+  /// No description provided for @mealPlanNoDailySummary.
+  ///
+  /// In en, this message translates to:
+  /// **'No daily nutrition summary is available for the current meal plan.'**
+  String get mealPlanNoDailySummary;
+
+  /// No description provided for @mealPlanActionTooltip.
+  ///
+  /// In en, this message translates to:
+  /// **'Meal plan actions'**
+  String get mealPlanActionTooltip;
+
+  /// No description provided for @mealPlanNoPlanToUpdate.
+  ///
+  /// In en, this message translates to:
+  /// **'There is no meal plan to update'**
+  String get mealPlanNoPlanToUpdate;
+
+  /// No description provided for @mealPlanNoPlanToContinue.
+  ///
+  /// In en, this message translates to:
+  /// **'There is no meal plan to continue'**
+  String get mealPlanNoPlanToContinue;
+
+  /// No description provided for @mealPlanDeleteNotSupported.
+  ///
+  /// In en, this message translates to:
+  /// **'Backend does not support deleting meal plans yet'**
+  String get mealPlanDeleteNotSupported;
+
+  /// No description provided for @mealPlanUpdateAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Update meal plan'**
+  String get mealPlanUpdateAction;
+
+  /// No description provided for @mealPlanContinueAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Continue meal plan'**
+  String get mealPlanContinueAction;
+
+  /// No description provided for @mealPlanDeleteAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete meal plan'**
+  String get mealPlanDeleteAction;
+
+  /// No description provided for @mealPlanContinueTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Continue meal plan'**
+  String get mealPlanContinueTitle;
+
+  /// No description provided for @mealPlanContinueSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose a start date and number of days for AI to continue the plan.'**
+  String get mealPlanContinueSubtitle;
+
+  /// No description provided for @mealPlanStartDate.
+  ///
+  /// In en, this message translates to:
+  /// **'Start date'**
+  String get mealPlanStartDate;
+
+  /// No description provided for @mealPlanDays.
+  ///
+  /// In en, this message translates to:
+  /// **'Number of days'**
+  String get mealPlanDays;
+
+  /// No description provided for @mealPlanDaysExample.
+  ///
+  /// In en, this message translates to:
+  /// **'Example: 3'**
+  String get mealPlanDaysExample;
+
+  /// No description provided for @mealPlanInvalidDays.
+  ///
+  /// In en, this message translates to:
+  /// **'Please enter a valid number of days'**
+  String get mealPlanInvalidDays;
+
+  /// No description provided for @mealPlanContinueButton.
+  ///
+  /// In en, this message translates to:
+  /// **'Continue'**
+  String get mealPlanContinueButton;
+
+  /// No description provided for @mealPlanGenerateTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Create AI plan'**
+  String get mealPlanGenerateTitle;
+
+  /// No description provided for @mealPlanGenerateSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter a goal, start date, and number of days for AI to create your meal plan.'**
+  String get mealPlanGenerateSubtitle;
+
+  /// No description provided for @mealPlanGoal.
+  ///
+  /// In en, this message translates to:
+  /// **'Goal'**
+  String get mealPlanGoal;
+
+  /// No description provided for @mealPlanGoalHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Example: Lose weight, eat balanced meals, build muscle...'**
+  String get mealPlanGoalHint;
+
+  /// No description provided for @mealPlanDaysHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Up to 5 days per generation'**
+  String get mealPlanDaysHint;
+
+  /// No description provided for @mealPlanInvalidGenerateInput.
+  ///
+  /// In en, this message translates to:
+  /// **'Please enter all valid required information'**
+  String get mealPlanInvalidGenerateInput;
+
+  /// No description provided for @mealPlanCreateButton.
+  ///
+  /// In en, this message translates to:
+  /// **'Create plan'**
+  String get mealPlanCreateButton;
+
+  /// No description provided for @mealPlanUpdateTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Update meal plan'**
+  String get mealPlanUpdateTitle;
+
+  /// No description provided for @mealPlanUpdateButton.
+  ///
+  /// In en, this message translates to:
+  /// **'Save changes'**
+  String get mealPlanUpdateButton;
+
+  /// No description provided for @mealPlanGoalHintShort.
+  ///
+  /// In en, this message translates to:
+  /// **'Example: Balanced eating, build muscle, lose weight'**
+  String get mealPlanGoalHintShort;
+
+  /// No description provided for @mealPlanEndDate.
+  ///
+  /// In en, this message translates to:
+  /// **'End date'**
+  String get mealPlanEndDate;
+
+  /// No description provided for @mealPlanNote.
+  ///
+  /// In en, this message translates to:
+  /// **'Note'**
+  String get mealPlanNote;
+
+  /// No description provided for @mealPlanHealthNote.
+  ///
+  /// In en, this message translates to:
+  /// **'Health note'**
+  String get mealPlanHealthNote;
+
+  /// No description provided for @mealPlanEndDateInvalid.
+  ///
+  /// In en, this message translates to:
+  /// **'End date must be after or equal to start date'**
+  String get mealPlanEndDateInvalid;
+
+  /// No description provided for @mealPlanCurrentSummaryTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Current plan'**
+  String get mealPlanCurrentSummaryTitle;
+
+  /// No description provided for @mealPlanViewing.
+  ///
+  /// In en, this message translates to:
+  /// **'Viewing'**
+  String get mealPlanViewing;
+
+  /// No description provided for @mealPlanNew.
+  ///
+  /// In en, this message translates to:
+  /// **'New'**
+  String get mealPlanNew;
+
+  /// No description provided for @mealPlanProtein.
+  ///
+  /// In en, this message translates to:
+  /// **'Protein'**
+  String get mealPlanProtein;
+
+  /// No description provided for @mealPlanCarbs.
+  ///
+  /// In en, this message translates to:
+  /// **'Carbs'**
+  String get mealPlanCarbs;
+
+  /// No description provided for @mealPlanFat.
+  ///
+  /// In en, this message translates to:
+  /// **'Fat'**
+  String get mealPlanFat;
+
+  /// No description provided for @mealPlanFiber.
+  ///
+  /// In en, this message translates to:
+  /// **'Fiber'**
+  String get mealPlanFiber;
+
+  /// No description provided for @mealPlanUnnamedItem.
+  ///
+  /// In en, this message translates to:
+  /// **'Unnamed meal'**
+  String get mealPlanUnnamedItem;
+
+  /// No description provided for @mealPlanCannotDeleteItem.
+  ///
+  /// In en, this message translates to:
+  /// **'Cannot delete this meal'**
+  String get mealPlanCannotDeleteItem;
+
+  /// No description provided for @mealPlanDeleteItemTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete meal'**
+  String get mealPlanDeleteItemTitle;
+
+  /// No description provided for @mealPlanDeleteItemMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Are you sure you want to remove \"{itemName}\" from the meal plan?'**
+  String mealPlanDeleteItemMessage(String itemName);
+
+  /// No description provided for @mealPlanNoItemsForDay.
+  ///
+  /// In en, this message translates to:
+  /// **'There are no meals for this day yet.'**
+  String get mealPlanNoItemsForDay;
+
+  /// No description provided for @mealPlanEditItemTooltip.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit meal'**
+  String get mealPlanEditItemTooltip;
+
+  /// No description provided for @mealPlanDeleteItemTooltip.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete meal'**
+  String get mealPlanDeleteItemTooltip;
+
+  /// No description provided for @mealPlanServings.
+  ///
+  /// In en, this message translates to:
+  /// **'Servings: {count}'**
+  String mealPlanServings(String count);
+
+  /// No description provided for @mealPlanDayItemsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Meals for the day'**
+  String get mealPlanDayItemsTitle;
+
+  /// No description provided for @mealPlanAddItem.
+  ///
+  /// In en, this message translates to:
+  /// **'Add meal'**
+  String get mealPlanAddItem;
+
+  /// No description provided for @mealPlanIngredientsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Ingredients'**
+  String get mealPlanIngredientsTitle;
+
+  /// No description provided for @mealPlanNoIngredients.
+  ///
+  /// In en, this message translates to:
+  /// **'There are no ingredients for this meal yet.'**
+  String get mealPlanNoIngredients;
+
+  /// No description provided for @mealPlanAdd.
+  ///
+  /// In en, this message translates to:
+  /// **'Add'**
+  String get mealPlanAdd;
+
+  /// No description provided for @mealPlanIngredientNumber.
+  ///
+  /// In en, this message translates to:
+  /// **'Ingredient {index}'**
+  String mealPlanIngredientNumber(int index);
+
+  /// No description provided for @mealPlanDeleteIngredientTooltip.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete ingredient'**
+  String get mealPlanDeleteIngredientTooltip;
+
+  /// No description provided for @mealPlanIngredientName.
+  ///
+  /// In en, this message translates to:
+  /// **'Ingredient name'**
+  String get mealPlanIngredientName;
+
+  /// No description provided for @mealPlanIngredientQuantity.
+  ///
+  /// In en, this message translates to:
+  /// **'Quantity'**
+  String get mealPlanIngredientQuantity;
+
+  /// No description provided for @mealPlanIngredientUnit.
+  ///
+  /// In en, this message translates to:
+  /// **'Unit'**
+  String get mealPlanIngredientUnit;
+
+  /// No description provided for @mealPlanIngredientNote.
+  ///
+  /// In en, this message translates to:
+  /// **'Ingredient note'**
+  String get mealPlanIngredientNote;
+
+  /// No description provided for @mealPlanItemNameRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Please enter a meal name'**
+  String get mealPlanItemNameRequired;
+
+  /// No description provided for @mealPlanItemUpdated.
+  ///
+  /// In en, this message translates to:
+  /// **'Meal in the plan has been updated'**
+  String get mealPlanItemUpdated;
+
+  /// No description provided for @mealPlanItemAdded.
+  ///
+  /// In en, this message translates to:
+  /// **'Meal has been added to the plan'**
+  String get mealPlanItemAdded;
+
+  /// No description provided for @mealPlanEditItemTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit meal in plan'**
+  String get mealPlanEditItemTitle;
+
+  /// No description provided for @mealPlanAddItemTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Add meal to plan'**
+  String get mealPlanAddItemTitle;
+
+  /// No description provided for @mealPlanApplyDate.
+  ///
+  /// In en, this message translates to:
+  /// **'Apply date'**
+  String get mealPlanApplyDate;
+
+  /// No description provided for @mealPlanMealSlot.
+  ///
+  /// In en, this message translates to:
+  /// **'Meal slot'**
+  String get mealPlanMealSlot;
+
+  /// No description provided for @mealPlanItemName.
+  ///
+  /// In en, this message translates to:
+  /// **'Meal name'**
+  String get mealPlanItemName;
+
+  /// No description provided for @mealPlanItemNameHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Example: Grilled chicken salad'**
+  String get mealPlanItemNameHint;
+
+  /// No description provided for @mealPlanLinkedMeal.
+  ///
+  /// In en, this message translates to:
+  /// **'Linked meal'**
+  String get mealPlanLinkedMeal;
+
+  /// No description provided for @mealPlanLinkedMealHelper.
+  ///
+  /// In en, this message translates to:
+  /// **'The linked meal cannot be changed here'**
+  String get mealPlanLinkedMealHelper;
+
+  /// No description provided for @mealPlanPlannedServings.
+  ///
+  /// In en, this message translates to:
+  /// **'Planned servings'**
+  String get mealPlanPlannedServings;
+
+  /// No description provided for @mealPlanActualServings.
+  ///
+  /// In en, this message translates to:
+  /// **'Actual servings'**
+  String get mealPlanActualServings;
+
+  /// No description provided for @mealPlanStatus.
+  ///
+  /// In en, this message translates to:
+  /// **'Status'**
+  String get mealPlanStatus;
+
+  /// No description provided for @mealPlanSaveChanges.
+  ///
+  /// In en, this message translates to:
+  /// **'Save changes'**
+  String get mealPlanSaveChanges;
+
+  /// No description provided for @mealPlanMealSlotBreakfast.
+  ///
+  /// In en, this message translates to:
+  /// **'Breakfast'**
+  String get mealPlanMealSlotBreakfast;
+
+  /// No description provided for @mealPlanMealSlotLunch.
+  ///
+  /// In en, this message translates to:
+  /// **'Lunch'**
+  String get mealPlanMealSlotLunch;
+
+  /// No description provided for @mealPlanMealSlotDinner.
+  ///
+  /// In en, this message translates to:
+  /// **'Dinner'**
+  String get mealPlanMealSlotDinner;
+
+  /// No description provided for @mealPlanMealSlotSnack.
+  ///
+  /// In en, this message translates to:
+  /// **'Snack'**
+  String get mealPlanMealSlotSnack;
+
+  /// No description provided for @mealPlanStatusPlanned.
+  ///
+  /// In en, this message translates to:
+  /// **'Planned'**
+  String get mealPlanStatusPlanned;
+
+  /// No description provided for @mealPlanStatusDone.
+  ///
+  /// In en, this message translates to:
+  /// **'Done'**
+  String get mealPlanStatusDone;
+
+  /// No description provided for @mealPlanStatusSkipped.
+  ///
+  /// In en, this message translates to:
+  /// **'Skipped'**
+  String get mealPlanStatusSkipped;
 }
 
 class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {

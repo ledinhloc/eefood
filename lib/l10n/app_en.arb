@@ -121,6 +121,110 @@
   "elementNutrient": "Nutritional Components",
   "adviceOfPhD": "AI Expert Advice",
   "nutrientOfIngredient": "Nutrition by Ingredients",
-  "qrTitle": "Scan QR", 
-  "qrSubtitle": "View recipe detail from QR Code"
+  "qrTitle": "Scan QR",
+  "qrSubtitle": "View recipe detail from QR Code",
+  "mealPlanTitle": "Meal Plan",
+  "mealPlanNoPlan": "There is no current meal plan yet.",
+  "mealPlanCreateAi": "Create AI plan",
+  "mealPlanCurrentTag": "Current plan",
+  "mealPlanDefaultGoal": "Maintain balanced meals every day",
+  "mealPlanOverviewByDay": "Daily overview",
+  "mealPlanNoDailySummary": "No daily nutrition summary is available for the current meal plan.",
+  "mealPlanActionTooltip": "Meal plan actions",
+  "mealPlanNoPlanToUpdate": "There is no meal plan to update",
+  "mealPlanNoPlanToContinue": "There is no meal plan to continue",
+  "mealPlanDeleteNotSupported": "Backend does not support deleting meal plans yet",
+  "mealPlanUpdateAction": "Update meal plan",
+  "mealPlanContinueAction": "Continue meal plan",
+  "mealPlanDeleteAction": "Delete meal plan",
+  "mealPlanContinueTitle": "Continue meal plan",
+  "mealPlanContinueSubtitle": "Choose a start date and number of days for AI to continue the plan.",
+  "mealPlanStartDate": "Start date",
+  "mealPlanDays": "Number of days",
+  "mealPlanDaysExample": "Example: 3",
+  "mealPlanInvalidDays": "Please enter a valid number of days",
+  "mealPlanContinueButton": "Continue",
+  "mealPlanGenerateTitle": "Create AI plan",
+  "mealPlanGenerateSubtitle": "Enter a goal, start date, and number of days for AI to create your meal plan.",
+  "mealPlanGoal": "Goal",
+  "mealPlanGoalHint": "Example: Lose weight, eat balanced meals, build muscle...",
+  "mealPlanDaysHint": "Up to 5 days per generation",
+  "mealPlanInvalidGenerateInput": "Please enter all valid required information",
+  "mealPlanCreateButton": "Create plan",
+  "mealPlanUpdateTitle": "Update meal plan",
+  "mealPlanUpdateButton": "Save changes",
+  "mealPlanGoalHintShort": "Example: Balanced eating, build muscle, lose weight",
+  "mealPlanEndDate": "End date",
+  "mealPlanNote": "Note",
+  "mealPlanHealthNote": "Health note",
+  "mealPlanEndDateInvalid": "End date must be after or equal to start date",
+  "mealPlanCurrentSummaryTitle": "Current plan",
+  "mealPlanViewing": "Viewing",
+  "mealPlanNew": "New",
+  "mealPlanProtein": "Protein",
+  "mealPlanCarbs": "Carbs",
+  "mealPlanFat": "Fat",
+  "mealPlanFiber": "Fiber",
+  "mealPlanUnnamedItem": "Unnamed meal",
+  "mealPlanCannotDeleteItem": "Cannot delete this meal",
+  "mealPlanDeleteItemTitle": "Delete meal",
+  "mealPlanDeleteItemMessage": "Are you sure you want to remove \"{itemName}\" from the meal plan?",
+  "@mealPlanDeleteItemMessage": {
+    "placeholders": {
+      "itemName": {
+        "type": "String"
+      }
+    }
+  },
+  "mealPlanNoItemsForDay": "There are no meals for this day yet.",
+  "mealPlanEditItemTooltip": "Edit meal",
+  "mealPlanDeleteItemTooltip": "Delete meal",
+  "mealPlanServings": "Servings: {count}",
+  "@mealPlanServings": {
+    "placeholders": {
+      "count": {
+        "type": "String"
+      }
+    }
+  },
+  "mealPlanDayItemsTitle": "Meals for the day",
+  "mealPlanAddItem": "Add meal",
+  "mealPlanIngredientsTitle": "Ingredients",
+  "mealPlanNoIngredients": "There are no ingredients for this meal yet.",
+  "mealPlanAdd": "Add",
+  "mealPlanIngredientNumber": "Ingredient {index}",
+  "@mealPlanIngredientNumber": {
+    "placeholders": {
+      "index": {
+        "type": "int"
+      }
+    }
+  },
+  "mealPlanDeleteIngredientTooltip": "Delete ingredient",
+  "mealPlanIngredientName": "Ingredient name",
+  "mealPlanIngredientQuantity": "Quantity",
+  "mealPlanIngredientUnit": "Unit",
+  "mealPlanIngredientNote": "Ingredient note",
+  "mealPlanItemNameRequired": "Please enter a meal name",
+  "mealPlanItemUpdated": "Meal in the plan has been updated",
+  "mealPlanItemAdded": "Meal has been added to the plan",
+  "mealPlanEditItemTitle": "Edit meal in plan",
+  "mealPlanAddItemTitle": "Add meal to plan",
+  "mealPlanApplyDate": "Apply date",
+  "mealPlanMealSlot": "Meal slot",
+  "mealPlanItemName": "Meal name",
+  "mealPlanItemNameHint": "Example: Grilled chicken salad",
+  "mealPlanLinkedMeal": "Linked meal",
+  "mealPlanLinkedMealHelper": "The linked meal cannot be changed here",
+  "mealPlanPlannedServings": "Planned servings",
+  "mealPlanActualServings": "Actual servings",
+  "mealPlanStatus": "Status",
+  "mealPlanSaveChanges": "Save changes",
+  "mealPlanMealSlotBreakfast": "Breakfast",
+  "mealPlanMealSlotLunch": "Lunch",
+  "mealPlanMealSlotDinner": "Dinner",
+  "mealPlanMealSlotSnack": "Snack",
+  "mealPlanStatusPlanned": "Planned",
+  "mealPlanStatusDone": "Done",
+  "mealPlanStatusSkipped": "Skipped"
 }

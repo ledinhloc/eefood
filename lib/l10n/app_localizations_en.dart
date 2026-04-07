@@ -336,4 +336,259 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get qrSubtitle => 'View recipe detail from QR Code';
+
+  @override
+  String get mealPlanTitle => 'Meal Plan';
+
+  @override
+  String get mealPlanNoPlan => 'There is no current meal plan yet.';
+
+  @override
+  String get mealPlanCreateAi => 'Create AI plan';
+
+  @override
+  String get mealPlanCurrentTag => 'Current plan';
+
+  @override
+  String get mealPlanDefaultGoal => 'Maintain balanced meals every day';
+
+  @override
+  String get mealPlanOverviewByDay => 'Daily overview';
+
+  @override
+  String get mealPlanNoDailySummary => 'No daily nutrition summary is available for the current meal plan.';
+
+  @override
+  String get mealPlanActionTooltip => 'Meal plan actions';
+
+  @override
+  String get mealPlanNoPlanToUpdate => 'There is no meal plan to update';
+
+  @override
+  String get mealPlanNoPlanToContinue => 'There is no meal plan to continue';
+
+  @override
+  String get mealPlanDeleteNotSupported => 'Backend does not support deleting meal plans yet';
+
+  @override
+  String get mealPlanUpdateAction => 'Update meal plan';
+
+  @override
+  String get mealPlanContinueAction => 'Continue meal plan';
+
+  @override
+  String get mealPlanDeleteAction => 'Delete meal plan';
+
+  @override
+  String get mealPlanContinueTitle => 'Continue meal plan';
+
+  @override
+  String get mealPlanContinueSubtitle => 'Choose a start date and number of days for AI to continue the plan.';
+
+  @override
+  String get mealPlanStartDate => 'Start date';
+
+  @override
+  String get mealPlanDays => 'Number of days';
+
+  @override
+  String get mealPlanDaysExample => 'Example: 3';
+
+  @override
+  String get mealPlanInvalidDays => 'Please enter a valid number of days';
+
+  @override
+  String get mealPlanContinueButton => 'Continue';
+
+  @override
+  String get mealPlanGenerateTitle => 'Create AI plan';
+
+  @override
+  String get mealPlanGenerateSubtitle => 'Enter a goal, start date, and number of days for AI to create your meal plan.';
+
+  @override
+  String get mealPlanGoal => 'Goal';
+
+  @override
+  String get mealPlanGoalHint => 'Example: Lose weight, eat balanced meals, build muscle...';
+
+  @override
+  String get mealPlanDaysHint => 'Up to 5 days per generation';
+
+  @override
+  String get mealPlanInvalidGenerateInput => 'Please enter all valid required information';
+
+  @override
+  String get mealPlanCreateButton => 'Create plan';
+
+  @override
+  String get mealPlanUpdateTitle => 'Update meal plan';
+
+  @override
+  String get mealPlanUpdateButton => 'Save changes';
+
+  @override
+  String get mealPlanGoalHintShort => 'Example: Balanced eating, build muscle, lose weight';
+
+  @override
+  String get mealPlanEndDate => 'End date';
+
+  @override
+  String get mealPlanNote => 'Note';
+
+  @override
+  String get mealPlanHealthNote => 'Health note';
+
+  @override
+  String get mealPlanEndDateInvalid => 'End date must be after or equal to start date';
+
+  @override
+  String get mealPlanCurrentSummaryTitle => 'Current plan';
+
+  @override
+  String get mealPlanViewing => 'Viewing';
+
+  @override
+  String get mealPlanNew => 'New';
+
+  @override
+  String get mealPlanProtein => 'Protein';
+
+  @override
+  String get mealPlanCarbs => 'Carbs';
+
+  @override
+  String get mealPlanFat => 'Fat';
+
+  @override
+  String get mealPlanFiber => 'Fiber';
+
+  @override
+  String get mealPlanUnnamedItem => 'Unnamed meal';
+
+  @override
+  String get mealPlanCannotDeleteItem => 'Cannot delete this meal';
+
+  @override
+  String get mealPlanDeleteItemTitle => 'Delete meal';
+
+  @override
+  String mealPlanDeleteItemMessage(String itemName) {
+    return 'Are you sure you want to remove \"$itemName\" from the meal plan?';
+  }
+
+  @override
+  String get mealPlanNoItemsForDay => 'There are no meals for this day yet.';
+
+  @override
+  String get mealPlanEditItemTooltip => 'Edit meal';
+
+  @override
+  String get mealPlanDeleteItemTooltip => 'Delete meal';
+
+  @override
+  String mealPlanServings(String count) {
+    return 'Servings: $count';
+  }
+
+  @override
+  String get mealPlanDayItemsTitle => 'Meals for the day';
+
+  @override
+  String get mealPlanAddItem => 'Add meal';
+
+  @override
+  String get mealPlanIngredientsTitle => 'Ingredients';
+
+  @override
+  String get mealPlanNoIngredients => 'There are no ingredients for this meal yet.';
+
+  @override
+  String get mealPlanAdd => 'Add';
+
+  @override
+  String mealPlanIngredientNumber(int index) {
+    return 'Ingredient $index';
+  }
+
+  @override
+  String get mealPlanDeleteIngredientTooltip => 'Delete ingredient';
+
+  @override
+  String get mealPlanIngredientName => 'Ingredient name';
+
+  @override
+  String get mealPlanIngredientQuantity => 'Quantity';
+
+  @override
+  String get mealPlanIngredientUnit => 'Unit';
+
+  @override
+  String get mealPlanIngredientNote => 'Ingredient note';
+
+  @override
+  String get mealPlanItemNameRequired => 'Please enter a meal name';
+
+  @override
+  String get mealPlanItemUpdated => 'Meal in the plan has been updated';
+
+  @override
+  String get mealPlanItemAdded => 'Meal has been added to the plan';
+
+  @override
+  String get mealPlanEditItemTitle => 'Edit meal in plan';
+
+  @override
+  String get mealPlanAddItemTitle => 'Add meal to plan';
+
+  @override
+  String get mealPlanApplyDate => 'Apply date';
+
+  @override
+  String get mealPlanMealSlot => 'Meal slot';
+
+  @override
+  String get mealPlanItemName => 'Meal name';
+
+  @override
+  String get mealPlanItemNameHint => 'Example: Grilled chicken salad';
+
+  @override
+  String get mealPlanLinkedMeal => 'Linked meal';
+
+  @override
+  String get mealPlanLinkedMealHelper => 'The linked meal cannot be changed here';
+
+  @override
+  String get mealPlanPlannedServings => 'Planned servings';
+
+  @override
+  String get mealPlanActualServings => 'Actual servings';
+
+  @override
+  String get mealPlanStatus => 'Status';
+
+  @override
+  String get mealPlanSaveChanges => 'Save changes';
+
+  @override
+  String get mealPlanMealSlotBreakfast => 'Breakfast';
+
+  @override
+  String get mealPlanMealSlotLunch => 'Lunch';
+
+  @override
+  String get mealPlanMealSlotDinner => 'Dinner';
+
+  @override
+  String get mealPlanMealSlotSnack => 'Snack';
+
+  @override
+  String get mealPlanStatusPlanned => 'Planned';
+
+  @override
+  String get mealPlanStatusDone => 'Done';
+
+  @override
+  String get mealPlanStatusSkipped => 'Skipped';
 }
