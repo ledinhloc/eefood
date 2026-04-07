@@ -95,7 +95,7 @@ class HealthScoreBanner extends StatelessWidget {
                   ),
                   const SizedBox(height: 6),
                   Text(
-                    data.recommendation!,
+                    data.summary!,
                     style: TextStyle(
                       color: isDark ? Colors.white70 : Colors.black54,
                       fontSize: 13,
@@ -391,13 +391,14 @@ class NutritionSummarySection extends StatelessWidget {
             ),
             const SizedBox(height: 14),
             Text(
-              data.summary!,
+              data.recommendation!,
               style: TextStyle(
                 color: isDark ? Colors.white70 : Colors.black54,
                 fontSize: 14.5,
                 height: 1.6,
                 letterSpacing: 0.1,
               ),
+              textAlign: TextAlign.justify,
             ),
           ],
         ),

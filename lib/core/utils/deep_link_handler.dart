@@ -80,7 +80,7 @@ class DeepLinkHandler {
 
       if ((uri.host == 'eefood-preview-card.vercel.app' || uri.host == AppKeys.hostDeloy) &&
           uri.pathSegments.length >= 2 &&
-          uri.pathSegments.first == 'posts') {
+          uri.pathSegments.first == 'recipes') {
         final recipeId = int.tryParse(uri.pathSegments[1]);
         if (recipeId != null) {
           _navigateSafely(
