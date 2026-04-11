@@ -87,16 +87,18 @@ class _MealPlanViewState extends State<_MealPlanView> {
     final colorScheme = theme.colorScheme;
     final pageBackground = isDark
         ? theme.scaffoldBackgroundColor
-        : const Color(0xFFFFFBF7);
-    final primaryWarm = isDark ? colorScheme.primary : const Color(0xFFE85D04);
+        : const Color(0xFFFFFBF7); // Nền sáng ấm nhất cho toàn bộ màn hình
+    final primaryWarm = isDark
+        ? colorScheme.primary
+        : const Color(0xFFE85D04); // Màu nhấn chính cho hero và CTA
     final accentWarm = isDark
         ? (colorScheme.secondary == colorScheme.primary
               ? colorScheme.primaryContainer
               : colorScheme.secondary)
-        : const Color(0xFFF48C06);
+        : const Color(0xFFF48C06); // Màu phụ để tạo gradient và điểm nhấn
     final softCream = isDark
         ? colorScheme.primaryContainer.withValues(alpha: 0.32)
-        : const Color(0xFFFFF4E6);
+        : const Color(0xFFFFF4E6); // Nền kem nhẹ cho card hoặc vùng tách nội dung
 
     return Scaffold(
       backgroundColor: pageBackground,

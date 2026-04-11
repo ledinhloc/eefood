@@ -1,7 +1,8 @@
 import 'package:eefood/core/widgets/media_view_page.dart';
 import 'package:eefood/core/widgets/snack_bar.dart';
 import 'package:eefood/features/meal_plan/data/model/meal_plan_item_response.dart';
-import 'package:eefood/features/meal_plan/presentation/meal_plan_localizations.dart';
+import 'package:eefood/features/meal_plan/domain/enum/meal_plan_item_status.dart';
+import 'package:eefood/features/meal_plan/domain/enum/meal_slot.dart';
 import 'package:eefood/features/meal_plan/presentation/provider/meal_plan_cubit.dart';
 import 'package:eefood/features/meal_plan/presentation/widgets/meal_plan_item_upsert_sheet.dart';
 import 'package:eefood/features/recipe/presentation/screens/recipe_detail_page.dart';
