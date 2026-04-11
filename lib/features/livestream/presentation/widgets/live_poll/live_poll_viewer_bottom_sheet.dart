@@ -1,3 +1,4 @@
+﻿import 'package:eefood/features/livestream/domain/enum/poll_option_add_mode.dart';
 import 'package:eefood/features/livestream/domain/enum/poll_result_visibility.dart';
 import 'package:eefood/features/livestream/domain/enum/poll_voter_visibility.dart';
 import 'package:flutter/material.dart';
@@ -8,6 +9,7 @@ import '../../../domain/enum/poll_status.dart';
 import '../../provider/live_poll_cubit.dart';
 import '../../provider/live_poll_option_proposal_cubit.dart';
 import '../../provider/live_poll_state.dart';
+import 'live_poll_settings_card.dart';
 import 'option_proposal_composer.dart';
 import 'option_voters_bottom_sheet.dart';
 
@@ -69,11 +71,18 @@ class _NoPollView extends StatelessWidget {
   }
 }
 
-class _PollViewerContent extends StatelessWidget {
+class _PollViewerContent extends StatefulWidget {
   final LivePollResponse poll;
   final LivePollState state;
 
   const _PollViewerContent({required this.poll, required this.state});
+
+  @override
+  State<_PollViewerContent> createState() => _PollViewerContentState();
+}
+
+class _PollViewerContentState extends State<_PollViewerContent> {
+  bool _isSettingsExpanded = false;
 
   Future<void> _showOptionVoters(
     BuildContext context, {
@@ -96,13 +105,15 @@ class _PollViewerContent extends StatelessWidget {
       ),
     );
 
-    await cubit.loadOptionVoters(optionId: optionId, pollId: poll.id);
+    await cubit.loadOptionVoters(optionId: optionId, pollId: widget.poll.id);
   }
 
   @override
   Widget build(BuildContext context) {
     final cubit = context.read<LivePollCubit>();
     final canShowResult = cubit.shouldShowResult;
+    final poll = widget.poll;
+    final state = widget.state;
     final canShowVoters =
         poll.setting.voterVisibility == PollVoterVisibility.public;
 
@@ -160,6 +171,47 @@ class _PollViewerContent extends StatelessWidget {
                 fontWeight: FontWeight.w600,
               ),
             ),
+          ),
+          const SizedBox(height: 16),
+          LivePollSettingsCard(
+            isExpanded: _isSettingsExpanded,
+            summary: livePollSettingsSummary(poll.setting),
+            onTap: () {
+              setState(() {
+                _isSettingsExpanded = !_isSettingsExpanded;
+              });
+            },
+            children: [
+              LivePollSettingRow(
+                icon: Icons.rule,
+                title: 'Kiểu bình chọn',
+                value: poll.setting.multipleChoice
+                    ? 'Nhiều lựa chọn, tối đa ${poll.setting.maxChoices} đáp án'
+                    : 'Chỉ chọn 1 đáp án',
+              ),
+              LivePollSettingRow(
+                icon: Icons.swap_horiz,
+                title: 'Đổi bình chọn',
+                value: poll.setting.allowChangeVote
+                    ? 'Được phép đổi lựa chọn'
+                    : 'Không được đổi lựa chọn',
+              ),
+              LivePollSettingRow(
+                icon: Icons.pie_chart_outline,
+                title: 'Hiển thị kết quả',
+                value: poll.setting.resultVisibility.text,
+              ),
+              LivePollSettingRow(
+                icon: Icons.people_outline,
+                title: 'Hiển thị người bình chọn',
+                value: poll.setting.voterVisibility.text,
+              ),
+              LivePollSettingRow(
+                icon: Icons.add_circle_outline,
+                title: 'Thêm đáp án',
+                value: poll.setting.optionAddMode.text,
+              ),
+            ],
           ),
           const SizedBox(height: 16),
           if (poll.status == PollStatus.open) ...[
@@ -245,7 +297,7 @@ class _PollViewerContent extends StatelessWidget {
                   padding: const EdgeInsets.symmetric(vertical: 14),
                 ),
                 child: Text(
-                  state.result == null ? 'Xem ket qua' : 'Lam moi ket qua',
+                  state.result == null ? 'Xem kết quả' : 'Làm mới kết quả',
                 ),
               ),
             ),
@@ -268,7 +320,7 @@ class _PollViewerContent extends StatelessWidget {
               ),
               const SizedBox(height: 6),
               Text(
-                'Tong so phieu: ${state.result!.totalVotes}',
+                'Tổng số phiếu: ${state.result!.totalVotes}',
                 style: const TextStyle(color: Colors.white70),
               ),
               const SizedBox(height: 10),
@@ -330,7 +382,10 @@ class _PollViewerContent extends StatelessWidget {
                 border: Border.all(color: Colors.white12),
               ),
               child: Text(
-                _resultVisibilityMessage(),
+                widget.poll.setting.resultVisibility.visibilityMessage(
+                  hasVoted: widget.state.hasVoted,
+                  pollStatus: widget.poll.status,
+                ),
                 style: const TextStyle(color: Colors.white70),
               ),
             ),
@@ -365,19 +420,6 @@ class _PollViewerContent extends StatelessWidget {
         return Colors.white70;
     }
   }
-
-  String _resultVisibilityMessage() {
-    switch (poll.setting.resultVisibility) {
-      case PollResultVisibility.always:
-        return 'Ket qua se hien tai day.';
-      case PollResultVisibility.afterVote:
-        return state.hasVoted
-            ? 'Ket qua dang duoc cap nhat.'
-            : 'Ban can binh chon truoc khi xem ket qua.';
-      case PollResultVisibility.afterClose:
-        return poll.status == PollStatus.closed
-            ? 'Ket qua dang duoc cap nhat.'
-            : 'Ket qua se hien khi poll dong.';
-    }
-  }
 }
+
+

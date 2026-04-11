@@ -1,8 +1,10 @@
 import 'package:eefood/core/widgets/snack_bar.dart';
 import 'package:eefood/features/meal_plan/data/model/meal_plan_generate_request.dart';
 import 'package:eefood/features/meal_plan/presentation/provider/meal_plan_cubit.dart';
+import 'package:eefood/features/meal_plan/presentation/provider/meal_plan_state.dart';
 import 'package:eefood/l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
 
 Future<void> showMealPlanGenerateSheet({
@@ -142,45 +144,70 @@ Future<void> showMealPlanGenerateSheet({
                     ),
                   ),
                   const SizedBox(height: 18),
-                  SizedBox(
-                    width: double.infinity,
-                    child: ElevatedButton(
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: primaryColor,
-                        foregroundColor: onPrimaryColor,
-                        padding: const EdgeInsets.symmetric(vertical: 14),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(16),
-                        ),
-                      ),
-                      onPressed: () async {
-                        final rawGoal = goalController.text.trim();
-                        final rawDays = int.tryParse(daysController.text.trim());
-
-                        if (rawGoal.isEmpty || rawDays == null || rawDays <= 0) {
-                          showCustomSnackBar(
-                            context,
-                            l10n.mealPlanInvalidGenerateInput,
-                            isError: true,
-                          );
-                          return;
-                        }
-
-                        await cubit.generateMealPlan(
-                          MealPlanGenerateRequest(
-                            goal: rawGoal,
-                            startDate: selectedDate,
-                            days: rawDays,
+                  BlocBuilder<MealPlanCubit, MealPlanState>(
+                    bloc: cubit,
+                    builder: (context, state) {
+                      return SizedBox(
+                        width: double.infinity,
+                        child: ElevatedButton(
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: primaryColor,
+                            foregroundColor: onPrimaryColor,
+                            padding: const EdgeInsets.symmetric(vertical: 14),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(16),
+                            ),
                           ),
-                        );
+                          onPressed: state.isSubmitting
+                              ? null
+                              : () async {
+                                  final rawGoal = goalController.text.trim();
+                                  final rawDays = int.tryParse(
+                                    daysController.text.trim(),
+                                  );
 
-                        if (!context.mounted) return;
-                      },
-                      child: Text(
-                        l10n.mealPlanCreateButton,
-                        style: const TextStyle(fontWeight: FontWeight.w700),
-                      ),
-                    ),
+                                  if (rawGoal.isEmpty ||
+                                      rawDays == null ||
+                                      rawDays <= 0) {
+                                    showCustomSnackBar(
+                                      context,
+                                      l10n.mealPlanInvalidGenerateInput,
+                                      isError: true,
+                                    );
+                                    return;
+                                  }
+
+                                  await cubit.generateMealPlan(
+                                    MealPlanGenerateRequest(
+                                      goal: rawGoal,
+                                      startDate: selectedDate,
+                                      days: rawDays,
+                                    ),
+                                  );
+
+                                  if (!context.mounted) return;
+                                  Navigator.pop(context);
+                                },
+                          child: state.isSubmitting
+                              ? SizedBox(
+                                  width: 20,
+                                  height: 20,
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2,
+                                    valueColor: AlwaysStoppedAnimation<Color>(
+                                      onPrimaryColor,
+                                    ),
+                                  ),
+                                )
+                              : Text(
+                                  l10n.mealPlanCreateButton,
+                                  style: const TextStyle(
+                                    fontWeight: FontWeight.w700,
+                                  ),
+                                ),
+                        ),
+                      );
+                    },
                   ),
                 ],
               ),
