@@ -22,7 +22,7 @@ import '../../../profile/domain/usecases/profile_usecase.dart';
 import '../../data/models/recipe_detail_model.dart';
 import '../provider/recipe_detail_cubit.dart';
 import '../widgets/category_list_widget.dart';
-import '../widgets/instructions_tab.dart';
+import '../widgets/instructions/instructions_tab.dart';
 import '../widgets/steps_tab.dart';
 
 class RecipeDetailPage extends StatefulWidget {
@@ -520,7 +520,7 @@ class _RecipeDetailPageState extends State<RecipeDetailPage> {
                         height: 600,
                         child: TabBarView(
                           children: [
-                            InstructionsTab(recipe: recipe),
+                            InstructionsTab(),
                             StepsTab(recipe: recipe),
                           ],
                         ),

@@ -5,11 +5,13 @@ class IngredientModel {
   final String name;
   final String? description;
   final String? image;
+  final int? originalId;
   IngredientModel({
     this.id,
     required this.name,
     this.description,
     this.image,
+    this.originalId
   });
 
   factory IngredientModel.fromJson(Map<String, dynamic> json) {
@@ -18,6 +20,7 @@ class IngredientModel {
       name: json['name'],
       description: json['description'],
       image: json['image'],
+      originalId: json['originalId'] as int?,
     );
   }
 
@@ -26,6 +29,7 @@ class IngredientModel {
     'name': name,
     'description': description,
     'image': image,
+    'originalId': originalId,
   };
 
   Ingredient toEntity() => Ingredient(
