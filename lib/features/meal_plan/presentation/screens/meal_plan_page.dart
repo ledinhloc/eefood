@@ -297,7 +297,6 @@ class _MealPlanViewState extends State<_MealPlanView> {
             summaries: state.dailySummaries,
             selectedDate: state.selectedDate,
             primaryWarm: primaryWarm,
-            accentWarm: accentWarm,
             softCream: softCream,
           ),
           const SizedBox(height: 18),

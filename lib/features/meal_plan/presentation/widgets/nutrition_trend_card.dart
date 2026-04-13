@@ -38,22 +38,6 @@ extension NutritionMetricX on NutritionMetric {
     }
   }
 
-  String get unit {
-    switch (this) {
-      case NutritionMetric.calories:
-        return 'kcal';
-      case NutritionMetric.protein:
-      case NutritionMetric.carbs:
-      case NutritionMetric.fat:
-      case NutritionMetric.fiber:
-      case NutritionMetric.sugar:
-      case NutritionMetric.calcium:
-        return 'g';
-      case NutritionMetric.sodium:
-        return 'mg';
-    }
-  }
-
   Color color(bool isDark) {
     switch (this) {
       case NutritionMetric.calories:
@@ -101,7 +85,6 @@ class NutritionTrendCard extends StatefulWidget {
   final List<MealPlanDailySummaryResponse> summaries;
   final DateTime? selectedDate;
   final Color primaryWarm;
-  final Color accentWarm;
   final Color softCream;
 
   const NutritionTrendCard({
@@ -109,7 +92,6 @@ class NutritionTrendCard extends StatefulWidget {
     required this.summaries,
     required this.selectedDate,
     required this.primaryWarm,
-    required this.accentWarm,
     required this.softCream,
   });
 
@@ -119,15 +101,42 @@ class NutritionTrendCard extends StatefulWidget {
 
 class _NutritionTrendCardState extends State<NutritionTrendCard> {
   NutritionMetric _selectedMetric = NutritionMetric.calories;
+  DateTime? _chartSelectedDate;
+
+  @override
+  void initState() {
+    super.initState();
+    _chartSelectedDate = _resolveInitialChartDate();
+  }
+
+  @override
+  void didUpdateWidget(covariant NutritionTrendCard oldWidget) {
+    super.didUpdateWidget(oldWidget);
+
+    if (_chartSelectedDate == null ||
+        (oldWidget.summaries.isEmpty && widget.summaries.isNotEmpty)) {
+      _chartSelectedDate = _resolveInitialChartDate();
+    }
+  }
+
+  DateTime _normalizeDate(DateTime date) {
+    return DateTime(date.year, date.month, date.day);
+  }
+
+  DateTime _resolveInitialChartDate() {
+    final selectedDate = widget.selectedDate;
+    if (selectedDate != null) return _normalizeDate(selectedDate);
+
+    final firstSummary = widget.summaries.firstWhere(
+      (summary) => summary.planDate != null,
+      orElse: () => MealPlanDailySummaryResponse(planDate: DateTime.now()),
+    ).planDate;
+
+    return _normalizeDate(firstSummary ?? DateTime.now());
+  }
 
   DateTime get _anchorDate {
-    return widget.selectedDate ??
-        widget.summaries.firstWhere(
-              (summary) => summary.planDate != null,
-              orElse: () =>
-                  MealPlanDailySummaryResponse(planDate: DateTime.now()),
-            ).planDate ??
-        DateTime.now();
+    return _normalizeDate(_chartSelectedDate ?? _resolveInitialChartDate());
   }
 
   bool _sameDay(DateTime? a, DateTime? b) {
@@ -160,7 +169,7 @@ class _NutritionTrendCardState extends State<NutritionTrendCard> {
         _NutritionDayPoint(
           date: date,
           value: value,
-          isSelected: _sameDay(date, widget.selectedDate),
+          isSelected: _sameDay(date, _chartSelectedDate),
           weekday: DateFormat('EEE', locale).format(date),
           dayLabel: DateFormat('dd/MM').format(date),
         ),
@@ -170,11 +179,44 @@ class _NutritionTrendCardState extends State<NutritionTrendCard> {
     return points;
   }
 
-  String _formatValue(double value) {
-    final rounded = value % 1 == 0
-        ? value.toInt().toString()
-        : value.toStringAsFixed(1);
-    return '$rounded ${_selectedMetric.unit}';
+  void _moveChartDate(int offset) {
+    setState(() {
+      _chartSelectedDate = DateTime(
+        _anchorDate.year,
+        _anchorDate.month,
+        _anchorDate.day + offset,
+      );
+    });
+  }
+
+  Future<void> _pickChartDate() async {
+    final summaryDates = widget.summaries
+        .map((summary) => summary.planDate)
+        .whereType<DateTime>()
+        .map(_normalizeDate)
+        .toList()
+      ..sort();
+
+    final firstDate = summaryDates.isNotEmpty
+        ? summaryDates.first
+        : DateTime(_anchorDate.year - 1, 1, 1);
+    final lastDate = summaryDates.isNotEmpty
+        ? summaryDates.last
+        : DateTime(_anchorDate.year + 1, 12, 31);
+
+    final pickedDate = await showDatePicker(
+      context: context,
+      initialDate: _anchorDate,
+      firstDate: firstDate,
+      lastDate: lastDate,
+      helpText: 'Chọn ngày cho biểu đồ',
+    );
+
+    if (pickedDate == null || !mounted) return;
+
+    setState(() {
+      _chartSelectedDate = _normalizeDate(pickedDate);
+    });
   }
 
   @override
@@ -188,10 +230,6 @@ class _NutritionTrendCardState extends State<NutritionTrendCard> {
       (max, item) => math.max(max, item.value),
     );
     final chartColor = _selectedMetric.color(isDark);
-    final selectedPoint = points.firstWhere(
-      (point) => point.isSelected,
-      orElse: () => points[3],
-    );
 
     return Container(
       padding: const EdgeInsets.all(18),
@@ -237,93 +275,149 @@ class _NutritionTrendCardState extends State<NutritionTrendCard> {
                 ),
               ),
               const SizedBox(width: 12),
-              Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 12,
-                  vertical: 8,
-                ),
-                decoration: BoxDecoration(
-                  color: chartColor.withValues(alpha: isDark ? 0.18 : 0.12),
-                  borderRadius: BorderRadius.circular(999),
-                ),
-                child: RichText(
-                  text: TextSpan(
-                    style: TextStyle(color: chartColor, fontSize: 12),
-                    children: [
-                      TextSpan(
-                        text: '${_selectedMetric.label}: ',
-                        style: const TextStyle(fontWeight: FontWeight.w700),
+              SizedBox(
+                width: 156,
+                child: Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 2,
+                  ),
+                  decoration: BoxDecoration(
+                    color: Colors.white.withValues(alpha: isDark ? 0.04 : 0.7),
+                    borderRadius: BorderRadius.circular(18),
+                    border: Border.all(
+                      color: chartColor.withValues(
+                        alpha: isDark ? 0.28 : 0.22,
                       ),
-                      TextSpan(
-                        text: _formatValue(selectedPoint.value),
-                        style: const TextStyle(fontWeight: FontWeight.w900),
+                    ),
+                  ),
+                  child: DropdownButtonHideUnderline(
+                    child: DropdownButton<NutritionMetric>(
+                      value: _selectedMetric,
+                      isExpanded: true,
+                      borderRadius: BorderRadius.circular(18),
+                      dropdownColor: isDark
+                          ? colorScheme.surfaceContainerHigh
+                          : Colors.white,
+                      icon: Icon(
+                        Icons.keyboard_arrow_down_rounded,
+                        color: chartColor,
                       ),
-                    ],
+                      style: theme.textTheme.bodyMedium?.copyWith(
+                        color: colorScheme.onSurface,
+                        fontWeight: FontWeight.w700,
+                      ),
+                      onChanged: (metric) {
+                        if (metric == null) return;
+                        setState(() {
+                          _selectedMetric = metric;
+                        });
+                      },
+                      items: NutritionMetric.values.map((metric) {
+                        final metricColor = metric.color(isDark);
+
+                        return DropdownMenuItem<NutritionMetric>(
+                          value: metric,
+                          child: Row(
+                            children: [
+                              Container(
+                                width: 10,
+                                height: 10,
+                                decoration: BoxDecoration(
+                                  color: metricColor,
+                                  shape: BoxShape.circle,
+                                ),
+                              ),
+                              const SizedBox(width: 10),
+                              Expanded(
+                                child: Text(
+                                  metric.label,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ),
+                            ],
+                          ),
+                        );
+                      }).toList(),
+                    ),
                   ),
                 ),
               ),
             ],
           ),
-          const SizedBox(height: 14),
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 4),
-            decoration: BoxDecoration(
-              color: Colors.white.withValues(alpha: isDark ? 0.04 : 0.7),
-              borderRadius: BorderRadius.circular(18),
-              border: Border.all(
-                color: chartColor.withValues(alpha: isDark ? 0.28 : 0.22),
+          const SizedBox(height: 12),
+          Row(
+            children: [
+              _DateNavButton(
+                icon: Icons.chevron_left_rounded,
+                color: chartColor,
+                onTap: () => _moveChartDate(-1),
               ),
-            ),
-            child: DropdownButtonHideUnderline(
-              child: DropdownButton<NutritionMetric>(
-                value: _selectedMetric,
-                isExpanded: true,
-                borderRadius: BorderRadius.circular(18),
-                dropdownColor: isDark
-                    ? colorScheme.surfaceContainerHigh
-                    : Colors.white,
-                icon: Icon(
-                  Icons.keyboard_arrow_down_rounded,
-                  color: chartColor,
-                ),
-                style: theme.textTheme.bodyMedium?.copyWith(
-                  color: colorScheme.onSurface,
-                  fontWeight: FontWeight.w700,
-                ),
-                onChanged: (metric) {
-                  if (metric == null) return;
-                  setState(() {
-                    _selectedMetric = metric;
-                  });
-                },
-                items: NutritionMetric.values.map((metric) {
-                  final metricColor = metric.color(isDark);
-
-                  return DropdownMenuItem<NutritionMetric>(
-                    value: metric,
-                    child: Row(
-                      children: [
-                        Container(
-                          width: 10,
-                          height: 10,
-                          decoration: BoxDecoration(
-                            color: metricColor,
-                            shape: BoxShape.circle,
-                          ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Material(
+                  color: Colors.transparent,
+                  child: InkWell(
+                    borderRadius: BorderRadius.circular(16),
+                    onTap: _pickChartDate,
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 12,
+                        vertical: 10,
+                      ),
+                      decoration: BoxDecoration(
+                        color: chartColor.withValues(
+                          alpha: isDark ? 0.14 : 0.10,
                         ),
-                        const SizedBox(width: 10),
-                        Expanded(
-                          child: Text(
-                            '${metric.label} (${metric.unit})',
+                        borderRadius: BorderRadius.circular(16),
+                      ),
+                      child: Column(
+                        children: [
+                          Text(
+                            DateFormat(
+                              'EEEE',
+                              Localizations.localeOf(context).languageCode,
+                            ).format(_anchorDate),
+                            maxLines: 1,
                             overflow: TextOverflow.ellipsis,
+                            style: theme.textTheme.labelMedium?.copyWith(
+                              color: chartColor,
+                              fontWeight: FontWeight.w700,
+                            ),
                           ),
-                        ),
-                      ],
+                          const SizedBox(height: 2),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Text(
+                                DateFormat('dd/MM/yyyy').format(_anchorDate),
+                                style: theme.textTheme.bodyMedium?.copyWith(
+                                  color: colorScheme.onSurface,
+                                  fontWeight: FontWeight.w800,
+                                ),
+                              ),
+                              const SizedBox(width: 6),
+                              Icon(
+                                Icons.calendar_month_rounded,
+                                size: 16,
+                                color: chartColor,
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
                     ),
-                  );
-                }).toList(),
+                  ),
+                ),
               ),
-            ),
+              const SizedBox(width: 10),
+              _DateNavButton(
+                icon: Icons.chevron_right_rounded,
+                color: chartColor,
+                onTap: () => _moveChartDate(1),
+              ),
+            ],
           ),
           const SizedBox(height: 18),
           Container(
@@ -368,63 +462,76 @@ class _NutritionTrendCardState extends State<NutritionTrendCard> {
                 Row(
                   children: points.map((point) {
                     return Expanded(
-                      child: Column(
-                        children: [
-                          Text(
-                            point.weekday,
-                            style: theme.textTheme.labelSmall?.copyWith(
-                              color: point.isSelected
-                                  ? chartColor
-                                  : colorScheme.onSurface.withValues(
-                                      alpha: 0.58,
-                                    ),
-                              fontWeight: point.isSelected
-                                  ? FontWeight.w800
-                                  : FontWeight.w600,
-                            ),
-                          ),
-                          const SizedBox(height: 4),
-                          Container(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 6,
-                              vertical: 4,
-                            ),
-                            decoration: BoxDecoration(
-                              color: point.isSelected
-                                  ? chartColor.withValues(
-                                      alpha: isDark ? 0.20 : 0.14,
-                                    )
-                                  : Colors.transparent,
-                              borderRadius: BorderRadius.circular(999),
-                            ),
-                            child: Text(
-                              point.dayLabel,
-                              style: theme.textTheme.labelSmall?.copyWith(
-                                color: point.isSelected
-                                    ? chartColor
-                                    : colorScheme.onSurface.withValues(
-                                        alpha: 0.64,
-                                      ),
-                                fontWeight: point.isSelected
-                                    ? FontWeight.w800
-                                    : FontWeight.w600,
+                      child: InkWell(
+                        borderRadius: BorderRadius.circular(14),
+                        onTap: () {
+                          setState(() {
+                            _chartSelectedDate = _normalizeDate(point.date);
+                          });
+                        },
+                        child: Column(
+                          children: [
+                            SizedBox(
+                              width: double.infinity,
+                              child: FittedBox(
+                                fit: BoxFit.scaleDown,
+                                child: Text(
+                                  point.weekday,
+                                  maxLines: 1,
+                                  softWrap: false,
+                                  style: theme.textTheme.labelSmall?.copyWith(
+                                    color: point.isSelected
+                                        ? chartColor
+                                        : colorScheme.onSurface.withValues(
+                                            alpha: 0.58,
+                                          ),
+                                    fontWeight: point.isSelected
+                                        ? FontWeight.w800
+                                        : FontWeight.w600,
+                                  ),
+                                ),
                               ),
                             ),
-                          ),
-                        ],
+                            const SizedBox(height: 4),
+                            Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 4,
+                                vertical: 4,
+                              ),
+                              decoration: BoxDecoration(
+                                color: point.isSelected
+                                    ? chartColor.withValues(
+                                        alpha: isDark ? 0.20 : 0.14,
+                                      )
+                                    : Colors.transparent,
+                                borderRadius: BorderRadius.circular(999),
+                              ),
+                              child: FittedBox(
+                                fit: BoxFit.scaleDown,
+                                child: Text(
+                                  point.dayLabel,
+                                  maxLines: 1,
+                                  softWrap: false,
+                                  style: theme.textTheme.labelSmall?.copyWith(
+                                    color: point.isSelected
+                                        ? chartColor
+                                        : colorScheme.onSurface.withValues(
+                                            alpha: 0.64,
+                                          ),
+                                    fontWeight: point.isSelected
+                                        ? FontWeight.w800
+                                        : FontWeight.w600,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
                     );
                   }).toList(),
                 ),
               ],
-            ),
-          ),
-          const SizedBox(height: 12),
-          Text(
-            'Ngày không có dữ liệu vẫn được giữ trên biểu đồ với giá trị 0.',
-            style: theme.textTheme.bodySmall?.copyWith(
-              color: colorScheme.onSurface.withValues(alpha: 0.62),
-              height: 1.35,
             ),
           ),
         ],
@@ -447,6 +554,37 @@ class _NutritionDayPoint {
     required this.weekday,
     required this.dayLabel,
   });
+}
+
+class _DateNavButton extends StatelessWidget {
+  final IconData icon;
+  final Color color;
+  final VoidCallback onTap;
+
+  const _DateNavButton({
+    required this.icon,
+    required this.color,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
+    return Material(
+      color: color.withValues(alpha: isDark ? 0.16 : 0.10),
+      borderRadius: BorderRadius.circular(14),
+      child: InkWell(
+        borderRadius: BorderRadius.circular(14),
+        onTap: onTap,
+        child: SizedBox(
+          width: 42,
+          height: 42,
+          child: Icon(icon, color: color),
+        ),
+      ),
+    );
+  }
 }
 
 class _NutritionTrendPainter extends CustomPainter {
