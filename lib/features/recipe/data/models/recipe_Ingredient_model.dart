@@ -1,8 +1,4 @@
-import 'dart:ffi';
-
 import 'package:eefood/features/recipe/data/models/ingredient_model.dart';
-import 'package:eefood/features/recipe/domain/entities/ingredient.dart';
-import 'package:eefood/features/recipe/domain/entities/recipe_ingredient.dart';
 
 class RecipeIngredientModel {
   final int? id;

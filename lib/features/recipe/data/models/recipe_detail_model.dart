@@ -1,6 +1,5 @@
 import 'package:eefood/features/recipe/data/models/category_model.dart';
 import 'package:eefood/features/recipe/data/models/recipe_Ingredient_model.dart';
-import 'package:eefood/features/recipe/data/models/recipe_model.dart';
 import 'package:eefood/features/recipe/data/models/recipe_step_model.dart';
 import 'package:json_annotation/json_annotation.dart';
 
@@ -9,7 +8,7 @@ import '../../domain/entities/recipe.dart';
 part 'recipe_detail_model.g.dart';
 
 @JsonSerializable(explicitToJson: true)
-class RecipeDetailModel{
+class RecipeDetailModel {
   final int userId;
   final String username;
   final String email;
@@ -50,5 +49,4 @@ class RecipeDetailModel{
       _$RecipeDetailModelFromJson(json);
 
   Map<String, dynamic> toJson() => _$RecipeDetailModelToJson(this);
-
 }
