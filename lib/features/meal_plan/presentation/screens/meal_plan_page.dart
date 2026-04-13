@@ -7,6 +7,7 @@ import 'package:eefood/features/meal_plan/presentation/widgets/daily_summary_car
 import 'package:eefood/features/meal_plan/presentation/widgets/meal_plan_action_button.dart';
 import 'package:eefood/features/meal_plan/presentation/widgets/meal_plan_day_items_section.dart';
 import 'package:eefood/features/meal_plan/presentation/widgets/meal_plan_generate_sheet.dart';
+import 'package:eefood/features/meal_plan/presentation/widgets/nutrition_trend_card.dart';
 import 'package:eefood/l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -292,6 +293,14 @@ class _MealPlanViewState extends State<_MealPlanView> {
             ),
           ),
           const SizedBox(height: 14),
+          NutritionTrendCard(
+            summaries: state.dailySummaries,
+            selectedDate: state.selectedDate,
+            primaryWarm: primaryWarm,
+            accentWarm: accentWarm,
+            softCream: softCream,
+          ),
+          const SizedBox(height: 18),
           Text(
             l10n.mealPlanOverviewByDay,
             style: theme.textTheme.titleMedium?.copyWith(
