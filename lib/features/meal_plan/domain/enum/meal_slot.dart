@@ -1,3 +1,4 @@
+import 'package:eefood/l10n/app_localizations.dart';
 import 'package:json_annotation/json_annotation.dart';
 
 @JsonEnum(valueField: 'value')
@@ -30,6 +31,19 @@ extension MealSlotX on MealSlot {
         return 'Bữa tối';
       case MealSlot.snack:
         return 'Bữa phụ';
+    }
+  }
+
+  String localizedLabel(AppLocalizations l10n) {
+    switch (this) {
+      case MealSlot.breakfast:
+        return l10n.mealPlanMealSlotBreakfast;
+      case MealSlot.lunch:
+        return l10n.mealPlanMealSlotLunch;
+      case MealSlot.dinner:
+        return l10n.mealPlanMealSlotDinner;
+      case MealSlot.snack:
+        return l10n.mealPlanMealSlotSnack;
     }
   }
 }

@@ -7,6 +7,7 @@ import 'package:eefood/features/meal_plan/presentation/widgets/daily_summary_car
 import 'package:eefood/features/meal_plan/presentation/widgets/meal_plan_action_button.dart';
 import 'package:eefood/features/meal_plan/presentation/widgets/meal_plan_day_items_section.dart';
 import 'package:eefood/features/meal_plan/presentation/widgets/meal_plan_generate_sheet.dart';
+import 'package:eefood/features/meal_plan/presentation/widgets/chart/nutrition_trend_card.dart';
 import 'package:eefood/l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -87,16 +88,18 @@ class _MealPlanViewState extends State<_MealPlanView> {
     final colorScheme = theme.colorScheme;
     final pageBackground = isDark
         ? theme.scaffoldBackgroundColor
-        : const Color(0xFFFFFBF7);
-    final primaryWarm = isDark ? colorScheme.primary : const Color(0xFFE85D04);
+        : const Color(0xFFFFFBF7); // Nền sáng ấm nhất cho toàn bộ màn hình
+    final primaryWarm = isDark
+        ? colorScheme.primary
+        : const Color(0xFFE85D04); // Màu nhấn chính cho hero và CTA
     final accentWarm = isDark
         ? (colorScheme.secondary == colorScheme.primary
               ? colorScheme.primaryContainer
               : colorScheme.secondary)
-        : const Color(0xFFF48C06);
+        : const Color(0xFFF48C06); // Màu phụ để tạo gradient và điểm nhấn
     final softCream = isDark
         ? colorScheme.primaryContainer.withValues(alpha: 0.32)
-        : const Color(0xFFFFF4E6);
+        : const Color(0xFFFFF4E6); // Nền kem nhẹ cho card hoặc vùng tách nội dung
 
     return Scaffold(
       backgroundColor: pageBackground,
@@ -290,6 +293,13 @@ class _MealPlanViewState extends State<_MealPlanView> {
             ),
           ),
           const SizedBox(height: 14),
+          NutritionTrendCard(
+            summaries: state.dailySummaries,
+            selectedDate: state.selectedDate,
+            primaryWarm: primaryWarm,
+            softCream: softCream,
+          ),
+          const SizedBox(height: 18),
           Text(
             l10n.mealPlanOverviewByDay,
             style: theme.textTheme.titleMedium?.copyWith(

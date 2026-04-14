@@ -1,4 +1,7 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
+
+import '../../../data/model/live_poll_setting_response.dart';
+import '../../../domain/enum/poll_result_visibility.dart';
 
 class LivePollSettingsCard extends StatelessWidget {
   final bool isExpanded;
@@ -157,3 +160,12 @@ class LivePollSettingRow extends StatelessWidget {
     );
   }
 }
+
+
+String livePollSettingsSummary(LivePollSettingResponse setting) {
+  final choiceText =
+      setting.multipleChoice ? 'Nhiều lựa chọn' : 'Một lựa chọn';
+  final resultText = setting.resultVisibility.text;
+  return '$choiceText • $resultText';
+}
+

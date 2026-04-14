@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../data/model/live_poll_response.dart';
@@ -227,17 +227,17 @@ class _PollManageContentState extends State<_PollManageContent> {
               LivePollSettingRow(
                 icon: Icons.pie_chart_outline,
                 title: 'Hiển thị kết quả',
-                value: _resultVisibilityText(setting.resultVisibility),
+                value: setting.resultVisibility.text,
               ),
               LivePollSettingRow(
                 icon: Icons.people_outline,
                 title: 'Hiển thị người bình chọn',
-                value: _voterVisibilityText(setting.voterVisibility),
+                value: setting.voterVisibility.text,
               ),
               LivePollSettingRow(
                 icon: Icons.add_circle_outline,
                 title: 'Thêm đáp án',
-                value: _optionAddModeText(setting.optionAddMode),
+                value: setting.optionAddMode.text,
               ),
             ],
           ),
@@ -413,42 +413,11 @@ class _PollManageContentState extends State<_PollManageContent> {
     }
   }
 
-  String _resultVisibilityText(PollResultVisibility visibility) {
-    switch (visibility) {
-      case PollResultVisibility.always:
-        return 'Luôn hiển thị';
-      case PollResultVisibility.afterVote:
-        return 'Hiển thị sau khi bình chọn';
-      case PollResultVisibility.afterClose:
-        return 'Hiển thị sau khi đóng poll';
-    }
-  }
-
-  String _voterVisibilityText(PollVoterVisibility visibility) {
-    switch (visibility) {
-      case PollVoterVisibility.anonymous:
-        return 'Ẩn danh';
-      case PollVoterVisibility.public:
-        return 'Công khai';
-    }
-  }
-
-  String _optionAddModeText(PollOptionAddMode mode) {
-    switch (mode) {
-      case PollOptionAddMode.hostOnly:
-        return 'Chỉ host được thêm đáp án';
-      case PollOptionAddMode.viewerWithApproval:
-        return 'Viewer đề xuất, host duyệt';
-      case PollOptionAddMode.viewerFree:
-        return 'Viewer được thêm tự do';
-    }
-  }
-
   String _settingsSummary(setting) {
     final choiceText = setting.multipleChoice
         ? 'Nhiều lựa chọn'
         : 'Một lựa chọn';
-    final resultText = _resultVisibilityText(setting.resultVisibility);
+    final resultText = setting.resultVisibility.text;
     return '$choiceText • $resultText';
   }
 }

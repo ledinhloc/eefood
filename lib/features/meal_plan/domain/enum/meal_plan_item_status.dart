@@ -1,3 +1,4 @@
+import 'package:eefood/l10n/app_localizations.dart';
 import 'package:json_annotation/json_annotation.dart';
 
 @JsonEnum(valueField: 'value')
@@ -25,6 +26,17 @@ extension MealPlanItemStatusX on MealPlanItemStatus {
         return 'Đã ăn';
       case MealPlanItemStatus.skipped:
         return 'Đã bỏ qua';
+    }
+  }
+
+  String localizedLabel(AppLocalizations l10n) {
+    switch (this) {
+      case MealPlanItemStatus.planned:
+        return l10n.mealPlanStatusPlanned;
+      case MealPlanItemStatus.done:
+        return l10n.mealPlanStatusDone;
+      case MealPlanItemStatus.skipped:
+        return l10n.mealPlanStatusSkipped;
     }
   }
 }
