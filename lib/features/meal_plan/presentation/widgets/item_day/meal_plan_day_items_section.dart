@@ -1,16 +1,19 @@
 import 'package:eefood/core/widgets/media_view_page.dart';
 import 'package:eefood/core/widgets/snack_bar.dart';
+import 'package:eefood/features/meal_plan/data/model/meal_plan_item_ingredient_upsert_request.dart';
 import 'package:eefood/features/meal_plan/data/model/meal_plan_item_response.dart';
+import 'package:eefood/features/meal_plan/data/model/meal_plan_item_upsert_request.dart';
 import 'package:eefood/features/meal_plan/domain/enum/meal_plan_item_status.dart';
 import 'package:eefood/features/meal_plan/domain/enum/meal_slot.dart';
 import 'package:eefood/features/meal_plan/presentation/provider/meal_plan_cubit.dart';
+import 'package:eefood/features/meal_plan/presentation/widgets/item_day/status_drop_down.dart';
 import 'package:eefood/features/meal_plan/presentation/widgets/meal_plan_item_upsert_sheet.dart';
 import 'package:eefood/features/recipe/presentation/screens/recipe_detail_page.dart';
 import 'package:eefood/l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
-class MealPlanDayItemsSection extends StatelessWidget {
+class MealPlanDayItemsSection extends StatefulWidget {
   final bool isLoading;
   final List<MealPlanItemResponse> items;
   final DateTime? selectedDate;
@@ -25,6 +28,13 @@ class MealPlanDayItemsSection extends StatelessWidget {
     required this.primaryWarm,
     required this.softCream,
   });
+
+  @override
+  State<MealPlanDayItemsSection> createState() => _MealPlanDayItemsSectionState();
+}
+
+class _MealPlanDayItemsSectionState extends State<MealPlanDayItemsSection> {
+  final Set<int> _updatingItemIds = <int>{};
 
   String _value(num? value, {String suffix = ''}) {
     if (value == null) return '--';
@@ -64,7 +74,7 @@ class MealPlanDayItemsSection extends StatelessWidget {
     BuildContext context, {
     MealPlanItemResponse? item,
   }) async {
-    final targetDate = item?.planDate ?? selectedDate;
+    final targetDate = item?.planDate ?? widget.selectedDate;
     if (targetDate == null) return;
 
     await showMealPlanItemUpsertSheet(
@@ -116,6 +126,65 @@ class MealPlanDayItemsSection extends StatelessWidget {
     await context.read<MealPlanCubit>().deleteMealPlanItem(itemId);
   }
 
+  Future<void> _updateItemStatus(
+    BuildContext context,
+    MealPlanItemResponse item,
+    MealPlanItemStatus nextStatus,
+  ) async {
+    final itemId = item.id;
+    if (itemId == null || item.status == nextStatus) return;
+
+    setState(() {
+      _updatingItemIds.add(itemId);
+    });
+
+    final cubit = context.read<MealPlanCubit>();
+    await cubit.upsertMealPlanItem(
+      MealPlanItemUpsertRequest(
+        id: itemId,
+        planDate: item.planDate ?? widget.selectedDate,
+        mealSlot: item.mealSlot,
+        itemOrder: item.itemOrder,
+        itemSource: item.itemSource,
+        recipeId: item.recipeId,
+        postId: item.postId,
+        customMealName: item.customMealName,
+        plannedServings: item.plannedServings,
+        actualServings: item.actualServings,
+        status: nextStatus,
+        note: item.note,
+        ingredients: item.ingredients
+            .map(
+              (ingredient) => MealPlanItemIngredientUpsertRequest(
+                name: ingredient.name,
+                quantity: ingredient.quantity,
+                unit: ingredient.unit,
+                note: ingredient.note,
+              ),
+            )
+            .toList(),
+      ),
+      showSubmittingState: false,
+    );
+
+    if (!mounted) return;
+
+    setState(() {
+      _updatingItemIds.remove(itemId);
+    });
+
+    final error = cubit.state.error;
+    if (error != null) {
+      showCustomSnackBar(this.context, error, isError: true);
+      return;
+    }
+
+    // showCustomSnackBar(
+    //   this.context,
+    //   AppLocalizations.of(this.context)!.mealPlanItemUpdated,
+    // );
+  }
+
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
@@ -134,21 +203,21 @@ class MealPlanDayItemsSection extends StatelessWidget {
         : Colors.brown.shade700;
     final shadowColor = Colors.black.withValues(alpha: isDark ? 0.16 : 0.04);
 
-    if (isLoading) {
+    if (widget.isLoading) {
       return const Padding(
         padding: EdgeInsets.symmetric(vertical: 10),
         child: Center(child: CircularProgressIndicator()),
       );
     }
 
-    if (items.isEmpty) {
+    if (widget.items.isEmpty) {
       return Padding(
         padding: const EdgeInsets.all(14),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             _SectionHeader(
-              onAdd: selectedDate == null
+              onAdd: widget.selectedDate == null
                   ? null
                   : () => _openUpsertSheet(context),
             ),
@@ -163,10 +232,12 @@ class MealPlanDayItemsSection extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         _SectionHeader(
-          onAdd: selectedDate == null ? null : () => _openUpsertSheet(context),
+          onAdd: widget.selectedDate == null
+              ? null
+              : () => _openUpsertSheet(context),
         ),
         const SizedBox(height: 10),
-        ...items.map(
+        ...widget.items.map(
           (item) => Container(
             margin: const EdgeInsets.only(bottom: 8),
             padding: const EdgeInsets.all(12),
@@ -192,7 +263,7 @@ class MealPlanDayItemsSection extends StatelessWidget {
                     width: 84,
                     height: 84,
                     decoration: BoxDecoration(
-                      color: softCream,
+                      color: widget.softCream,
                       borderRadius: BorderRadius.circular(18),
                     ),
                     child: item.imageUrl != null && item.imageUrl!.isNotEmpty
@@ -203,14 +274,14 @@ class MealPlanDayItemsSection extends StatelessWidget {
                               fit: BoxFit.cover,
                               errorBuilder: (_, __, ___) => Icon(
                                 Icons.fastfood_outlined,
-                                color: primaryWarm,
+                                color: widget.primaryWarm,
                                 size: 28,
                               ),
                             ),
                           )
                         : Icon(
                             Icons.fastfood_outlined,
-                            color: primaryWarm,
+                            color: widget.primaryWarm,
                             size: 28,
                           ),
                   ),
@@ -228,36 +299,25 @@ class MealPlanDayItemsSection extends StatelessWidget {
                               vertical: 4,
                             ),
                             decoration: BoxDecoration(
-                              color: softCream,
+                              color: widget.softCream,
                               borderRadius: BorderRadius.circular(999),
                             ),
                             child: Text(
                               item.mealSlot.localizedLabel(l10n),
                               style: TextStyle(
-                                color: primaryWarm,
+                                color: widget.primaryWarm,
                                 fontSize: 12,
                                 fontWeight: FontWeight.w700,
                               ),
                             ),
                           ),
-                          const SizedBox(width: 6),
-                          Expanded(
-                            child: Text(
-                              item.status.localizedLabel(l10n),
-                              style: TextStyle(
-                                color: secondaryTextColor,
-                                fontSize: 12,
-                                fontWeight: FontWeight.w600,
-                              ),
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                          ),
+                          const Spacer(),
                           IconButton(
                             onPressed: () =>
                                 _openUpsertSheet(context, item: item),
                             icon: const Icon(Icons.edit_outlined, size: 20),
                             tooltip: l10n.mealPlanEditItemTooltip,
-                            color: primaryWarm,
+                            color: widget.primaryWarm,
                           ),
                           IconButton(
                             onPressed: () => _handleDeleteItem(context, item),
@@ -276,12 +336,14 @@ class MealPlanDayItemsSection extends StatelessWidget {
                           _itemTitle(context, item),
                           style: theme.textTheme.titleSmall?.copyWith(
                             fontWeight: FontWeight.w800,
-                            color: item.recipeId != null ? primaryWarm : null,
+                            color: item.recipeId != null
+                                ? widget.primaryWarm
+                                : null,
                             decoration: item.recipeId != null
                                 ? TextDecoration.underline
                                 : TextDecoration.none,
                             decorationColor: item.recipeId != null
-                                ? primaryWarm
+                                ? widget.primaryWarm
                                 : null,
                           ),
                         ),
@@ -295,16 +357,45 @@ class MealPlanDayItemsSection extends StatelessWidget {
                           color: secondaryTextColor,
                         ),
                       ),
-                      if (item.calories != null) ...[
-                        const SizedBox(height: 2),
-                        Text(
-                          _value(item.calories, suffix: ' kcal'),
-                          style: theme.textTheme.bodySmall?.copyWith(
-                            color: tertiaryTextColor,
-                            fontWeight: FontWeight.w600,
+                      const SizedBox(height: 6),
+                      Row(
+                        crossAxisAlignment: CrossAxisAlignment.end,
+                        children: [
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                if (item.calories != null)
+                                  Text(
+                                    _value(item.calories, suffix: ' kcal'),
+                                    style: theme.textTheme.bodySmall?.copyWith(
+                                      color: tertiaryTextColor,
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  ),
+                              ],
+                            ),
                           ),
-                        ),
-                      ],
+                          const SizedBox(width: 10),
+                          ConstrainedBox(
+                            constraints: const BoxConstraints(minWidth: 132),
+                            child: Align(
+                              alignment: Alignment.bottomRight,
+                              child: StatusDropdown(
+                                value: item.status,
+                                isBusy: _updatingItemIds.contains(item.id),
+                                textColor: secondaryTextColor,
+                                borderColor: borderColor,
+                                fillColor: widget.softCream,
+                                onChanged: (value) {
+                                  if (value == null) return;
+                                  _updateItemStatus(context, item, value);
+                                },
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
                     ],
                   ),
                 ),
@@ -342,3 +433,4 @@ class _SectionHeader extends StatelessWidget {
     );
   }
 }
+
