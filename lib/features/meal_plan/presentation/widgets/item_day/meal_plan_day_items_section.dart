@@ -6,6 +6,8 @@ import 'package:eefood/features/meal_plan/data/model/meal_plan_item_upsert_reque
 import 'package:eefood/features/meal_plan/domain/enum/meal_plan_item_status.dart';
 import 'package:eefood/features/meal_plan/domain/enum/meal_slot.dart';
 import 'package:eefood/features/meal_plan/presentation/provider/meal_plan_cubit.dart';
+import 'package:eefood/features/meal_plan/presentation/widgets/item_day/meal_plan_item_nutrition_sheet.dart';
+import 'package:eefood/features/meal_plan/presentation/widgets/item_day/nutrition_badge.dart';
 import 'package:eefood/features/meal_plan/presentation/widgets/item_day/status_drop_down.dart';
 import 'package:eefood/features/meal_plan/presentation/widgets/meal_plan_item_upsert_sheet.dart';
 import 'package:eefood/features/recipe/presentation/screens/recipe_detail_page.dart';
@@ -30,7 +32,8 @@ class MealPlanDayItemsSection extends StatefulWidget {
   });
 
   @override
-  State<MealPlanDayItemsSection> createState() => _MealPlanDayItemsSectionState();
+  State<MealPlanDayItemsSection> createState() =>
+      _MealPlanDayItemsSectionState();
 }
 
 class _MealPlanDayItemsSectionState extends State<MealPlanDayItemsSection> {
@@ -40,7 +43,7 @@ class _MealPlanDayItemsSectionState extends State<MealPlanDayItemsSection> {
     if (value == null) return '--';
     final formatted = value % 1 == 0
         ? value.toInt().toString()
-        : value.toStringAsFixed(1);
+        : value.toString();
     return '$formatted$suffix';
   }
 
@@ -67,6 +70,42 @@ class _MealPlanDayItemsSectionState extends State<MealPlanDayItemsSection> {
     Navigator.push(
       context,
       MaterialPageRoute(builder: (_) => RecipeDetailPage(recipeId: recipeId)),
+    );
+  }
+
+  Future<void> _showNutritionDialog(
+    BuildContext context,
+    MealPlanItemResponse item,
+  ) async {
+    if (!(item.calories != null ||
+        item.protein != null ||
+        item.carbs != null ||
+        item.fat != null ||
+        item.fiber != null ||
+        item.sugar != null ||
+        item.calcium != null ||
+        item.sodium != null)) {
+      showCustomSnackBar(context, 'Món này chưa có thông tin dinh dưỡng.');
+      return;
+    }
+
+    await showMealPlanItemNutritionSheet(
+      context: context,
+      title: _itemTitle(context, item),
+      caloriesText: _value(item.calories, suffix: ' kcal'),
+      proteinText: item.protein == null
+          ? null
+          : _value(item.protein, suffix: ' g'),
+      carbsText: item.carbs == null ? null : _value(item.carbs, suffix: ' g'),
+      fatText: item.fat == null ? null : _value(item.fat, suffix: ' g'),
+      fiberText: item.fiber == null ? null : _value(item.fiber, suffix: ' g'),
+      sugarText: item.sugar == null ? null : _value(item.sugar, suffix: ' g'),
+      calciumText: item.calcium == null
+          ? null
+          : _value(item.calcium, suffix: ' mg'),
+      sodiumText: item.sodium == null
+          ? null
+          : _value(item.sodium, suffix: ' mg'),
     );
   }
 
@@ -240,7 +279,7 @@ class _MealPlanDayItemsSectionState extends State<MealPlanDayItemsSection> {
         ...widget.items.map(
           (item) => Container(
             margin: const EdgeInsets.only(bottom: 8),
-            padding: const EdgeInsets.all(12),
+            padding: const EdgeInsets.all(10),
             decoration: BoxDecoration(
               color: cardColor,
               borderRadius: BorderRadius.circular(18),
@@ -254,50 +293,72 @@ class _MealPlanDayItemsSectionState extends State<MealPlanDayItemsSection> {
               ],
             ),
             child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                GestureDetector(
-                  onTap: item.imageUrl?.isNotEmpty == true
-                      ? () => _openImage(context, item.imageUrl!)
-                      : null,
-                  child: Container(
-                    width: 84,
-                    height: 84,
-                    decoration: BoxDecoration(
-                      color: widget.softCream,
-                      borderRadius: BorderRadius.circular(18),
-                    ),
-                    child: item.imageUrl != null && item.imageUrl!.isNotEmpty
-                        ? ClipRRect(
-                            borderRadius: BorderRadius.circular(18),
-                            child: Image.network(
-                              item.imageUrl!,
-                              fit: BoxFit.cover,
-                              errorBuilder: (_, __, ___) => Icon(
-                                Icons.fastfood_outlined,
-                                color: widget.primaryWarm,
-                                size: 28,
-                              ),
+                Material(
+                  color: Colors.transparent,
+                  child: InkWell(
+                    onTap: item.imageUrl?.isNotEmpty == true
+                        ? () => _openImage(context, item.imageUrl!)
+                        : null,
+                    borderRadius: BorderRadius.circular(18),
+                    child: SizedBox(
+                      width: 116,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Container(
+                            width: 116,
+                            height: 116,
+                            decoration: BoxDecoration(
+                              color: widget.softCream,
+                              borderRadius: BorderRadius.circular(18),
                             ),
-                          )
-                        : Icon(
-                            Icons.fastfood_outlined,
-                            color: widget.primaryWarm,
-                            size: 28,
+                            child:
+                                item.imageUrl != null &&
+                                    item.imageUrl!.isNotEmpty
+                                ? ClipRRect(
+                                    borderRadius: BorderRadius.circular(18),
+                                    child: Image.network(
+                                      item.imageUrl!,
+                                      fit: BoxFit.cover,
+                                      errorBuilder: (_, __, ___) => Icon(
+                                        Icons.fastfood_outlined,
+                                        color: widget.primaryWarm,
+                                        size: 32,
+                                      ),
+                                    ),
+                                  )
+                                : Icon(
+                                    Icons.fastfood_outlined,
+                                    color: widget.primaryWarm,
+                                    size: 32,
+                                  ),
                           ),
+                          if (item.calories != null) const SizedBox(height: 8),
+                          if (item.calories != null)
+                            NutritionBadge(
+                              text: _value(item.calories, suffix: ' kcal'),
+                              textColor: tertiaryTextColor,
+                              onTap: () => _showNutritionDialog(context, item),
+                            ),
+                        ],
+                      ),
+                    ),
                   ),
                 ),
-                const SizedBox(width: 12),
+                const SizedBox(width: 10),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Row(
+                        crossAxisAlignment: CrossAxisAlignment.center,
                         children: [
                           Container(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 10,
-                              vertical: 4,
-                            ),
+                            height: 28,
+                            padding: const EdgeInsets.symmetric(horizontal: 8),
+                            alignment: Alignment.center,
                             decoration: BoxDecoration(
                               color: widget.softCream,
                               borderRadius: BorderRadius.circular(999),
@@ -306,7 +367,7 @@ class _MealPlanDayItemsSectionState extends State<MealPlanDayItemsSection> {
                               item.mealSlot.localizedLabel(l10n),
                               style: TextStyle(
                                 color: widget.primaryWarm,
-                                fontSize: 12,
+                                fontSize: 11,
                                 fontWeight: FontWeight.w700,
                               ),
                             ),
@@ -315,15 +376,27 @@ class _MealPlanDayItemsSectionState extends State<MealPlanDayItemsSection> {
                           IconButton(
                             onPressed: () =>
                                 _openUpsertSheet(context, item: item),
-                            icon: const Icon(Icons.edit_outlined, size: 20),
+                            icon: const Icon(Icons.edit_outlined, size: 16),
                             tooltip: l10n.mealPlanEditItemTooltip,
                             color: widget.primaryWarm,
+                            padding: EdgeInsets.zero,
+                            constraints: const BoxConstraints.tightFor(
+                              width: 28,
+                              height: 28,
+                            ),
+                            visualDensity: VisualDensity.compact,
                           ),
                           IconButton(
                             onPressed: () => _handleDeleteItem(context, item),
-                            icon: const Icon(Icons.delete_outline, size: 20),
+                            icon: const Icon(Icons.delete_outline, size: 16),
                             tooltip: l10n.mealPlanDeleteItemTooltip,
                             color: colorScheme.error,
+                            padding: EdgeInsets.zero,
+                            constraints: const BoxConstraints.tightFor(
+                              width: 28,
+                              height: 28,
+                            ),
+                            visualDensity: VisualDensity.compact,
                           ),
                         ],
                       ),
@@ -334,7 +407,10 @@ class _MealPlanDayItemsSectionState extends State<MealPlanDayItemsSection> {
                             : null,
                         child: Text(
                           _itemTitle(context, item),
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
                           style: theme.textTheme.titleSmall?.copyWith(
+                            height: 1.15,
                             fontWeight: FontWeight.w800,
                             color: item.recipeId != null
                                 ? widget.primaryWarm
@@ -354,47 +430,27 @@ class _MealPlanDayItemsSectionState extends State<MealPlanDayItemsSection> {
                           '${item.actualServings ?? item.plannedServings ?? '--'}',
                         ),
                         style: theme.textTheme.bodySmall?.copyWith(
+                          fontSize: 11,
                           color: secondaryTextColor,
                         ),
                       ),
-                      const SizedBox(height: 6),
-                      Row(
-                        crossAxisAlignment: CrossAxisAlignment.end,
-                        children: [
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                if (item.calories != null)
-                                  Text(
-                                    _value(item.calories, suffix: ' kcal'),
-                                    style: theme.textTheme.bodySmall?.copyWith(
-                                      color: tertiaryTextColor,
-                                      fontWeight: FontWeight.w600,
-                                    ),
-                                  ),
-                              ],
-                            ),
+                      const SizedBox(height: 8),
+                      Align(
+                        alignment: Alignment.centerRight,
+                        child: ConstrainedBox(
+                          constraints: const BoxConstraints(minWidth: 132),
+                          child: StatusDropdown(
+                            value: item.status,
+                            isBusy: _updatingItemIds.contains(item.id),
+                            textColor: item.status.textColor(isDark),
+                            borderColor: item.status.borderColor(isDark),
+                            fillColor: item.status.backgroundColor(isDark),
+                            onChanged: (value) {
+                              if (value == null) return;
+                              _updateItemStatus(context, item, value);
+                            },
                           ),
-                          const SizedBox(width: 10),
-                          ConstrainedBox(
-                            constraints: const BoxConstraints(minWidth: 132),
-                            child: Align(
-                              alignment: Alignment.bottomRight,
-                              child: StatusDropdown(
-                                value: item.status,
-                                isBusy: _updatingItemIds.contains(item.id),
-                                textColor: secondaryTextColor,
-                                borderColor: borderColor,
-                                fillColor: widget.softCream,
-                                onChanged: (value) {
-                                  if (value == null) return;
-                                  _updateItemStatus(context, item, value);
-                                },
-                              ),
-                            ),
-                          ),
-                        ],
+                        ),
                       ),
                     ],
                   ),
@@ -433,4 +489,3 @@ class _SectionHeader extends StatelessWidget {
     );
   }
 }
-

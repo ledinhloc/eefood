@@ -11,6 +11,7 @@ class StatusDropdown extends StatelessWidget {
   final ValueChanged<MealPlanItemStatus?> onChanged;
 
   const StatusDropdown({
+    super.key,
     required this.value,
     required this.isBusy,
     required this.textColor,
@@ -22,6 +23,9 @@ class StatusDropdown extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+    final menuTextColor = theme.colorScheme.onSurface;
 
     return SizedBox(
       width: 150,
@@ -64,18 +68,49 @@ class StatusDropdown extends StatelessWidget {
                         size: 20,
                       ),
                 style: TextStyle(
-                  color: textColor,
+                  color: menuTextColor,
                   fontSize: 12,
                   fontWeight: FontWeight.w600,
                 ),
                 dropdownColor: Theme.of(context).colorScheme.surface,
+                selectedItemBuilder: (context) => MealPlanItemStatus.values
+                    .map(
+                      (status) => Align(
+                        alignment: Alignment.centerLeft,
+                        child: Text(
+                          status.localizedLabel(l10n),
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(
+                            color: status.textColor(isDark),
+                            fontSize: 12,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                      ),
+                    )
+                    .toList(),
                 items: MealPlanItemStatus.values
                     .map(
                       (status) => DropdownMenuItem<MealPlanItemStatus>(
                         value: status,
-                        child: Text(
-                          status.localizedLabel(l10n),
-                          overflow: TextOverflow.ellipsis,
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 10,
+                            vertical: 8,
+                          ),
+                          decoration: BoxDecoration(
+                            color: status.backgroundColor(isDark),
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: Text(
+                            status.localizedLabel(l10n),
+                            overflow: TextOverflow.ellipsis,
+                            style: TextStyle(
+                              color: status.textColor(isDark),
+                              fontSize: 12,
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
                         ),
                       ),
                     )
