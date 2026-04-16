@@ -7,12 +7,10 @@ part 'poll_result_response.g.dart';
 class PollResultResponse {
 
   final int pollId;
-  final int totalVotes;
   final List<LivePollOptionResponse> options;
 
   PollResultResponse({
     required this.pollId,
-    required this.totalVotes,
     required this.options,
   });
 

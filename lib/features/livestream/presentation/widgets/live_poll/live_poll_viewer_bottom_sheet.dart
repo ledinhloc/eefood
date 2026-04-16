@@ -318,11 +318,6 @@ class _PollViewerContentState extends State<_PollViewerContent> {
                   fontSize: 16,
                 ),
               ),
-              const SizedBox(height: 6),
-              Text(
-                'Tổng số phiếu: ${state.result!.totalVotes}',
-                style: const TextStyle(color: Colors.white70),
-              ),
               const SizedBox(height: 10),
               ...state.result!.options.map(
                 (item) => GestureDetector(
