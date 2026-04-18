@@ -23,14 +23,14 @@ class LivePollBanner extends StatelessWidget {
           color: Colors.black.withOpacity(0.6),
           borderRadius: BorderRadius.circular(14),
           border: Border.all(
-            color: _statusColor(poll.status).withOpacity(0.7),
+            color: poll.status.color.withOpacity(0.7),
           ),
         ),
         child: Row(
           children: [
             Icon(
               Icons.poll_outlined,
-              color: _statusColor(poll.status),
+              color: poll.status.color,
               size: 20,
             ),
             const SizedBox(width: 10),
@@ -50,9 +50,9 @@ class LivePollBanner extends StatelessWidget {
                   ),
                   const SizedBox(height: 4),
                   Text(
-                    _statusText(poll.status),
+                    poll.status.text,
                     style: TextStyle(
-                      color: _statusColor(poll.status),
+                      color: poll.status.color,
                       fontSize: 12,
                       fontWeight: FontWeight.w500,
                     ),
@@ -69,27 +69,5 @@ class LivePollBanner extends StatelessWidget {
         ),
       ),
     );
-  }
-
-  String _statusText(PollStatus status) {
-    switch (status) {
-      case PollStatus.open:
-        return 'Đang mở bình chọn';
-      case PollStatus.closed:
-        return 'Đã đóng bình chọn';
-      default:
-        return 'Chưa mở bình chọn';
-    }
-  }
-
-  Color _statusColor(PollStatus status) {
-    switch (status) {
-      case PollStatus.open:
-        return Colors.greenAccent;
-      case PollStatus.closed:
-        return Colors.redAccent;
-      default:
-        return Colors.orangeAccent;
-    }
   }
 }
