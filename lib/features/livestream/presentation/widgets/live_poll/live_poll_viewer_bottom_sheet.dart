@@ -165,9 +165,9 @@ class _PollViewerContentState extends State<_PollViewerContent> {
               borderRadius: BorderRadius.circular(12),
             ),
             child: Text(
-              _statusText(poll.status),
+              poll.status.text,
               style: TextStyle(
-                color: _statusColor(poll.status),
+                color: poll.status.color,
                 fontWeight: FontWeight.w600,
               ),
             ),
@@ -318,11 +318,6 @@ class _PollViewerContentState extends State<_PollViewerContent> {
                   fontSize: 16,
                 ),
               ),
-              const SizedBox(height: 6),
-              Text(
-                'Tổng số phiếu: ${state.result!.totalVotes}',
-                style: const TextStyle(color: Colors.white70),
-              ),
               const SizedBox(height: 10),
               ...state.result!.options.map(
                 (item) => GestureDetector(
@@ -397,28 +392,6 @@ class _PollViewerContentState extends State<_PollViewerContent> {
         ],
       ),
     );
-  }
-
-  String _statusText(PollStatus status) {
-    switch (status) {
-      case PollStatus.open:
-        return 'Đang mở bình chọn';
-      case PollStatus.closed:
-        return 'Poll đã đóng';
-      default:
-        return 'Poll chưa mở';
-    }
-  }
-
-  Color _statusColor(PollStatus status) {
-    switch (status) {
-      case PollStatus.open:
-        return Colors.greenAccent;
-      case PollStatus.closed:
-        return Colors.orangeAccent;
-      default:
-        return Colors.white70;
-    }
   }
 }
 

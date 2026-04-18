@@ -5,7 +5,7 @@ import 'package:eefood/features/meal_plan/presentation/provider/meal_plan_cubit.
 import 'package:eefood/features/meal_plan/presentation/provider/meal_plan_state.dart';
 import 'package:eefood/features/meal_plan/presentation/widgets/daily_summary_card.dart';
 import 'package:eefood/features/meal_plan/presentation/widgets/meal_plan_action_button.dart';
-import 'package:eefood/features/meal_plan/presentation/widgets/meal_plan_day_items_section.dart';
+import 'package:eefood/features/meal_plan/presentation/widgets/item_day/meal_plan_day_items_section.dart';
 import 'package:eefood/features/meal_plan/presentation/widgets/meal_plan_generate_sheet.dart';
 import 'package:eefood/features/meal_plan/presentation/widgets/chart/nutrition_trend_card.dart';
 import 'package:eefood/l10n/app_localizations.dart';

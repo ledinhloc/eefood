@@ -147,50 +147,17 @@ class _ProposalStatusBadge extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
       decoration: BoxDecoration(
-        color: _backgroundColor,
+        color: status.backgroundColor,
         borderRadius: BorderRadius.circular(999),
       ),
       child: Text(
-        _label,
+        status.text,
         style: TextStyle(
-          color: _foregroundColor,
+          color: status.foregroundColor,
           fontSize: 12,
           fontWeight: FontWeight.w700,
         ),
       ),
     );
-  }
-
-  String get _label {
-    switch (status) {
-      case PollOptionProposalStatus.pending:
-        return 'Chờ duyệt';
-      case PollOptionProposalStatus.approved:
-        return 'Đã chấp nhận';
-      case PollOptionProposalStatus.rejected:
-        return 'Đã từ chối';
-    }
-  }
-
-  Color get _backgroundColor {
-    switch (status) {
-      case PollOptionProposalStatus.pending:
-        return Colors.orange.withValues(alpha: 0.22);
-      case PollOptionProposalStatus.approved:
-        return Colors.green.withValues(alpha: 0.22);
-      case PollOptionProposalStatus.rejected:
-        return Colors.red.withValues(alpha: 0.22);
-    }
-  }
-
-  Color get _foregroundColor {
-    switch (status) {
-      case PollOptionProposalStatus.pending:
-        return Colors.orange.shade200;
-      case PollOptionProposalStatus.approved:
-        return Colors.green.shade200;
-      case PollOptionProposalStatus.rejected:
-        return Colors.red.shade200;
-    }
   }
 }

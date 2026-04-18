@@ -9,7 +9,6 @@ part of 'poll_result_response.dart';
 PollResultResponse _$PollResultResponseFromJson(Map<String, dynamic> json) =>
     PollResultResponse(
       pollId: (json['pollId'] as num).toInt(),
-      totalVotes: (json['totalVotes'] as num).toInt(),
       options: (json['options'] as List<dynamic>)
           .map(
               (e) => LivePollOptionResponse.fromJson(e as Map<String, dynamic>))
@@ -19,6 +18,5 @@ PollResultResponse _$PollResultResponseFromJson(Map<String, dynamic> json) =>
 Map<String, dynamic> _$PollResultResponseToJson(PollResultResponse instance) =>
     <String, dynamic>{
       'pollId': instance.pollId,
-      'totalVotes': instance.totalVotes,
       'options': instance.options,
     };

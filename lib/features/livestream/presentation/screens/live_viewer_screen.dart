@@ -3,7 +3,6 @@ import 'dart:async';
 import 'package:eefood/core/widgets/snack_bar.dart';
 import 'package:eefood/features/livestream/presentation/provider/live_poll_cubit.dart';
 import 'package:eefood/features/livestream/presentation/provider/live_poll_state.dart';
-import 'package:eefood/features/livestream/presentation/widgets/live_poll/live_poll_viewer_banner.dart';
 import 'package:eefood/features/livestream/presentation/widgets/live_poll/live_poll_viewer_bottom_sheet.dart';
 import 'package:eefood/features/livestream/presentation/widgets/stream_ended_dialog.dart';
 import 'package:flutter/material.dart';
@@ -18,6 +17,7 @@ import '../provider/live_viewer_cubit.dart';
 import '../provider/watch_live_cubit.dart';
 import '../provider/watch_live_state.dart';
 import '../widgets/live_comment_list.dart';
+import '../widgets/live_poll/live_poll_banner.dart';
 import '../widgets/live_reaction_animation.dart';
 import '../widgets/live_status_timer.dart';
 import '../widgets/viewer_list_bottom_sheet.dart';
@@ -292,7 +292,7 @@ class _LiveViewerScreenState extends State<LiveViewerScreen> {
                         final poll = pollState.poll;
                         if (poll == null) return const SizedBox.shrink();
 
-                        return LivePollViewerBanner(
+                        return LivePollBanner(
                           poll: poll,
                           onTap: _showPollSheet,
                         );

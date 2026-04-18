@@ -1,14 +1,15 @@
 ﻿import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
-import '../../../data/model/live_poll_response.dart';
-import '../../../domain/enum/poll_option_add_mode.dart';
-import '../../../domain/enum/poll_result_visibility.dart';
-import '../../../domain/enum/poll_status.dart';
-import '../../../domain/enum/poll_voter_visibility.dart';
-import '../../provider/live_poll_cubit.dart';
-import '../../provider/live_poll_option_proposal_cubit.dart';
-import '../../provider/live_poll_state.dart';
+import 'package:eefood/features/livestream/data/model/live_poll_response.dart';
+import 'package:eefood/features/livestream/domain/enum/poll_option_add_mode.dart';
+import 'package:eefood/features/livestream/domain/enum/poll_result_visibility.dart';
+import 'package:eefood/features/livestream/domain/enum/poll_status.dart';
+import 'package:eefood/features/livestream/domain/enum/poll_voter_visibility.dart';
+import 'package:eefood/features/livestream/presentation/provider/live_poll_cubit.dart';
+import 'package:eefood/features/livestream/presentation/provider/live_poll_option_proposal_cubit.dart';
+import 'package:eefood/features/livestream/presentation/provider/live_poll_state.dart';
+import 'package:eefood/features/livestream/data/model/live_poll_setting_response.dart';
 import 'live_poll_settings_card.dart';
 import 'option_voters_bottom_sheet.dart';
 import 'poll_option_proposal_section.dart';
@@ -185,8 +186,8 @@ class _PollManageContentState extends State<_PollManageContent> {
                 child: _StatTile(
                   icon: Icons.track_changes,
                   label: 'Trạng thái',
-                  value: _statusText(poll.status),
-                  accentColor: _statusColor(poll.status),
+                  value: poll.status.text,
+                  accentColor: poll.status.color,
                 ),
               ),
               const SizedBox(width: 12),
@@ -391,29 +392,7 @@ class _PollManageContentState extends State<_PollManageContent> {
     );
   }
 
-  String _statusText(PollStatus status) {
-    switch (status) {
-      case PollStatus.open:
-        return 'Đang mở';
-      case PollStatus.closed:
-        return 'Đã đóng';
-      case PollStatus.draft:
-        return 'Chưa mở';
-    }
-  }
-
-  Color _statusColor(PollStatus status) {
-    switch (status) {
-      case PollStatus.open:
-        return const Color(0xFF68D391);
-      case PollStatus.closed:
-        return const Color(0xFFFF8A80);
-      case PollStatus.draft:
-        return const Color(0xFFFFB067);
-    }
-  }
-
-  String _settingsSummary(setting) {
+  String _settingsSummary(LivePollSettingResponse setting) {
     final choiceText = setting.multipleChoice
         ? 'Nhiều lựa chọn'
         : 'Một lựa chọn';
@@ -442,17 +421,7 @@ class _HeroPollCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final statusColor = switch (poll.status) {
-      PollStatus.open => const Color(0xFF68D391),
-      PollStatus.closed => const Color(0xFFFF8A80),
-      PollStatus.draft => const Color(0xFFFFB067),
-    };
-
-    final statusText = switch (poll.status) {
-      PollStatus.open => 'Đang mở',
-      PollStatus.closed => 'Đã đóng',
-      PollStatus.draft => 'Chưa mở',
-    };
+    final statusColor = poll.status.color;
 
     return Container(
       width: double.infinity,
@@ -501,7 +470,7 @@ class _HeroPollCard extends StatelessWidget {
                   borderRadius: BorderRadius.circular(999),
                 ),
                 child: Text(
-                  statusText,
+                  poll.status.text,
                   style: TextStyle(
                     color: statusColor,
                     fontWeight: FontWeight.w700,

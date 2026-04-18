@@ -36,7 +36,7 @@ class OptionVotersBottomSheet extends StatelessWidget {
     } catch (e) {
       if (!context.mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Khong the mo trang ca nhan: $e')),
+        SnackBar(content: Text('Không thể mở trang cá nhân: $e')),
       );
     }
   }
@@ -83,7 +83,7 @@ class OptionVotersBottomSheet extends StatelessWidget {
                 ),
                 const SizedBox(height: 4),
                 Text(
-                  'Danh sach nguoi vote',
+                  'Danh sách người vote',
                   style: TextStyle(
                     color: Colors.white.withValues(alpha: 0.7),
                   ),
@@ -108,7 +108,7 @@ class OptionVotersBottomSheet extends StatelessWidget {
                       borderRadius: BorderRadius.circular(12),
                     ),
                     child: const Text(
-                      'Chua co nguoi vote cho lua chon nay.',
+                      'Chưa có người vote cho lựa chọn này.',
                       style: TextStyle(color: Colors.white70),
                     ),
                   )
@@ -149,7 +149,7 @@ class OptionVotersBottomSheet extends StatelessWidget {
                                 const SizedBox(width: 12),
                                 Expanded(
                                   child: Text(
-                                    voter.username ?? 'Nguoi dung',
+                                    voter.username ?? 'Người dùng',
                                     style: const TextStyle(
                                       color: Colors.white,
                                       fontWeight: FontWeight.w600,
