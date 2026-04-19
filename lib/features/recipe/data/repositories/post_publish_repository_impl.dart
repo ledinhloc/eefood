@@ -15,6 +15,19 @@ class PostPublishRepositoryImpl extends PostPublishRepository {
   }
 
   @override
+  Future<List<PostPublishModel>> getSimilarRecipes(
+    int recipeId, {
+    int limit = 10,
+  }) async {
+    final response = await dio.get(
+      '/v1/posts/recipes/$recipeId/similar',
+      queryParameters: {'limit': limit},
+    );
+    final data = response.data['data'] as List;
+    return data.map((e) => PostPublishModel.fromJson(e)).toList();
+  }
+
+  @override
   Future<PostPublishModel> createPost(int recipeId, String content) async {
     final response = await dio.post(
       '/v1/posts',

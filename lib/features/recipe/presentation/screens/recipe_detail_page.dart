@@ -21,8 +21,10 @@ import '../../../auth/domain/entities/user.dart';
 import '../../../profile/domain/usecases/profile_usecase.dart';
 import '../../data/models/recipe_detail_model.dart';
 import '../provider/recipe_detail_cubit.dart';
+import '../provider/similar_recipes_cubit.dart';
 import '../widgets/category_list_widget.dart';
 import '../widgets/instructions/instructions_tab.dart';
+import '../widgets/recipe_detail/similar_recipes_section.dart';
 import '../widgets/steps_tab.dart';
 
 class RecipeDetailPage extends StatefulWidget {
@@ -35,6 +37,7 @@ class RecipeDetailPage extends StatefulWidget {
 
 class _RecipeDetailPageState extends State<RecipeDetailPage> {
   late final RecipeDetailCubit _cubit;
+  late final SimilarRecipesCubit _similarRecipesCubit;
   late final FollowCubit _followCubit;
   int? _currentUserId;
   bool _isLoadingFollow = false;
@@ -44,6 +47,8 @@ class _RecipeDetailPageState extends State<RecipeDetailPage> {
     // TODO: implement initState
     super.initState();
     _cubit = RecipeDetailCubit()..loadRecipe(widget.recipeId);
+    _similarRecipesCubit = SimilarRecipesCubit()
+      ..loadSimilarRecipes(widget.recipeId);
     _followCubit = FollowCubit();
     _loadCurrentUserId();
   }
@@ -132,6 +137,7 @@ class _RecipeDetailPageState extends State<RecipeDetailPage> {
   @override
   void dispose() {
     _cubit.stopTracking();
+    _similarRecipesCubit.close();
     _followCubit.close();
     super.dispose();
   }
@@ -143,6 +149,7 @@ class _RecipeDetailPageState extends State<RecipeDetailPage> {
     return MultiBlocProvider(
       providers: [
         BlocProvider.value(value: _cubit),
+        BlocProvider.value(value: _similarRecipesCubit),
         BlocProvider.value(value: _followCubit),
       ],
       child: BlocBuilder<RecipeDetailCubit, RecipeDetailState>(
@@ -162,10 +169,8 @@ class _RecipeDetailPageState extends State<RecipeDetailPage> {
           final recipe = state.recipe!;
           final totalTime = (recipe.prepTime ?? 0) + (recipe.cookTime ?? 0);
 
-          if (_currentUserId != null &&
-              recipe.userId != null &&
-              recipe.userId != _currentUserId) {
-            _followCubit.loadFollowData(recipe.userId!);
+          if (_currentUserId != null && recipe.userId != _currentUserId) {
+            _followCubit.loadFollowData(recipe.userId);
           }
 
           return Scaffold(
@@ -525,6 +530,8 @@ class _RecipeDetailPageState extends State<RecipeDetailPage> {
                           ],
                         ),
                       ),
+                      const SizedBox(height: 24),
+                      SimilarRecipesSection(currentRecipeId: widget.recipeId),
                     ],
                   ),
                 ),

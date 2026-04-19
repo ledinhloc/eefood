@@ -6,4 +6,5 @@ abstract class PostPublishRepository {
   Future<void> deletePost(int id);
 
   Future<List<PostPublishModel>> getPublishedPosts();
+  Future<List<PostPublishModel>> getSimilarRecipes(int recipeId, {int limit = 10});
 }
