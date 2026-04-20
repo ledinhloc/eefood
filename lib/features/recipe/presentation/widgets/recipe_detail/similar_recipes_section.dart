@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../../../app_routes.dart';
-import '../../../data/models/post_publish_model.dart';
+import '../../../data/models/similar_post_model.dart';
 import '../../provider/similar_recipes_cubit.dart';
 
 class SimilarRecipesSection extends StatelessWidget {
@@ -79,7 +79,7 @@ class SimilarRecipesSection extends StatelessWidget {
 }
 
 class _SimilarRecipeCard extends StatelessWidget {
-  final PostPublishModel post;
+  final SimilarPostModel post;
 
   const _SimilarRecipeCard({required this.post});
 
@@ -90,6 +90,7 @@ class _SimilarRecipeCard extends StatelessWidget {
       child: InkWell(
         borderRadius: BorderRadius.circular(18),
         onTap: () {
+          if (post.recipeId == null) return;
           Navigator.pushNamed(
             context,
             AppRoutes.recipeDetail,
@@ -138,7 +139,7 @@ class _SimilarRecipeCard extends StatelessWidget {
                       ),
                     ),
                     const SizedBox(height: 8),
-                    if ((post.difficulty ?? '').isNotEmpty)
+                    if (post.matchedIngredients.isNotEmpty)
                       Container(
                         padding: const EdgeInsets.symmetric(
                           horizontal: 8,
@@ -149,7 +150,7 @@ class _SimilarRecipeCard extends StatelessWidget {
                           borderRadius: BorderRadius.circular(999),
                         ),
                         child: Text(
-                          post.difficulty!,
+                          post.matchedIngredients.take(2).join(', '),
                           style: TextStyle(
                             fontSize: 11,
                             color: Colors.orange.shade800,

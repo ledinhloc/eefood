@@ -1,12 +1,12 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../../core/di/injection.dart';
-import '../../data/models/post_publish_model.dart';
+import '../../data/models/similar_post_model.dart';
 import '../../domain/repositories/post_publish_repository.dart';
 
 class SimilarRecipesState {
   final bool isLoading;
-  final List<PostPublishModel> recipes;
+  final List<SimilarPostModel> recipes;
   final String? error;
 
   const SimilarRecipesState({
@@ -17,7 +17,7 @@ class SimilarRecipesState {
 
   SimilarRecipesState copyWith({
     bool? isLoading,
-    List<PostPublishModel>? recipes,
+    List<SimilarPostModel>? recipes,
     String? error,
   }) {
     return SimilarRecipesState(
@@ -33,12 +33,17 @@ class SimilarRecipesCubit extends Cubit<SimilarRecipesState> {
 
   SimilarRecipesCubit() : super(const SimilarRecipesState());
 
-  Future<void> loadSimilarRecipes(int recipeId, {int limit = 10}) async {
+  Future<void> loadSimilarRecipes(
+    int recipeId, {
+    List<String>? ingredients,
+    int limit = 10,
+  }) async {
     emit(const SimilarRecipesState(isLoading: true));
 
     try {
       final recipes = await _repository.getSimilarRecipes(
         recipeId,
+        ingredients: ingredients,
         limit: limit,
       );
       emit(SimilarRecipesState(recipes: recipes));

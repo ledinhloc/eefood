@@ -1,6 +1,7 @@
 import 'package:dio/dio.dart';
 import '../../domain/repositories/post_publish_repository.dart';
 import '../models/post_publish_model.dart';
+import '../models/similar_post_model.dart';
 
 class PostPublishRepositoryImpl extends PostPublishRepository {
   final Dio dio;
@@ -15,16 +16,21 @@ class PostPublishRepositoryImpl extends PostPublishRepository {
   }
 
   @override
-  Future<List<PostPublishModel>> getSimilarRecipes(
+  Future<List<SimilarPostModel>> getSimilarRecipes(
     int recipeId, {
+    List<String>? ingredients,
     int limit = 10,
   }) async {
     final response = await dio.get(
       '/v1/posts/recipes/$recipeId/similar',
-      queryParameters: {'limit': limit},
+      queryParameters: {
+        if (ingredients != null && ingredients.isNotEmpty)
+          'ingredients': ingredients,
+        'limit': limit,
+      },
     );
     final data = response.data['data'] as List;
-    return data.map((e) => PostPublishModel.fromJson(e)).toList();
+    return data.map((e) => SimilarPostModel.fromJson(e)).toList();
   }
 
   @override
