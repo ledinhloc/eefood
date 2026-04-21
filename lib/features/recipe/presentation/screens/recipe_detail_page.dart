@@ -521,24 +521,34 @@ class _RecipeDetailPageState extends State<RecipeDetailPage> {
                       const SizedBox(height: 12),
 
                       // --- Tabs: Ingredients / Steps ---
-                      const TabBar(
-                        labelColor: Colors.orange,
-                        unselectedLabelColor: Colors.grey,
-                        indicatorColor: Colors.orange,
-                        tabs: [
-                          Tab(text: "Ingredients"),
-                          Tab(text: "Instructions"),
-                        ],
-                      ),
+                      Builder(
+                        builder: (context) {
+                          final tabController = DefaultTabController.of(
+                            context,
+                          );
 
-                      SizedBox(
-                        height: 600,
-                        child: TabBarView(
-                          children: [
-                            InstructionsTab(),
-                            StepsTab(recipe: recipe),
-                          ],
-                        ),
+                          return Column(
+                            children: [
+                              const TabBar(
+                                labelColor: Colors.orange,
+                                unselectedLabelColor: Colors.grey,
+                                indicatorColor: Colors.orange,
+                                tabs: [
+                                  Tab(text: "Ingredients"),
+                                  Tab(text: "Instructions"),
+                                ],
+                              ),
+                              AnimatedBuilder(
+                                animation: tabController,
+                                builder: (context, _) {
+                                  return tabController.index == 0
+                                      ? const InstructionsTab()
+                                      : StepsTab(recipe: recipe);
+                                },
+                              ),
+                            ],
+                          );
+                        },
                       ),
                       const SizedBox(height: 24),
                       SimilarRecipesSection(

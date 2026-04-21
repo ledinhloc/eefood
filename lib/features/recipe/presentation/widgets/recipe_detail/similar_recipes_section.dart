@@ -22,10 +22,7 @@ class SimilarRecipesSection extends StatelessWidget {
   Widget build(BuildContext context) {
     return BlocBuilder<SimilarRecipesCubit, SimilarRecipesState>(
       builder: (context, state) {
-        final similarRecipes = state.recipes
-            .where((post) => post.recipeId != currentRecipeId)
-            .take(10)
-            .toList();
+        final similarRecipes = state.recipes;
 
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -138,7 +135,7 @@ class _SimilarRecipeCard extends StatelessWidget {
                           borderRadius: BorderRadius.circular(999),
                         ),
                         child: Text(
-                          post.matchedIngredients.take(2).join(', '),
+                          post.matchedIngredients.take(3).join(', '),
                           style: TextStyle(
                             fontSize: 11,
                             color: Colors.orange.shade800,

@@ -17,6 +17,9 @@ class InstructionsTab extends StatelessWidget {
         final recipe = state.recipe;
         if (recipe == null) return const SizedBox();
         return ListView.builder(
+          physics: const NeverScrollableScrollPhysics(),
+          shrinkWrap: true,
+          primary: false,
           padding: const EdgeInsets.all(12),
           itemCount: recipe.ingredients?.length ?? 0,
           itemBuilder: (context, index) {
@@ -49,11 +52,8 @@ class InstructionsTab extends StatelessWidget {
               title: Text(ing.ingredient?.name ?? ''),
               subtitle: Text("${ing.quantity ?? ''} ${ing.unit ?? ''}"),
               trailing: IconButton(
-                onPressed: () => _showIngredientSubstituteBottomSheet(
-                  ctx,
-                  ing,
-                  recipe.id!,
-                ),
+                onPressed: () =>
+                    _showIngredientSubstituteBottomSheet(ctx, ing, recipe.id!),
                 icon: Icon(
                   Icons.change_circle_outlined,
                   color: theme.colorScheme.onSurface,

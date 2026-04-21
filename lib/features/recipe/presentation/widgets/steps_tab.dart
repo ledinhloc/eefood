@@ -12,6 +12,9 @@ class StepsTab extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ListView.builder(
+      physics: const NeverScrollableScrollPhysics(),
+      shrinkWrap: true,
+      primary: false,
       padding: const EdgeInsets.all(12),
       itemCount: recipe.steps?.length ?? 0,
       itemBuilder: (context, index) {
