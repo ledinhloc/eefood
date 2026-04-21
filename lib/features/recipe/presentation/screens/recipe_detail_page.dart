@@ -41,6 +41,8 @@ class _RecipeDetailPageState extends State<RecipeDetailPage> {
   late final FollowCubit _followCubit;
   int? _currentUserId;
   bool _isLoadingFollow = false;
+  bool _hasScheduledSimilarRecipesLoad = false;
+  int? _loadedFollowAuthorId;
 
   List<String> _extractIngredientNames(RecipeDetailModel recipe) {
     return (recipe.ingredients ?? const [])
@@ -56,10 +58,31 @@ class _RecipeDetailPageState extends State<RecipeDetailPage> {
     // TODO: implement initState
     super.initState();
     _cubit = RecipeDetailCubit()..loadRecipe(widget.recipeId);
-    _similarRecipesCubit = SimilarRecipesCubit()
-      ..loadSimilarRecipes(widget.recipeId);
+    _similarRecipesCubit = SimilarRecipesCubit();
     _followCubit = FollowCubit();
     _loadCurrentUserId();
+  }
+
+  void _scheduleSimilarRecipesLoad() {
+    if (_hasScheduledSimilarRecipesLoad) return;
+    _hasScheduledSimilarRecipesLoad = true;
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      _similarRecipesCubit.loadSimilarRecipes(widget.recipeId);
+    });
+  }
+
+  void _scheduleFollowDataLoad(int? authorId) {
+    if (_currentUserId == null || authorId == null) return;
+    if (_currentUserId == authorId || _loadedFollowAuthorId == authorId) return;
+
+    _loadedFollowAuthorId = authorId;
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      _followCubit.loadFollowData(authorId);
+    });
   }
 
   Future<void> _loadCurrentUserId() async {
@@ -178,10 +201,8 @@ class _RecipeDetailPageState extends State<RecipeDetailPage> {
           final recipe = state.recipe!;
           final totalTime = (recipe.prepTime ?? 0) + (recipe.cookTime ?? 0);
           final ingredientNames = _extractIngredientNames(recipe);
-
-          if (_currentUserId != null && recipe.userId != _currentUserId) {
-            _followCubit.loadFollowData(recipe.userId);
-          }
+          _scheduleSimilarRecipesLoad();
+          _scheduleFollowDataLoad(recipe.userId);
 
           return Scaffold(
             body: DefaultTabController(
