@@ -41,7 +41,7 @@ class SimilarRecipesSection extends StatelessWidget {
                   ? ListView.separated(
                       scrollDirection: Axis.horizontal,
                       itemCount: similarRecipes.length,
-                      separatorBuilder: (_, __) => const SizedBox(width: 12),
+                      separatorBuilder: (_, __) => const SizedBox(width: 8),
                       itemBuilder: (context, index) {
                         final post = similarRecipes[index];
                         return _SimilarRecipeCard(post: post);
@@ -110,7 +110,7 @@ class _SimilarRecipeCard extends StatelessWidget {
                     : const _SimilarPlaceholder(),
               ),
               Padding(
-                padding: const EdgeInsets.all(12),
+                padding: const EdgeInsets.all(4),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
