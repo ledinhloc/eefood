@@ -4,11 +4,17 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../../app_routes.dart';
 import '../../../data/models/similar_post_model.dart';
 import '../../provider/similar_recipes_cubit.dart';
+import 'similar_recipe_ingredient_filter.dart';
 
 class SimilarRecipesSection extends StatelessWidget {
   final int currentRecipeId;
+  final List<String> availableIngredients;
 
-  const SimilarRecipesSection({super.key, required this.currentRecipeId});
+  const SimilarRecipesSection({
+    super.key,
+    required this.currentRecipeId,
+    required this.availableIngredients,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -19,24 +25,6 @@ class SimilarRecipesSection extends StatelessWidget {
             .take(10)
             .toList();
 
-        if (state.isLoading) {
-          return const Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                'Món tương tự',
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-              ),
-              SizedBox(height: 12),
-              Center(child: CircularProgressIndicator()),
-            ],
-          );
-        }
-
-        if (similarRecipes.isEmpty && state.error == null) {
-          return const SizedBox.shrink();
-        }
-
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -44,12 +32,14 @@ class SimilarRecipesSection extends StatelessWidget {
               'Món tương tự',
               style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
-            const SizedBox(height: 6),
-            Text(
-              'Khám phá thêm 10 món gần giống với công thức này',
-              style: TextStyle(color: Colors.grey.shade600, fontSize: 13),
+            SimilarRecipeIngredientFilter(
+              currentRecipeId: currentRecipeId,
+              availableIngredients: availableIngredients,
             ),
-            if (similarRecipes.isNotEmpty) ...[
+            if (state.isLoading) ...[
+              const SizedBox(height: 12),
+              const Center(child: CircularProgressIndicator()),
+            ] else if (similarRecipes.isNotEmpty) ...[
               const SizedBox(height: 12),
               SizedBox(
                 height: 230,
@@ -61,6 +51,20 @@ class SimilarRecipesSection extends StatelessWidget {
                     final post = similarRecipes[index];
                     return _SimilarRecipeCard(post: post);
                   },
+                ),
+              ),
+            ] else if (state.error == null) ...[
+              const SizedBox(height: 12),
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: Colors.orange.shade50,
+                  borderRadius: BorderRadius.circular(16),
+                ),
+                child: const Text(
+                  'Chưa có món phù hợp với lựa chọn hiện tại.',
+                  style: TextStyle(fontSize: 13),
                 ),
               ),
             ],

@@ -42,6 +42,15 @@ class _RecipeDetailPageState extends State<RecipeDetailPage> {
   int? _currentUserId;
   bool _isLoadingFollow = false;
 
+  List<String> _extractIngredientNames(RecipeDetailModel recipe) {
+    return (recipe.ingredients ?? const [])
+        .map((item) => item.ingredient?.name.trim() ?? '')
+        .where((name) => name.isNotEmpty)
+        .toSet()
+        .toList()
+      ..sort();
+  }
+
   @override
   void initState() {
     // TODO: implement initState
@@ -168,6 +177,7 @@ class _RecipeDetailPageState extends State<RecipeDetailPage> {
 
           final recipe = state.recipe!;
           final totalTime = (recipe.prepTime ?? 0) + (recipe.cookTime ?? 0);
+          final ingredientNames = _extractIngredientNames(recipe);
 
           if (_currentUserId != null && recipe.userId != _currentUserId) {
             _followCubit.loadFollowData(recipe.userId);
@@ -531,7 +541,10 @@ class _RecipeDetailPageState extends State<RecipeDetailPage> {
                         ),
                       ),
                       const SizedBox(height: 24),
-                      SimilarRecipesSection(currentRecipeId: widget.recipeId),
+                      SimilarRecipesSection(
+                        currentRecipeId: widget.recipeId,
+                        availableIngredients: ingredientNames,
+                      ),
                     ],
                   ),
                 ),
@@ -594,7 +607,6 @@ class _RecipeDetailPageState extends State<RecipeDetailPage> {
 
   // --- Helper widgets ---
   Widget _iconText(IconData icon, String text, BuildContext context) {
-    final theme = Theme.of(context);
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
       decoration: BoxDecoration(

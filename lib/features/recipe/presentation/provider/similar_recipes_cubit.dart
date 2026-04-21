@@ -7,22 +7,26 @@ import '../../domain/repositories/post_publish_repository.dart';
 class SimilarRecipesState {
   final bool isLoading;
   final List<SimilarPostModel> recipes;
+  final Set<String> selectedIngredients;
   final String? error;
 
   const SimilarRecipesState({
     this.isLoading = false,
     this.recipes = const [],
+    this.selectedIngredients = const {},
     this.error,
   });
 
   SimilarRecipesState copyWith({
     bool? isLoading,
     List<SimilarPostModel>? recipes,
+    Set<String>? selectedIngredients,
     String? error,
   }) {
     return SimilarRecipesState(
       isLoading: isLoading ?? this.isLoading,
       recipes: recipes ?? this.recipes,
+      selectedIngredients: selectedIngredients ?? this.selectedIngredients,
       error: error,
     );
   }
@@ -38,17 +42,60 @@ class SimilarRecipesCubit extends Cubit<SimilarRecipesState> {
     List<String>? ingredients,
     int limit = 10,
   }) async {
-    emit(const SimilarRecipesState(isLoading: true));
+    final selectedIngredients = ingredients == null
+        ? state.selectedIngredients
+        : ingredients.toSet();
+
+    emit(
+      state.copyWith(isLoading: true, selectedIngredients: selectedIngredients),
+    );
 
     try {
       final recipes = await _repository.getSimilarRecipes(
         recipeId,
-        ingredients: ingredients,
+        ingredients: selectedIngredients.isEmpty
+            ? null
+            : selectedIngredients.toList(),
         limit: limit,
       );
-      emit(SimilarRecipesState(recipes: recipes));
+      emit(
+        state.copyWith(
+          isLoading: false,
+          recipes: recipes,
+          selectedIngredients: selectedIngredients,
+        ),
+      );
     } catch (e) {
-      emit(SimilarRecipesState(error: e.toString()));
+      emit(
+        state.copyWith(
+          isLoading: false,
+          selectedIngredients: selectedIngredients,
+          error: e.toString(),
+        ),
+      );
     }
+  }
+
+  Future<void> toggleIngredient(int recipeId, String ingredient) {
+    final selectedIngredients = Set<String>.from(state.selectedIngredients);
+
+    if (selectedIngredients.contains(ingredient)) {
+      selectedIngredients.remove(ingredient);
+    } else {
+      selectedIngredients.add(ingredient);
+    }
+
+    return loadSimilarRecipes(
+      recipeId,
+      ingredients: selectedIngredients.toList(),
+    );
+  }
+
+  Future<void> clearIngredients(int recipeId) {
+    if (state.selectedIngredients.isEmpty) {
+      return Future.value();
+    }
+
+    return loadSimilarRecipes(recipeId, ingredients: const []);
   }
 }
