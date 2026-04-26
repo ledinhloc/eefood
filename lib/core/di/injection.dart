@@ -63,7 +63,9 @@ import 'package:eefood/features/post/presentation/provider/story_reaction_cubit.
 import 'package:eefood/features/post/presentation/provider/story_reaction_list_cubit.dart';
 import 'package:eefood/features/post/presentation/provider/story_setting_cubit.dart';
 import 'package:eefood/features/post/presentation/provider/story_viewer_cubit.dart';
+import 'package:eefood/features/profile/data/repo/body_metrics_repository_impl.dart';
 import 'package:eefood/features/profile/data/repo/settings_repository_impl.dart';
+import 'package:eefood/features/profile/domain/repositories/body_metrics_repository.dart';
 import 'package:eefood/features/profile/domain/repositories/profile_repository.dart';
 import 'package:eefood/features/profile/domain/repositories/settings_repository.dart';
 import 'package:eefood/features/profile/domain/usecases/profile_usecase.dart';
@@ -122,6 +124,10 @@ Future<void> setupDependencies() async {
       dio: getIt<DioClient>().dio,
       sharedPreferences: getIt<SharedPreferences>(),
     ),
+  );
+
+  getIt.registerLazySingleton<BodyMetricsRepository>(
+    () => BodyMetricsRepositoryImpl(dio: getIt<DioClient>().dio),
   );
 
   getIt.registerLazySingleton<RecipeRepository>(

@@ -198,12 +198,23 @@ class ProfilePage extends StatelessWidget {
                       Navigator.pushNamed(context, AppRoutes.foodPreference),
                 ),
                 ListTile(
-                  leading: const Icon(Icons.calendar_month_outlined),
-                  title: const Text('Meal Plan'),
-                  subtitle: const Text('Xem k\u1ebf ho\u1ea1ch b\u1eefa \u0103n v\u00e0 t\u1ed5ng h\u1ee3p t\u1eebng ng\u00e0y'),
+                  leading: const Icon(Icons.monitor_weight_outlined),
+                  title: const Text('Chỉ số cơ thể'),
+                  subtitle: const Text(
+                    'Theo dõi chiều cao, cân nặng theo thời gian',
+                  ),
                   trailing: const Icon(Icons.chevron_right_rounded),
                   onTap: () =>
-                      Navigator.pushNamed(context, AppRoutes.mealPlan),
+                      Navigator.pushNamed(context, AppRoutes.bodyMetrics),
+                ),
+                ListTile(
+                  leading: const Icon(Icons.calendar_month_outlined),
+                  title: const Text('Meal Plan'),
+                  subtitle: const Text(
+                    'Xem kế hoạch bữa ăn và tổng hợp từng ngày',
+                  ),
+                  trailing: const Icon(Icons.chevron_right_rounded),
+                  onTap: () => Navigator.pushNamed(context, AppRoutes.mealPlan),
                 ),
 
                 // const ListTile(
