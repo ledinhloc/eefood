@@ -11,9 +11,7 @@ UserHeightResponse _$UserHeightResponseFromJson(Map<String, dynamic> json) =>
       id: (json['id'] as num).toInt(),
       userId: (json['userId'] as num).toInt(),
       heightCm: (json['heightCm'] as num).toDouble(),
-      recordedAt: json['recordedAt'] == null
-          ? null
-          : DateTime.parse(json['recordedAt'] as String),
+      recordedDate: _dateFromJson(json['recordedDate'] as String?),
     );
 
 Map<String, dynamic> _$UserHeightResponseToJson(UserHeightResponse instance) =>
@@ -21,5 +19,5 @@ Map<String, dynamic> _$UserHeightResponseToJson(UserHeightResponse instance) =>
       'id': instance.id,
       'userId': instance.userId,
       'heightCm': instance.heightCm,
-      'recordedAt': instance.recordedAt?.toIso8601String(),
+      'recordedDate': _dateToJson(instance.recordedDate),
     };

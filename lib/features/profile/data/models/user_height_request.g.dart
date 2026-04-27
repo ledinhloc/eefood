@@ -9,13 +9,11 @@ part of 'user_height_request.dart';
 UserHeightRequest _$UserHeightRequestFromJson(Map<String, dynamic> json) =>
     UserHeightRequest(
       heightCm: (json['heightCm'] as num).toDouble(),
-      recordedAt: json['recordedAt'] == null
-          ? null
-          : DateTime.parse(json['recordedAt'] as String),
+      recordedDate: _dateFromJson(json['recordedDate'] as String?),
     );
 
 Map<String, dynamic> _$UserHeightRequestToJson(UserHeightRequest instance) =>
     <String, dynamic>{
       'heightCm': instance.heightCm,
-      'recordedAt': instance.recordedAt?.toIso8601String(),
+      'recordedDate': _dateToJson(instance.recordedDate),
     };

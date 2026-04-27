@@ -11,9 +11,7 @@ UserWeightResponse _$UserWeightResponseFromJson(Map<String, dynamic> json) =>
       id: (json['id'] as num).toInt(),
       userId: (json['userId'] as num).toInt(),
       weightKg: (json['weightKg'] as num).toDouble(),
-      recordedAt: json['recordedAt'] == null
-          ? null
-          : DateTime.parse(json['recordedAt'] as String),
+      recordedDate: _dateFromJson(json['recordedDate'] as String?),
     );
 
 Map<String, dynamic> _$UserWeightResponseToJson(UserWeightResponse instance) =>
@@ -21,5 +19,5 @@ Map<String, dynamic> _$UserWeightResponseToJson(UserWeightResponse instance) =>
       'id': instance.id,
       'userId': instance.userId,
       'weightKg': instance.weightKg,
-      'recordedAt': instance.recordedAt?.toIso8601String(),
+      'recordedDate': _dateToJson(instance.recordedDate),
     };

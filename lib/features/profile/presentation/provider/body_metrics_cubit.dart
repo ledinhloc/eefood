@@ -16,8 +16,8 @@ class BodyMetricsCubit extends Cubit<BodyMetricsState> {
   List<UserHeightResponse> _sortHeights(List<UserHeightResponse> values) {
     final sorted = [...values];
     sorted.sort((a, b) {
-      final aDate = a.recordedAt ?? DateTime.fromMillisecondsSinceEpoch(0);
-      final bDate = b.recordedAt ?? DateTime.fromMillisecondsSinceEpoch(0);
+      final aDate = a.recordedDate ?? DateTime.fromMillisecondsSinceEpoch(0);
+      final bDate = b.recordedDate ?? DateTime.fromMillisecondsSinceEpoch(0);
       return bDate.compareTo(aDate);
     });
     return sorted;
@@ -26,8 +26,8 @@ class BodyMetricsCubit extends Cubit<BodyMetricsState> {
   List<UserWeightResponse> _sortWeights(List<UserWeightResponse> values) {
     final sorted = [...values];
     sorted.sort((a, b) {
-      final aDate = a.recordedAt ?? DateTime.fromMillisecondsSinceEpoch(0);
-      final bDate = b.recordedAt ?? DateTime.fromMillisecondsSinceEpoch(0);
+      final aDate = a.recordedDate ?? DateTime.fromMillisecondsSinceEpoch(0);
+      final bDate = b.recordedDate ?? DateTime.fromMillisecondsSinceEpoch(0);
       return bDate.compareTo(aDate);
     });
     return sorted;
@@ -55,12 +55,12 @@ class BodyMetricsCubit extends Cubit<BodyMetricsState> {
 
   Future<bool> createHeight({
     required double heightCm,
-    DateTime? recordedAt,
+    DateTime? recordedDate,
   }) async {
     emit(state.copyWith(isSubmitting: true, clearError: true));
     try {
       final item = await repository.createMyHeight(
-        UserHeightRequest(heightCm: heightCm, recordedAt: recordedAt),
+        UserHeightRequest(heightCm: heightCm, recordedDate: recordedDate),
       );
       emit(
         state.copyWith(
@@ -78,13 +78,13 @@ class BodyMetricsCubit extends Cubit<BodyMetricsState> {
   Future<bool> updateHeight({
     required int id,
     required double heightCm,
-    DateTime? recordedAt,
+    DateTime? recordedDate,
   }) async {
     emit(state.copyWith(isSubmitting: true, clearError: true));
     try {
       final item = await repository.updateMyHeight(
         id,
-        UserHeightRequest(heightCm: heightCm, recordedAt: recordedAt),
+        UserHeightRequest(heightCm: heightCm, recordedDate: recordedDate),
       );
       final next = state.heights.map((current) {
         return current.id == id ? item : current;
@@ -116,12 +116,12 @@ class BodyMetricsCubit extends Cubit<BodyMetricsState> {
 
   Future<bool> createWeight({
     required double weightKg,
-    DateTime? recordedAt,
+    DateTime? recordedDate,
   }) async {
     emit(state.copyWith(isSubmitting: true, clearError: true));
     try {
       final item = await repository.createMyWeight(
-        UserWeightRequest(weightKg: weightKg, recordedAt: recordedAt),
+        UserWeightRequest(weightKg: weightKg, recordedDate: recordedDate),
       );
       emit(
         state.copyWith(
@@ -139,13 +139,13 @@ class BodyMetricsCubit extends Cubit<BodyMetricsState> {
   Future<bool> updateWeight({
     required int id,
     required double weightKg,
-    DateTime? recordedAt,
+    DateTime? recordedDate,
   }) async {
     emit(state.copyWith(isSubmitting: true, clearError: true));
     try {
       final item = await repository.updateMyWeight(
         id,
-        UserWeightRequest(weightKg: weightKg, recordedAt: recordedAt),
+        UserWeightRequest(weightKg: weightKg, recordedDate: recordedDate),
       );
       final next = state.weights.map((current) {
         return current.id == id ? item : current;
