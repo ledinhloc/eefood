@@ -1,3 +1,4 @@
+import 'package:eefood/core/widgets/snack_bar.dart';
 import 'package:eefood/features/profile/data/models/user_height_response.dart';
 import 'package:eefood/features/profile/data/models/user_weight_response.dart';
 import 'package:eefood/features/profile/presentation/provider/body_metrics_cubit.dart';
@@ -32,6 +33,37 @@ class _BodyMetricFormSheetState extends State<BodyMetricFormSheet> {
   late DateTime _recordedDate;
 
   bool get _isEditing => widget.heightItem != null || widget.weightItem != null;
+
+  bool _isSameDate(DateTime? value, DateTime date) {
+    if (value == null) return false;
+    return value.year == date.year &&
+        value.month == date.month &&
+        value.day == date.day;
+  }
+
+  UserHeightResponse? _findHeightOnDate(
+    BodyMetricsState state,
+    DateTime date, {
+    int? exceptId,
+  }) {
+    for (final item in state.heights) {
+      if (item.id == exceptId) continue;
+      if (_isSameDate(item.recordedDate, date)) return item;
+    }
+    return null;
+  }
+
+  UserWeightResponse? _findWeightOnDate(
+    BodyMetricsState state,
+    DateTime date, {
+    int? exceptId,
+  }) {
+    for (final item in state.weights) {
+      if (item.id == exceptId) continue;
+      if (_isSameDate(item.recordedDate, date)) return item;
+    }
+    return null;
+  }
 
   @override
   void initState() {
@@ -84,9 +116,19 @@ class _BodyMetricFormSheetState extends State<BodyMetricFormSheet> {
       _recordedDate.day,
     );
     final bool success;
+    final state = cubit.state;
 
     if (widget.isHeight) {
       final id = widget.heightItem?.id;
+      final duplicate = _findHeightOnDate(state, recordedDate, exceptId: id);
+      if (duplicate != null) {
+        showCustomSnackBar(
+          context,
+          'Ngày này đã có bản ghi chiều cao. Hãy sửa bản ghi hiện có.',
+          isError: true,
+        );
+        return;
+      }
       success = id == null
           ? await cubit.createHeight(
               heightCm: value,
@@ -99,6 +141,15 @@ class _BodyMetricFormSheetState extends State<BodyMetricFormSheet> {
             );
     } else {
       final id = widget.weightItem?.id;
+      final duplicate = _findWeightOnDate(state, recordedDate, exceptId: id);
+      if (duplicate != null) {
+        showCustomSnackBar(
+          context,
+          'Ngày này đã có bản ghi cân nặng. Hãy sửa bản ghi hiện có.',
+          isError: true,
+        );
+        return;
+      }
       success = id == null
           ? await cubit.createWeight(
               weightKg: value,

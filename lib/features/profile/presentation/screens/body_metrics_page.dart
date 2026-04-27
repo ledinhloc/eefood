@@ -5,7 +5,7 @@ import 'package:eefood/features/profile/data/models/user_weight_response.dart';
 import 'package:eefood/features/profile/domain/repositories/body_metrics_repository.dart';
 import 'package:eefood/features/profile/presentation/provider/body_metrics_cubit.dart';
 import 'package:eefood/features/profile/presentation/provider/body_metrics_state.dart';
-import 'package:eefood/features/profile/presentation/widgets/metrics_page/body_metric_chart_card.dart';
+import 'package:eefood/features/profile/presentation/widgets/metrics_page/body_metric_chart_cards.dart';
 import 'package:eefood/features/profile/presentation/widgets/metrics_page/body_metric_form_sheet.dart';
 import 'package:eefood/features/profile/presentation/widgets/metrics_page/body_metrics_header.dart';
 import 'package:flutter/material.dart';
