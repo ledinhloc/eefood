@@ -5,8 +5,12 @@ import 'package:eefood/features/auth/presentation/bloc/on_boarding_bloc/on_board
 import 'package:eefood/features/chatbot/data/repositories/chatbot_repository_impl.dart';
 import 'package:eefood/features/chatbot/domain/repositories/chatbot_repository.dart';
 import 'package:eefood/features/chatbot/presentation/provider/chatbot_cubit.dart';
+import 'package:eefood/features/cook_process/data/repositories/cooking_session_repository_impl.dart';
 import 'package:eefood/features/cook_process/data/repositories/ingredient_alter_repository_impl.dart';
+import 'package:eefood/features/cook_process/domain/repositories/cooking_session_repository.dart';
 import 'package:eefood/features/cook_process/domain/repositories/ingredient_alter_repository.dart';
+import 'package:eefood/features/cook_process/presentation/provider/cooking_session_cubit.dart';
+import 'package:eefood/features/cook_process/presentation/provider/cooking_status_cubit.dart';
 import 'package:eefood/features/cook_process/presentation/provider/ingredient_alter_cubit.dart';
 import 'package:eefood/features/livestream/data/repositoty/live_block_repository_impl.dart';
 import 'package:eefood/features/livestream/data/repositoty/live_comment_repo_impl.dart';
@@ -347,5 +351,20 @@ Future<void> setupDependencies() async {
 
   getIt.registerFactory<IngredientAlterCubit>(
     () => IngredientAlterCubit(repository: getIt<IngredientAlterRepository>()),
+  );
+
+  getIt.registerLazySingleton<CookingSessionRepository>(
+    () => CookingSessionRepositoryImpl(dio: getIt<DioClient>().dio),
+  );
+
+  getIt.registerFactory<CookingSessionCubit>(
+    () => CookingSessionCubit(
+      repository: getIt<CookingSessionRepository>(),
+      prefs: getIt<SharedPreferences>(),
+    ),
+  );
+
+  getIt.registerFactory<CookingStatusCubit>(
+    () => CookingStatusCubit(repository: getIt<CookingSessionRepository>()),
   );
 }
