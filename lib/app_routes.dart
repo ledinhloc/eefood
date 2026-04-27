@@ -27,6 +27,7 @@ import 'package:eefood/features/post/presentation/widgets/post/image_search/imag
 import 'package:eefood/features/post/presentation/widgets/story/crud_story/gallery_picker_page.dart';
 import 'package:eefood/features/post/presentation/widgets/story/story_settings/story_setting_page.dart';
 import 'package:eefood/features/profile/presentation/provider/settings_cubit.dart';
+import 'package:eefood/features/profile/presentation/screens/body_metrics_page.dart';
 import 'package:eefood/features/profile/presentation/screens/coming_soon_page.dart';
 import 'package:eefood/features/profile/presentation/screens/display_page.dart';
 import 'package:eefood/features/profile/presentation/screens/edit_profile_page.dart';
@@ -71,6 +72,7 @@ class AppRoutes {
   static const termOfServicePage = '/termOfServicePage';
   static const commingSoonPage = '/commingSoonPage';
   static const mealPlan = '/mealPlan';
+  static const bodyMetrics = '/bodyMetrics';
 
   /* feat recipe */
   static const recipeCrudPage = '/recipeCrudPage';
@@ -135,6 +137,7 @@ class AppRoutes {
     },
     foodPreference: (context) => const FoodPreferencesPage(),
     mealPlan: (context) => const MealPlanPage(),
+    bodyMetrics: (context) => const BodyMetricsPage(),
     register: (context) => RegisterPage(),
     verifyOtp: (context) {
       final args =

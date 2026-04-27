@@ -22,8 +22,10 @@ import '../../../auth/domain/entities/user.dart';
 import '../../../profile/domain/usecases/profile_usecase.dart';
 import '../../data/models/recipe_detail_model.dart';
 import '../provider/recipe_detail_cubit.dart';
+import '../provider/similar_recipes_cubit.dart';
 import '../widgets/category_list_widget.dart';
 import '../widgets/instructions/instructions_tab.dart';
+import '../widgets/recipe_detail/similar_recipes_section.dart';
 import '../widgets/steps_tab.dart';
 
 class RecipeDetailPage extends StatefulWidget {
@@ -36,20 +38,54 @@ class RecipeDetailPage extends StatefulWidget {
 
 class _RecipeDetailPageState extends State<RecipeDetailPage> {
   late final RecipeDetailCubit _cubit;
+  late final SimilarRecipesCubit _similarRecipesCubit;
   late final FollowCubit _followCubit;
   late final CookingStatusCubit _cookingStatusCubit;
   int? _currentUserId;
   bool _isLoadingFollow = false;
+  bool _hasScheduledSimilarRecipesLoad = false;
+  int? _loadedFollowAuthorId;
   bool _isRecipeCompleted = false;
+  List<String> _extractIngredientNames(RecipeDetailModel recipe) {
+    return (recipe.ingredients ?? const [])
+        .map((item) => item.ingredient?.name.trim() ?? '')
+        .where((name) => name.isNotEmpty)
+        .toSet()
+        .toList()
+      ..sort();
+  }
 
   @override
   void initState() {
     // TODO: implement initState
     super.initState();
     _cubit = RecipeDetailCubit()..loadRecipe(widget.recipeId);
+    _similarRecipesCubit = SimilarRecipesCubit();
     _followCubit = FollowCubit();
     _cookingStatusCubit = getIt<CookingStatusCubit>()..load(widget.recipeId);
     _loadCurrentUserId();
+  }
+
+  void _scheduleSimilarRecipesLoad() {
+    if (_hasScheduledSimilarRecipesLoad) return;
+    _hasScheduledSimilarRecipesLoad = true;
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      _similarRecipesCubit.loadSimilarRecipes(widget.recipeId);
+    });
+  }
+
+  void _scheduleFollowDataLoad(int? authorId) {
+    if (_currentUserId == null || authorId == null) return;
+    if (_currentUserId == authorId || _loadedFollowAuthorId == authorId) return;
+
+    _loadedFollowAuthorId = authorId;
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      _followCubit.loadFollowData(authorId);
+    });
   }
 
   Future<void> _loadCurrentUserId() async {
@@ -136,6 +172,7 @@ class _RecipeDetailPageState extends State<RecipeDetailPage> {
   @override
   void dispose() {
     _cubit.stopTracking();
+    _similarRecipesCubit.close();
     _followCubit.close();
     _cookingStatusCubit.close();
     super.dispose();
@@ -148,6 +185,7 @@ class _RecipeDetailPageState extends State<RecipeDetailPage> {
     return MultiBlocProvider(
       providers: [
         BlocProvider.value(value: _cubit),
+        BlocProvider.value(value: _similarRecipesCubit),
         BlocProvider.value(value: _followCubit),
         BlocProvider.value(value: _cookingStatusCubit),
       ],
@@ -167,12 +205,9 @@ class _RecipeDetailPageState extends State<RecipeDetailPage> {
 
           final recipe = state.recipe!;
           final totalTime = (recipe.prepTime ?? 0) + (recipe.cookTime ?? 0);
-
-          if (_currentUserId != null &&
-              recipe.userId != null &&
-              recipe.userId != _currentUserId) {
-            _followCubit.loadFollowData(recipe.userId!);
-          }
+          final ingredientNames = _extractIngredientNames(recipe);
+          _scheduleSimilarRecipesLoad();
+          _scheduleFollowDataLoad(recipe.userId);
 
           return Scaffold(
             body: DefaultTabController(
@@ -515,24 +550,39 @@ class _RecipeDetailPageState extends State<RecipeDetailPage> {
                       const SizedBox(height: 12),
 
                       // --- Tabs: Ingredients / Steps ---
-                      const TabBar(
-                        labelColor: Colors.orange,
-                        unselectedLabelColor: Colors.grey,
-                        indicatorColor: Colors.orange,
-                        tabs: [
-                          Tab(text: "Ingredients"),
-                          Tab(text: "Instructions"),
-                        ],
-                      ),
+                      Builder(
+                        builder: (context) {
+                          final tabController = DefaultTabController.of(
+                            context,
+                          );
 
-                      SizedBox(
-                        height: 600,
-                        child: TabBarView(
-                          children: [
-                            InstructionsTab(),
-                            StepsTab(recipe: recipe),
-                          ],
-                        ),
+                          return Column(
+                            children: [
+                              const TabBar(
+                                labelColor: Colors.orange,
+                                unselectedLabelColor: Colors.grey,
+                                indicatorColor: Colors.orange,
+                                tabs: [
+                                  Tab(text: "Ingredients"),
+                                  Tab(text: "Instructions"),
+                                ],
+                              ),
+                              AnimatedBuilder(
+                                animation: tabController,
+                                builder: (context, _) {
+                                  return tabController.index == 0
+                                      ? const InstructionsTab()
+                                      : StepsTab(recipe: recipe);
+                                },
+                              ),
+                            ],
+                          );
+                        },
+                      ),
+                      const SizedBox(height: 24),
+                      SimilarRecipesSection(
+                        currentRecipeId: widget.recipeId,
+                        availableIngredients: ingredientNames,
                       ),
                     ],
                   ),
@@ -596,7 +646,6 @@ class _RecipeDetailPageState extends State<RecipeDetailPage> {
 
   // --- Helper widgets ---
   Widget _iconText(IconData icon, String text, BuildContext context) {
-    final theme = Theme.of(context);
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
       decoration: BoxDecoration(
