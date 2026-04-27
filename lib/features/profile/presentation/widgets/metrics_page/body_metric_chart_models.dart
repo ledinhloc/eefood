@@ -1,5 +1,3 @@
-import 'dart:math' as math;
-
 import 'package:flutter/material.dart';
 
 class BodyMetricChartPoint<T> {
@@ -66,14 +64,6 @@ class ChartPadding {
   const ChartPadding();
 }
 
-DateTime chartDateOnly(DateTime value) {
-  return DateTime(value.year, value.month, value.day);
-}
-
-int chartDaysBetween(DateTime start, DateTime end) {
-  return chartDateOnly(end).difference(chartDateOnly(start)).inDays;
-}
-
 // Hàm này tính tọa độ X của một điểm trên chart.
 double chartXForPointIndex<T>({
   required List<BodyMetricChartPoint<T>> points,
@@ -82,13 +72,6 @@ double chartXForPointIndex<T>({
 }) {
   if (points.length == 1) return width / 2;
 
-  // Giãn điểm theo khoảng cách ngày thật, không theo vị trí trong danh sách.
-  final firstDate = chartDateOnly(points.first.date);
-  final lastDate = chartDateOnly(points.last.date);
-  final totalDays = math.max(chartDaysBetween(firstDate, lastDate), 0);
-  if (totalDays == 0) return width / 2;
-
-  final pointDays = chartDaysBetween(firstDate, points[index].date);
-  final normalized = pointDays / totalDays;
-  return width * normalized.clamp(0.0, 1.0);
+  // Chia đều theo thứ tự điểm để chart luôn dễ đọc trên màn nhỏ.
+  return width * (index / (points.length - 1));
 }

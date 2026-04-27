@@ -4,7 +4,9 @@ import 'package:eefood/features/profile/presentation/widgets/metrics_page/body_m
 import 'package:eefood/features/profile/presentation/widgets/metrics_page/body_metric_chart_painter.dart';
 import 'package:flutter/material.dart';
 
-class BodyMetricChartCard<T> extends StatelessWidget {
+class BodyMetricChartCard<T> extends StatefulWidget {
+  static const int pageSize = 7;
+
   final String title;
   final String subtitle;
   final IconData icon;
@@ -39,6 +41,71 @@ class BodyMetricChartCard<T> extends StatelessWidget {
   });
 
   @override
+  State<BodyMetricChartCard<T>> createState() => _BodyMetricChartCardState<T>();
+}
+
+class _BodyMetricChartCardState<T> extends State<BodyMetricChartCard<T>> {
+  int _startIndex = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    _startIndex = _defaultStartIndex;
+  }
+
+  @override
+  void didUpdateWidget(covariant BodyMetricChartCard<T> oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.points.length != widget.points.length) {
+      _startIndex = _defaultStartIndex;
+      return;
+    }
+    _startIndex = _startIndex.clamp(0, _maxStartIndex);
+  }
+
+  int get _totalPages {
+    if (widget.points.isEmpty) return 0;
+    return ((widget.points.length - 1) / BodyMetricChartCard.pageSize).floor() +
+        1;
+  }
+
+  int get _maxStartIndex {
+    return math.max(0, widget.points.length - BodyMetricChartCard.pageSize);
+  }
+
+  int get _defaultStartIndex {
+    final todayIndex = widget.points.indexWhere(_isToday);
+    if (todayIndex == -1) return _maxStartIndex;
+
+    // Ưu tiên hiển thị hôm nay cùng các điểm trước đó, đủ 7 điểm nếu có.
+    final start = todayIndex - BodyMetricChartCard.pageSize + 1;
+    return start.clamp(0, _maxStartIndex);
+  }
+
+  bool _isToday(BodyMetricChartPoint<T> point) {
+    final now = DateTime.now();
+    return point.date.year == now.year &&
+        point.date.month == now.month &&
+        point.date.day == now.day;
+  }
+
+  List<BodyMetricChartPoint<T>> get _visiblePoints {
+    return widget.points
+        .skip(_startIndex)
+        .take(BodyMetricChartCard.pageSize)
+        .toList();
+  }
+
+  int get _currentPage {
+    if (widget.points.isEmpty) return 0;
+    final visibleEndIndex = math.min(
+      _startIndex + BodyMetricChartCard.pageSize,
+      widget.points.length,
+    );
+    return ((visibleEndIndex - 1) / BodyMetricChartCard.pageSize).floor() + 1;
+  }
+
+  @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
@@ -46,6 +113,9 @@ class BodyMetricChartCard<T> extends StatelessWidget {
     final borderColor = isDark
         ? Colors.white.withValues(alpha: 0.08)
         : const Color(0xFFF1E0D5);
+    final visiblePoints = _visiblePoints;
+    final minValue = _minValue(visiblePoints);
+    final maxValue = _maxValue(visiblePoints);
 
     return Container(
       padding: const EdgeInsets.all(14),
@@ -65,18 +135,18 @@ class BodyMetricChartCard<T> extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           _ChartHeader(
-            title: title,
-            subtitle: subtitle,
-            icon: icon,
-            accentColor: accentColor,
-            onAdd: onAdd,
+            title: widget.title,
+            subtitle: widget.subtitle,
+            icon: widget.icon,
+            accentColor: widget.accentColor,
+            onAdd: widget.onAdd,
           ),
           const SizedBox(height: 14),
-          if (points.isEmpty)
-            _EmptyChart(message: emptyMessage)
+          if (widget.points.isEmpty)
+            _EmptyChart(message: widget.emptyMessage)
           else ...[
             SizedBox(
-              height: zones.isEmpty ? 200 : 230,
+              height: widget.zones.isEmpty ? 200 : 230,
               child: LayoutBuilder(
                 builder: (context, constraints) {
                   final size = Size(
@@ -89,29 +159,29 @@ class BodyMetricChartCard<T> extends StatelessWidget {
                       final index = _hitPointIndex(
                         details.localPosition,
                         size,
-                        points,
-                        _minValue,
-                        _maxValue,
+                        visiblePoints,
+                        minValue,
+                        maxValue,
                       );
                       if (index != null) {
-                        onPointTap(points[index].source);
+                        widget.onPointTap(visiblePoints[index].source);
                       }
                     },
                     child: CustomPaint(
                       painter: MetricChartPainter<T>(
-                        points: points,
-                        zones: zones,
-                        lineColor: accentColor,
+                        points: visiblePoints,
+                        zones: widget.zones,
+                        lineColor: widget.accentColor,
                         textColor: colorScheme.onSurfaceVariant,
                         axisColor: colorScheme.outlineVariant.withValues(
                           alpha: 0.72,
                         ),
-                        minY: _minValue,
-                        maxY: _maxValue,
-                        unit: unit,
-                        formatValue: formatValue,
+                        minY: minValue,
+                        maxY: maxValue,
+                        unit: widget.unit,
+                        formatValue: widget.formatValue,
                         isDark: isDark,
-                        showPointLabels: showPointLabels,
+                        showPointLabels: widget.showPointLabels,
                       ),
                       child: const SizedBox.expand(),
                     ),
@@ -119,14 +189,36 @@ class BodyMetricChartCard<T> extends StatelessWidget {
                 },
               ),
             ),
+            const SizedBox(height: 10),
+            _ChartPager(
+              accentColor: widget.accentColor,
+              currentPage: _currentPage,
+              totalPages: _totalPages,
+              onOlder: _startIndex == 0
+                  ? null
+                  : () => setState(() {
+                      _startIndex = math.max(
+                        0,
+                        _startIndex - BodyMetricChartCard.pageSize,
+                      );
+                    }),
+              onNewer: _startIndex == _maxStartIndex
+                  ? null
+                  : () => setState(() {
+                      _startIndex = math.min(
+                        _maxStartIndex,
+                        _startIndex + BodyMetricChartCard.pageSize,
+                      );
+                    }),
+            ),
           ],
         ],
       ),
     );
   }
 
-  double get _minValue {
-    if (minY != null) return minY!;
+  double _minValue(List<BodyMetricChartPoint<T>> points) {
+    if (widget.minY != null) return widget.minY!;
     if (points.isEmpty) return 0;
     // Thêm khoảng đệm để đường biểu đồ không dính sát mép.
     final min = points.map((point) => point.value).reduce(math.min);
@@ -135,8 +227,8 @@ class BodyMetricChartCard<T> extends StatelessWidget {
     return math.max(0, min - padding);
   }
 
-  double get _maxValue {
-    if (maxY != null) return maxY!;
+  double _maxValue(List<BodyMetricChartPoint<T>> points) {
+    if (widget.maxY != null) return widget.maxY!;
     if (points.isEmpty) return 1;
     // Dùng cùng quy tắc đệm với _minValue để trục Y cân đối.
     final min = points.map((point) => point.value).reduce(math.min);
@@ -244,6 +336,56 @@ class _ChartHeader extends StatelessWidget {
             onPressed: onAdd,
             icon: const Icon(Icons.add_rounded),
           ),
+      ],
+    );
+  }
+}
+
+class _ChartPager extends StatelessWidget {
+  final Color accentColor;
+  final int currentPage;
+  final int totalPages;
+  final VoidCallback? onOlder;
+  final VoidCallback? onNewer;
+
+  const _ChartPager({
+    required this.accentColor,
+    required this.currentPage,
+    required this.totalPages,
+    required this.onOlder,
+    required this.onNewer,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
+    return Row(
+      children: [
+        IconButton(
+          visualDensity: VisualDensity.compact,
+          tooltip: 'Xem ngày trước',
+          onPressed: onOlder,
+          icon: const Icon(Icons.chevron_left_rounded),
+        ),
+        Expanded(
+          child: Text(
+            'Trang $currentPage/$totalPages',
+            textAlign: TextAlign.center,
+            style: theme.textTheme.labelMedium?.copyWith(
+              color: colorScheme.onSurfaceVariant,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+        ),
+        IconButton(
+          visualDensity: VisualDensity.compact,
+          tooltip: 'Xem ngày sau',
+          onPressed: onNewer,
+          color: accentColor,
+          icon: const Icon(Icons.chevron_right_rounded),
+        ),
       ],
     );
   }
