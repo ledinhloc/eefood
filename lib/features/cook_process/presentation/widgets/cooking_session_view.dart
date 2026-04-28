@@ -1,3 +1,4 @@
+import 'package:eefood/app_routes.dart';
 import 'package:eefood/core/constants/app_keys.dart';
 import 'package:eefood/core/di/injection.dart';
 import 'package:eefood/features/cook_process/presentation/provider/cooking_session_cubit.dart';
@@ -11,7 +12,8 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 class CookingSessionView extends StatefulWidget {
   final String recipeTitle;
-  const CookingSessionView({super.key, required this.recipeTitle});
+  final int recipeId;
+  const CookingSessionView({super.key, required this.recipeTitle, required this.recipeId});
 
   @override
   State<CookingSessionView> createState() => _CookingSessionViewState();
@@ -42,7 +44,7 @@ class _CookingSessionViewState extends State<CookingSessionView> {
     return BlocConsumer<CookingSessionCubit, CookingSessionState>(
       listener: (context, state) {
         if (state.status == CookingStatus.done) {
-          _showCompletionDialog(context);
+          _showCompletionDialog(context, widget.recipeId);
         }
       },
       builder: (context, state) {
@@ -70,7 +72,7 @@ class _CookingSessionViewState extends State<CookingSessionView> {
     );
   }
 
-  void _showCompletionDialog(BuildContext context) {
+  void _showCompletionDialog(BuildContext context, int recipeId) {
     showDialog(
       context: context,
       barrierDismissible: false,
@@ -78,6 +80,16 @@ class _CookingSessionViewState extends State<CookingSessionView> {
         onDone: () {
           Navigator.of(context).pop(); // close dialog
           Navigator.of(context).pop(); // back to detail
+        },
+        onReview: () {
+          Navigator.of(context).pop(); // close dialog
+          Navigator.pushNamed(
+            context,
+            AppRoutes.reviewRecipe,
+            arguments: {
+              'recipeId': recipeId
+            }
+          ); // push to review recipe
         },
       ),
     );

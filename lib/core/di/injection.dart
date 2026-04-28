@@ -81,6 +81,9 @@ import 'package:eefood/features/recipe/domain/usecases/recipe_usecases.dart';
 import 'package:eefood/features/recipe/presentation/provider/recipe_cubit.dart';
 import 'package:eefood/features/recipe/presentation/provider/recipe_list_cubit.dart';
 import 'package:eefood/features/recipe/presentation/provider/recipe_refresh_cubit.dart';
+import 'package:eefood/features/recipe_review/data/repositories/review_recipe_repository_impl.dart';
+import 'package:eefood/features/recipe_review/domain/repositories/review_recipe_repository.dart';
+import 'package:eefood/features/recipe_review/presentation/provider/review_recipe_cubit.dart';
 import 'package:eefood/features/report/data/repositories/report_repository_impl.dart';
 import 'package:eefood/features/report/domain/repositories/report_repository.dart';
 import 'package:get_it/get_it.dart';
@@ -372,5 +375,13 @@ Future<void> setupDependencies() async {
 
   getIt.registerFactory<CookingStatusCubit>(
     () => CookingStatusCubit(repository: getIt<CookingSessionRepository>()),
+  );
+
+  getIt.registerLazySingleton<ReviewRecipeRepository>(
+    () => ReviewRecipeRepositoryImpl(dio: getIt<DioClient>().dio),
+  );
+
+  getIt.registerFactory<ReviewRecipeCubit>(
+    () => ReviewRecipeCubit(repository: getIt<ReviewRecipeRepository>()),
   );
 }

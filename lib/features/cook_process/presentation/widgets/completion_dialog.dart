@@ -2,7 +2,12 @@ import 'package:flutter/material.dart';
 
 class CompletionDialog extends StatelessWidget {
   final VoidCallback onDone;
-  const CompletionDialog({super.key, required this.onDone});
+  final VoidCallback onReview;
+  const CompletionDialog({
+    super.key,
+    required this.onDone,
+    required this.onReview,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -54,6 +59,37 @@ class CompletionDialog extends StatelessWidget {
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 24),
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton(
+                onPressed: onReview,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFFFF6B35),
+                  foregroundColor: Colors.white,
+                  padding: const EdgeInsets.symmetric(vertical: 16),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                  elevation: 4,
+                  shadowColor: const Color(0xFFFF6B35).withOpacity(0.4),
+                ),
+                child: const Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(Icons.star_rounded, size: 18),
+                    SizedBox(width: 8),
+                    Text(
+                      'Đánh giá ngay',
+                      style: TextStyle(
+                        fontWeight: FontWeight.w700,
+                        fontSize: 16,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            const SizedBox(height: 10),
             SizedBox(
               width: double.infinity,
               child: ElevatedButton(

@@ -20,7 +20,7 @@ class CookingSessionScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return BlocProvider(
       create: (_) => getIt<CookingSessionCubit>()..initSession(recipeId, steps),
-      child: CookingSessionView(recipeTitle: recipeTitle),
+      child: CookingSessionView(recipeTitle: recipeTitle, recipeId: recipeId),
     );
   }
 }

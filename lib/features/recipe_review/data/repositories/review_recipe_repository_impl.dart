@@ -15,10 +15,11 @@ class ReviewRecipeRepositoryImpl extends ReviewRecipeRepository{
       final response = await dio.get('/v1/recipe-review');
       final json = response.data;
       if (json != null && json['data'] != null) {
-        final data = json['data'];
-        return data
-            .map((e) => ReviewQuestionModel.fromJson(e as Map<String, dynamic>))
-            .toList();
+        final List<dynamic> data = json['data'] as List<dynamic>;
+
+        return List<ReviewQuestionModel>.from(
+          data.map((e) => ReviewQuestionModel.fromJson(e)),
+        );
       }
       return List.empty();
     } catch (err) {
@@ -35,7 +36,7 @@ class ReviewRecipeRepositoryImpl extends ReviewRecipeRepository{
     try {
       final response = await dio.post(
         '/v1/recipe-review/$recipeId',
-        data: {'request': request.map((e) => e.toJson()).toList()},
+        data: request.map((e) => e.toJson()).toList(),
       );
 
       if (response.statusCode != 200) {
