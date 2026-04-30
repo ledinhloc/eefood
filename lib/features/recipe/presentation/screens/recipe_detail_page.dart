@@ -3,6 +3,7 @@ import 'package:eefood/core/di/injection.dart';
 import 'package:eefood/core/widgets/show_login_required.dart';
 import 'package:eefood/core/widgets/snack_bar.dart';
 import 'package:eefood/features/auth/domain/usecases/auth_usecases.dart';
+import 'package:eefood/features/cook_process/presentation/provider/cooking_status_cubit.dart';
 import 'package:eefood/features/meal_plan/data/model/meal_plan_item_response.dart';
 import 'package:eefood/features/meal_plan/domain/enum/meal_plan_item_source.dart';
 import 'package:eefood/features/meal_plan/domain/enum/meal_plan_item_status.dart';
@@ -12,6 +13,7 @@ import 'package:eefood/features/meal_plan/presentation/provider/meal_plan_cubit.
 import 'package:eefood/features/meal_plan/presentation/widgets/meal_plan_item_upsert_sheet.dart';
 import 'package:eefood/features/post/presentation/provider/follow_cubit.dart';
 import 'package:eefood/features/recipe/presentation/provider/shopping_cubit.dart';
+import 'package:eefood/features/recipe/presentation/widgets/review_tab.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
@@ -39,11 +41,12 @@ class _RecipeDetailPageState extends State<RecipeDetailPage> {
   late final RecipeDetailCubit _cubit;
   late final SimilarRecipesCubit _similarRecipesCubit;
   late final FollowCubit _followCubit;
+  late final CookingStatusCubit _cookingStatusCubit;
   int? _currentUserId;
   bool _isLoadingFollow = false;
   bool _hasScheduledSimilarRecipesLoad = false;
   int? _loadedFollowAuthorId;
-
+  bool _isRecipeCompleted = false;
   List<String> _extractIngredientNames(RecipeDetailModel recipe) {
     return (recipe.ingredients ?? const [])
         .map((item) => item.ingredient?.name.trim() ?? '')
@@ -60,6 +63,7 @@ class _RecipeDetailPageState extends State<RecipeDetailPage> {
     _cubit = RecipeDetailCubit()..loadRecipe(widget.recipeId);
     _similarRecipesCubit = SimilarRecipesCubit();
     _followCubit = FollowCubit();
+    _cookingStatusCubit = getIt<CookingStatusCubit>()..load(widget.recipeId);
     _loadCurrentUserId();
   }
 
@@ -171,6 +175,7 @@ class _RecipeDetailPageState extends State<RecipeDetailPage> {
     _cubit.stopTracking();
     _similarRecipesCubit.close();
     _followCubit.close();
+    _cookingStatusCubit.close();
     super.dispose();
   }
 
@@ -183,6 +188,7 @@ class _RecipeDetailPageState extends State<RecipeDetailPage> {
         BlocProvider.value(value: _cubit),
         BlocProvider.value(value: _similarRecipesCubit),
         BlocProvider.value(value: _followCubit),
+        BlocProvider.value(value: _cookingStatusCubit),
       ],
       child: BlocBuilder<RecipeDetailCubit, RecipeDetailState>(
         builder: (context, state) {
@@ -206,7 +212,7 @@ class _RecipeDetailPageState extends State<RecipeDetailPage> {
 
           return Scaffold(
             body: DefaultTabController(
-              length: 2,
+              length: 3,
               child: NestedScrollView(
                 headerSliverBuilder: (context, _) => [
                   SliverAppBar(
@@ -541,6 +547,9 @@ class _RecipeDetailPageState extends State<RecipeDetailPage> {
                       const Divider(thickness: 1.2),
                       const SizedBox(height: 12),
 
+                      _buildCookingButton(context, recipe),
+                      const SizedBox(height: 12),
+
                       // --- Tabs: Ingredients / Steps ---
                       Builder(
                         builder: (context) {
@@ -557,14 +566,18 @@ class _RecipeDetailPageState extends State<RecipeDetailPage> {
                                 tabs: [
                                   Tab(text: "Ingredients"),
                                   Tab(text: "Instructions"),
+                                  Tab(text: "Reviews"),
                                 ],
                               ),
                               AnimatedBuilder(
                                 animation: tabController,
                                 builder: (context, _) {
-                                  return tabController.index == 0
-                                      ? const InstructionsTab()
-                                      : StepsTab(recipe: recipe);
+                                  return switch (tabController.index) {
+                                    0 => const InstructionsTab(),
+                                    1 => StepsTab(recipe: recipe),
+                                    2 => ReviewTab(recipeId: widget.recipeId, recipeTitle: recipe.title,),
+                                    _ => const SizedBox(),
+                                  };
                                 },
                               ),
                             ],
@@ -670,6 +683,85 @@ class _RecipeDetailPageState extends State<RecipeDetailPage> {
         Text(label, style: TextStyle(color: theme.colorScheme.onSurface)),
       ],
     );
+  }
+
+  Widget _buildCookingButton(BuildContext context, RecipeDetailModel recipe) {
+    return BlocBuilder<CookingStatusCubit, CookingStatusState>(
+      builder: (context, state) {
+        if (state.isLoading) {
+          return const SizedBox(
+            height: 48,
+            child: Center(
+              child: SizedBox(
+                width: 20,
+                height: 20,
+                child: CircularProgressIndicator(
+                  strokeWidth: 2,
+                  color: Colors.orange,
+                ),
+              ),
+            ),
+          );
+        }
+
+        final (icon, label, color) = switch (state) {
+          _ when state.isCompleted => (
+            Icons.replay,
+            'Làm lại món ăn',
+            Colors.grey,
+          ),
+          _ when state.isInProgress => (
+            Icons.play_arrow,
+            'Tiếp tục thực hiện',
+            Colors.orange,
+          ),
+          _ => (Icons.kitchen, 'Bắt đầu nấu ăn', Colors.orange),
+        };
+
+        return SizedBox(
+          width: double.infinity,
+          height: 48,
+          child: ElevatedButton.icon(
+            onPressed: () => _startCooking(context, recipe),
+            icon: Icon(icon, size: 18),
+            label: Text(label, style: const TextStyle(fontSize: 15)),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: color,
+              foregroundColor: Colors.white,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
+              elevation: 0,
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  void _startCooking(BuildContext context, RecipeDetailModel recipe) async {
+    final steps = recipe.steps ?? [];
+    if (steps.isEmpty) {
+      showCustomSnackBar(
+        context,
+        'Công thức chưa có bước thực hiện',
+        isError: true,
+      );
+      return;
+    }
+    await Navigator.pushNamed(
+      context,
+      AppRoutes.cookingSession,
+      arguments: {
+        'recipeId': recipe.id,
+        'recipeTitle': recipe.title,
+        'steps': steps,
+      },
+    );
+
+    if (mounted) {
+      _cookingStatusCubit.load(widget.recipeId);
+    }
   }
 
   void _showRecipeOption(

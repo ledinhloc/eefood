@@ -5,8 +5,12 @@ import 'package:eefood/features/auth/presentation/bloc/on_boarding_bloc/on_board
 import 'package:eefood/features/chatbot/data/repositories/chatbot_repository_impl.dart';
 import 'package:eefood/features/chatbot/domain/repositories/chatbot_repository.dart';
 import 'package:eefood/features/chatbot/presentation/provider/chatbot_cubit.dart';
+import 'package:eefood/features/cook_process/data/repositories/cooking_session_repository_impl.dart';
 import 'package:eefood/features/cook_process/data/repositories/ingredient_alter_repository_impl.dart';
+import 'package:eefood/features/cook_process/domain/repositories/cooking_session_repository.dart';
 import 'package:eefood/features/cook_process/domain/repositories/ingredient_alter_repository.dart';
+import 'package:eefood/features/cook_process/presentation/provider/cooking_session_cubit.dart';
+import 'package:eefood/features/cook_process/presentation/provider/cooking_status_cubit.dart';
 import 'package:eefood/features/cook_process/presentation/provider/ingredient_alter_cubit.dart';
 import 'package:eefood/features/livestream/data/repositoty/live_block_repository_impl.dart';
 import 'package:eefood/features/livestream/data/repositoty/live_comment_repo_impl.dart';
@@ -77,6 +81,10 @@ import 'package:eefood/features/recipe/domain/usecases/recipe_usecases.dart';
 import 'package:eefood/features/recipe/presentation/provider/recipe_cubit.dart';
 import 'package:eefood/features/recipe/presentation/provider/recipe_list_cubit.dart';
 import 'package:eefood/features/recipe/presentation/provider/recipe_refresh_cubit.dart';
+import 'package:eefood/features/recipe_review/data/repositories/review_recipe_repository_impl.dart';
+import 'package:eefood/features/recipe_review/domain/repositories/review_recipe_repository.dart';
+import 'package:eefood/features/recipe_review/presentation/provider/review_recipe_cubit.dart';
+import 'package:eefood/features/recipe_review/presentation/provider/review_stats_cubit.dart';
 import 'package:eefood/features/report/data/repositories/report_repository_impl.dart';
 import 'package:eefood/features/report/domain/repositories/report_repository.dart';
 import 'package:get_it/get_it.dart';
@@ -353,5 +361,32 @@ Future<void> setupDependencies() async {
 
   getIt.registerFactory<IngredientAlterCubit>(
     () => IngredientAlterCubit(repository: getIt<IngredientAlterRepository>()),
+  );
+
+  getIt.registerLazySingleton<CookingSessionRepository>(
+    () => CookingSessionRepositoryImpl(dio: getIt<DioClient>().dio),
+  );
+
+  getIt.registerFactory<CookingSessionCubit>(
+    () => CookingSessionCubit(
+      repository: getIt<CookingSessionRepository>(),
+      prefs: getIt<SharedPreferences>(),
+    ),
+  );
+
+  getIt.registerFactory<CookingStatusCubit>(
+    () => CookingStatusCubit(repository: getIt<CookingSessionRepository>()),
+  );
+
+  getIt.registerLazySingleton<ReviewRecipeRepository>(
+    () => ReviewRecipeRepositoryImpl(dio: getIt<DioClient>().dio),
+  );
+
+  getIt.registerFactory<ReviewRecipeCubit>(
+    () => ReviewRecipeCubit(repository: getIt<ReviewRecipeRepository>()),
+  );
+
+  getIt.registerFactory<ReviewStatsCubit>(
+    () => ReviewStatsCubit(repository: getIt<ReviewRecipeRepository>()),
   );
 }

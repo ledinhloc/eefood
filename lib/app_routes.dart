@@ -11,9 +11,10 @@ import 'package:eefood/features/auth/presentation/screens/verify_otp_page.dart';
 import 'package:eefood/features/auth/presentation/screens/welcome_page.dart';
 import 'package:eefood/features/chatbot/presentation/provider/chatbot_cubit.dart';
 import 'package:eefood/features/chatbot/presentation/screens/chatbot_main_srcreen.dart';
+import 'package:eefood/features/cook_process/presentation/screens/cooking_session_screen.dart';
+import 'package:eefood/features/meal_plan/presentation/screens/meal_plan_page.dart';
 import 'package:eefood/features/noti/presentation/screens/notification_screen.dart';
 import 'package:eefood/features/noti/presentation/screens/ntofication_settings_screen.dart';
-import 'package:eefood/features/meal_plan/presentation/screens/meal_plan_page.dart';
 import 'package:eefood/features/nutrition/presentation/screens/image_choice_screen.dart';
 import 'package:eefood/features/post/presentation/provider/follow_cubit.dart';
 import 'package:eefood/features/post/presentation/provider/story_list_cubit.dart';
@@ -38,6 +39,9 @@ import 'package:eefood/features/recipe/data/models/recipe_model.dart';
 import 'package:eefood/features/recipe/presentation/screens/qr_view_screen.dart';
 import 'package:eefood/features/recipe/presentation/screens/recipe_crud_page.dart';
 import 'package:eefood/features/recipe/presentation/screens/recipe_detail_page.dart';
+import 'package:eefood/features/recipe_review/presentation/screens/all_review_screen.dart';
+import 'package:eefood/features/recipe_review/presentation/screens/recipe_review_screen.dart';
+import 'package:eefood/features/recipe_review/presentation/screens/review_stats_detail_screen.dart';
 import 'package:eefood/main_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -109,6 +113,14 @@ class AppRoutes {
 
   // qr screen
   static const qrCodeScreen = '/qrCodeScreen';
+
+  // cooking session
+  static const cookingSession = '/cookingSession';
+
+  static const reviewRecipe = '/reviewRecipeScreen';
+
+  static const reviewStatsDetailPage = '/reviewStatsDetailPage';
+  static const allReviewPage = '/allReviewPage';
 
   // Danh sách các widget cho BottomNavigationBar trong main page
   static List<Widget> widgetOptions = <Widget>[
@@ -301,6 +313,29 @@ class AppRoutes {
         recipeId: recipeId,
         recipeUrl: recipeUrl,
         recipeTitle: recipeTitle,
+      );
+    },
+    cookingSession: (context) {
+      final args = ModalRoute.of(context)!.settings.arguments as Map;
+      return CookingSessionScreen(
+        recipeId: args['recipeId'],
+        recipeTitle: args['recipeTitle'],
+        steps: args['steps'],
+      );
+    },
+    reviewRecipe: (context) {
+      final args = ModalRoute.of(context)!.settings.arguments as Map;
+      return RecipeReviewScreen(recipeId: args['recipeId']);
+    },
+    reviewStatsDetailPage: (context) {
+      final args = ModalRoute.of(context)!.settings.arguments as Map;
+      return ReviewStatsDetailScreen(stats: args['stats']);
+    },
+    allReviewPage: (context) {
+      final args = ModalRoute.of(context)!.settings.arguments as Map;
+      return AllReviewsPage(
+        recipeId: args['recipeId'],
+        recipeTitle: args['recipeTitle'],
       );
     },
   };
