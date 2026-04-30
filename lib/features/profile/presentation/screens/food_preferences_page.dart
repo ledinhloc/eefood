@@ -2,8 +2,10 @@ import 'package:eefood/core/constants/app_constants.dart';
 import 'package:eefood/core/di/injection.dart';
 import 'package:eefood/core/widgets/snack_bar.dart';
 import 'package:eefood/features/auth/domain/entities/user.dart';
+import 'package:eefood/features/auth/domain/enum/activity_level.dart';
 import 'package:eefood/features/auth/domain/usecases/auth_usecases.dart';
 import 'package:eefood/features/profile/domain/usecases/profile_usecase.dart';
+import 'package:eefood/features/profile/presentation/widgets/preferences/health_preferences_tab_view.dart';
 import 'package:eefood/features/profile/presentation/widgets/preferences/preference_tab_view.dart';
 import 'package:flutter/material.dart';
 
@@ -25,13 +27,15 @@ class _FoodPreferencesPageState extends State<FoodPreferencesPage>
   Set<String> selectedCuisines = {};
   Set<String> selectedAllergies = {};
   Set<String> selectedDiets = {};
+  Set<String> selectedHealthConditions = {};
+  ActivityLevel? selectedActivityLevel;
   bool isLoading = true;
   bool isSaving = false;
 
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 3, vsync: this);
+    _tabController = TabController(length: 4, vsync: this);
     _loadUserPreferences();
   }
 
@@ -50,6 +54,8 @@ class _FoodPreferencesPageState extends State<FoodPreferencesPage>
           selectedCuisines = user.eatingPreferences?.toSet() ?? {};
           selectedAllergies = user.allergies?.toSet() ?? {};
           selectedDiets = user.dietaryPreferences?.toSet() ?? {};
+          selectedHealthConditions = user.healthConditions?.toSet() ?? {};
+          selectedActivityLevel = user.activityLevel;
           isLoading = false;
         });
       }
@@ -80,12 +86,14 @@ class _FoodPreferencesPageState extends State<FoodPreferencesPage>
         eatingPreferences: selectedCuisines.toList(),
         allergies: selectedAllergies.toList(),
         dietaryPreferences: selectedDiets.toList(),
+        activityLevel: selectedActivityLevel,
+        healthConditions: selectedHealthConditions.toList(),
       );
 
       final result = await _updateProfile(request);
       if (mounted) {
         if (result.isSuccess) {
-          showCustomSnackBar(context, 'Đã lưu thành công! ✨');
+          showCustomSnackBar(context, 'Đã lưu thành công!');
           Navigator.pop(context, true);
         } else {
           showCustomSnackBar(context, 'Lưu thất bại!', isError: true);
@@ -132,6 +140,40 @@ class _FoodPreferencesPageState extends State<FoodPreferencesPage>
     });
   }
 
+  void _onHealthConditionToggle(String item) {
+    setState(() {
+      if (selectedHealthConditions.contains(item)) {
+        selectedHealthConditions.remove(item);
+      } else {
+        selectedHealthConditions.add(item);
+      }
+    });
+  }
+
+  void _onAddCustomHealthCondition(String item) {
+    final normalizedItem = item.trim();
+    if (normalizedItem.isEmpty) {
+      return;
+    }
+
+    setState(() {
+      final existingItem = selectedHealthConditions.cast<String?>().firstWhere(
+        (value) =>
+            value != null &&
+            value.trim().toLowerCase() == normalizedItem.toLowerCase(),
+        orElse: () => null,
+      );
+
+      selectedHealthConditions.add(existingItem ?? normalizedItem);
+    });
+  }
+
+  void _onActivityLevelSelect(ActivityLevel level) {
+    setState(() {
+      selectedActivityLevel = level;
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -158,6 +200,7 @@ class _FoodPreferencesPageState extends State<FoodPreferencesPage>
             color: Colors.white,
             child: TabBar(
               controller: _tabController,
+              isScrollable: true,
               labelColor: const Color(0xFFFF6B35),
               unselectedLabelColor: const Color(0xFF8E8E93),
               indicatorColor: const Color(0xFFFF6B35),
@@ -175,6 +218,7 @@ class _FoodPreferencesPageState extends State<FoodPreferencesPage>
                 Tab(text: 'Món ăn'),
                 Tab(text: 'Dị ứng'),
                 Tab(text: 'Chế độ'),
+                Tab(text: 'Sức khỏe'),
               ],
             ),
           ),
@@ -219,6 +263,13 @@ class _FoodPreferencesPageState extends State<FoodPreferencesPage>
                         onToggle: _onDietToggle,
                         accentColor: const Color(0xFF34C759),
                       ),
+                      HealthPreferencesTabView(
+                        selectedActivityLevel: selectedActivityLevel,
+                        selectedHealthConditions: selectedHealthConditions,
+                        onActivityLevelSelect: _onActivityLevelSelect,
+                        onHealthConditionToggle: _onHealthConditionToggle,
+                        onAddCustomHealthCondition: _onAddCustomHealthCondition,
+                      ),
                     ],
                   ),
                 ),
@@ -232,7 +283,9 @@ class _FoodPreferencesPageState extends State<FoodPreferencesPage>
     final totalSelected =
         selectedCuisines.length +
         selectedAllergies.length +
-        selectedDiets.length;
+        selectedDiets.length +
+        selectedHealthConditions.length +
+        (selectedActivityLevel != null ? 1 : 0);
 
     return Container(
       padding: const EdgeInsets.fromLTRB(20, 16, 20, 16),
@@ -240,7 +293,7 @@ class _FoodPreferencesPageState extends State<FoodPreferencesPage>
         color: Colors.white,
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.06),
+            color: Colors.black.withValues(alpha: 0.06),
             blurRadius: 12,
             offset: const Offset(0, -2),
           ),

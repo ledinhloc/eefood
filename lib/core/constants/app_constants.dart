@@ -236,6 +236,20 @@ class AppConstants {
     {"name": "Mắm tôm", "icon": "🟣"},
     {"name": "Ốc, nghêu, sò", "icon": "🐚"},
   ];
+
+
+  static final healthConditionsSuggestions = [
+    {"name": "Tiểu đường", "icon": "🩸"},
+    {"name": "Huyết áp cao", "icon": "❤️"},
+    {"name": "Mỡ máu cao", "icon": "🩺"},
+    {"name": "Tim mạch", "icon": "🫀"},
+    {"name": "Dạ dày", "icon": "🫗"},
+    {"name": "Bệnh thận", "icon": "🧪"},
+    {"name": "Gout", "icon": "🦶"},
+    {"name": "Giảm cân", "icon": "⚖️"},
+    {"name": "Tăng cơ", "icon": "💪"},
+    {"name": "Mang thai", "icon": "🤰"},
+  ];
   static final cuisines = [
     {"name": "Gỏi/Salad", "icon": "🥗"},
     {"name": "Trứng", "icon": "🍳"},
