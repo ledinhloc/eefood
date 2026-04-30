@@ -19,5 +19,6 @@ class AppKeys{
   static const hostDeloy = "eefoodpreviewapp.vercel.app";
   static const recentKey = 'recent_search_keywords';
   static const webClientId = String.fromEnvironment('WEB_CLIENT_ID');
+  static const cooking = 'cooking_timer_enabled';
   //
 }
