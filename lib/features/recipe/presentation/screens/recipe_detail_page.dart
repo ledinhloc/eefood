@@ -13,6 +13,7 @@ import 'package:eefood/features/meal_plan/presentation/provider/meal_plan_cubit.
 import 'package:eefood/features/meal_plan/presentation/widgets/meal_plan_item_upsert_sheet.dart';
 import 'package:eefood/features/post/presentation/provider/follow_cubit.dart';
 import 'package:eefood/features/recipe/presentation/provider/shopping_cubit.dart';
+import 'package:eefood/features/recipe/presentation/widgets/review_tab.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
@@ -211,7 +212,7 @@ class _RecipeDetailPageState extends State<RecipeDetailPage> {
 
           return Scaffold(
             body: DefaultTabController(
-              length: 2,
+              length: 3,
               child: NestedScrollView(
                 headerSliverBuilder: (context, _) => [
                   SliverAppBar(
@@ -565,14 +566,18 @@ class _RecipeDetailPageState extends State<RecipeDetailPage> {
                                 tabs: [
                                   Tab(text: "Ingredients"),
                                   Tab(text: "Instructions"),
+                                  Tab(text: "Reviews"),
                                 ],
                               ),
                               AnimatedBuilder(
                                 animation: tabController,
                                 builder: (context, _) {
-                                  return tabController.index == 0
-                                      ? const InstructionsTab()
-                                      : StepsTab(recipe: recipe);
+                                  return switch (tabController.index) {
+                                    0 => const InstructionsTab(),
+                                    1 => StepsTab(recipe: recipe),
+                                    2 => ReviewTab(recipeId: widget.recipeId, recipeTitle: recipe.title,),
+                                    _ => const SizedBox(),
+                                  };
                                 },
                               ),
                             ],

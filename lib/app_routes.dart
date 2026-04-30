@@ -39,7 +39,9 @@ import 'package:eefood/features/recipe/data/models/recipe_model.dart';
 import 'package:eefood/features/recipe/presentation/screens/qr_view_screen.dart';
 import 'package:eefood/features/recipe/presentation/screens/recipe_crud_page.dart';
 import 'package:eefood/features/recipe/presentation/screens/recipe_detail_page.dart';
+import 'package:eefood/features/recipe_review/presentation/screens/all_review_screen.dart';
 import 'package:eefood/features/recipe_review/presentation/screens/recipe_review_screen.dart';
+import 'package:eefood/features/recipe_review/presentation/screens/review_stats_detail_screen.dart';
 import 'package:eefood/main_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -116,6 +118,9 @@ class AppRoutes {
   static const cookingSession = '/cookingSession';
 
   static const reviewRecipe = '/reviewRecipeScreen';
+
+  static const reviewStatsDetailPage = '/reviewStatsDetailPage';
+  static const allReviewPage = '/allReviewPage';
 
   // Danh sách các widget cho BottomNavigationBar trong main page
   static List<Widget> widgetOptions = <Widget>[
@@ -321,6 +326,17 @@ class AppRoutes {
     reviewRecipe: (context) {
       final args = ModalRoute.of(context)!.settings.arguments as Map;
       return RecipeReviewScreen(recipeId: args['recipeId']);
+    },
+    reviewStatsDetailPage: (context) {
+      final args = ModalRoute.of(context)!.settings.arguments as Map;
+      return ReviewStatsDetailScreen(stats: args['stats']);
+    },
+    allReviewPage: (context) {
+      final args = ModalRoute.of(context)!.settings.arguments as Map;
+      return AllReviewsPage(
+        recipeId: args['recipeId'],
+        recipeTitle: args['recipeTitle'],
+      );
     },
   };
 }
