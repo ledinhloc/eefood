@@ -110,7 +110,7 @@ class RecipeReviewView extends StatelessWidget {
           totalCount: state.questions.length,
           onSubmit: () {
             context.read<ReviewRecipeCubit>().submitReview(recipeId);
-            Navigator.pop(context);
+            Navigator.pop(context); // close review screen and signal completion
           },
         ),
       ],
