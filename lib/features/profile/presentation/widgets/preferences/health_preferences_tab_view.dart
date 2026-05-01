@@ -68,166 +68,181 @@ class _HealthPreferencesTabViewState extends State<HealthPreferencesTabView> {
 
     return CustomScrollView(
       slivers: [
-        SliverToBoxAdapter(
-          child: Container(
-            margin: const EdgeInsets.all(20),
-            padding: const EdgeInsets.all(20),
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                colors: [
-                  HealthPreferencesTabView.accentColor.withValues(alpha: 0.08),
-                  HealthPreferencesTabView.accentColor.withValues(alpha: 0.03),
-                ],
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-              ),
-              borderRadius: BorderRadius.circular(20),
-            ),
-            child: Row(
-              children: [
-                Container(
-                  width: 56,
-                  height: 56,
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(16),
-                    boxShadow: [
-                      BoxShadow(
-                        color: HealthPreferencesTabView.accentColor.withValues(
-                          alpha: 0.15,
-                        ),
-                        blurRadius: 12,
-                        offset: const Offset(0, 4),
-                      ),
-                    ],
-                  ),
-                  child: const Center(
-                    child: Text('💪', style: TextStyle(fontSize: 28)),
-                  ),
-                ),
-                const SizedBox(width: 16),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const Text(
-                        'Sức khỏe & vận động',
-                        style: TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.w600,
-                          color: Color(0xFF1A1A1A),
-                          height: 1.2,
-                        ),
-                      ),
-                      const SizedBox(height: 4),
-                      Text(
-                        'Cập nhật mức độ hoạt động và tình trạng sức khỏe để nhận gợi ý phù hợp.',
-                        style: TextStyle(
-                          fontSize: 14,
-                          color: Colors.grey[600],
-                          height: 1.3,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
-        if (selectedCount > 0)
-          SliverToBoxAdapter(
-            child: Padding(
-              padding: const EdgeInsets.fromLTRB(20, 0, 20, 16),
-              child: Row(
-                children: [
-                  Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 14,
-                      vertical: 8,
-                    ),
-                    decoration: BoxDecoration(
-                      color: HealthPreferencesTabView.accentColor.withValues(
-                        alpha: 0.12,
-                      ),
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        const Icon(
-                          Icons.favorite_rounded,
-                          size: 16,
-                          color: HealthPreferencesTabView.accentColor,
-                        ),
-                        const SizedBox(width: 6),
-                        Text(
-                          '$selectedCount đã chọn',
-                          style: const TextStyle(
-                            color: HealthPreferencesTabView.accentColor,
-                            fontWeight: FontWeight.w600,
-                            fontSize: 13,
-                            letterSpacing: 0.2,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-        SliverToBoxAdapter(
-          child: Padding(
-            padding: const EdgeInsets.fromLTRB(20, 0, 20, 16),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const Text(
-                  'Mức độ hoạt động',
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w600,
-                    color: Color(0xFF1A1A1A),
-                  ),
-                ),
-                const SizedBox(height: 6),
-                Text(
-                  'Chọn 1 mức phù hợp với nhịp sinh hoạt của bạn.',
-                  style: TextStyle(
-                    fontSize: 13,
-                    color: Colors.grey[600],
-                    height: 1.3,
-                  ),
-                ),
-                const SizedBox(height: 14),
-                GridView.builder(
-                  shrinkWrap: true,
-                  physics: const NeverScrollableScrollPhysics(),
-                  itemCount: _activityLevelOptions.length,
-                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                    crossAxisCount: 2,
-                    childAspectRatio: 1.28,
-                    crossAxisSpacing: 12,
-                    mainAxisSpacing: 12,
-                  ),
-                  itemBuilder: (context, index) {
-                    final option = _activityLevelOptions[index];
-                    final isSelected =
-                        widget.selectedActivityLevel == option.level;
+        _buildHeader(),
+        if (selectedCount > 0) _buildSelectedCountBadge(selectedCount),
+        _buildActivityLevelSection(),
+        _buildHealthConditionSection(),
+      ],
+    );
+  }
 
-                    return _ActivityLevelCard(
-                      option: option,
-                      isSelected: isSelected,
-                      accentColor: HealthPreferencesTabView.accentColor,
-                      onTap: () => widget.onActivityLevelSelect(option.level),
-                    );
-                  },
-                ),
-              ],
-            ),
+  Widget _buildHeader() {
+    return SliverToBoxAdapter(
+      child: Container(
+        margin: const EdgeInsets.all(20),
+        padding: const EdgeInsets.all(20),
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            colors: [
+              HealthPreferencesTabView.accentColor.withValues(alpha: 0.08),
+              HealthPreferencesTabView.accentColor.withValues(alpha: 0.03),
+            ],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
           ),
+          borderRadius: BorderRadius.circular(20),
         ),
+        child: Row(
+          children: [
+            Container(
+              width: 56,
+              height: 56,
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(16),
+                boxShadow: [
+                  BoxShadow(
+                    color: HealthPreferencesTabView.accentColor.withValues(
+                      alpha: 0.15,
+                    ),
+                    blurRadius: 12,
+                    offset: const Offset(0, 4),
+                  ),
+                ],
+              ),
+              child: const Center(
+                child: Text('💪', style: TextStyle(fontSize: 28)),
+              ),
+            ),
+            const SizedBox(width: 16),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text(
+                    'Sức khỏe & vận động',
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.w600,
+                      color: Color(0xFF1A1A1A),
+                      height: 1.2,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    'Cập nhật mức độ hoạt động và tình trạng sức khỏe để nhận gợi ý phù hợp.',
+                    style: TextStyle(
+                      fontSize: 14,
+                      color: Colors.grey[600],
+                      height: 1.3,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildSelectedCountBadge(int selectedCount) {
+    return SliverToBoxAdapter(
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(20, 0, 20, 16),
+        child: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+              decoration: BoxDecoration(
+                color: HealthPreferencesTabView.accentColor.withValues(
+                  alpha: 0.12,
+                ),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Icon(
+                    Icons.favorite_rounded,
+                    size: 16,
+                    color: HealthPreferencesTabView.accentColor,
+                  ),
+                  const SizedBox(width: 6),
+                  Text(
+                    '$selectedCount đã chọn',
+                    style: const TextStyle(
+                      color: HealthPreferencesTabView.accentColor,
+                      fontWeight: FontWeight.w600,
+                      fontSize: 13,
+                      letterSpacing: 0.2,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildActivityLevelSection() {
+    return SliverToBoxAdapter(
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(20, 0, 20, 16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text(
+              'Mức độ hoạt động',
+              style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.w600,
+                color: Color(0xFF1A1A1A),
+              ),
+            ),
+            const SizedBox(height: 6),
+            Text(
+              'Chọn 1 mức phù hợp với nhịp sinh hoạt của bạn.',
+              style: TextStyle(
+                fontSize: 13,
+                color: Colors.grey[600],
+                height: 1.3,
+              ),
+            ),
+            const SizedBox(height: 14),
+            GridView.builder(
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              itemCount: _activityLevelOptions.length,
+              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: 2,
+                childAspectRatio: 1.28,
+                crossAxisSpacing: 12,
+                mainAxisSpacing: 12,
+              ),
+              itemBuilder: (context, index) {
+                final option = _activityLevelOptions[index];
+                final isSelected = widget.selectedActivityLevel == option.level;
+
+                return _ActivityLevelCard(
+                  option: option,
+                  isSelected: isSelected,
+                  accentColor: HealthPreferencesTabView.accentColor,
+                  onTap: () => widget.onActivityLevelSelect(option.level),
+                );
+              },
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildHealthConditionSection() {
+    return SliverMainAxisGroup(
+      slivers: [
         SliverToBoxAdapter(
           child: Padding(
             padding: const EdgeInsets.fromLTRB(20, 4, 20, 16),
@@ -349,27 +364,22 @@ class _HealthPreferencesTabViewState extends State<HealthPreferencesTabView> {
               crossAxisSpacing: 12,
               mainAxisSpacing: 12,
             ),
-            delegate: SliverChildBuilderDelegate(
-              (context, index) {
-                final item =
-                    AppConstants.healthConditions[index];
-                final itemName = item['name'] ?? '';
-                final itemIcon = item['icon'] ?? '';
-                final isSelected = widget.selectedHealthConditions.contains(
-                  itemName,
-                );
+            delegate: SliverChildBuilderDelegate((context, index) {
+              final item = AppConstants.healthConditions[index];
+              final itemName = item['name'] ?? '';
+              final itemIcon = item['icon'] ?? '';
+              final isSelected = widget.selectedHealthConditions.contains(
+                itemName,
+              );
 
-                return PreferenceChipItem(
-                  label: itemName,
-                  icon: itemIcon,
-                  isSelected: isSelected,
-                  accentColor: HealthPreferencesTabView.accentColor,
-                  onTap: () => widget.onHealthConditionToggle(itemName),
-                );
-              },
-              childCount:
-                  AppConstants.healthConditions.length,
-            ),
+              return PreferenceChipItem(
+                label: itemName,
+                icon: itemIcon,
+                isSelected: isSelected,
+                accentColor: HealthPreferencesTabView.accentColor,
+                onTap: () => widget.onHealthConditionToggle(itemName),
+              );
+            }, childCount: AppConstants.healthConditions.length),
           ),
         ),
       ],
