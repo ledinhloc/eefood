@@ -236,6 +236,29 @@ class AppConstants {
     {"name": "Mắm tôm", "icon": "🟣"},
     {"name": "Ốc, nghêu, sò", "icon": "🐚"},
   ];
+
+  static final healthConditions = [
+    {"name": "Tiểu đường", "icon": "🩸"},
+    {"name": "Huyết áp cao", "icon": "❤️"},
+    {"name": "Mỡ máu cao", "icon": "🩺"},
+    {"name": "Tim mạch", "icon": "🫀"},
+    {"name": "Dạ dày", "icon": "🫗"},
+    {"name": "Bệnh thận", "icon": "🧪"},
+    {"name": "Gout", "icon": "🦶"},
+    {"name": "Giảm cân", "icon": "⚖️"},
+    {"name": "Tăng cơ", "icon": "💪"},
+    {"name": "Mang thai", "icon": "🤰"},
+    {"name": "Gan nhiễm mỡ", "icon": "🟤"},
+    {"name": "Hen suyễn", "icon": "🫁"},
+    {"name": "Viêm xoang", "icon": "🤧"},
+    {"name": "Thiếu máu", "icon": "🧬"},
+    {"name": "Táo bón", "icon": "🥬"},
+    {"name": "Mất ngủ", "icon": "🌙"},
+    {"name": "Loãng xương", "icon": "🦴"},
+    {"name": "Béo phì", "icon": "⚠️"},
+    {"name": "Rối loạn tiêu hóa", "icon": "🍽️"},
+    {"name": "Trào ngược dạ dày", "icon": "🔥"},
+  ];
   static final cuisines = [
     {"name": "Gỏi/Salad", "icon": "🥗"},
     {"name": "Trứng", "icon": "🍳"},

@@ -1,4 +1,6 @@
-class User{
+import '../enum/activity_level.dart';
+
+class User {
   final int id;
   final String username;
   final String email;
@@ -9,9 +11,11 @@ class User{
   final String provider;
   final String? avatarUrl;
   final String? backgroundUrl;
+  final ActivityLevel? activityLevel;
   final List<String>? allergies;
   final List<String>? eatingPreferences;
   final List<String>? dietaryPreferences;
+  final List<String>? healthConditions;
 
   const User({
     required this.id,
@@ -24,18 +28,17 @@ class User{
     required this.provider,
     this.avatarUrl,
     this.backgroundUrl,
+    this.activityLevel,
     this.allergies,
     this.eatingPreferences,
     this.dietaryPreferences,
+    this.healthConditions,
   });
 }
 
-class Address{
+class Address {
   final String city;
   final String street;
 
-  const Address({
-    required this.city,
-    required this.street,
-  });
+  const Address({required this.city, required this.street});
 }
