@@ -200,7 +200,8 @@ class _FoodPreferencesPageState extends State<FoodPreferencesPage>
             color: Colors.white,
             child: TabBar(
               controller: _tabController,
-              isScrollable: true,
+              isScrollable: false,
+              labelPadding: EdgeInsets.zero,
               labelColor: const Color(0xFFFF6B35),
               unselectedLabelColor: const Color(0xFF8E8E93),
               indicatorColor: const Color(0xFFFF6B35),

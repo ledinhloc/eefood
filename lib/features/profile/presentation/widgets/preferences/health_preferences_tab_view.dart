@@ -32,7 +32,7 @@ class _HealthPreferencesTabViewState extends State<HealthPreferencesTabView> {
       TextEditingController();
 
   Set<String> get _suggestedHealthConditionNames => AppConstants
-      .healthConditionsSuggestions
+      .healthConditions
       .map((item) => item['name'] ?? '')
       .where((item) => item.isNotEmpty)
       .toSet();
@@ -244,7 +244,7 @@ class _HealthPreferencesTabViewState extends State<HealthPreferencesTabView> {
                 ),
                 const SizedBox(height: 6),
                 Text(
-                  'Chọn nhiều mục nếu cần điều chỉnh gợi ý món ăn.',
+                  'Có thể chọn nhiều mục, để điều chỉnh kế hoạch nấu ăn.',
                   style: TextStyle(
                     fontSize: 13,
                     color: Colors.grey[600],
@@ -349,22 +349,27 @@ class _HealthPreferencesTabViewState extends State<HealthPreferencesTabView> {
               crossAxisSpacing: 12,
               mainAxisSpacing: 12,
             ),
-            delegate: SliverChildBuilderDelegate((context, index) {
-              final item = AppConstants.healthConditionsSuggestions[index];
-              final itemName = item['name'] ?? '';
-              final itemIcon = item['icon'] ?? '';
-              final isSelected = widget.selectedHealthConditions.contains(
-                itemName,
-              );
+            delegate: SliverChildBuilderDelegate(
+              (context, index) {
+                final item =
+                    AppConstants.healthConditions[index];
+                final itemName = item['name'] ?? '';
+                final itemIcon = item['icon'] ?? '';
+                final isSelected = widget.selectedHealthConditions.contains(
+                  itemName,
+                );
 
-              return PreferenceChipItem(
-                label: itemName,
-                icon: itemIcon,
-                isSelected: isSelected,
-                accentColor: HealthPreferencesTabView.accentColor,
-                onTap: () => widget.onHealthConditionToggle(itemName),
-              );
-            }, childCount: AppConstants.healthConditionsSuggestions.length),
+                return PreferenceChipItem(
+                  label: itemName,
+                  icon: itemIcon,
+                  isSelected: isSelected,
+                  accentColor: HealthPreferencesTabView.accentColor,
+                  onTap: () => widget.onHealthConditionToggle(itemName),
+                );
+              },
+              childCount:
+                  AppConstants.healthConditions.length,
+            ),
           ),
         ),
       ],
