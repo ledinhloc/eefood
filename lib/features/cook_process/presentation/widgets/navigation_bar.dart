@@ -20,11 +20,11 @@ class NavigationBarCooking extends StatelessWidget {
     final isCompleting = state.status == CookingStatus.completing;
     final canGoNext = !isTimerRunning;
     final canComplete = !isTimerRunning;
-
+    final theme = Theme.of(context);
     return Container(
       padding: const EdgeInsets.fromLTRB(20, 16, 20, 24),
       decoration: BoxDecoration(
-        color: const Color(0xFF1A1A1A),
+        color: theme.scaffoldBackgroundColor,
         borderRadius: const BorderRadius.vertical(top: Radius.circular(28)),
         boxShadow: [
           BoxShadow(
@@ -51,7 +51,9 @@ class NavigationBarCooking extends StatelessWidget {
             child: state.isLastStep
                 ? CompleteButton(
                     isLoading: isCompleting,
-                    onTap: () => cubit.completeSession(),
+                    onTap: () {
+                      cubit.completeSession();
+                    },
                   )
                 : NavButton(
                     icon: Icons.arrow_forward_rounded,

@@ -89,7 +89,9 @@ class _CookingSessionViewState extends State<CookingSessionView> {
             arguments: {
               'recipeId': recipeId
             }
-          ); // push to review recipe
+          ).then((_) {
+            Navigator.of(context).pop();
+          });
         },
       ),
     );

@@ -19,7 +19,7 @@ class NavButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final color = enabled ? Colors.white : Colors.white.withOpacity(0.2);
+    final color = enabled ? Colors.black : Colors.black.withOpacity(0.2);
     final child = GestureDetector(
       onTap: enabled ? onTap : null,
       child: AnimatedContainer(
@@ -28,14 +28,14 @@ class NavButton extends StatelessWidget {
         padding: const EdgeInsets.symmetric(horizontal: 20),
         decoration: BoxDecoration(
           color: outlined
-              ? Colors.white.withOpacity(enabled ? 0.08 : 0.03)
+              ? Colors.black.withOpacity(enabled ? 0.08 : 0.03)
               : (enabled
                     ? const Color(0xFFFF6B35)
-                    : Colors.white.withOpacity(0.05)),
+                    : Colors.black.withOpacity(0.05)),
           borderRadius: BorderRadius.circular(16),
           border: outlined
               ? Border.all(
-                  color: Colors.white.withOpacity(enabled ? 0.2 : 0.08),
+                  color: Colors.black.withOpacity(enabled ? 0.2 : 0.08),
                 )
               : null,
         ),
