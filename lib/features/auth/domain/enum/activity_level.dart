@@ -1,0 +1,1 @@
+enum ActivityLevel { SEDENTARY, LIGHT, MODERATE, ACTIVE }
