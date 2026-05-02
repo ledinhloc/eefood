@@ -24,6 +24,7 @@ import '../../../profile/domain/usecases/profile_usecase.dart';
 import '../../data/models/recipe_detail_model.dart';
 import '../provider/recipe_detail_cubit.dart';
 import '../provider/similar_recipes_cubit.dart';
+import 'recipe_pdf_preview_page.dart';
 import '../widgets/category_list_widget.dart';
 import '../widgets/instructions/instructions_tab.dart';
 import '../widgets/recipe_detail/similar_recipes_section.dart';
@@ -46,7 +47,7 @@ class _RecipeDetailPageState extends State<RecipeDetailPage> {
   bool _isLoadingFollow = false;
   bool _hasScheduledSimilarRecipesLoad = false;
   int? _loadedFollowAuthorId;
-  bool _isRecipeCompleted = false;
+  bool _isExportingPdf = false;
   List<String> _extractIngredientNames(RecipeDetailModel recipe) {
     return (recipe.ingredients ?? const [])
         .map((item) => item.ingredient?.name.trim() ?? '')
@@ -98,6 +99,8 @@ class _RecipeDetailPageState extends State<RecipeDetailPage> {
 
   Future<void> _handleFollowToggle(int authorId) async {
     final user = await getIt<GetCurrentUser>().call();
+    if (!mounted) return;
+
     if (user == null) {
       showLoginRequired(context);
       return;
@@ -170,6 +173,32 @@ class _RecipeDetailPageState extends State<RecipeDetailPage> {
     }
   }
 
+  Future<void> _exportRecipePdf(RecipeDetailModel recipe) async {
+    if (_isExportingPdf) return;
+
+    setState(() => _isExportingPdf = true);
+    try {
+      await Navigator.push(
+        context,
+        MaterialPageRoute(builder: (_) => RecipePdfPreviewPage(recipe: recipe)),
+      );
+    } catch (error, stackTrace) {
+      debugPrint('Export recipe PDF failed: $error');
+      debugPrintStack(stackTrace: stackTrace);
+      if (mounted) {
+        showCustomSnackBar(
+          context,
+          'Không thể trích xuất PDF. Vui lòng thử lại',
+          isError: true,
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() => _isExportingPdf = false);
+      }
+    }
+  }
+
   @override
   void dispose() {
     _cubit.stopTracking();
@@ -235,7 +264,7 @@ class _RecipeDetailPageState extends State<RecipeDetailPage> {
                         ),
                         onPressed: () {
                           final deepLink =
-                              AppKeys.webDeloyUrl + '/recipes/${recipe.id}';
+                              '${AppKeys.webDeloyUrl}/recipes/${recipe.id}';
                           Navigator.pushNamed(
                             context,
                             AppRoutes.qrCodeScreen,
@@ -393,6 +422,8 @@ class _RecipeDetailPageState extends State<RecipeDetailPage> {
                                           await getIt<GetUserById>().call(
                                             recipe.userId,
                                           );
+                                      if (!context.mounted) return;
+
                                       await Navigator.pushNamed(
                                         context,
                                         AppRoutes.personalUser,
@@ -575,7 +606,10 @@ class _RecipeDetailPageState extends State<RecipeDetailPage> {
                                   return switch (tabController.index) {
                                     0 => const InstructionsTab(),
                                     1 => StepsTab(recipe: recipe),
-                                    2 => ReviewTab(recipeId: widget.recipeId, recipeTitle: recipe.title,),
+                                    2 => ReviewTab(
+                                      recipeId: widget.recipeId,
+                                      recipeTitle: recipe.title,
+                                    ),
                                     _ => const SizedBox(),
                                   };
                                 },
@@ -772,6 +806,8 @@ class _RecipeDetailPageState extends State<RecipeDetailPage> {
     bool isAuthor = false,
   }) async {
     final user = await getIt<GetCurrentUser>().call();
+    if (!context.mounted) return;
+
     if (user == null) {
       showLoginRequired(context);
       return;
@@ -792,6 +828,14 @@ class _RecipeDetailPageState extends State<RecipeDetailPage> {
           title: 'Thêm vào kế hoạch bữa ăn',
           onTap: () {
             _openAddToMealPlanSheet(context, recipe);
+          },
+        ),
+      if (recipe != null)
+        BottomSheetOption(
+          icon: const Icon(Icons.picture_as_pdf_outlined, color: Colors.red),
+          title: _isExportingPdf ? 'Đang trích xuất PDF...' : 'Trích xuất PDF',
+          onTap: () {
+            _exportRecipePdf(recipe);
           },
         ),
       BottomSheetOption(
