@@ -5,7 +5,6 @@ import 'package:eefood/features/recipe/application/services/recipe_pdf_service.d
 import 'package:eefood/features/recipe/data/models/recipe_detail_model.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
-import 'package:pdf/pdf.dart';
 import 'package:printing/printing.dart';
 
 class RecipePdfPreviewPage extends StatefulWidget {
@@ -18,26 +17,48 @@ class RecipePdfPreviewPage extends StatefulWidget {
 }
 
 class _RecipePdfPreviewPageState extends State<RecipePdfPreviewPage> {
+  static const double _previewDpi = 160;
+
   final RecipePdfService _pdfService = RecipePdfService();
-  late final Future<Uint8List> _pdfBytesFuture;
   late final String _fileName;
+  late final Future<List<Uint8List>> _previewPagesFuture;
   bool _isSharing = false;
   bool _isSaving = false;
 
   @override
   void initState() {
     super.initState();
-    _fileName = '${_safeFileName(widget.recipe.title)}.pdf';
-    _pdfBytesFuture = _pdfService.generateRecipePdf(widget.recipe);
+    _disablePdfDebug();
+    _fileName = _pdfService.recipePdfFileName(widget.recipe);
+    _previewPagesFuture = _generatePreviewPages();
   }
 
-  String _safeFileName(String value) {
-    final sanitized = value
-        .trim()
-        .replaceAll(RegExp(r'[\\/:*?"<>|]+'), '')
-        .replaceAll(RegExp(r'\s+'), '_');
+  Future<Uint8List> _generatePdfBytes() {
+    _disablePdfDebug();
+    return _pdfService.generateRecipePdf(widget.recipe);
+  }
 
-    return sanitized.isEmpty ? 'recipe' : sanitized;
+  Future<List<Uint8List>> _generatePreviewPages() async {
+    RecipePdfService.disablePdfDebug();
+    final bytes = await _generatePdfBytes();
+    final pages = <Uint8List>[];
+
+    await for (final page in Printing.raster(bytes, dpi: _previewDpi)) {
+      RecipePdfService.disablePdfDebug();
+      pages.add(await page.toPng());
+    }
+
+    return pages;
+  }
+
+  void _disablePdfDebug() {
+    RecipePdfService.disablePdfDebug();
+  }
+
+  @override
+  void dispose() {
+    _disablePdfDebug();
+    super.dispose();
   }
 
   Future<void> _sharePdf() async {
@@ -45,7 +66,7 @@ class _RecipePdfPreviewPageState extends State<RecipePdfPreviewPage> {
 
     setState(() => _isSharing = true);
     try {
-      final bytes = await _pdfBytesFuture;
+      final bytes = await _generatePdfBytes();
       await Printing.sharePdf(
         bytes: bytes,
         filename: _fileName,
@@ -74,7 +95,7 @@ class _RecipePdfPreviewPageState extends State<RecipePdfPreviewPage> {
 
     setState(() => _isSaving = true);
     try {
-      final bytes = await _pdfBytesFuture;
+      final bytes = await _generatePdfBytes();
       final savedPath = await FilePicker.platform.saveFile(
         dialogTitle: 'Lưu PDF công thức',
         fileName: _fileName,
@@ -105,6 +126,8 @@ class _RecipePdfPreviewPageState extends State<RecipePdfPreviewPage> {
 
   @override
   Widget build(BuildContext context) {
+    _disablePdfDebug();
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('Xem trước PDF'),
@@ -133,28 +156,60 @@ class _RecipePdfPreviewPageState extends State<RecipePdfPreviewPage> {
           ),
         ],
       ),
-      body: PdfPreview(
-        build: (_) => _pdfBytesFuture,
-        initialPageFormat: PdfPageFormat.a4,
-        pdfFileName: _fileName,
-        allowPrinting: false,
-        allowSharing: false,
-        canChangeOrientation: false,
-        canChangePageFormat: false,
-        canDebug: false,
-        loadingWidget: const Center(child: CircularProgressIndicator()),
-        onError: (context, error) {
-          return Center(
-            child: Padding(
-              padding: const EdgeInsets.all(24),
-              child: Text(
-                'Không thể xem trước PDF. Vui lòng thử lại',
-                textAlign: TextAlign.center,
-                style: Theme.of(context).textTheme.bodyLarge,
-              ),
-            ),
+      body: FutureBuilder<List<Uint8List>>(
+        future: _previewPagesFuture,
+        builder: (context, snapshot) {
+          if (snapshot.connectionState != ConnectionState.done) {
+            return const Center(child: CircularProgressIndicator());
+          }
+
+          if (snapshot.hasError) {
+            return _buildPreviewError(context);
+          }
+
+          final pages = snapshot.data ?? const [];
+          if (pages.isEmpty) {
+            return _buildPreviewError(context);
+          }
+
+          return ListView.separated(
+            padding: const EdgeInsets.all(16),
+            itemCount: pages.length,
+            separatorBuilder: (_, __) => const SizedBox(height: 16),
+            itemBuilder: (context, index) {
+              return DecoratedBox(
+                decoration: const BoxDecoration(
+                  color: Colors.white,
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black26,
+                      blurRadius: 8,
+                      offset: Offset(0, 3),
+                    ),
+                  ],
+                ),
+                child: Image.memory(
+                  pages[index],
+                  fit: BoxFit.fitWidth,
+                  filterQuality: FilterQuality.high,
+                ),
+              );
+            },
           );
         },
+      ),
+    );
+  }
+
+  Widget _buildPreviewError(BuildContext context) {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(24),
+        child: Text(
+          'Không thể xem trước PDF. Vui lòng thử lại',
+          textAlign: TextAlign.center,
+          style: Theme.of(context).textTheme.bodyLarge,
+        ),
       ),
     );
   }

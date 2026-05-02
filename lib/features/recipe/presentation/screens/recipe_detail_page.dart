@@ -12,8 +12,10 @@ import 'package:eefood/features/meal_plan/domain/repository/meal_plan_repository
 import 'package:eefood/features/meal_plan/presentation/provider/meal_plan_cubit.dart';
 import 'package:eefood/features/meal_plan/presentation/widgets/meal_plan_item_upsert_sheet.dart';
 import 'package:eefood/features/post/presentation/provider/follow_cubit.dart';
+import 'package:eefood/features/recipe/application/services/recipe_pdf_service.dart';
 import 'package:eefood/features/recipe/presentation/provider/shopping_cubit.dart';
 import 'package:eefood/features/recipe/presentation/widgets/review_tab.dart';
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
@@ -173,7 +175,7 @@ class _RecipeDetailPageState extends State<RecipeDetailPage> {
     }
   }
 
-  Future<void> _exportRecipePdf(RecipeDetailModel recipe) async {
+  Future<void> _previewRecipePdf(RecipeDetailModel recipe) async {
     if (_isExportingPdf) return;
 
     setState(() => _isExportingPdf = true);
@@ -183,12 +185,70 @@ class _RecipeDetailPageState extends State<RecipeDetailPage> {
         MaterialPageRoute(builder: (_) => RecipePdfPreviewPage(recipe: recipe)),
       );
     } catch (error, stackTrace) {
-      debugPrint('Export recipe PDF failed: $error');
+      debugPrint('Preview recipe PDF failed: $error');
       debugPrintStack(stackTrace: stackTrace);
       if (mounted) {
         showCustomSnackBar(
           context,
           'Không thể trích xuất PDF. Vui lòng thử lại',
+          isError: true,
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() => _isExportingPdf = false);
+      }
+    }
+  }
+
+  Future<void> _downloadRecipePdf(RecipeDetailModel recipe) async {
+    if (_isExportingPdf) return;
+
+    setState(() => _isExportingPdf = true);
+    try {
+      final pdfService = RecipePdfService();
+      final bytes = await pdfService.generateRecipePdf(recipe);
+      final savedPath = await FilePicker.platform.saveFile(
+        dialogTitle: 'Luu PDF cong thuc',
+        fileName: pdfService.recipePdfFileName(recipe),
+        type: FileType.custom,
+        allowedExtensions: const ['pdf'],
+        bytes: bytes,
+      );
+
+      if (!mounted || savedPath == null) return;
+
+      showCustomSnackBar(context, 'Da tai PDF ve may');
+    } catch (error, stackTrace) {
+      debugPrint('Download recipe PDF failed: $error');
+      debugPrintStack(stackTrace: stackTrace);
+      if (mounted) {
+        showCustomSnackBar(
+          context,
+          'Khong the tai PDF. Vui long thu lai',
+          isError: true,
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() => _isExportingPdf = false);
+      }
+    }
+  }
+
+  Future<void> _shareRecipePdf(RecipeDetailModel recipe) async {
+    if (_isExportingPdf) return;
+
+    setState(() => _isExportingPdf = true);
+    try {
+      await RecipePdfService().shareRecipePdf(recipe);
+    } catch (error, stackTrace) {
+      debugPrint('Share recipe PDF failed: $error');
+      debugPrintStack(stackTrace: stackTrace);
+      if (mounted) {
+        showCustomSnackBar(
+          context,
+          'Khong the chia se PDF. Vui long thu lai',
           isError: true,
         );
       }
@@ -832,10 +892,26 @@ class _RecipeDetailPageState extends State<RecipeDetailPage> {
         ),
       if (recipe != null)
         BottomSheetOption(
-          icon: const Icon(Icons.picture_as_pdf_outlined, color: Colors.red),
-          title: _isExportingPdf ? 'Đang trích xuất PDF...' : 'Trích xuất PDF',
+          icon: const Icon(Icons.download_rounded, color: Colors.green),
+          title: _isExportingPdf ? 'Dang tai PDF...' : 'Tai PDF',
           onTap: () {
-            _exportRecipePdf(recipe);
+            _downloadRecipePdf(recipe);
+          },
+        ),
+      if (recipe != null)
+        BottomSheetOption(
+          icon: const Icon(Icons.visibility_outlined, color: Colors.red),
+          title: _isExportingPdf ? 'Dang mo PDF...' : 'Xem truoc PDF',
+          onTap: () {
+            _previewRecipePdf(recipe);
+          },
+        ),
+      if (recipe != null)
+        BottomSheetOption(
+          icon: const Icon(Icons.share_outlined, color: Colors.blue),
+          title: _isExportingPdf ? 'Dang chia se PDF...' : 'Chia se PDF',
+          onTap: () {
+            _shareRecipePdf(recipe);
           },
         ),
       BottomSheetOption(
