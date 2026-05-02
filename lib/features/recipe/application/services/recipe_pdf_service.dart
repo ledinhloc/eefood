@@ -2,12 +2,13 @@ import 'dart:io';
 
 import 'package:eefood/core/constants/app_keys.dart';
 import 'package:eefood/features/recipe/data/models/recipe_detail_model.dart';
+import 'package:eefood/features/recipe/data/models/recipe_step_model.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
-import 'package:printing/printing.dart';
+import 'package:printing/printing.dart' as printing;
 import 'package:share_plus/share_plus.dart';
 
 class RecipePdfService {
@@ -46,7 +47,6 @@ class RecipePdfService {
   Future<Uint8List> generateRecipePdf(RecipeDetailModel recipe) async {
     disablePdfDebug();
 
-    //load font
     try {
       final regularFont = pw.Font.ttf(
         await rootBundle.load('assets/fonts/NotoSans-Regular.ttf'),
@@ -64,8 +64,12 @@ class RecipePdfService {
         italic: italicFont,
       );
 
+      final steps = [...?recipe.steps]
+        ..sort((first, second) => first.stepNumber.compareTo(second.stepNumber));
+
       final document = pw.Document(theme: theme);
-      final coverImage = await _loadCoverImage(recipe.imageUrl);
+      final coverImage = await _loadNetworkImage(recipe.imageUrl);
+      final stepImages = await _loadStepImages(steps);
       final recipeUrl = _buildRecipeUrl(recipe.id);
 
       document.addPage(
@@ -114,7 +118,7 @@ class RecipePdfService {
             _buildIngredients(recipe),
             pw.SizedBox(height: 20),
             _sectionTitle('Các bước thực hiện'),
-            _buildSteps(recipe),
+            _buildSteps(steps, stepImages),
             if ((recipe.videoUrl ?? '').trim().isNotEmpty) ...[
               pw.SizedBox(height: 18),
               _sectionTitle('Video hướng dẫn'),
@@ -138,7 +142,7 @@ class RecipePdfService {
     }
   }
 
-  Future<pw.ImageProvider?> _loadCoverImage(String? imageUrl) async {
+  Future<pw.ImageProvider?> _loadNetworkImage(String? imageUrl) async {
     final url = imageUrl?.trim();
     if (url == null || url.isEmpty) return null;
 
@@ -147,14 +151,43 @@ class RecipePdfService {
 
     try {
       if (uri.scheme == 'http' || uri.scheme == 'https') {
-        return networkImage(url, cache: true);
+        return printing.networkImage(url, cache: true);
       }
     } catch (error, stackTrace) {
-      debugPrint('Load recipe PDF cover image failed: $error');
+      debugPrint('Load recipe PDF image failed: $error');
       debugPrintStack(stackTrace: stackTrace);
     }
 
     return null;
+  }
+
+  Future<List<pw.ImageProvider>> _loadImages(List<String>? imageUrls) async {
+    final urls = (imageUrls ?? const <String>[])
+        .map((url) => url.trim())
+        .where((url) => url.isNotEmpty)
+        .toList();
+
+    final images = <pw.ImageProvider>[];
+    for (final url in urls) {
+      final image = await _loadNetworkImage(url);
+      if (image != null) {
+        images.add(image);
+      }
+    }
+
+    return images;
+  }
+
+  Future<Map<int, List<pw.ImageProvider>>> _loadStepImages(
+    List<RecipeStepModel> steps,
+  ) async {
+    final stepImages = <int, List<pw.ImageProvider>>{};
+
+    for (final step in steps) {
+      stepImages[step.stepNumber] = await _loadImages(step.imageUrls);
+    }
+
+    return stepImages;
   }
 
   String? _buildRecipeUrl(int? recipeId) {
@@ -318,14 +351,13 @@ class RecipePdfService {
         final quantity = item.quantity == null
             ? ''
             : item.quantity! % 1 == 0
-            ? item.quantity!.toInt().toString()
-            : item.quantity!.toString();
+                ? item.quantity!.toInt().toString()
+                : item.quantity!.toString();
         final unit = item.unit?.trim() ?? '';
         final name = item.ingredient?.name.trim() ?? 'Nguyên liệu';
-        final amount = [
-          quantity,
-          unit,
-        ].where((part) => part.isNotEmpty).join(' ');
+        final amount = [quantity, unit]
+            .where((part) => part.isNotEmpty)
+            .join(' ');
 
         return pw.Padding(
           padding: const pw.EdgeInsets.only(bottom: 6),
@@ -346,10 +378,10 @@ class RecipePdfService {
     );
   }
 
-  pw.Widget _buildSteps(RecipeDetailModel recipe) {
-    final steps = [...?recipe.steps]
-      ..sort((first, second) => first.stepNumber.compareTo(second.stepNumber));
-
+  pw.Widget _buildSteps(
+    List<RecipeStepModel> steps,
+    Map<int, List<pw.ImageProvider>> stepImages,
+  ) {
     if (steps.isEmpty) {
       return _emptyText('Chưa có bước thực hiện.');
     }
@@ -357,9 +389,8 @@ class RecipePdfService {
     return pw.Column(
       crossAxisAlignment: pw.CrossAxisAlignment.start,
       children: steps.map((step) {
-        final stepTime = step.stepTime == null
-            ? ''
-            : ' (${step.stepTime} phút)';
+        final stepTime = step.stepTime == null ? '' : ' (${step.stepTime} phút)';
+        final images = stepImages[step.stepNumber] ?? const <pw.ImageProvider>[];
 
         return pw.Container(
           margin: const pw.EdgeInsets.only(bottom: 12),
@@ -385,10 +416,33 @@ class RecipePdfService {
                     : step.instruction!.trim(),
                 style: const pw.TextStyle(fontSize: 12, lineSpacing: 4),
               ),
+              if (images.isNotEmpty) ...[
+                pw.SizedBox(height: 10),
+                _buildStepImages(images),
+              ],
             ],
           ),
         );
       }).toList(),
+    );
+  }
+
+  pw.Widget _buildStepImages(List<pw.ImageProvider> images) {
+    return pw.Wrap(
+      spacing: 8,
+      runSpacing: 8,
+      children: images
+          .map(
+            (image) => pw.Container(
+              width: 150,
+              height: 110,
+              decoration: pw.BoxDecoration(
+                border: pw.Border.all(color: PdfColors.grey300),
+              ),
+              child: pw.Image(image, fit: pw.BoxFit.cover),
+            ),
+          )
+          .toList(),
     );
   }
 
