@@ -21,7 +21,10 @@ class _RecipePdfPreviewPageState extends State<RecipePdfPreviewPage> {
 
   final RecipePdfService _pdfService = RecipePdfService();
   late final String _fileName;
-  late final Future<List<Uint8List>> _previewPagesFuture;
+  late final Future<Uint8List> _pdfBytesFuture;
+  final List<Uint8List> _previewPages = [];
+  Object? _previewError;
+  bool _isPreviewLoading = true;
   bool _isSharing = false;
   bool _isSaving = false;
 
@@ -30,7 +33,8 @@ class _RecipePdfPreviewPageState extends State<RecipePdfPreviewPage> {
     super.initState();
     _disablePdfDebug();
     _fileName = _pdfService.recipePdfFileName(widget.recipe);
-    _previewPagesFuture = _generatePreviewPages();
+    _pdfBytesFuture = _generatePdfBytes();
+    _generatePreviewPages();
   }
 
   Future<Uint8List> _generatePdfBytes() {
@@ -38,17 +42,33 @@ class _RecipePdfPreviewPageState extends State<RecipePdfPreviewPage> {
     return _pdfService.generateRecipePdf(widget.recipe);
   }
 
-  Future<List<Uint8List>> _generatePreviewPages() async {
-    RecipePdfService.disablePdfDebug();
-    final bytes = await _generatePdfBytes();
-    final pages = <Uint8List>[];
-
-    await for (final page in Printing.raster(bytes, dpi: _previewDpi)) {
+  Future<void> _generatePreviewPages() async {
+    try {
       RecipePdfService.disablePdfDebug();
-      pages.add(await page.toPng());
-    }
+      final bytes = await _pdfBytesFuture;
 
-    return pages;
+      await for (final page in Printing.raster(bytes, dpi: _previewDpi)) {
+        RecipePdfService.disablePdfDebug();
+        final png = await page.toPng();
+        if (!mounted) return;
+
+        setState(() {
+          _previewPages.add(png);
+        });
+      }
+
+      if (!mounted) return;
+      setState(() => _isPreviewLoading = false);
+    } catch (error, stackTrace) {
+      debugPrint('Generate recipe PDF preview failed: $error');
+      debugPrintStack(stackTrace: stackTrace);
+      if (!mounted) return;
+
+      setState(() {
+        _previewError = error;
+        _isPreviewLoading = false;
+      });
+    }
   }
 
   void _disablePdfDebug() {
@@ -66,7 +86,7 @@ class _RecipePdfPreviewPageState extends State<RecipePdfPreviewPage> {
 
     setState(() => _isSharing = true);
     try {
-      final bytes = await _generatePdfBytes();
+      final bytes = await _pdfBytesFuture;
       await Printing.sharePdf(
         bytes: bytes,
         filename: _fileName,
@@ -95,7 +115,7 @@ class _RecipePdfPreviewPageState extends State<RecipePdfPreviewPage> {
 
     setState(() => _isSaving = true);
     try {
-      final bytes = await _generatePdfBytes();
+      final bytes = await _pdfBytesFuture;
       final savedPath = await FilePicker.platform.saveFile(
         dialogTitle: 'Lưu PDF công thức',
         fileName: _fileName,
@@ -156,47 +176,50 @@ class _RecipePdfPreviewPageState extends State<RecipePdfPreviewPage> {
           ),
         ],
       ),
-      body: FutureBuilder<List<Uint8List>>(
-        future: _previewPagesFuture,
-        builder: (context, snapshot) {
-          if (snapshot.connectionState != ConnectionState.done) {
-            return const Center(child: CircularProgressIndicator());
-          }
+      body: _buildPreviewBody(context),
+    );
+  }
 
-          if (snapshot.hasError) {
-            return _buildPreviewError(context);
-          }
+  Widget _buildPreviewBody(BuildContext context) {
+    if (_previewPages.isEmpty && _isPreviewLoading) {
+      return const Center(child: CircularProgressIndicator());
+    }
 
-          final pages = snapshot.data ?? const [];
-          if (pages.isEmpty) {
-            return _buildPreviewError(context);
-          }
+    if (_previewPages.isEmpty && _previewError != null) {
+      return _buildPreviewError(context);
+    }
 
-          return ListView.separated(
+    return Column(
+      children: [
+        if (_isPreviewLoading) const LinearProgressIndicator(minHeight: 2),
+        Expanded(
+          child: ListView.separated(
             padding: const EdgeInsets.all(16),
-            itemCount: pages.length,
+            itemCount: _previewPages.length,
             separatorBuilder: (_, __) => const SizedBox(height: 16),
-            itemBuilder: (context, index) {
-              return DecoratedBox(
-                decoration: const BoxDecoration(
-                  color: Colors.white,
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black26,
-                      blurRadius: 8,
-                      offset: Offset(0, 3),
-                    ),
-                  ],
-                ),
-                child: Image.memory(
-                  pages[index],
-                  fit: BoxFit.fitWidth,
-                  filterQuality: FilterQuality.high,
-                ),
-              );
-            },
-          );
-        },
+            itemBuilder: (context, index) => _buildPreviewPage(index),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildPreviewPage(int index) {
+    return DecoratedBox(
+      decoration: const BoxDecoration(
+        color: Colors.white,
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black26,
+            blurRadius: 8,
+            offset: Offset(0, 3),
+          ),
+        ],
+      ),
+      child: Image.memory(
+        _previewPages[index],
+        fit: BoxFit.fitWidth,
+        filterQuality: FilterQuality.high,
       ),
     );
   }

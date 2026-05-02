@@ -1,10 +1,13 @@
 import 'dart:io';
 
+import 'package:eefood/core/constants/app_keys.dart';
 import 'package:eefood/features/recipe/data/models/recipe_detail_model.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
+import 'package:printing/printing.dart';
 import 'package:share_plus/share_plus.dart';
 
 class RecipePdfService {
@@ -43,6 +46,7 @@ class RecipePdfService {
   Future<Uint8List> generateRecipePdf(RecipeDetailModel recipe) async {
     disablePdfDebug();
 
+    //load font
     try {
       final regularFont = pw.Font.ttf(
         await rootBundle.load('assets/fonts/NotoSans-Regular.ttf'),
@@ -61,6 +65,8 @@ class RecipePdfService {
       );
 
       final document = pw.Document(theme: theme);
+      final coverImage = await _loadCoverImage(recipe.imageUrl);
+      final recipeUrl = _buildRecipeUrl(recipe.id);
 
       document.addPage(
         pw.MultiPage(
@@ -77,6 +83,10 @@ class RecipePdfService {
             ),
           ),
           build: (_) => [
+            if (coverImage != null) ...[
+              _buildCoverImage(coverImage),
+              pw.SizedBox(height: 18),
+            ],
             _buildTitle(recipe),
             pw.SizedBox(height: 18),
             _buildSummary(recipe),
@@ -113,6 +123,11 @@ class RecipePdfService {
                 style: pw.TextStyle(fontSize: 11, color: PdfColors.blue700),
               ),
             ],
+            if (recipeUrl != null) ...[
+              pw.SizedBox(height: 20),
+              _sectionTitle('QR công thức'),
+              _buildRecipeQr(recipeUrl),
+            ],
           ],
         ),
       );
@@ -121,6 +136,83 @@ class RecipePdfService {
     } finally {
       disablePdfDebug();
     }
+  }
+
+  Future<pw.ImageProvider?> _loadCoverImage(String? imageUrl) async {
+    final url = imageUrl?.trim();
+    if (url == null || url.isEmpty) return null;
+
+    final uri = Uri.tryParse(url);
+    if (uri == null || !uri.hasScheme) return null;
+
+    try {
+      if (uri.scheme == 'http' || uri.scheme == 'https') {
+        return networkImage(url, cache: true);
+      }
+    } catch (error, stackTrace) {
+      debugPrint('Load recipe PDF cover image failed: $error');
+      debugPrintStack(stackTrace: stackTrace);
+    }
+
+    return null;
+  }
+
+  String? _buildRecipeUrl(int? recipeId) {
+    if (recipeId == null) return null;
+    return '${AppKeys.webDeloyUrl}/recipes/$recipeId';
+  }
+
+  pw.Widget _buildCoverImage(pw.ImageProvider image) {
+    return pw.Container(
+      height: 180,
+      width: double.infinity,
+      decoration: pw.BoxDecoration(
+        border: pw.Border.all(color: PdfColors.grey300),
+      ),
+      child: pw.Image(image, fit: pw.BoxFit.cover),
+    );
+  }
+
+  pw.Widget _buildRecipeQr(String recipeUrl) {
+    return pw.Container(
+      padding: const pw.EdgeInsets.all(12),
+      decoration: pw.BoxDecoration(
+        color: PdfColors.grey50,
+        border: pw.Border.all(color: PdfColors.grey300),
+      ),
+      child: pw.Row(
+        crossAxisAlignment: pw.CrossAxisAlignment.start,
+        children: [
+          pw.BarcodeWidget(
+            barcode: pw.Barcode.qrCode(),
+            data: recipeUrl,
+            width: 88,
+            height: 88,
+            color: PdfColors.brown900,
+          ),
+          pw.SizedBox(width: 14),
+          pw.Expanded(
+            child: pw.Column(
+              crossAxisAlignment: pw.CrossAxisAlignment.start,
+              children: [
+                pw.Text(
+                  'Quét mã QR để mở công thức trên điện thoại.',
+                  style: pw.TextStyle(
+                    fontSize: 12,
+                    fontWeight: pw.FontWeight.bold,
+                  ),
+                ),
+                pw.SizedBox(height: 6),
+                pw.Text(
+                  recipeUrl,
+                  style: pw.TextStyle(fontSize: 10, color: PdfColors.blue700),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
   }
 
   pw.Widget _buildTitle(RecipeDetailModel recipe) {
