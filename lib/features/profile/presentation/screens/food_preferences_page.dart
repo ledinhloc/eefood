@@ -94,7 +94,7 @@ class _FoodPreferencesPageState extends State<FoodPreferencesPage>
       if (mounted) {
         if (result.isSuccess) {
           showCustomSnackBar(context, 'Đã lưu thành công!');
-          Navigator.pop(context, true);
+          // Navigator.pop(context, true);
         } else {
           showCustomSnackBar(context, 'Lưu thất bại!', isError: true);
         }

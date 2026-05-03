@@ -98,6 +98,8 @@ dependencies:
   qr_flutter: ^4.1.0 # qr
   http_parser: ^4.1.2
   mobile_scanner: ^7.2.0
+  pdf: ^3.11.3
+  printing: ^5.14.2
 
 dev_dependencies:
   flutter_test:
@@ -137,6 +139,7 @@ flutter:
   assets:
     - assets/images/
     - assets/lotties/
+    - assets/fonts/
   #   - images/a_dot_ham.jpeg
 
   # An image asset can refer to one or more resolution-specific "variants", see
