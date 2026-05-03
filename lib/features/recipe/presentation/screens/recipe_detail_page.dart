@@ -892,26 +892,10 @@ class _RecipeDetailPageState extends State<RecipeDetailPage> {
         ),
       if (recipe != null)
         BottomSheetOption(
-          icon: const Icon(Icons.download_rounded, color: Colors.green),
-          title: _isExportingPdf ? 'Dang tai PDF...' : 'Tai PDF',
-          onTap: () {
-            _downloadRecipePdf(recipe);
-          },
-        ),
-      if (recipe != null)
-        BottomSheetOption(
           icon: const Icon(Icons.visibility_outlined, color: Colors.red),
-          title: _isExportingPdf ? 'Dang mo PDF...' : 'Xem truoc PDF',
+          title: _isExportingPdf ? 'Dang mo PDF...' : 'Tải pdf',
           onTap: () {
             _previewRecipePdf(recipe);
-          },
-        ),
-      if (recipe != null)
-        BottomSheetOption(
-          icon: const Icon(Icons.share_outlined, color: Colors.blue),
-          title: _isExportingPdf ? 'Dang chia se PDF...' : 'Chia se PDF',
-          onTap: () {
-            _shareRecipePdf(recipe);
           },
         ),
       BottomSheetOption(

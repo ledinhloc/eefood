@@ -90,14 +90,14 @@ class RecipePdfService {
         pw.MultiPage(
           pageTheme: pw.PageTheme(
             pageFormat: PdfPageFormat.a4,
-            margin: const pw.EdgeInsets.fromLTRB(28, 36, 28, 32),
+            margin: const pw.EdgeInsets.fromLTRB(24, 34, 24, 30),
             theme: theme,
           ),
           footer: (context) => pw.Align(
             alignment: pw.Alignment.centerRight,
             child: pw.Text(
               'Trang ${context.pageNumber}/${context.pagesCount}',
-              style: pw.TextStyle(fontSize: 10, color: PdfColors.grey600),
+              style: pw.TextStyle(fontSize: 9, color: PdfColors.grey500),
             ),
           ),
           build: (_) => [
@@ -109,31 +109,39 @@ class RecipePdfService {
             pw.SizedBox(height: 12),
             _buildSummary(recipe),
             if ((recipe.description ?? '').trim().isNotEmpty) ...[
-              pw.SizedBox(height: 14),
+              pw.SizedBox(height: 12),
               _sectionTitle('Mô tả'),
               pw.Text(
                 recipe.description!.trim(),
-                style: const pw.TextStyle(fontSize: 12, lineSpacing: 4),
+                style: pw.TextStyle(
+                  fontSize: 11,
+                  lineSpacing: 3,
+                  color: PdfColors.grey800,
+                ),
               ),
             ],
             if (recipe.categories?.isNotEmpty ?? false) ...[
-              pw.SizedBox(height: 14),
+              pw.SizedBox(height: 12),
               _sectionTitle('Danh mục'),
               pw.Text(
                 recipe.categories!
                     .map((category) => category.description?.trim() ?? '')
                     .where((name) => name.isNotEmpty)
                     .join(', '),
-                style: const pw.TextStyle(fontSize: 12, lineSpacing: 4),
+                style: pw.TextStyle(
+                  fontSize: 11,
+                  lineSpacing: 3,
+                  color: PdfColors.grey800,
+                ),
               ),
             ],
-            pw.SizedBox(height: 16),
+            pw.SizedBox(height: 14),
             _buildIngredientsAndNutrition(recipe, nutrition),
-            pw.SizedBox(height: 16),
+            pw.SizedBox(height: 14),
             _sectionTitle('Các bước thực hiện'),
             _buildSteps(steps, stepImages),
             if ((recipe.videoUrl ?? '').trim().isNotEmpty) ...[
-              pw.SizedBox(height: 14),
+              pw.SizedBox(height: 12),
               _sectionTitle('Video hướng dẫn'),
               pw.Text(
                 recipe.videoUrl!.trim(),
@@ -141,7 +149,7 @@ class RecipePdfService {
               ),
             ],
             if (recipeUrl != null) ...[
-              pw.SizedBox(height: 16),
+              pw.SizedBox(height: 14),
               _sectionTitle('QR công thức'),
               _buildRecipeQr(recipeUrl),
             ],
@@ -237,10 +245,11 @@ class RecipePdfService {
 
   pw.Widget _buildCoverImage(pw.ImageProvider image) {
     return pw.Container(
-      height: 150,
+      height: 136,
       width: double.infinity,
       decoration: pw.BoxDecoration(
-        border: pw.Border.all(color: PdfColors.grey300),
+        border: pw.Border.all(color: PdfColors.orange100),
+        borderRadius: pw.BorderRadius.circular(6),
       ),
       child: pw.Image(image, fit: pw.BoxFit.cover),
     );
@@ -250,8 +259,9 @@ class RecipePdfService {
     return pw.Container(
       padding: const pw.EdgeInsets.all(12),
       decoration: pw.BoxDecoration(
-        color: PdfColors.grey50,
-        border: pw.Border.all(color: PdfColors.grey300),
+        color: PdfColors.orange50,
+        border: pw.Border.all(color: PdfColors.orange100),
+        borderRadius: pw.BorderRadius.circular(6),
       ),
       child: pw.Row(
         crossAxisAlignment: pw.CrossAxisAlignment.start,
@@ -261,7 +271,7 @@ class RecipePdfService {
             data: recipeUrl,
             width: 88,
             height: 88,
-            color: PdfColors.brown900,
+            color: PdfColors.deepOrange700,
           ),
           pw.SizedBox(width: 14),
           pw.Expanded(
@@ -293,11 +303,20 @@ class RecipePdfService {
       crossAxisAlignment: pw.CrossAxisAlignment.start,
       children: [
         pw.Text(
+          'EEFOOD RECIPE',
+          style: pw.TextStyle(
+            fontSize: 8,
+            fontWeight: pw.FontWeight.bold,
+            color: PdfColors.deepOrange500,
+          ),
+        ),
+        pw.SizedBox(height: 3),
+        pw.Text(
           recipe.title,
           style: pw.TextStyle(
-            fontSize: 24,
+            fontSize: 23,
             fontWeight: pw.FontWeight.bold,
-            color: PdfColors.brown900,
+            color: PdfColors.grey900,
           ),
         ),
         pw.SizedBox(height: 4),
@@ -317,8 +336,8 @@ class RecipePdfService {
     return pw.Container(
       padding: const pw.EdgeInsets.symmetric(horizontal: 12, vertical: 10),
       decoration: pw.BoxDecoration(
-        color: PdfColors.amber50,
-        border: pw.Border.all(color: PdfColors.orange200),
+        color: PdfColors.orange50,
+        border: pw.Border.all(color: PdfColors.orange100),
         borderRadius: pw.BorderRadius.circular(6),
       ),
       child: pw.Row(
@@ -349,7 +368,7 @@ class RecipePdfService {
       width: 1,
       height: 30,
       margin: const pw.EdgeInsets.symmetric(horizontal: 8),
-      color: PdfColors.orange200,
+      color: PdfColors.orange100,
     );
   }
 
@@ -362,7 +381,7 @@ class RecipePdfService {
           maxLines: 1,
           style: pw.TextStyle(
             fontSize: 8,
-            color: PdfColors.brown600,
+            color: PdfColors.deepOrange600,
             fontWeight: pw.FontWeight.bold,
           ),
         ),
@@ -397,7 +416,7 @@ class RecipePdfService {
           ),
         ),
         if (showNutrition) ...[
-          pw.SizedBox(width: 14),
+          pw.SizedBox(width: 12),
           pw.Expanded(flex: 2, child: _buildNutritionCard(nutrition)),
         ],
       ],
@@ -420,10 +439,10 @@ class RecipePdfService {
 
   pw.Widget _buildNutritionCard(NutritionAnalysisModel nutrition) {
     return pw.Container(
-      padding: const pw.EdgeInsets.all(10),
+      padding: const pw.EdgeInsets.all(9),
       decoration: pw.BoxDecoration(
         color: PdfColors.green50,
-        border: pw.Border.all(color: PdfColors.green200),
+        border: pw.Border.all(color: PdfColors.green100),
         borderRadius: pw.BorderRadius.circular(6),
       ),
       child: pw.Column(
@@ -432,21 +451,21 @@ class RecipePdfService {
           pw.Text(
             'Dinh dưỡng',
             style: pw.TextStyle(
-              fontSize: 14,
+              fontSize: 13,
               fontWeight: pw.FontWeight.bold,
-              color: PdfColors.green900,
+              color: PdfColors.green800,
             ),
           ),
-          pw.SizedBox(height: 8),
+          pw.SizedBox(height: 7),
           if (nutrition.totalCalories != null)
             _nutritionHighlight(
               _formatNutritionValue(nutrition.totalCalories),
               'kcal',
             ),
-          if (nutrition.totalCalories != null) pw.SizedBox(height: 8),
+          if (nutrition.totalCalories != null) pw.SizedBox(height: 7),
           pw.Wrap(
-            spacing: 6,
-            runSpacing: 6,
+            spacing: 5,
+            runSpacing: 5,
             children: [
               if (nutrition.totalProtein != null)
                 _nutritionChip('Chất đạm', nutrition.totalProtein, 'g'),
@@ -465,7 +484,7 @@ class RecipePdfService {
             ],
           ),
           if (nutrition.healthScore != null) ...[
-            pw.SizedBox(height: 8),
+            pw.SizedBox(height: 7),
             pw.Container(
               width: double.infinity,
               padding: const pw.EdgeInsets.symmetric(
@@ -473,7 +492,7 @@ class RecipePdfService {
                 vertical: 6,
               ),
               decoration: pw.BoxDecoration(
-                color: PdfColors.white,
+                color: PdfColors.green100,
                 border: pw.Border.all(color: PdfColors.green100),
                 borderRadius: pw.BorderRadius.circular(4),
               ),
@@ -484,7 +503,7 @@ class RecipePdfService {
                     'Điểm sức khỏe',
                     style: pw.TextStyle(
                       fontSize: 9,
-                      color: PdfColors.grey700,
+                      color: PdfColors.green900,
                       fontWeight: pw.FontWeight.bold,
                     ),
                   ),
@@ -508,9 +527,9 @@ class RecipePdfService {
   pw.Widget _nutritionHighlight(String value, String unit) {
     return pw.Container(
       width: double.infinity,
-      padding: const pw.EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+      padding: const pw.EdgeInsets.symmetric(horizontal: 10, vertical: 7),
       decoration: pw.BoxDecoration(
-        color: PdfColors.green700,
+        color: PdfColors.deepOrange600,
         borderRadius: pw.BorderRadius.circular(5),
       ),
       child: pw.Row(
@@ -529,7 +548,7 @@ class RecipePdfService {
             padding: const pw.EdgeInsets.only(bottom: 2),
             child: pw.Text(
               unit,
-              style: pw.TextStyle(fontSize: 9, color: PdfColors.green50),
+              style: pw.TextStyle(fontSize: 9, color: PdfColors.orange50),
             ),
           ),
         ],
@@ -539,11 +558,11 @@ class RecipePdfService {
 
   pw.Widget _nutritionChip(String label, double? value, String unit) {
     return pw.Container(
-      width: 72,
+      width: 68,
       padding: const pw.EdgeInsets.symmetric(horizontal: 6, vertical: 5),
       decoration: pw.BoxDecoration(
         color: PdfColors.white,
-        border: pw.Border.all(color: PdfColors.green100),
+        border: pw.Border.all(color: PdfColors.grey200),
         borderRadius: pw.BorderRadius.circular(4),
       ),
       child: pw.Column(
@@ -552,7 +571,7 @@ class RecipePdfService {
           pw.Text(
             label,
             maxLines: 1,
-            style: pw.TextStyle(fontSize: 7, color: PdfColors.grey600),
+            style: pw.TextStyle(fontSize: 7, color: PdfColors.green800),
           ),
           pw.SizedBox(height: 2),
           pw.Text(
@@ -597,15 +616,21 @@ class RecipePdfService {
         ].where((part) => part.isNotEmpty).join(' ');
 
         return pw.Padding(
-          padding: const pw.EdgeInsets.only(bottom: 4),
+          padding: const pw.EdgeInsets.only(bottom: 3),
           child: pw.Row(
             crossAxisAlignment: pw.CrossAxisAlignment.start,
             children: [
-              pw.Text('- ', style: const pw.TextStyle(fontSize: 12)),
+              pw.Text(
+                '• ',
+                style: pw.TextStyle(
+                  fontSize: 11,
+                  color: PdfColors.deepOrange500,
+                ),
+              ),
               pw.Expanded(
                 child: pw.Text(
                   amount.isEmpty ? name : '$name - $amount',
-                  style: const pw.TextStyle(fontSize: 12),
+                  style: pw.TextStyle(fontSize: 11, color: PdfColors.grey900),
                 ),
               ),
             ],
@@ -633,11 +658,11 @@ class RecipePdfService {
             stepImages[step.stepNumber] ?? const <pw.ImageProvider>[];
 
         return pw.Container(
-          margin: const pw.EdgeInsets.only(bottom: 8),
-          padding: const pw.EdgeInsets.all(9),
+          margin: const pw.EdgeInsets.only(bottom: 7),
+          padding: const pw.EdgeInsets.all(8),
           decoration: pw.BoxDecoration(
-            color: PdfColors.grey50,
-            border: pw.Border.all(color: PdfColors.grey300),
+            color: PdfColors.orange50,
+            border: pw.Border.all(color: PdfColors.orange100),
             borderRadius: pw.BorderRadius.circular(4),
           ),
           child: pw.Column(
@@ -648,18 +673,22 @@ class RecipePdfService {
                 style: pw.TextStyle(
                   fontSize: 13,
                   fontWeight: pw.FontWeight.bold,
-                  color: PdfColors.brown800,
+                  color: PdfColors.deepOrange700,
                 ),
               ),
-              pw.SizedBox(height: 5),
+              pw.SizedBox(height: 4),
               pw.Text(
                 (step.instruction ?? '').trim().isEmpty
                     ? 'Không có mô tả.'
                     : step.instruction!.trim(),
-                style: const pw.TextStyle(fontSize: 12, lineSpacing: 4),
+                style: pw.TextStyle(
+                  fontSize: 11,
+                  lineSpacing: 3,
+                  color: PdfColors.grey900,
+                ),
               ),
               if (images.isNotEmpty) ...[
-                pw.SizedBox(height: 10),
+                pw.SizedBox(height: 8),
                 _buildStepImages(images),
               ],
             ],
@@ -677,9 +706,10 @@ class RecipePdfService {
           .map(
             (image) => pw.Container(
               width: 150,
-              height: 110,
+              height: 96,
               decoration: pw.BoxDecoration(
-                border: pw.Border.all(color: PdfColors.grey300),
+                border: pw.Border.all(color: PdfColors.orange100),
+                borderRadius: pw.BorderRadius.circular(4),
               ),
               child: pw.Image(image, fit: pw.BoxFit.cover),
             ),
@@ -690,14 +720,27 @@ class RecipePdfService {
 
   pw.Widget _sectionTitle(String title) {
     return pw.Padding(
-      padding: const pw.EdgeInsets.only(bottom: 8),
-      child: pw.Text(
-        title,
-        style: pw.TextStyle(
-          fontSize: 16,
-          fontWeight: pw.FontWeight.bold,
-          color: PdfColors.brown800,
-        ),
+      padding: const pw.EdgeInsets.only(bottom: 7),
+      child: pw.Row(
+        children: [
+          pw.Container(
+            width: 3,
+            height: 13,
+            decoration: pw.BoxDecoration(
+              color: PdfColors.deepOrange500,
+              borderRadius: pw.BorderRadius.circular(2),
+            ),
+          ),
+          pw.SizedBox(width: 6),
+          pw.Text(
+            title,
+            style: pw.TextStyle(
+              fontSize: 13,
+              fontWeight: pw.FontWeight.bold,
+              color: PdfColors.grey900,
+            ),
+          ),
+        ],
       ),
     );
   }
