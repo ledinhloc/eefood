@@ -27,7 +27,8 @@ class _LoadingViewState extends State<LoadingView>
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
+    return SingleChildScrollView(
+      physics: const NeverScrollableScrollPhysics(),
       padding: const EdgeInsets.all(16),
       child: Column(
         children: [
@@ -44,6 +45,7 @@ class _LoadingViewState extends State<LoadingView>
           _ShimmerBox(height: 240, radius: 20),
           const SizedBox(height: 16),
           _ShimmerBox(height: 120, radius: 20),
+          const SizedBox(height: 16),
         ],
       ),
     );
