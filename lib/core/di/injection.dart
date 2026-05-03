@@ -78,6 +78,7 @@ import 'package:eefood/features/recipe/data/models/recipe_model.dart';
 import 'package:eefood/features/recipe/data/repositories/recipe_repository_impl.dart';
 import 'package:eefood/features/recipe/domain/repositories/recipe_repository.dart';
 import 'package:eefood/features/recipe/domain/usecases/recipe_usecases.dart';
+import 'package:eefood/features/recipe/presentation/provider/recipe_compare_cubit.dart';
 import 'package:eefood/features/recipe/presentation/provider/recipe_cubit.dart';
 import 'package:eefood/features/recipe/presentation/provider/recipe_list_cubit.dart';
 import 'package:eefood/features/recipe/presentation/provider/recipe_refresh_cubit.dart';
@@ -388,5 +389,9 @@ Future<void> setupDependencies() async {
 
   getIt.registerFactory<ReviewStatsCubit>(
     () => ReviewStatsCubit(repository: getIt<ReviewRecipeRepository>()),
+  );
+
+  getIt.registerFactory<RecipeCompareCubit>(
+    () => RecipeCompareCubit(repository: getIt<RecipeRepository>()),
   );
 }

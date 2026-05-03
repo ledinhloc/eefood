@@ -800,6 +800,11 @@ class _RecipeDetailPageState extends State<RecipeDetailPage> {
         onTap: () {},
       ),
       BottomSheetOption(
+        icon: const Icon(Icons.compare_arrows_outlined),
+        title: 'So sánh món ăn',
+        onTap: () {},
+      ),
+      BottomSheetOption(
         icon: const Icon(Icons.search),
         title: 'Tìm món tương tự',
         onTap: () {},
