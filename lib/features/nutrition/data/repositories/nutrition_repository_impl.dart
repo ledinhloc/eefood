@@ -13,10 +13,7 @@ class NutritionRepositoryImpl extends NutritionRepository {
   NutritionRepositoryImpl({required this.dio});
 
   @override
-  Stream<NutritionStreamEvent> analyzeStreamByImage(
-    File imageFile
-  ) async* {
-
+  Stream<NutritionStreamEvent> analyzeStreamByImage(File imageFile) async* {
     final String fileName = imageFile.path.split('/').last;
 
     final formData = FormData.fromMap({
@@ -55,6 +52,29 @@ class NutritionRepositoryImpl extends NutritionRepository {
     );
 
     yield* _parseEventAndData(response);
+  }
+
+  @override
+  Future<NutritionAnalysisModel> getNutritionByRecipeId(
+    int recipeId, {
+    bool forceRefresh = false,
+  }) async {
+    final response = await dio.get(
+      "/v1/nutrition/recipe/$recipeId",
+      queryParameters: {'forceRefresh': forceRefresh},
+      options: Options(contentType: 'application/json'),
+    );
+
+    final responseData = response.data;
+    final nutritionData = responseData is Map<String, dynamic>
+        ? responseData['data']
+        : null;
+
+    if (nutritionData is Map<String, dynamic>) {
+      return NutritionAnalysisModel.fromJson(nutritionData);
+    }
+
+    throw Exception('Invalid nutrition response format: missing data field');
   }
 
   Stream<NutritionStreamEvent> _parseEventAndData(var response) async* {
