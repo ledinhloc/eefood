@@ -47,7 +47,9 @@ class RecipePdfService {
   Future<Uint8List> generateRecipePdf(RecipeDetailModel recipe) async {
     disablePdfDebug();
 
+    //load font
     try {
+      debugPrint('[RecipePdf] Start generate PDF. recipeId=${recipe.id}, title=${recipe.title}');
       final regularFont = pw.Font.ttf(
         await rootBundle.load('assets/fonts/NotoSans-Regular.ttf'),
       );
@@ -58,18 +60,21 @@ class RecipePdfService {
         await rootBundle.load('assets/fonts/NotoSans-Italic.ttf'),
       );
 
+      //tao theme
       final theme = pw.ThemeData.withFont(
         base: regularFont,
         bold: boldFont,
         italic: italicFont,
       );
 
-      final steps = [...?recipe.steps]
-        ..sort((first, second) => first.stepNumber.compareTo(second.stepNumber));
+      final steps = recipe.steps ?? const <RecipeStepModel>[];
 
       final document = pw.Document(theme: theme);
       final coverImage = await _loadNetworkImage(recipe.imageUrl);
       final stepImages = await _loadStepImages(steps);
+      debugPrint(
+        '[RecipePdf] Assets loaded. cover=${coverImage != null}, steps=${steps.length}, stepImages=${stepImages.values.fold<int>(0, (total, images) => total + images.length)}',
+      );
       final recipeUrl = _buildRecipeUrl(recipe.id);
 
       document.addPage(
@@ -136,7 +141,13 @@ class RecipePdfService {
         ),
       );
 
-      return document.save();
+      final bytes = await document.save();
+      debugPrint('[RecipePdf] PDF saved. bytes=${bytes.length}');
+      return bytes;
+    } catch (error, stackTrace) {
+      debugPrint('[RecipePdf] Generate PDF failed: $error');
+      debugPrintStack(stackTrace: stackTrace);
+      rethrow;
     } finally {
       disablePdfDebug();
     }
@@ -144,17 +155,23 @@ class RecipePdfService {
 
   Future<pw.ImageProvider?> _loadNetworkImage(String? imageUrl) async {
     final url = imageUrl?.trim();
-    if (url == null || url.isEmpty) return null;
+    if (url == null || url.isEmpty) {
+      return null;
+    }
 
     final uri = Uri.tryParse(url);
-    if (uri == null || !uri.hasScheme) return null;
+    if (uri == null || !uri.hasScheme) {
+      debugPrint('[RecipePdf] Skip image: invalid url=$url');
+      return null;
+    }
 
     try {
       if (uri.scheme == 'http' || uri.scheme == 'https') {
         return printing.networkImage(url, cache: true);
       }
     } catch (error, stackTrace) {
-      debugPrint('Load recipe PDF image failed: $error');
+      debugPrint('[RecipePdf] Load network image failed: $url');
+      debugPrint('[RecipePdf] Error: $error');
       debugPrintStack(stackTrace: stackTrace);
     }
 
@@ -168,7 +185,8 @@ class RecipePdfService {
         .toList();
 
     final images = <pw.ImageProvider>[];
-    for (final url in urls) {
+    for (var index = 0; index < urls.length; index++) {
+      final url = urls[index];
       final image = await _loadNetworkImage(url);
       if (image != null) {
         images.add(image);
