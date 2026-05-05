@@ -47,7 +47,9 @@ class ModePickerScaffold extends StatelessWidget {
                 title: 'Tính thời gian',
                 subtitle: 'Đếm ngược theo thời gian từng bước',
                 color: const Color(0xFFFF6B35),
-                onTap: () => onSelect(true),
+                onTap: () {
+                  Navigator.pop(context, true);
+                },
               ),
               const SizedBox(height: 16),
               ModeCard(
@@ -55,7 +57,9 @@ class ModePickerScaffold extends StatelessWidget {
                 title: 'Tự do',
                 subtitle: 'Không tính giờ, làm theo nhịp của bạn',
                 color: const Color(0xFF2D9CDB),
-                onTap: () => onSelect(false),
+                onTap: () {
+                  Navigator.pop(context, false);
+                },
               ),
               const Spacer(flex: 2),
             ],

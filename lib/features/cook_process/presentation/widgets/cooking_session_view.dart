@@ -1,6 +1,7 @@
 import 'package:eefood/app_routes.dart';
 import 'package:eefood/core/constants/app_keys.dart';
 import 'package:eefood/core/di/injection.dart';
+import 'package:eefood/core/utils/logger.dart';
 import 'package:eefood/features/cook_process/presentation/provider/cooking_session_cubit.dart';
 import 'package:eefood/features/cook_process/presentation/provider/cooking_session_state.dart';
 import 'package:eefood/features/cook_process/presentation/widgets/completion_dialog.dart';
@@ -31,12 +32,29 @@ class _CookingSessionViewState extends State<CookingSessionView> {
 
   Future<void> _loadTimerPref() async {
     final saved = prefs.getBool(AppKeys.cooking);
+    logger.i("Time enabled: $saved");
     setState(() => _timerEnabled = saved);
   }
 
   Future<void> _saveTimerPref(bool value) async {
     await prefs.setBool(AppKeys.cooking, value);
     setState(() => _timerEnabled = value);
+  }
+
+  Future<void> _openModePicker() async {
+    final result = await Navigator.push<bool>(
+      context,
+      MaterialPageRoute(
+        builder: (_) => ModePickerScaffold(
+          recipeTitle: widget.recipeTitle,
+          onSelect: _saveTimerPref,
+        ),
+      ),
+    );
+
+    if (result != null) {
+      await _saveTimerPref(result);
+    }
   }
 
   @override
@@ -66,7 +84,7 @@ class _CookingSessionViewState extends State<CookingSessionView> {
           recipeTitle: widget.recipeTitle,
           state: state,
           timerEnabled: _timerEnabled!,
-          onChangMode: () => setState(() => _timerEnabled = null),
+          onChangMode: _openModePicker,
         );
       },
     );
