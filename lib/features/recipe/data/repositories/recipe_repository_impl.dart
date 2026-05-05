@@ -1,7 +1,9 @@
 import 'package:dio/dio.dart';
+import 'package:eefood/core/utils/logger.dart';
 import 'package:eefood/features/auth/data/models/result_model.dart';
 import 'package:eefood/features/recipe/data/models/category_model.dart';
 import 'package:eefood/features/recipe/data/models/ingredient_model.dart';
+import 'package:eefood/features/recipe/data/models/recipe_compare_response.dart';
 import 'package:eefood/features/recipe/data/models/recipe_model.dart';
 import 'package:eefood/features/recipe/data/models/region_model.dart';
 import 'package:eefood/features/recipe/domain/repositories/recipe_repository.dart';
@@ -15,21 +17,49 @@ class RecipeRepositoryImpl implements RecipeRepository {
   final Dio dio;
 
   RecipeRepositoryImpl({required this.dio});
+
   @override
-  Future<void> logPostView({required int postId, required int viewDuration, required DateTime viewedAt}) async {
-    try{
+  Future<RecipeCompareResponse?> compareRecipe(
+    int recipeIdA,
+    int recipeIdB,
+  ) async {
+    try {
+      final response = await dio.post(
+        '/v1/recipes/compare',
+        data: {'recipeIdA': recipeIdA, 'recipeIdB': recipeIdB},
+      );
+
+      final json = response.data;
+      if(json!=null && json['data']!=null) {
+        return RecipeCompareResponse.fromJson(json['data']);
+      }
+      return null;
+    } catch (err) {
+      logger.e('Failed to compare recipe');
+      throw Exception('Failed to compare recipe $err');
+    }
+  }
+
+  @override
+  Future<void> logPostView({
+    required int postId,
+    required int viewDuration,
+    required DateTime viewedAt,
+  }) async {
+    try {
       await dio.post(
         '/v1/post-views',
         queryParameters: {
           'postId': postId,
           'viewDuration': viewDuration,
-          'viewedAt': viewedAt.toIso8601String()
-        }
+          'viewedAt': viewedAt.toIso8601String(),
+        },
       );
-    }catch(err){
+    } catch (err) {
       print('post log view failed: $err');
     }
   }
+
   @override
   Future<RecipeDetailModel> fetchRecipeDetail(int recipeId) async {
     try {
@@ -221,7 +251,10 @@ class RecipeRepositoryImpl implements RecipeRepository {
   }
 
   @override
-  Future<Result<RecipeModel>> updateRecipe(int id, RecipeUpdateRequest request) async {
+  Future<Result<RecipeModel>> updateRecipe(
+    int id,
+    RecipeUpdateRequest request,
+  ) async {
     try {
       final response = await dio.put(
         '/v1/recipes/$id',

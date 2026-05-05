@@ -1,6 +1,7 @@
 import 'package:eefood/features/auth/data/models/result_model.dart';
 import 'package:eefood/features/recipe/data/models/category_model.dart';
 import 'package:eefood/features/recipe/data/models/ingredient_model.dart';
+import 'package:eefood/features/recipe/data/models/recipe_compare_response.dart';
 import 'package:eefood/features/recipe/data/models/recipe_detail_model.dart';
 import 'package:eefood/features/recipe/data/models/recipe_model.dart';
 import 'package:eefood/features/recipe/data/models/region_model.dart';
@@ -10,6 +11,10 @@ import '../../data/models/recipe_create_request.dart';
 import '../../data/models/recipe_update_request.dart';
 
 abstract class RecipeRepository {
+  Future<RecipeCompareResponse?> compareRecipe(
+    int recipeIdA,
+    int recipeIdB,
+  );
   Future<void> logPostView({
     required int postId,
     required int viewDuration, // seconds

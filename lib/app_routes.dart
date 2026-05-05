@@ -36,7 +36,9 @@ import 'package:eefood/features/profile/presentation/screens/language_page.dart'
 import 'package:eefood/features/profile/presentation/screens/personal_user_page.dart';
 import 'package:eefood/features/profile/presentation/screens/terms_of_service_page.dart';
 import 'package:eefood/features/recipe/data/models/recipe_model.dart';
+import 'package:eefood/features/recipe/presentation/provider/recipe_compare_cubit.dart';
 import 'package:eefood/features/recipe/presentation/screens/qr_view_screen.dart';
+import 'package:eefood/features/recipe/presentation/screens/recipe_compare_page.dart';
 import 'package:eefood/features/recipe/presentation/screens/recipe_crud_page.dart';
 import 'package:eefood/features/recipe/presentation/screens/recipe_detail_page.dart';
 import 'package:eefood/features/recipe_review/presentation/screens/all_review_screen.dart';
@@ -121,6 +123,7 @@ class AppRoutes {
 
   static const reviewStatsDetailPage = '/reviewStatsDetailPage';
   static const allReviewPage = '/allReviewPage';
+  static const recipeComparePage = '/recipeComparePage';
 
   // Danh sách các widget cho BottomNavigationBar trong main page
   static List<Widget> widgetOptions = <Widget>[
@@ -336,6 +339,16 @@ class AppRoutes {
       return AllReviewsPage(
         recipeId: args['recipeId'],
         recipeTitle: args['recipeTitle'],
+      );
+    },
+    recipeComparePage: (context) {
+      final args = ModalRoute.of(context)!.settings.arguments as Map;
+      return BlocProvider(
+        create: (ctx) => getIt<RecipeCompareCubit>(),
+        child: RecipeComparePage(
+          recipeIdA: args['recipeIdA'],
+          recipeIdB: args['recipeIdB'],
+        ),
       );
     },
   };

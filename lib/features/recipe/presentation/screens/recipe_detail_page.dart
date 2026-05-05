@@ -12,8 +12,10 @@ import 'package:eefood/features/meal_plan/domain/repository/meal_plan_repository
 import 'package:eefood/features/meal_plan/presentation/provider/meal_plan_cubit.dart';
 import 'package:eefood/features/meal_plan/presentation/widgets/meal_plan_item_upsert_sheet.dart';
 import 'package:eefood/features/post/presentation/provider/follow_cubit.dart';
+import 'package:eefood/features/post/presentation/provider/post_list_cubit.dart';
 import 'package:eefood/features/recipe/application/services/recipe_pdf_service.dart';
 import 'package:eefood/features/recipe/presentation/provider/shopping_cubit.dart';
+import 'package:eefood/features/recipe/presentation/widgets/compare_recipe/compare_selector_drawer.dart';
 import 'package:eefood/features/recipe/presentation/widgets/review_tab.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
@@ -904,6 +906,19 @@ class _RecipeDetailPageState extends State<RecipeDetailPage> {
         onTap: () {},
       ),
       BottomSheetOption(
+        icon: const Icon(Icons.compare_arrows_outlined),
+        title: 'So sánh món ăn',
+        onTap: () async {
+          //Navigator.pop(context);
+
+          await showCompareSelectorDrawer(
+            context: context,
+            currentRecipeId: recipeId,
+            currentRecipeTitle: recipeTitle,
+          );
+        },
+      ),
+      BottomSheetOption(
         icon: const Icon(Icons.search),
         title: 'Tìm món tương tự',
         onTap: () {},
@@ -929,5 +944,44 @@ class _RecipeDetailPageState extends State<RecipeDetailPage> {
       ]);
     }
     await showCustomBottomSheet(context, opts);
+  }
+
+  Future<void> showCompareSelectorDrawer({
+    required BuildContext context,
+    required int currentRecipeId,
+    required String currentRecipeTitle,
+  }) {
+    return showGeneralDialog(
+      context: context,
+      barrierDismissible: true,
+      barrierLabel: 'Compare Selector',
+      barrierColor: Colors.black.withOpacity(0.45),
+      transitionDuration: const Duration(milliseconds: 320),
+      pageBuilder: (_, __, ___) => const SizedBox(),
+      transitionBuilder: (ctx, animation, secondaryAnimation, child) {
+        final curved = CurvedAnimation(
+          parent: animation,
+          curve: Curves.easeOutCubic,
+        );
+        return SlideTransition(
+          position: Tween<Offset>(
+            begin: const Offset(1, 0),
+            end: Offset.zero,
+          ).animate(curved),
+          child: Align(
+            alignment: Alignment.centerRight,
+            child: MultiBlocProvider(
+              providers: [
+                BlocProvider(create: (_) => PostListCubit()..fetchPosts()),
+              ],
+              child: CompareSelectorDrawer(
+                currentRecipeId: currentRecipeId,
+                currentRecipeTitle: currentRecipeTitle,
+              ),
+            ),
+          ),
+        );
+      },
+    );
   }
 }

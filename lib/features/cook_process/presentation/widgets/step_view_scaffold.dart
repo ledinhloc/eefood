@@ -15,7 +15,7 @@ class StepViewScaffold extends StatefulWidget {
   final String recipeTitle;
   final CookingSessionState state;
   final bool timerEnabled;
-  final VoidCallback onChangMode;
+  final Future<void> Function() onChangMode;
 
   const StepViewScaffold({
     super.key,
