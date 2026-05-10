@@ -1,5 +1,17 @@
 import 'package:eefood/core/constants/app_keys.dart';
+import 'package:eefood/core/di/injection.dart';
+import 'package:eefood/features/livestream/domain/repository/live_comment_repo.dart';
+import 'package:eefood/features/livestream/domain/repository/live_reaction_repo.dart';
+import 'package:eefood/features/livestream/domain/repository/live_viewer_repository.dart';
+import 'package:eefood/features/livestream/presentation/provider/block_user_cubit.dart';
+import 'package:eefood/features/livestream/presentation/provider/live_comment_cubit.dart';
+import 'package:eefood/features/livestream/presentation/provider/live_poll_cubit.dart';
+import 'package:eefood/features/livestream/presentation/provider/live_reaction_cubit.dart';
+import 'package:eefood/features/livestream/presentation/provider/live_viewer_cubit.dart';
+import 'package:eefood/features/livestream/presentation/provider/watch_live_cubit.dart';
+import 'package:eefood/features/livestream/presentation/screens/live_viewer_screen.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:eefood/app_routes.dart';
 import 'package:eefood/main.dart';
 
@@ -21,11 +33,55 @@ class DeepLinkHandler {
     });
   }
 
+  static void _pushSafely(Route<void> route) {
+    Future.delayed(const Duration(milliseconds: 100), () {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        final navState = navigatorKey.currentState;
+        if (navState == null || navState.mounted == false) return;
+        navState.push(route);
+      });
+    });
+  }
+
+  static void _openLiveViewer(int streamId) {
+    _pushSafely(
+      MaterialPageRoute(
+        builder: (_) => MultiBlocProvider(
+          providers: [
+            BlocProvider(create: (_) => getIt<WatchLiveCubit>()),
+            BlocProvider(
+              create: (_) =>
+                  LiveCommentCubit(getIt<LiveCommentRepository>(), streamId),
+            ),
+            BlocProvider(
+              create: (_) =>
+                  LiveReactionCubit(getIt<LiveReactionRepository>(), streamId),
+            ),
+            BlocProvider(
+              create: (_) =>
+                  LiveViewerCubit(getIt<LiveViewerRepository>(), streamId),
+            ),
+            BlocProvider(create: (_) => BlockUserCubit()),
+            BlocProvider(
+              create: (_) => LivePollCubit()
+                ..init(
+                  liveStreamId: streamId,
+                  isHost: false,
+                  connectSocket: true,
+                ),
+            ),
+          ],
+          child: LiveViewerScreen(streamId: streamId),
+        ),
+      ),
+    );
+  }
+
   /// Deep link dạng nội bộ (eefood://posts/123)
   static void handleDeepLink(String url) {
     try {
       final uri = Uri.parse(url);
-      
+
       // Log để debug
       debugPrint('[DeepLinkHandler] Handling deep link: $url');
       debugPrint('[DeepLinkHandler] Path segments: ${uri.pathSegments}');
@@ -36,7 +92,6 @@ class DeepLinkHandler {
       }
 
       final first = uri.pathSegments.first;
-      final second = uri.pathSegments.length > 1 ? uri.pathSegments[1] : null;
       final id = uri.pathSegments.length > 1 ? uri.pathSegments[1] : null;
 
       if (first == 'recipe-approve') {
@@ -58,6 +113,14 @@ class DeepLinkHandler {
               AppRoutes.recipeDetail,
               arguments: {'recipeId': recipeId},
             );
+          } else {
+            _navigateSafely(AppRoutes.errorPage);
+          }
+          break;
+        case 'livestreams':
+          final streamId = int.tryParse(id);
+          if (streamId != null) {
+            _openLiveViewer(streamId);
           } else {
             _navigateSafely(AppRoutes.errorPage);
           }
