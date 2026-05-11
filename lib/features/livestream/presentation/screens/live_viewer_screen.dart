@@ -1,5 +1,6 @@
 // presentation/screens/live_viewer_screen.dart
 import 'dart:async';
+
 import 'package:eefood/core/widgets/snack_bar.dart';
 import 'package:eefood/features/livestream/presentation/provider/live_poll_cubit.dart';
 import 'package:eefood/features/livestream/presentation/provider/live_poll_state.dart';
@@ -11,6 +12,7 @@ import 'package:livekit_client/livekit_client.dart';
 
 import '../../../../core/utils/food_emotion_helper.dart';
 import '../../data/model/live_reaction_response.dart';
+import '../../data/model/live_stream_response.dart';
 import '../provider/live_reaction_cubit.dart';
 import '../provider/live_reaction_state.dart';
 import '../provider/live_viewer_cubit.dart';
@@ -46,11 +48,6 @@ class _LiveViewerScreenState extends State<LiveViewerScreen> {
 
     // Join as viewer
     context.read<LiveViewerCubit>().joinLiveStream();
-
-    // Timer for UI updates
-    // _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
-    //   if (mounted) setState(() {});
-    // });
   }
 
   void _showPollSheet() {
@@ -77,7 +74,7 @@ class _LiveViewerScreenState extends State<LiveViewerScreen> {
         return StreamEndedDialog(
           message: message,
           onClose: () {
-            Navigator.pop(context); //dong diaglog
+            Navigator.pop(context); // dong dialog
             Navigator.pop(context); // thoat man hinh
           },
         );
@@ -88,8 +85,7 @@ class _LiveViewerScreenState extends State<LiveViewerScreen> {
   Future<void> _sendReaction(FoodEmotion emotion) async {
     try {
       await context.read<LiveReactionCubit>().createReaction(emotion);
-    } catch (_) {
-    }
+    } catch (_) {}
   }
 
   void _onReactionCompleted(LiveReactionResponse reaction) {
@@ -168,11 +164,8 @@ class _LiveViewerScreenState extends State<LiveViewerScreen> {
       child: BlocBuilder<WatchLiveCubit, WatchLiveState>(
         builder: (context, state) {
           if (state.loading) {
-            return const Scaffold(
-              backgroundColor: Colors.black,
-              body: Center(
-                child: CircularProgressIndicator(color: Colors.white),
-              ),
+            return const _LiveViewerLoadingView(
+              message: 'Đang tải livestream...',
             );
           }
 
@@ -225,50 +218,31 @@ class _LiveViewerScreenState extends State<LiveViewerScreen> {
           final participantCount =
               (state.room?.remoteParticipants.length ?? 0) + 1;
 
+          if (stream.status != LiveStreamStatus.LIVE) {
+            return _LiveViewerLoadingView(
+              message: stream.status.messageVi,
+              showSpinner: false,
+            );
+          }
+
+          if (state.remoteVideoTrack == null) {
+            return _LiveViewerLoadingView(
+              message: state.isConnecting
+                  ? 'Đang kết nối livestream...'
+                  : state.isConnected
+                  ? 'Đang chờ video...'
+                  : 'Đang tải livestream...',
+              showSpinner: state.isConnecting || !state.isConnected,
+            );
+          }
+
           return Scaffold(
             backgroundColor: Colors.black,
             body: Stack(
               children: [
                 // Video display
                 Positioned.fill(
-                  child: state.remoteVideoTrack != null
-                      ? VideoTrackRenderer(state.remoteVideoTrack!)
-                      : Container(
-                          color: Colors.black,
-                          child: Center(
-                            child: Column(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                Icon(
-                                  state.isConnecting
-                                      ? Icons.sync
-                                      : Icons.videocam_off,
-                                  color: Colors.white54,
-                                  size: 64,
-                                ),
-                                const SizedBox(height: 16),
-                                Text(
-                                  state.isConnecting
-                                      ? 'Đang kết nối...'
-                                      : state.isConnected
-                                      ? 'Đang chờ video...'
-                                      : 'Chưa kết nối',
-                                  style: const TextStyle(
-                                    color: Colors.white54,
-                                    fontSize: 16,
-                                  ),
-                                ),
-                                if (state.isConnecting)
-                                  const Padding(
-                                    padding: EdgeInsets.only(top: 16),
-                                    child: CircularProgressIndicator(
-                                      color: Colors.white54,
-                                    ),
-                                  ),
-                              ],
-                            ),
-                          ),
-                        ),
+                  child: VideoTrackRenderer(state.remoteVideoTrack!),
                 ),
 
                 // Reactions
@@ -300,6 +274,7 @@ class _LiveViewerScreenState extends State<LiveViewerScreen> {
                     ),
                   ),
                 ),
+
                 // Streamer info
                 _buildStreamerInfo(stream),
 
@@ -338,10 +313,7 @@ class _LiveViewerScreenState extends State<LiveViewerScreen> {
             gradient: LinearGradient(
               begin: Alignment.topCenter,
               end: Alignment.bottomCenter,
-              colors: [
-                Colors.black.withValues(alpha: 0.6),
-                Colors.transparent,
-              ],
+              colors: [Colors.black.withValues(alpha: 0.6), Colors.transparent],
             ),
           ),
           child: Row(
@@ -462,6 +434,46 @@ class _LiveViewerScreenState extends State<LiveViewerScreen> {
             ),
           );
         }).toList(),
+      ),
+    );
+  }
+}
+
+class _LiveViewerLoadingView extends StatelessWidget {
+  final String message;
+  final bool showSpinner;
+
+  const _LiveViewerLoadingView({
+    required this.message,
+    this.showSpinner = true,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: Colors.black,
+      body: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(
+              showSpinner ? Icons.sync : Icons.videocam_off,
+              color: Colors.white54,
+              size: 64,
+            ),
+            const SizedBox(height: 16),
+            Text(
+              message,
+              style: const TextStyle(color: Colors.white54, fontSize: 16),
+              textAlign: TextAlign.center,
+            ),
+            if (showSpinner)
+              const Padding(
+                padding: EdgeInsets.only(top: 16),
+                child: CircularProgressIndicator(color: Colors.white54),
+              ),
+          ],
+        ),
       ),
     );
   }

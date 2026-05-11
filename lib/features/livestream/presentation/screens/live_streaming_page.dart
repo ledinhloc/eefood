@@ -17,6 +17,7 @@ import '../provider/live_reaction_cubit.dart';
 import '../provider/live_reaction_state.dart';
 import '../provider/live_stream_cubit.dart';
 import '../provider/live_stream_state.dart';
+import '../provider/livestream_websocket_manager.dart';
 import '../provider/start_live_cubit.dart';
 import '../widgets/create_poll_bottom_sheet.dart';
 import '../widgets/live_comment_list.dart';
@@ -134,11 +135,21 @@ class _LiveStreamScreenState extends State<LiveStreamScreen> {
     _isCleaningUp = true;
 
     try {
+      context.read<LivePollCubit>().disconnectSocket();
+    } catch (_) {}
+
+    try {
       await _liveStreamCubit.disconnect();
     } catch (_) {}
 
     try {
       await _liveViewerCubit.leaveLiveStream();
+    } catch (_) {}
+
+    try {
+      getIt<LiveStreamWebSocketManager>().disconnect(
+        logName: 'LiveStreamScreen',
+      );
     } catch (_) {}
 
     if (endLiveOnServer && !_liveEndedOnServer) {
@@ -153,22 +164,13 @@ class _LiveStreamScreenState extends State<LiveStreamScreen> {
   }
 
   Future<void> _leaveLiveScreenTemporarily() async {
-    final state = _liveStreamCubit.state;
+    final confirm = await _confirmEndLive();
+    if (!confirm || !mounted) return;
 
-    try {
-      if (state.isCameraOn) {
-        await _liveStreamCubit.toggleCamera();
-      }
-    } catch (_) {}
-
-    try {
-      if (state.isMicOn) {
-        await _liveStreamCubit.toggleMic();
-      }
-    } catch (_) {}
-
+    await _cleanupLiveSession(endLiveOnServer: true);
     if (!mounted) return;
-    Navigator.pop(context, false);
+
+    Navigator.pop(context, true);
   }
 
   Future<void> _endLiveStream() async {

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../../../core/utils/helpers.dart';
+import '../../data/model/live_stream_response.dart';
 
 class LiveStatusTimer extends StatefulWidget {
   final DateTime startTime;
@@ -66,5 +67,20 @@ class _LiveStatusTimerState extends State<LiveStatusTimer> {
         ),
       ),
     );
+  }
+}
+
+extension LiveStreamStatusX on LiveStreamStatus {
+  String get messageVi {
+    switch (this) {
+      case LiveStreamStatus.SCHEDULED:
+        return 'Livestream chưa bắt đầu';
+      case LiveStreamStatus.ENDED:
+        return 'Livestream đã kết thúc';
+      case LiveStreamStatus.CANCELLED:
+        return 'Livestream đã bị hủy';
+      case LiveStreamStatus.LIVE:
+        return 'Livestream đang phát';
+    }
   }
 }
