@@ -42,9 +42,31 @@ class PostMessageListCard extends StatelessWidget {
                   ),
                 ),
                 const Spacer(),
-                Text(
-                  '${postModel.length} món',
-                  style: TextStyle(fontSize: 12, color: Colors.grey.shade500),
+                // Hint nhỏ hướng dẫn user
+                Row(
+                  children: [
+                    Icon(
+                      Icons.touch_app_rounded,
+                      size: 12,
+                      color: Colors.grey.shade400,
+                    ),
+                    const SizedBox(width: 3),
+                    Text(
+                      'Giữ để chọn',
+                      style: TextStyle(
+                        fontSize: 11,
+                        color: Colors.grey.shade400,
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    Text(
+                      '${postModel.length} món',
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: Colors.grey.shade500,
+                      ),
+                    ),
+                  ],
                 ),
               ],
             ),
@@ -62,7 +84,10 @@ class PostMessageListCard extends StatelessWidget {
             ),
             itemCount: postModel.length,
             itemBuilder: (context, index) {
-              return PostMessageCard(postModel: postModel[index]);
+              return PostMessageCard(
+                postModel: postModel[index],
+                enableSelection: true,
+              );
             },
           ),
         ],

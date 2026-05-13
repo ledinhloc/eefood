@@ -33,7 +33,7 @@ class ChatbotMessage extends StatelessWidget {
   Future<void> _showOptionsBottomSheet(BuildContext context) async {
     final cubit = context.read<ChatbotCubit>();
     final options = <BottomSheetOption>[];
-    
+
     if (message != null && message!.isNotEmpty) {
       options.add(
         BottomSheetOption(
@@ -136,7 +136,11 @@ class ChatbotMessage extends StatelessWidget {
           ),
         ],
       ),
-      child: const Icon(Icons.restaurant, color: Colors.white, size: 16),
+      child: Image.asset(
+        'assets/icon/icon_eefood_v3.png',
+        fit: BoxFit.contain,
+        color: Colors.white70,
+      ),
     );
   }
 }
