@@ -153,7 +153,11 @@ class _ChatbotMainScreenState extends State<ChatbotMainScreen> {
                 colors: [Color(0xFFFF6B35), Color(0xFFFF8C61)],
               ),
             ),
-            child: const Icon(Icons.restaurant, color: Colors.white, size: 16),
+            child: Image.asset(
+              'assets/icon/icon_eefood_v3.png',
+              fit: BoxFit.contain,
+              color: Colors.white70,
+            ),
           ),
           const SizedBox(width: 8),
           Text(
