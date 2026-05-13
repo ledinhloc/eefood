@@ -1,6 +1,8 @@
 import 'package:eefood/features/chatbot/presentation/widgets/collection_card/collection_message_list_card.dart';
+import 'package:eefood/features/chatbot/presentation/widgets/nutrition_card/nutrition_message_card.dart';
 import 'package:eefood/features/chatbot/presentation/widgets/post_card/post_message_list_card.dart';
 import 'package:eefood/features/chatbot/presentation/widgets/shopping_list_card/shopping_message_list_card.dart';
+import 'package:eefood/features/nutrition/data/models/nutrition_analysis_model.dart';
 import 'package:eefood/features/post/data/models/collection_model.dart';
 import 'package:eefood/features/post/data/models/post_model.dart';
 import 'package:eefood/features/recipe/data/models/shopping_item_model.dart';
@@ -47,6 +49,12 @@ class StreamingDataCard extends StatelessWidget {
         return ShoppingMessageListCard(
           listItem: data.map((e) => ShoppingItemModel.fromJson(e)).toList(),
         );
+      case 'ANALYSTS_NUTRITION':
+        if (data.isEmpty) return const SizedBox.shrink();
+        final nutrition = NutritionAnalysisModel.fromJson(
+          Map<String, dynamic>.from(data.first as Map),
+        );
+        return NutritionMessageCard(nutrition: nutrition, animate: animate);
       default:
         return Container(
           padding: const EdgeInsets.all(16),

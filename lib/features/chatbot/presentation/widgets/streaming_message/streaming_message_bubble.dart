@@ -63,7 +63,11 @@ class StreamingMessageBubble extends StatelessWidget {
           ),
         ],
       ),
-      child: const Icon(Icons.restaurant, color: Colors.white, size: 16),
+      child: Image.asset(
+        'assets/icon/icon_eefood_v3.png',
+        fit: BoxFit.contain,
+        color: Colors.white70,
+      ),
     );
   }
 }

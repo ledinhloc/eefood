@@ -4,16 +4,13 @@ import 'package:eefood/core/di/injection.dart';
 import 'package:eefood/core/utils/file_upload.dart';
 import 'package:eefood/core/utils/media_picker.dart';
 import 'package:eefood/core/utils/speech_helper.dart';
-import 'package:eefood/core/widgets/custom_bottom_sheet.dart';
 import 'package:eefood/features/chatbot/presentation/provider/chatbot_cubit.dart';
 import 'package:eefood/features/chatbot/presentation/provider/chatbot_state.dart';
 import 'package:eefood/features/chatbot/presentation/widgets/bottom_bar/image_preview_tag.dart';
-import 'package:eefood/features/chatbot/presentation/widgets/bottom_bar/recent_post_bottom_sheet.dart';
 import 'package:eefood/features/chatbot/presentation/widgets/bottom_bar/selected_post_detail_sheet.dart';
 import 'package:eefood/features/chatbot/presentation/widgets/bottom_bar/selected_post_tag.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_spinkit/flutter_spinkit.dart';
 
 class ChatbotInput extends StatefulWidget {
   final int? userId;
@@ -102,86 +99,86 @@ class _ChatbotInputState extends State<ChatbotInput> {
     });
   }
 
-  Future<void> _showOptionsBottomSheet() async {
-    final theme = Theme.of(context);
-    final cubit = context.read<ChatbotCubit>();
-    await showCustomBottomSheet(context, [
-      BottomSheetOption(
-        icon: Icon(Icons.image_rounded, color: theme.colorScheme.primary),
-        title: 'Chọn hình từ thư viện',
-        onTap: _pickImage,
-      ),
-      BottomSheetOption(
-        icon: Icon(
-          Icons.collections_bookmark_rounded,
-          color: theme.colorScheme.primary,
-        ),
-        title: 'Bài viết gần đây',
-        onTap: () async {
-          Future.microtask(() {
-            if (mounted) {
-              _showRecentPostsSheet(cubit);
-            }
-          });
-        },
-      ),
-    ]);
-  }
+  // Future<void> _showOptionsBottomSheet() async {
+  //   final theme = Theme.of(context);
+  //   final cubit = context.read<ChatbotCubit>();
+  //   await showCustomBottomSheet(context, [
+  //     BottomSheetOption(
+  //       icon: Icon(Icons.image_rounded, color: theme.colorScheme.primary),
+  //       title: 'Chọn hình từ thư viện',
+  //       onTap: _pickImage,
+  //     ),
+  //     BottomSheetOption(
+  //       icon: Icon(
+  //         Icons.collections_bookmark_rounded,
+  //         color: theme.colorScheme.primary,
+  //       ),
+  //       title: 'Bài viết gần đây',
+  //       onTap: () async {
+  //         Future.microtask(() {
+  //           if (mounted) {
+  //             _showRecentPostsSheet(cubit);
+  //           }
+  //         });
+  //       },
+  //     ),
+  //   ]);
+  // }
 
-  void _showRecentPostsSheet(ChatbotCubit cubit) {
-    if (!mounted) return;
-    final theme = Theme.of(context);
-    final isDark = theme.brightness == Brightness.dark;
+  // void _showRecentPostsSheet(ChatbotCubit cubit) {
+  //   if (!mounted) return;
+  //   final theme = Theme.of(context);
+  //   final isDark = theme.brightness == Brightness.dark;
 
-    if (cubit.state.recentPosts.isEmpty && !cubit.state.isLoadingRecentPosts) {
-      cubit.loadRecentPosts();
-    }
+  //   if (cubit.state.recentPosts.isEmpty && !cubit.state.isLoadingRecentPosts) {
+  //     cubit.loadRecentPosts();
+  //   }
 
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
-      ),
-      builder: (sheetContext) => BlocProvider.value(
-        value: cubit,
-        child: BlocBuilder<ChatbotCubit, ChatbotState>(
-          buildWhen: (prev, curr) =>
-              prev.isLoadingRecentPosts != curr.isLoadingRecentPosts ||
-              prev.recentPosts != curr.recentPosts ||
-              prev.selectedPosts != curr.selectedPosts,
-          builder: (builderContext, state) {
-            if (state.isLoadingRecentPosts) {
-              return Container(
-                height: 300,
-                decoration: BoxDecoration(
-                  color: isDark ? const Color(0xFF242424) : Colors.white,
-                  borderRadius: const BorderRadius.vertical(
-                    top: Radius.circular(28),
-                  ),
-                ),
-                child: Center(
-                  child: SpinKitCircle(color: theme.colorScheme.primary),
-                ),
-              );
-            }
+  //   showModalBottomSheet(
+  //     context: context,
+  //     isScrollControlled: true,
+  //     backgroundColor: Colors.transparent,
+  //     shape: const RoundedRectangleBorder(
+  //       borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
+  //     ),
+  //     builder: (sheetContext) => BlocProvider.value(
+  //       value: cubit,
+  //       child: BlocBuilder<ChatbotCubit, ChatbotState>(
+  //         buildWhen: (prev, curr) =>
+  //             prev.isLoadingRecentPosts != curr.isLoadingRecentPosts ||
+  //             prev.recentPosts != curr.recentPosts ||
+  //             prev.selectedPosts != curr.selectedPosts,
+  //         builder: (builderContext, state) {
+  //           if (state.isLoadingRecentPosts) {
+  //             return Container(
+  //               height: 300,
+  //               decoration: BoxDecoration(
+  //                 color: isDark ? const Color(0xFF242424) : Colors.white,
+  //                 borderRadius: const BorderRadius.vertical(
+  //                   top: Radius.circular(28),
+  //                 ),
+  //               ),
+  //               child: Center(
+  //                 child: SpinKitCircle(color: theme.colorScheme.primary),
+  //               ),
+  //             );
+  //           }
 
-            return RecentPostBottomSheet(
-              posts: state.recentPosts,
-              selectedPosts: state.selectedPosts,
-              onTogglePost: (post) {
-                cubit.togglePostSelection(post);
-              },
-              onConfirm: () {
-                Navigator.of(sheetContext).pop();
-              },
-            );
-          },
-        ),
-      ),
-    );
-  }
+  //           return RecentPostBottomSheet(
+  //             posts: state.recentPosts,
+  //             selectedPosts: state.selectedPosts,
+  //             onTogglePost: (post) {
+  //               cubit.togglePostSelection(post);
+  //             },
+  //             onConfirm: () {
+  //               Navigator.of(sheetContext).pop();
+  //             },
+  //           );
+  //         },
+  //       ),
+  //     ),
+  //   );
+  // }
 
   void _showSelectedPostsDetail() {
     final cubit = context.read<ChatbotCubit>();
@@ -224,7 +221,6 @@ class _ChatbotInputState extends State<ChatbotInput> {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
 
-    // ── Màu semantic ────────────────────────────────────────────────────────
     // Nền ô input: xám nhạt (light) / xám than (dark)
     final Color inputBg = isDark
         ? const Color(0xFF2C2C2C)
@@ -285,18 +281,18 @@ class _ChatbotInputState extends State<ChatbotInput> {
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
               child: Row(
                 children: [
-                  // Nút "+"
+                  // Nút "camera"
                   BlocSelector<ChatbotCubit, ChatbotState, bool>(
                     selector: (state) => state.hasSelectedPosts,
                     builder: (context, hasSelectedPosts) => _circleButton(
-                      icon: Icons.add_rounded,
+                      icon: Icons.camera_alt_rounded,
                       background: hasSelectedPosts
                           ? addBtnDisabledBg
                           : addBtnBg,
                       iconColor: hasSelectedPosts
                           ? addBtnDisabledIcon
                           : addBtnIcon,
-                      onTap: hasSelectedPosts ? null : _showOptionsBottomSheet,
+                      onTap: hasSelectedPosts ? null : _pickImage,
                     ),
                   ),
 
