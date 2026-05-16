@@ -1,4 +1,3 @@
-// presentation/screens/live_viewer_screen.dart
 import 'dart:async';
 
 import 'package:eefood/core/widgets/snack_bar.dart';
@@ -13,6 +12,7 @@ import 'package:livekit_client/livekit_client.dart';
 import '../../../../core/utils/food_emotion_helper.dart';
 import '../../data/model/live_reaction_response.dart';
 import '../../data/model/live_stream_response.dart';
+import '../../domain/enum/subtitle_language.dart';
 import '../provider/live_reaction_cubit.dart';
 import '../provider/live_reaction_state.dart';
 import '../provider/live_viewer_cubit.dart';
@@ -22,6 +22,7 @@ import '../widgets/live_comment_list.dart';
 import '../widgets/live_poll/live_poll_banner.dart';
 import '../widgets/live_reaction_animation.dart';
 import '../widgets/live_status_timer.dart';
+import '../widgets/live_subtitle_overlay.dart';
 import '../widgets/viewer_list_bottom_sheet.dart';
 
 class LiveViewerScreen extends StatefulWidget {
@@ -160,6 +161,16 @@ class _LiveViewerScreenState extends State<LiveViewerScreen> {
             }
           },
         ),
+        BlocListener<WatchLiveCubit, WatchLiveState>(
+          listenWhen: (previous, current) =>
+              previous.subtitleError != current.subtitleError,
+          listener: (context, state) {
+            final error = state.subtitleError;
+            if (error != null && error.isNotEmpty) {
+              showCustomSnackBar(context, error);
+            }
+          },
+        ),
       ],
       child: BlocBuilder<WatchLiveCubit, WatchLiveState>(
         builder: (context, state) {
@@ -218,31 +229,13 @@ class _LiveViewerScreenState extends State<LiveViewerScreen> {
           final participantCount =
               (state.room?.remoteParticipants.length ?? 0) + 1;
 
-          if (stream.status != LiveStreamStatus.LIVE) {
-            return _LiveViewerLoadingView(
-              message: stream.status.messageVi,
-              showSpinner: false,
-            );
-          }
-
-          if (state.remoteVideoTrack == null) {
-            return _LiveViewerLoadingView(
-              message: state.isConnecting
-                  ? 'Đang kết nối livestream...'
-                  : state.isConnected
-                  ? 'Đang chờ video...'
-                  : 'Đang tải livestream...',
-              showSpinner: state.isConnecting || !state.isConnected,
-            );
-          }
-
           return Scaffold(
             backgroundColor: Colors.black,
             body: Stack(
               children: [
                 // Video display
                 Positioned.fill(
-                  child: VideoTrackRenderer(state.remoteVideoTrack!),
+                  child: _buildVideoLayer(state, stream),
                 ),
 
                 // Reactions
@@ -278,6 +271,25 @@ class _LiveViewerScreenState extends State<LiveViewerScreen> {
                 // Streamer info
                 _buildStreamerInfo(stream),
 
+                // Subtitle language selector
+                _buildSubtitleLanguageSelector(state),
+
+                // Subtitle overlay
+                if (state.latestSubtitle != null)
+                  Positioned(
+                    left: 20,
+                    right: 20,
+                    bottom: 172,
+                    child: SafeArea(
+                      child: Align(
+                        alignment: Alignment.bottomCenter,
+                        child: LiveSubtitleOverlay(
+                          subtitle: state.latestSubtitle!,
+                        ),
+                      ),
+                    ),
+                  ),
+
                 // Comments
                 Positioned(
                   bottom: 30,
@@ -301,7 +313,32 @@ class _LiveViewerScreenState extends State<LiveViewerScreen> {
     );
   }
 
-  Widget _buildTopBar(stream, int participantCount) {
+  Widget _buildVideoLayer(
+    WatchLiveState state,
+    LiveStreamResponse stream,
+  ) {
+    if (stream.status != LiveStreamStatus.LIVE) {
+      return _LiveViewerVideoPlaceholder(
+        message: stream.status.messageVi,
+        showSpinner: false,
+      );
+    }
+
+    if (state.remoteVideoTrack != null) {
+      return VideoTrackRenderer(state.remoteVideoTrack!);
+    }
+
+    return _LiveViewerVideoPlaceholder(
+      message: state.isConnecting
+          ? 'Đang kết nối livestream...'
+          : state.isConnected
+          ? 'Đang chờ video...'
+          : 'Đang tải livestream...',
+      showSpinner: state.isConnecting || !state.isConnected,
+    );
+  }
+
+  Widget _buildTopBar(dynamic stream, int participantCount) {
     return Positioned(
       top: 0,
       left: 0,
@@ -362,7 +399,7 @@ class _LiveViewerScreenState extends State<LiveViewerScreen> {
     );
   }
 
-  Widget _buildStreamerInfo(stream) {
+  Widget _buildStreamerInfo(dynamic stream) {
     return Positioned(
       top: 90,
       left: 10,
@@ -437,6 +474,80 @@ class _LiveViewerScreenState extends State<LiveViewerScreen> {
       ),
     );
   }
+
+  Widget _buildSubtitleLanguageSelector(WatchLiveState state) {
+    return Positioned(
+      top: 110,
+      right: 12,
+      child: SafeArea(
+        child: PopupMenuButton<SubtitleLanguage>(
+          tooltip: 'Chọn ngôn ngữ phụ đề',
+          onSelected: (language) {
+            context.read<WatchLiveCubit>().changeSubtitleLanguage(language);
+          },
+          color: Colors.black.withValues(alpha: 0.88),
+          initialValue: state.selectedSubtitleLanguage,
+          itemBuilder: (context) {
+            return SubtitleLanguage.values.map((language) {
+              final isSelected = language == state.selectedSubtitleLanguage;
+              return PopupMenuItem<SubtitleLanguage>(
+                value: language,
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: Text(
+                        language.label,
+                        style: const TextStyle(color: Colors.white),
+                      ),
+                    ),
+                    if (isSelected)
+                      const Icon(
+                        Icons.check,
+                        color: Colors.white,
+                        size: 18,
+                      ),
+                  ],
+                ),
+              );
+            }).toList();
+          },
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+            decoration: BoxDecoration(
+              color: Colors.black54,
+              borderRadius: BorderRadius.circular(18),
+              border: Border.all(
+                color: Colors.white.withValues(alpha: 0.18),
+              ),
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Icon(Icons.subtitles, color: Colors.white, size: 16),
+                const SizedBox(width: 6),
+                Text(
+                  state.selectedSubtitleLanguage.code.toUpperCase(),
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.w700,
+                    fontSize: 12,
+                  ),
+                ),
+                const SizedBox(width: 4),
+                Icon(
+                  state.isSubtitleConnected
+                      ? Icons.keyboard_arrow_down
+                      : Icons.wifi_off_rounded,
+                  color: Colors.white70,
+                  size: 18,
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
 }
 
 class _LiveViewerLoadingView extends StatelessWidget {
@@ -473,6 +584,57 @@ class _LiveViewerLoadingView extends StatelessWidget {
                 child: CircularProgressIndicator(color: Colors.white54),
               ),
           ],
+        ),
+      ),
+    );
+  }
+}
+
+class _LiveViewerVideoPlaceholder extends StatelessWidget {
+  final String message;
+  final bool showSpinner;
+
+  const _LiveViewerVideoPlaceholder({
+    required this.message,
+    this.showSpinner = true,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      color: Colors.black,
+      child: Center(
+        child: Container(
+          margin: const EdgeInsets.symmetric(horizontal: 32),
+          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 28),
+          decoration: BoxDecoration(
+            color: Colors.black54,
+            borderRadius: BorderRadius.circular(24),
+            border: Border.all(
+              color: Colors.white.withValues(alpha: 0.12),
+            ),
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(
+                showSpinner ? Icons.sync : Icons.videocam_off,
+                color: Colors.white54,
+                size: 56,
+              ),
+              const SizedBox(height: 16),
+              Text(
+                message,
+                style: const TextStyle(color: Colors.white70, fontSize: 16),
+                textAlign: TextAlign.center,
+              ),
+              if (showSpinner)
+                const Padding(
+                  padding: EdgeInsets.only(top: 16),
+                  child: CircularProgressIndicator(color: Colors.white54),
+                ),
+            ],
+          ),
         ),
       ),
     );
