@@ -1,4 +1,6 @@
 // presentation/provider/live_stream_cubit.dart
+import 'dart:developer' as developer;
+
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:livekit_client/livekit_client.dart';
 
@@ -11,30 +13,97 @@ class LiveStreamCubit extends Cubit<LiveStreamState> {
     if (!isClosed) emit(newState);
   }
 
+  void _logTrackState(String event, {LocalTrack? incomingTrack}) {
+    final videoTrack = state.localVideoTrack;
+    final audioTrack = state.localAudioTrack;
+
+    developer.log(
+      [
+        'event=$event',
+        if (incomingTrack != null)
+          'incoming=${incomingTrack.runtimeType}#${incomingTrack.hashCode}',
+        'video=${videoTrack == null ? 'null' : '${videoTrack.runtimeType}#${videoTrack.hashCode} enabled=${videoTrack.mediaStreamTrack.enabled}'}',
+        'audio=${audioTrack == null ? 'null' : '${audioTrack.runtimeType}#${audioTrack.hashCode} enabled=${audioTrack.mediaStreamTrack.enabled}'}',
+        'roomConnected=${state.isConnected}',
+      ].join(' | '),
+      name: 'LiveStreamTracks',
+    );
+  }
+
   void setTracks(LocalVideoTrack videoTrack, LocalAudioTrack audioTrack) {
+    _logTrackState(
+      'setTracks:before',
+      incomingTrack: videoTrack,
+    );
     _safeEmit(
       state.copyWith(
         localVideoTrack: videoTrack,
         localAudioTrack: audioTrack,
-        isCameraOn: true,
-        isMicOn: true,
+        isCameraOn: videoTrack.mediaStreamTrack.enabled,
+        isMicOn: audioTrack.mediaStreamTrack.enabled,
         clearError: true,
       ),
     );
+    _logTrackState('setTracks:after', incomingTrack: audioTrack);
+  }
+
+  void setPreviewVideoTrack(LocalVideoTrack videoTrack) {
+    _logTrackState(
+      'setPreviewVideoTrack:before',
+      incomingTrack: videoTrack,
+    );
+    _safeEmit(
+      state.copyWith(
+        localVideoTrack: videoTrack,
+        isCameraOn: true,
+        clearError: true,
+      ),
+    );
+    _logTrackState('setPreviewVideoTrack:after');
+  }
+
+  void setAudioTrack(LocalAudioTrack audioTrack) {
+    _logTrackState(
+      'setAudioTrack:before',
+      incomingTrack: audioTrack,
+    );
+    _safeEmit(
+      state.copyWith(
+        localAudioTrack: audioTrack,
+        clearError: true,
+      ),
+    );
+    _logTrackState('setAudioTrack:after');
   }
 
   Future<void> connectToRoom(String livekitUrl, String token) async {
+    _logTrackState('connectToRoom:start');
     if (state.isConnected && state.room != null) {
+      _logTrackState('connectToRoom:skipped-already-connected');
       return;
     }
 
     if (state.localVideoTrack == null || state.localAudioTrack == null) {
+      _logTrackState('connectToRoom:missing-tracks');
       _safeEmit(state.copyWith(error: 'Tracks not initialized'));
       return;
     }
 
     try {
-      final room = Room();
+      final room = Room(
+        roomOptions: const RoomOptions(
+          dynacast: true,
+          defaultCameraCaptureOptions: CameraCaptureOptions(
+            params: VideoParametersPresets.h360_169,
+            maxFrameRate: 15,
+          ),
+          defaultAudioCaptureOptions: AudioCaptureOptions(
+            noiseSuppression: true,
+            echoCancellation: true,
+            autoGainControl: false,
+          ),
+        ),
+      );
       room.addListener(_onRoomUpdate);
 
       await room.connect(livekitUrl, token);
@@ -50,7 +119,9 @@ class LiveStreamCubit extends Cubit<LiveStreamState> {
       _safeEmit(
         state.copyWith(room: room, isConnected: true, clearError: true),
       );
+      _logTrackState('connectToRoom:connected');
     } catch (e) {
+      _logTrackState('connectToRoom:error');
       _safeEmit(state.copyWith(error: 'Connection error: $e'));
     }
   }
@@ -62,6 +133,31 @@ class LiveStreamCubit extends Cubit<LiveStreamState> {
   }
 
   Future<void> toggleCamera() async {
+    _logTrackState('toggleCamera:start');
+    if (state.room == null) {
+      if (state.localVideoTrack == null) {
+        _safeEmit(
+          state.copyWith(isCameraOn: !state.isCameraOn, clearError: true),
+        );
+        _logTrackState('toggleCamera:no-track-flag-only');
+        return;
+      }
+
+      if (state.isCameraOn) {
+        await disposePreviewVideoTrack();
+      } else {
+        await state.localVideoTrack!.enable();
+        _safeEmit(
+          state.copyWith(
+            isCameraOn: true,
+            clearError: true,
+          ),
+        );
+      }
+      _logTrackState('toggleCamera:local-only-done');
+      return;
+    }
+
     if (state.localVideoTrack == null) return;
 
     try {
@@ -87,13 +183,20 @@ class LiveStreamCubit extends Cubit<LiveStreamState> {
           clearError: true,
         ),
       );
+      _logTrackState('toggleCamera:room-done');
     } catch (e) {
+      _logTrackState('toggleCamera:error');
       _safeEmit(state.copyWith(error: 'Error toggling camera: $e'));
     }
   }
 
   Future<void> toggleMic() async {
-    if (state.localAudioTrack == null) return;
+    _logTrackState('toggleMic:start');
+    if (state.localAudioTrack == null) {
+      _safeEmit(state.copyWith(isMicOn: !state.isMicOn, clearError: true));
+      _logTrackState('toggleMic:no-track-flag-only');
+      return;
+    }
 
     try {
       LocalAudioTrack? nextAudioTrack = state.localAudioTrack;
@@ -118,13 +221,20 @@ class LiveStreamCubit extends Cubit<LiveStreamState> {
           clearError: true,
         ),
       );
+      _logTrackState('toggleMic:done');
     } catch (e) {
+      _logTrackState('toggleMic:error');
       _safeEmit(state.copyWith(error: 'Error toggling mic: $e'));
     }
   }
 
   Future<void> switchCamera() async {
-    if (state.localVideoTrack == null) return;
+    if (state.localVideoTrack == null) {
+      _safeEmit(
+        state.copyWith(isFrontCamera: !state.isFrontCamera, clearError: true),
+      );
+      return;
+    }
 
     try {
       if (state.isFlashOn) {
@@ -175,6 +285,7 @@ class LiveStreamCubit extends Cubit<LiveStreamState> {
   }
 
   Future<void> disposeTracksOnly() async {
+    _logTrackState('disposeTracksOnly:start');
     await state.localVideoTrack?.stop();
     await state.localVideoTrack?.dispose();
     await state.localAudioTrack?.stop();
@@ -193,16 +304,47 @@ class LiveStreamCubit extends Cubit<LiveStreamState> {
         clearError: true,
       ),
     );
+    _logTrackState('disposeTracksOnly:after');
+  }
+
+  Future<void> disposePreviewVideoTrack() async {
+    _logTrackState('disposePreviewVideoTrack:start');
+    await state.localVideoTrack?.stop();
+    await state.localVideoTrack?.dispose();
+
+    _safeEmit(
+      state.copyWith(
+        clearVideoTrack: true,
+        isCameraOn: false,
+        isFlashOn: false,
+        clearError: true,
+      ),
+    );
+    _logTrackState('disposePreviewVideoTrack:after');
   }
 
   Future<void> disconnect() async {
+    _logTrackState('disconnect:start');
     state.room?.removeListener(_onRoomUpdate);
-    await state.localVideoTrack?.stop();
-    await state.localVideoTrack?.dispose();
-    await state.localAudioTrack?.stop();
-    await state.localAudioTrack?.dispose();
-    await state.room?.disconnect();
-    await state.room?.dispose();
+
+    try {
+      await state.localVideoTrack?.stop();
+    } catch (_) {}
+    try {
+      await state.localVideoTrack?.dispose();
+    } catch (_) {}
+    try {
+      await state.localAudioTrack?.stop();
+    } catch (_) {}
+    try {
+      await state.localAudioTrack?.dispose();
+    } catch (_) {}
+    try {
+      await state.room?.disconnect();
+    } catch (_) {}
+    try {
+      await state.room?.dispose();
+    } catch (_) {}
 
     _safeEmit(
       state.copyWith(
@@ -218,6 +360,7 @@ class LiveStreamCubit extends Cubit<LiveStreamState> {
         clearError: true,
       ),
     );
+    _logTrackState('disconnect:after');
   }
 
   @override

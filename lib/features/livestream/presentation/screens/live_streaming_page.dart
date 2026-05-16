@@ -70,23 +70,30 @@ class _LiveStreamScreenState extends State<LiveStreamScreen> {
     }
 
     try {
-      final videoTrack = await LocalVideoTrack.createCameraTrack(
-        CameraCaptureOptions(
-          cameraPosition: state.isFrontCamera
-              ? CameraPosition.front
-              : CameraPosition.back,
-          params: VideoParametersPresets.h540_169,
-          maxFrameRate: 24,
-        ),
-      );
+      LocalVideoTrack? videoTrack = state.localVideoTrack;
+      LocalAudioTrack? audioTrack = state.localAudioTrack;
 
-      final audioTrack = await LocalAudioTrack.create(
-        AudioCaptureOptions(
-          noiseSuppression: true,
-          echoCancellation: true,
-          autoGainControl: true,
-        ),
-      );
+      if (videoTrack == null) {
+        videoTrack = await LocalVideoTrack.createCameraTrack(
+          CameraCaptureOptions(
+            cameraPosition: state.isFrontCamera
+                ? CameraPosition.front
+                : CameraPosition.back,
+            params: VideoParametersPresets.h360_169,
+            maxFrameRate: 15,
+          ),
+        );
+      }
+
+      if (audioTrack == null) {
+        audioTrack = await LocalAudioTrack.create(
+          AudioCaptureOptions(
+            noiseSuppression: true,
+            echoCancellation: true,
+            autoGainControl: false,
+          ),
+        );
+      }
 
       _liveStreamCubit.setTracks(videoTrack, audioTrack);
     } catch (_) {
@@ -259,8 +266,10 @@ class _LiveStreamScreenState extends State<LiveStreamScreen> {
 
   @override
   void dispose() {
-    if (_liveEndedOnServer && !_cleanupCompleted) {
-      unawaited(_cleanupLiveSession(endLiveOnServer: true));
+    if (!_cleanupCompleted) {
+      unawaited(
+        _cleanupLiveSession(endLiveOnServer: !_liveEndedOnServer),
+      );
     }
     _commentController.dispose();
     _scrollController.dispose();
