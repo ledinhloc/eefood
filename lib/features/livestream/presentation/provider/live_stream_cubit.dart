@@ -65,14 +65,27 @@ class LiveStreamCubit extends Cubit<LiveStreamState> {
     if (state.localVideoTrack == null) return;
 
     try {
-      if (state.isCameraOn) {
+      LocalVideoTrack? nextVideoTrack = state.localVideoTrack;
+
+      if (state.room?.localParticipant != null) {
+        final publication = await state.room!.localParticipant!
+            .setCameraEnabled(!state.isCameraOn);
+        final publishedTrack = publication?.track;
+        if (publishedTrack is LocalVideoTrack) {
+          nextVideoTrack = publishedTrack;
+        }
+      } else if (state.isCameraOn) {
         await state.localVideoTrack!.disable();
       } else {
         await state.localVideoTrack!.enable();
       }
 
       _safeEmit(
-        state.copyWith(isCameraOn: !state.isCameraOn, clearError: true),
+        state.copyWith(
+          localVideoTrack: nextVideoTrack,
+          isCameraOn: !state.isCameraOn,
+          clearError: true,
+        ),
       );
     } catch (e) {
       _safeEmit(state.copyWith(error: 'Error toggling camera: $e'));
@@ -83,13 +96,28 @@ class LiveStreamCubit extends Cubit<LiveStreamState> {
     if (state.localAudioTrack == null) return;
 
     try {
-      if (state.isMicOn) {
+      LocalAudioTrack? nextAudioTrack = state.localAudioTrack;
+
+      if (state.room?.localParticipant != null) {
+        final publication = await state.room!.localParticipant!
+            .setMicrophoneEnabled(!state.isMicOn);
+        final publishedTrack = publication?.track;
+        if (publishedTrack is LocalAudioTrack) {
+          nextAudioTrack = publishedTrack;
+        }
+      } else if (state.isMicOn) {
         await state.localAudioTrack!.disable();
       } else {
         await state.localAudioTrack!.enable();
       }
 
-      _safeEmit(state.copyWith(isMicOn: !state.isMicOn, clearError: true));
+      _safeEmit(
+        state.copyWith(
+          localAudioTrack: nextAudioTrack,
+          isMicOn: !state.isMicOn,
+          clearError: true,
+        ),
+      );
     } catch (e) {
       _safeEmit(state.copyWith(error: 'Error toggling mic: $e'));
     }
