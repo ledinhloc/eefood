@@ -2,8 +2,11 @@ import 'dart:developer' as developer;
 
 import 'package:eefood/core/constants/app_keys.dart';
 import 'package:eefood/core/di/injection.dart';
+import 'package:eefood/features/livestream/data/model/live_subtitle_message.dart';
 import 'package:eefood/features/livestream/data/model/live_stream_response.dart';
 import 'package:eefood/features/livestream/data/model/livestream_end_mesage.dart';
+import 'package:eefood/features/livestream/data/model/subtitle_subscription_request.dart';
+import 'package:eefood/features/livestream/domain/enum/subtitle_language.dart';
 import 'package:eefood/features/livestream/domain/repository/live_repository.dart';
 import 'package:eefood/features/livestream/presentation/provider/livestream_websocket_manager.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -12,6 +15,10 @@ import 'package:livekit_client/livekit_client.dart';
 import 'watch_live_state.dart';
 
 class WatchLiveCubit extends Cubit<WatchLiveState> {
+  static const String _subtitleQueue = 'livestream/subtitles';
+  static const String _subtitleRegisterDestination =
+      '/app/live/subtitles/register';
+
   final LiveRepository repository;
   final LiveStreamWebSocketManager _wsManager =
       getIt<LiveStreamWebSocketManager>();
@@ -36,6 +43,9 @@ class WatchLiveCubit extends Cubit<WatchLiveState> {
         clearStreamEndMessage: true,
         clearRemoteVideoTrack: true,
         clearRemoteAudioTrack: true,
+        clearLatestSubtitle: true,
+        clearSubtitleError: true,
+        isSubtitleConnected: false,
       ));
 
       _cleanupCurrentWsSubscriptions();
@@ -72,6 +82,11 @@ class WatchLiveCubit extends Cubit<WatchLiveState> {
         },
         onConnected: () {
           _subscribeToStreamEnd(liveStreamId);
+          _subscribeToSubtitles(liveStreamId);
+          _registerSubtitle(
+            liveStreamId: liveStreamId,
+            targetLanguage: state.selectedSubtitleLanguage,
+          );
         },
       );
     } catch (e) {
@@ -109,18 +124,129 @@ class WatchLiveCubit extends Cubit<WatchLiveState> {
 
   void _cleanupCurrentWsSubscriptions() {
     final streamId = _currentStreamId;
-    if (streamId == null) return;
-
-    _wsManager.unsubscribeTopic(
-      liveStreamId: streamId,
-      topic: 'livestream',
-      logName: 'WatchLive',
-    );
+    if (streamId != null) {
+      _wsManager.unsubscribeTopic(
+        liveStreamId: streamId,
+        topic: 'livestream',
+        logName: 'WatchLive',
+      );
+    }
 
     _wsManager.unsubscribeUserQueue(
       queue: 'livestream',
       logName: 'WatchLive',
     );
+
+    _wsManager.unsubscribeUserQueue(
+      queue: _subtitleQueue,
+      logName: 'WatchLive',
+    );
+  }
+
+  void _subscribeToSubtitles(int liveStreamId) {
+    _wsManager.subscribeUserQueue<LiveSubtitleMessage>(
+      queue: _subtitleQueue,
+      fromJson: LiveSubtitleMessage.fromJson,
+      onData: _handleSubtitleMessage,
+      logName: 'WatchLive',
+      logPrefix: 'subtitle',
+      onError: (error) {
+        developer.log('Subtitle queue error: $error', name: 'WatchLive');
+        _safeEmit(state.copyWith(
+          isSubtitleConnected: false,
+          subtitleError: error,
+        ));
+      },
+    );
+
+    _safeEmit(state.copyWith(
+      isSubtitleConnected: true,
+      clearSubtitleError: true,
+    ));
+
+    developer.log(
+      'Subscribed subtitle queue for stream $liveStreamId',
+      name: 'WatchLive',
+    );
+  }
+
+  void _handleSubtitleMessage(LiveSubtitleMessage message) {
+    final currentStreamId = _currentStreamId;
+    if (currentStreamId == null || message.liveStreamId != currentStreamId) {
+      developer.log(
+        'Ignored subtitle for stream ${message.liveStreamId}',
+        name: 'WatchLive',
+      );
+      return;
+    }
+
+    if (message.targetLanguage != state.selectedSubtitleLanguage) {
+      developer.log(
+        'Ignored subtitle for language ${message.targetLanguage.code}',
+        name: 'WatchLive',
+      );
+      return;
+    }
+
+    if (message.text.trim().isEmpty) return;
+
+    _safeEmit(state.copyWith(
+      latestSubtitle: message,
+      clearSubtitleError: true,
+      isSubtitleConnected: true,
+    ));
+  }
+
+  void changeSubtitleLanguage(SubtitleLanguage language) {
+    final liveStreamId = _currentStreamId;
+
+    _safeEmit(state.copyWith(
+      selectedSubtitleLanguage: language,
+      clearLatestSubtitle: true,
+      clearSubtitleError: true,
+    ));
+
+    if (liveStreamId == null) return;
+
+    if (_wsManager.isConnected) {
+      _registerSubtitle(
+        liveStreamId: liveStreamId,
+        targetLanguage: language,
+      );
+      return;
+    }
+
+    _setupWebSocket(liveStreamId);
+  }
+
+  void _registerSubtitle({
+    required int liveStreamId,
+    required SubtitleLanguage targetLanguage,
+  }) {
+    final request = SubtitleSubscriptionRequest(
+      liveStreamId: liveStreamId,
+      targetLanguage: targetLanguage,
+    );
+
+    final sent = _wsManager.send(
+      destination: _subtitleRegisterDestination,
+      body: request.toJson(),
+      logName: 'WatchLive',
+      onError: (error) {
+        developer.log('Subtitle register error: $error', name: 'WatchLive');
+        _safeEmit(state.copyWith(
+          isSubtitleConnected: false,
+          subtitleError: error,
+        ));
+      },
+    );
+
+    if (sent) {
+      _safeEmit(state.copyWith(
+        isSubtitleConnected: true,
+        clearSubtitleError: true,
+      ));
+    }
   }
 
   Future<void> _handleStreamEnded(LiveStreamEndMessage message) async {
@@ -134,6 +260,7 @@ class WatchLiveCubit extends Cubit<WatchLiveState> {
         streamEndMessage: message.message,
         isConnected: false,
         isConnecting: false,
+        isSubtitleConnected: false,
       ));
     }
   }
@@ -269,6 +396,7 @@ class WatchLiveCubit extends Cubit<WatchLiveState> {
       _safeEmit(state.copyWith(
         isConnecting: false,
         error: 'Loi ket noi: $e',
+        isSubtitleConnected: false,
       ));
     }
   }
@@ -330,6 +458,7 @@ class WatchLiveCubit extends Cubit<WatchLiveState> {
       isConnecting: false,
       clearRemoteVideoTrack: true,
       clearRemoteAudioTrack: true,
+      isSubtitleConnected: false,
     ));
   }
 
