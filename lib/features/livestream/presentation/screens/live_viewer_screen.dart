@@ -16,6 +16,8 @@ import '../../domain/enum/subtitle_language.dart';
 import '../provider/live_reaction_cubit.dart';
 import '../provider/live_reaction_state.dart';
 import '../provider/live_viewer_cubit.dart';
+import '../provider/subtitle_cubit.dart';
+import '../provider/subtitle_state.dart';
 import '../provider/watch_live_cubit.dart';
 import '../provider/watch_live_state.dart';
 import '../widgets/live_comment_list.dart';
@@ -43,6 +45,9 @@ class _LiveViewerScreenState extends State<LiveViewerScreen> {
   @override
   void initState() {
     super.initState();
+
+    context.read<SubtitleCubit>().attachToStream(widget.streamId);
+    context.read<SubtitleCubit>().ensureConnected();
 
     // Load stream
     context.read<WatchLiveCubit>().loadLive(widget.streamId);
@@ -97,6 +102,7 @@ class _LiveViewerScreenState extends State<LiveViewerScreen> {
 
   void _leaveLiveStream() async {
     context.read<LiveViewerCubit>().leaveLiveStream();
+    context.read<SubtitleCubit>().disposeStream();
     await context.read<WatchLiveCubit>().disconnect();
     if (mounted) Navigator.pop(context);
   }
@@ -119,6 +125,7 @@ class _LiveViewerScreenState extends State<LiveViewerScreen> {
   @override
   void dispose() {
     _timer?.cancel();
+    context.read<SubtitleCubit>().disposeStream();
     _commentController.dispose();
     _scrollController.dispose();
     super.dispose();
@@ -161,7 +168,7 @@ class _LiveViewerScreenState extends State<LiveViewerScreen> {
             }
           },
         ),
-        BlocListener<WatchLiveCubit, WatchLiveState>(
+        BlocListener<SubtitleCubit, SubtitleState>(
           listenWhen: (previous, current) =>
               previous.subtitleError != current.subtitleError,
           listener: (context, state) {
@@ -174,6 +181,7 @@ class _LiveViewerScreenState extends State<LiveViewerScreen> {
       ],
       child: BlocBuilder<WatchLiveCubit, WatchLiveState>(
         builder: (context, state) {
+          final subtitleState = context.watch<SubtitleCubit>().state;
           if (state.loading) {
             return const _LiveViewerLoadingView(
               message: 'Đang tải livestream...',
@@ -201,6 +209,10 @@ class _LiveViewerScreenState extends State<LiveViewerScreen> {
                     const SizedBox(height: 16),
                     ElevatedButton(
                       onPressed: () {
+                        context.read<SubtitleCubit>().attachToStream(
+                          widget.streamId,
+                        );
+                        context.read<SubtitleCubit>().ensureConnected();
                         context.read<WatchLiveCubit>().loadLive(
                           widget.streamId,
                         );
@@ -234,9 +246,7 @@ class _LiveViewerScreenState extends State<LiveViewerScreen> {
             body: Stack(
               children: [
                 // Video display
-                Positioned.fill(
-                  child: _buildVideoLayer(state, stream),
-                ),
+                Positioned.fill(child: _buildVideoLayer(state, stream)),
 
                 // Reactions
                 ..._activeReactions.map((reaction) {
@@ -248,7 +258,7 @@ class _LiveViewerScreenState extends State<LiveViewerScreen> {
                 }),
 
                 // Top bar
-                _buildTopBar(stream, participantCount),
+                _buildTopBar(stream, participantCount, subtitleState),
                 Positioned(
                   top: 110,
                   left: 10,
@@ -271,20 +281,19 @@ class _LiveViewerScreenState extends State<LiveViewerScreen> {
                 // Streamer info
                 _buildStreamerInfo(stream),
 
-                // Subtitle language selector
-                _buildSubtitleLanguageSelector(state),
-
                 // Subtitle overlay
-                if (state.latestSubtitle != null)
+                if (subtitleState.selectedSubtitleLanguage !=
+                        SubtitleLanguage.off &&
+                    subtitleState.latestSubtitle != null)
                   Positioned(
                     left: 20,
                     right: 20,
-                    bottom: 172,
+                    bottom: 280,
                     child: SafeArea(
                       child: Align(
                         alignment: Alignment.bottomCenter,
                         child: LiveSubtitleOverlay(
-                          subtitle: state.latestSubtitle!,
+                          subtitle: subtitleState.latestSubtitle!,
                         ),
                       ),
                     ),
@@ -295,7 +304,7 @@ class _LiveViewerScreenState extends State<LiveViewerScreen> {
                   bottom: 30,
                   left: 10,
                   right: 16,
-                  height: 400,
+                  height: 250,
                   child: LiveCommentList(
                     controller: _commentController,
                     scrollController: _scrollController,
@@ -313,10 +322,7 @@ class _LiveViewerScreenState extends State<LiveViewerScreen> {
     );
   }
 
-  Widget _buildVideoLayer(
-    WatchLiveState state,
-    LiveStreamResponse stream,
-  ) {
+  Widget _buildVideoLayer(WatchLiveState state, LiveStreamResponse stream) {
     if (stream.status != LiveStreamStatus.LIVE) {
       return _LiveViewerVideoPlaceholder(
         message: stream.status.messageVi,
@@ -338,7 +344,11 @@ class _LiveViewerScreenState extends State<LiveViewerScreen> {
     );
   }
 
-  Widget _buildTopBar(dynamic stream, int participantCount) {
+  Widget _buildTopBar(
+    dynamic stream,
+    int participantCount,
+    SubtitleState state,
+  ) {
     return Positioned(
       top: 0,
       left: 0,
@@ -388,6 +398,8 @@ class _LiveViewerScreenState extends State<LiveViewerScreen> {
                 ),
               ),
               const Spacer(),
+              _buildSubtitleLanguageSelector(state),
+              const SizedBox(width: 4),
               IconButton(
                 icon: const Icon(Icons.close, color: Colors.white),
                 onPressed: _leaveLiveStream,
@@ -475,75 +487,65 @@ class _LiveViewerScreenState extends State<LiveViewerScreen> {
     );
   }
 
-  Widget _buildSubtitleLanguageSelector(WatchLiveState state) {
-    return Positioned(
-      top: 110,
-      right: 12,
-      child: SafeArea(
-        child: PopupMenuButton<SubtitleLanguage>(
-          tooltip: 'Chọn ngôn ngữ phụ đề',
-          onSelected: (language) {
-            context.read<WatchLiveCubit>().changeSubtitleLanguage(language);
-          },
-          color: Colors.black.withValues(alpha: 0.88),
-          initialValue: state.selectedSubtitleLanguage,
-          itemBuilder: (context) {
-            return SubtitleLanguage.values.map((language) {
-              final isSelected = language == state.selectedSubtitleLanguage;
-              return PopupMenuItem<SubtitleLanguage>(
-                value: language,
-                child: Row(
-                  children: [
-                    Expanded(
-                      child: Text(
-                        language.label,
-                        style: const TextStyle(color: Colors.white),
-                      ),
-                    ),
-                    if (isSelected)
-                      const Icon(
-                        Icons.check,
-                        color: Colors.white,
-                        size: 18,
-                      ),
-                  ],
-                ),
-              );
-            }).toList();
-          },
-          child: Container(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-            decoration: BoxDecoration(
-              color: Colors.black54,
-              borderRadius: BorderRadius.circular(18),
-              border: Border.all(
-                color: Colors.white.withValues(alpha: 0.18),
-              ),
-            ),
+  Widget _buildSubtitleLanguageSelector(SubtitleState state) {
+    return PopupMenuButton<SubtitleLanguage>(
+      tooltip: 'Chọn phụ đề',
+      onSelected: (language) {
+        context.read<SubtitleCubit>().changeSubtitleLanguage(language);
+      },
+      color: Colors.black.withValues(alpha: 0.88),
+      initialValue: state.selectedSubtitleLanguage,
+      itemBuilder: (context) {
+        return SubtitleLanguage.values.map((language) {
+          final isSelected = language == state.selectedSubtitleLanguage;
+          return PopupMenuItem<SubtitleLanguage>(
+            value: language,
             child: Row(
-              mainAxisSize: MainAxisSize.min,
               children: [
-                const Icon(Icons.subtitles, color: Colors.white, size: 16),
-                const SizedBox(width: 6),
-                Text(
-                  state.selectedSubtitleLanguage.code.toUpperCase(),
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontWeight: FontWeight.w700,
-                    fontSize: 12,
+                Expanded(
+                  child: Text(
+                    language.label,
+                    style: const TextStyle(color: Colors.white),
                   ),
                 ),
-                const SizedBox(width: 4),
-                Icon(
-                  state.isSubtitleConnected
-                      ? Icons.keyboard_arrow_down
-                      : Icons.wifi_off_rounded,
-                  color: Colors.white70,
-                  size: 18,
-                ),
+                if (isSelected)
+                  const Icon(Icons.check, color: Colors.white, size: 18),
               ],
             ),
-          ),
+          );
+        }).toList();
+      },
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+        decoration: BoxDecoration(
+          color: Colors.black54,
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(color: Colors.white.withValues(alpha: 0.18)),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Icon(Icons.settings, color: Colors.white, size: 16),
+            const SizedBox(width: 6),
+            Text(
+              state.selectedSubtitleLanguage.shortLabel,
+              style: const TextStyle(
+                color: Colors.white,
+                fontWeight: FontWeight.w700,
+                fontSize: 12,
+              ),
+            ),
+            const SizedBox(width: 4),
+            Icon(
+              state.selectedSubtitleLanguage == SubtitleLanguage.off
+                  ? Icons.subtitles_off
+                  : state.isSubtitleConnected
+                  ? Icons.keyboard_arrow_down
+                  : Icons.wifi_off_rounded,
+              color: Colors.white70,
+              size: 18,
+            ),
+          ],
         ),
       ),
     );
@@ -552,12 +554,8 @@ class _LiveViewerScreenState extends State<LiveViewerScreen> {
 
 class _LiveViewerLoadingView extends StatelessWidget {
   final String message;
-  final bool showSpinner;
 
-  const _LiveViewerLoadingView({
-    required this.message,
-    this.showSpinner = true,
-  });
+  const _LiveViewerLoadingView({required this.message});
 
   @override
   Widget build(BuildContext context) {
@@ -567,22 +565,17 @@ class _LiveViewerLoadingView extends StatelessWidget {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(
-              showSpinner ? Icons.sync : Icons.videocam_off,
-              color: Colors.white54,
-              size: 64,
-            ),
+            const Icon(Icons.sync, color: Colors.white54, size: 64),
             const SizedBox(height: 16),
             Text(
               message,
               style: const TextStyle(color: Colors.white54, fontSize: 16),
               textAlign: TextAlign.center,
             ),
-            if (showSpinner)
-              const Padding(
-                padding: EdgeInsets.only(top: 16),
-                child: CircularProgressIndicator(color: Colors.white54),
-              ),
+            const Padding(
+              padding: EdgeInsets.only(top: 16),
+              child: CircularProgressIndicator(color: Colors.white54),
+            ),
           ],
         ),
       ),
@@ -610,9 +603,7 @@ class _LiveViewerVideoPlaceholder extends StatelessWidget {
           decoration: BoxDecoration(
             color: Colors.black54,
             borderRadius: BorderRadius.circular(24),
-            border: Border.all(
-              color: Colors.white.withValues(alpha: 0.12),
-            ),
+            border: Border.all(color: Colors.white.withValues(alpha: 0.12)),
           ),
           child: Column(
             mainAxisSize: MainAxisSize.min,
