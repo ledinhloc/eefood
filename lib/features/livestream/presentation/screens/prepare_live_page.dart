@@ -17,6 +17,7 @@ import '../provider/live_stream_cubit.dart';
 import '../provider/live_stream_state.dart';
 import '../provider/live_viewer_cubit.dart';
 import '../provider/start_live_cubit.dart';
+import '../provider/subtitle_cubit.dart';
 import 'live_streaming_page.dart';
 
 class LivePrepScreen extends StatefulWidget {
@@ -203,6 +204,7 @@ class _LivePrepScreenState extends State<LivePrepScreen> {
                             startState.stream!.id,
                           ),
                         ),
+                        BlocProvider(create: (_) => SubtitleCubit()),
                         BlocProvider(create: (_) => BlockUserCubit()),
                         BlocProvider(
                           create: (_) => LivePollCubit()

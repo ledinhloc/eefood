@@ -24,6 +24,7 @@ import '../widgets/live_comment_list.dart';
 import '../widgets/live_poll/live_poll_banner.dart';
 import '../widgets/live_reaction_animation.dart';
 import '../widgets/live_status_timer.dart';
+import '../widgets/live_subtitle_language_selector.dart';
 import '../widgets/live_subtitle_overlay.dart';
 import '../widgets/viewer_list_bottom_sheet.dart';
 
@@ -398,7 +399,10 @@ class _LiveViewerScreenState extends State<LiveViewerScreen> {
                 ),
               ),
               const Spacer(),
-              _buildSubtitleLanguageSelector(state),
+              LiveSubtitleLanguageSelector(
+                state: state,
+                tooltip: 'Chon phu de',
+              ),
               const SizedBox(width: 4),
               IconButton(
                 icon: const Icon(Icons.close, color: Colors.white),
@@ -483,70 +487,6 @@ class _LiveViewerScreenState extends State<LiveViewerScreen> {
             ),
           );
         }).toList(),
-      ),
-    );
-  }
-
-  Widget _buildSubtitleLanguageSelector(SubtitleState state) {
-    return PopupMenuButton<SubtitleLanguage>(
-      tooltip: 'Chọn phụ đề',
-      onSelected: (language) {
-        context.read<SubtitleCubit>().changeSubtitleLanguage(language);
-      },
-      color: Colors.black.withValues(alpha: 0.88),
-      initialValue: state.selectedSubtitleLanguage,
-      itemBuilder: (context) {
-        return SubtitleLanguage.values.map((language) {
-          final isSelected = language == state.selectedSubtitleLanguage;
-          return PopupMenuItem<SubtitleLanguage>(
-            value: language,
-            child: Row(
-              children: [
-                Expanded(
-                  child: Text(
-                    language.label,
-                    style: const TextStyle(color: Colors.white),
-                  ),
-                ),
-                if (isSelected)
-                  const Icon(Icons.check, color: Colors.white, size: 18),
-              ],
-            ),
-          );
-        }).toList();
-      },
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-        decoration: BoxDecoration(
-          color: Colors.black54,
-          borderRadius: BorderRadius.circular(20),
-          border: Border.all(color: Colors.white.withValues(alpha: 0.18)),
-        ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const Icon(Icons.settings, color: Colors.white, size: 16),
-            const SizedBox(width: 6),
-            Text(
-              state.selectedSubtitleLanguage.shortLabel,
-              style: const TextStyle(
-                color: Colors.white,
-                fontWeight: FontWeight.w700,
-                fontSize: 12,
-              ),
-            ),
-            const SizedBox(width: 4),
-            Icon(
-              state.selectedSubtitleLanguage == SubtitleLanguage.off
-                  ? Icons.subtitles_off
-                  : state.isSubtitleConnected
-                  ? Icons.keyboard_arrow_down
-                  : Icons.wifi_off_rounded,
-              color: Colors.white70,
-              size: 18,
-            ),
-          ],
-        ),
       ),
     );
   }
