@@ -24,33 +24,47 @@ class NutritionRecommendationBanner extends StatelessWidget {
         borderRadius: BorderRadius.circular(12),
         border: Border.all(color: const Color(0xFFFFD5C2)),
       ),
-      child: Row(
+      child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text('📌', style: TextStyle(fontSize: 16)),
-          const SizedBox(width: 8),
-          Expanded(
-            child: Text(
-              summary,
-              style: const TextStyle(
-                fontSize: 12,
-                color: Color(0xFFB84A00),
-                height: 1.5,
+          // Summary row
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text('📌', style: TextStyle(fontSize: 16)),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Text(
+                  summary,
+                  style: const TextStyle(
+                    fontSize: 12,
+                    color: Color(0xFFB84A00),
+                    height: 1.5,
+                  ),
+                ),
               ),
-            ),
+            ],
           ),
-          const SizedBox(width: 4),
-          const Text('💡', style: TextStyle(fontSize: 16)),
-          const SizedBox(width: 8),
-          Expanded(
-            child: Text(
-              recommendation,
-              style: const TextStyle(
-                fontSize: 12,
-                color: Color(0xFFB84A00),
-                height: 1.5,
+
+          const SizedBox(height: 8),
+
+          // Recommendation row
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text('💡', style: TextStyle(fontSize: 16)),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Text(
+                  recommendation,
+                  style: const TextStyle(
+                    fontSize: 12,
+                    color: Color(0xFFB84A00),
+                    height: 1.5,
+                  ),
+                ),
               ),
-            ),
+            ],
           ),
         ],
       ),

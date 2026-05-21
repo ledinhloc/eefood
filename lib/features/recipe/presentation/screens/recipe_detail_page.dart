@@ -28,11 +28,11 @@ import '../../../profile/domain/usecases/profile_usecase.dart';
 import '../../data/models/recipe_detail_model.dart';
 import '../provider/recipe_detail_cubit.dart';
 import '../provider/similar_recipes_cubit.dart';
-import 'recipe_pdf_preview_page.dart';
 import '../widgets/category_list_widget.dart';
 import '../widgets/instructions/instructions_tab.dart';
 import '../widgets/recipe_detail/similar_recipes_section.dart';
 import '../widgets/steps_tab.dart';
+import 'recipe_pdf_preview_page.dart';
 
 class RecipeDetailPage extends StatefulWidget {
   final int recipeId;
@@ -886,7 +886,7 @@ class _RecipeDetailPageState extends State<RecipeDetailPage> {
       ),
       if (recipe != null)
         BottomSheetOption(
-          icon: const Icon(Icons.calendar_month_outlined, color: Colors.orange),
+          icon: const Icon(Icons.calendar_month_outlined),
           title: 'Thêm vào kế hoạch bữa ăn',
           onTap: () {
             _openAddToMealPlanSheet(context, recipe);
@@ -901,12 +901,12 @@ class _RecipeDetailPageState extends State<RecipeDetailPage> {
           },
         ),
       BottomSheetOption(
-        icon: const Icon(Icons.qr_code_2_rounded),
+        icon: const Icon(Icons.qr_code_2_rounded, color: Colors.blue),
         title: 'Chia sẻ',
         onTap: () {},
       ),
       BottomSheetOption(
-        icon: const Icon(Icons.compare_arrows_outlined),
+        icon: const Icon(Icons.compare_arrows_outlined, color: Colors.green),
         title: 'So sánh món ăn',
         onTap: () async {
           //Navigator.pop(context);
@@ -919,12 +919,12 @@ class _RecipeDetailPageState extends State<RecipeDetailPage> {
         },
       ),
       BottomSheetOption(
-        icon: const Icon(Icons.search),
+        icon: const Icon(Icons.search, color: Colors.purple),
         title: 'Tìm món tương tự',
         onTap: () {},
       ),
       BottomSheetOption(
-        icon: const Icon(Icons.report_gmailerrorred),
+        icon: const Icon(Icons.report_gmailerrorred, color: Colors.orange),
         title: 'Báo cáo',
         onTap: () {},
       ),
@@ -937,7 +937,7 @@ class _RecipeDetailPageState extends State<RecipeDetailPage> {
           onTap: () {},
         ),
         BottomSheetOption(
-          icon: const Icon(Icons.delete_forever),
+          icon: const Icon(Icons.delete_forever, color: Colors.blue),
           title: 'Xóa',
           onTap: () {},
         ),
