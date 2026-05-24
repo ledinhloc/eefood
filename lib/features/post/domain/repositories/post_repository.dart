@@ -1,12 +1,10 @@
 import 'dart:io';
 
-import 'package:eefood/features/post/data/models/story_collection_model.dart';
-import 'package:eefood/features/post/data/models/story_model.dart';
-
 import '../../data/models/post_model.dart';
 
 abstract class PostRepository {
   Future<String> getKeywordFromImage(File imageFile);
+  Future<List<String>> detectIngredientLabels(File imageFile);
   Future<List<PostModel>> getAllPosts(
     int page,
     int size, {

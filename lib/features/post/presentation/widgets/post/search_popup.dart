@@ -192,11 +192,11 @@ class _SearchPopupState extends State<SearchPopup> {
                               ),
                               color: Colors.orange.shade700,
                               onPressed: () async {
-                                await Navigator.pushNamed(
-                                  context,
+                                final navigator = Navigator.of(context);
+                                navigator.pop();
+                                await navigator.pushNamed(
                                   AppRoutes.imageChoiceScreen,
                                 );
-                                Navigator.of(context).pop();
                               },
                             ),
                           ],
