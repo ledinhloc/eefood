@@ -56,9 +56,9 @@ class MealPlanCubit extends Cubit<MealPlanState> {
 
   DateTime? _resolveInitialSelectedDate(
     List<MealPlanDailySummaryResponse> summaries,
-    MealPlanResponse plan,
+    MealPlanResponse? plan,
   ) {
-    if (summaries.isEmpty) return plan.startDate;
+    if (summaries.isEmpty) return plan?.startDate;
 
     final today = DateTime.now();
     for (final summary in summaries) {
@@ -67,19 +67,19 @@ class MealPlanCubit extends Cubit<MealPlanState> {
       }
     }
 
-    return summaries.first.planDate ?? plan.startDate;
+    return summaries.first.planDate ?? plan?.startDate;
   }
 
   // Load dữ liệu overview của màn Meal Plan:
   Future<void> loadOverview() async {
     emit(state.copyWith(isLoading: true, clearError: true));
     try {
-      final results = await Future.wait<Object>([
+      final results = await Future.wait<Object?>([
         repository.getCurrentMealPlan(),
         repository.getDailySummary(),
       ]);
 
-      final plan = results[0] as MealPlanResponse;
+      final plan = results[0] as MealPlanResponse?;
       final summaries = results[1] as List<MealPlanDailySummaryResponse>;
       final selectedDate = _resolveInitialSelectedDate(summaries, plan);
 
