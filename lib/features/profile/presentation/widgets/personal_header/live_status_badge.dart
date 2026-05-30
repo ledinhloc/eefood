@@ -1,10 +1,10 @@
-import 'package:eefood/features/livestream/domain/repository/live_block_repository.dart';
 import 'package:eefood/features/livestream/domain/repository/live_comment_repo.dart';
 import 'package:eefood/features/livestream/domain/repository/live_reaction_repo.dart';
+import 'package:eefood/features/livestream/presentation/provider/live_gift_cubit.dart';
 import 'package:eefood/features/livestream/presentation/provider/live_poll_cubit.dart';
+import 'package:eefood/features/payment/presentation/provider/wallet_cubit.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../../../../core/di/injection.dart';
 import '../../../../livestream/data/model/live_stream_response.dart';
@@ -60,6 +60,12 @@ class LiveStatusBadge extends StatelessWidget {
                       connectSocket: true,
                     ),
                 ),
+                BlocProvider(
+                  create: (_) => getIt<LiveGiftCubit>()..init(stream!.id),
+                ),
+                // BlocProvider(
+                //   create: (_) => getIt<WalletCubit>()..init(stream!.userId),
+                // ),
               ],
               child: LiveViewerScreen(streamId: stream!.id),
             ),
