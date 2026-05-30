@@ -1,5 +1,5 @@
 class GreetingHelper {
-  static String getGreeting({required String userName}) {
+  static String getGreeting() {
     final hour = DateTime.now().hour;
     String greeting;
 
@@ -13,7 +13,7 @@ class GreetingHelper {
       greeting = 'Chào buổi tối';
     }
 
-    return '$greeting, $userName 👋';
+    return '$greeting👋';
   }
 
   static String getTime() {

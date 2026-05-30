@@ -1,6 +1,8 @@
 import 'dart:async';
 
+import 'package:eefood/features/livestream/presentation/provider/live_gift_cubit.dart';
 import 'package:eefood/features/livestream/presentation/provider/live_viewer_cubit.dart';
+import 'package:eefood/features/livestream/presentation/widgets/live_gift/live_gift_overlay_layer.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:livekit_client/livekit_client.dart';
@@ -49,7 +51,6 @@ class _LiveStreamScreenState extends State<LiveStreamScreen> {
 
   late final LiveViewerCubit _liveViewerCubit;
   late final LiveStreamCubit _liveStreamCubit;
-  late final SubtitleCubit _subtitleCubit;
 
   bool _isCleaningUp = false;
   bool _cleanupCompleted = false;
@@ -65,6 +66,8 @@ class _LiveStreamScreenState extends State<LiveStreamScreen> {
     _subtitleCubit.ensureConnected();
     _ensureTracksReady();
     _liveViewerCubit.joinLiveStream();
+
+    context.read<LiveGiftCubit>().init(widget.stream.id);
   }
 
   Future<void> _ensureTracksReady() async {
@@ -160,10 +163,6 @@ class _LiveStreamScreenState extends State<LiveStreamScreen> {
 
     try {
       await _liveViewerCubit.leaveLiveStream();
-    } catch (_) {}
-
-    try {
-      _subtitleCubit.disposeStream();
     } catch (_) {}
 
     try {
@@ -279,10 +278,8 @@ class _LiveStreamScreenState extends State<LiveStreamScreen> {
 
   @override
   void dispose() {
-    if (!_cleanupCompleted) {
-      unawaited(
-        _cleanupLiveSession(endLiveOnServer: !_liveEndedOnServer),
-      );
+    if (_liveEndedOnServer && !_cleanupCompleted) {
+      unawaited(_cleanupLiveSession(endLiveOnServer: true));
     }
     _commentController.dispose();
     _scrollController.dispose();
@@ -378,12 +375,24 @@ class _LiveStreamScreenState extends State<LiveStreamScreen> {
                     onShowCreatePoll: _showCreatePollSheet,
                     onShowPollManage: _showPollManageSheet,
                   ),
+                  const Positioned.fill(child: _GiftOverlayBridge()),
                 ],
               );
             },
           ),
         ),
       ),
+    );
+  }
+}
+
+class _GiftOverlayBridge extends StatelessWidget {
+  const _GiftOverlayBridge();
+
+  @override
+  Widget build(BuildContext context) {
+    return LiveGiftOverlayLayer(
+      giftCatalog: context.read<LiveGiftCubit>().state.gifts,
     );
   }
 }
@@ -449,14 +458,12 @@ class _ReactionLayer extends StatelessWidget {
 
 class _LiveTopBar extends StatelessWidget {
   final LiveStreamResponse stream;
-  final SubtitleState subtitleState;
   final VoidCallback onEndLive;
   final VoidCallback onShowViewerList;
   final VoidCallback onShowPollManage;
 
   const _LiveTopBar({
     required this.stream,
-    required this.subtitleState,
     required this.onEndLive,
     required this.onShowViewerList,
     required this.onShowPollManage,
@@ -493,15 +500,35 @@ class _LiveTopBar extends StatelessWidget {
                         children: [
                           LiveStatusTimer(startTime: stream.startedAt!),
                           const SizedBox(width: 8),
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 10,
+                              vertical: 6,
+                            ),
+                            decoration: BoxDecoration(
+                              color: Colors.black54,
+                              borderRadius: BorderRadius.circular(4),
+                            ),
+                            child: const Row(
+                              children: [
+                                Icon(Icons.lock, color: Colors.white, size: 14),
+                                SizedBox(width: 4),
+                                Text(
+                                  'Chi minh toi',
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 12,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          const SizedBox(width: 8),
                           _ViewerCountChip(
                             participantCount: participantCount,
                             onTap: onShowViewerList,
                           ),
                           const Spacer(),
-                          LiveSubtitleLanguageSelector(
-                            state: subtitleState,
-                          ),
-                          const SizedBox(width: 4),
                           IconButton(
                             icon: const Icon(Icons.close, color: Colors.white),
                             onPressed: onEndLive,

@@ -1,10 +1,15 @@
 import 'dart:async';
 
+import 'package:eefood/core/di/injection.dart';
 import 'package:eefood/core/widgets/snack_bar.dart';
+import 'package:eefood/features/livestream/presentation/provider/live_gift_cubit.dart';
 import 'package:eefood/features/livestream/presentation/provider/live_poll_cubit.dart';
 import 'package:eefood/features/livestream/presentation/provider/live_poll_state.dart';
+import 'package:eefood/features/livestream/presentation/widgets/live_gift/live_gift_bottom_sheet.dart';
+import 'package:eefood/features/livestream/presentation/widgets/live_gift/live_gift_overlay_layer.dart';
 import 'package:eefood/features/livestream/presentation/widgets/live_poll/live_poll_viewer_bottom_sheet.dart';
 import 'package:eefood/features/livestream/presentation/widgets/stream_ended_dialog.dart';
+import 'package:eefood/features/payment/presentation/provider/wallet_cubit.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:livekit_client/livekit_client.dart';
@@ -120,6 +125,21 @@ class _LiveViewerScreenState extends State<LiveViewerScreen> {
           child: const ViewerListBottomSheet(),
         );
       },
+    );
+  }
+
+  void _showGiftSheet() {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (_) => MultiBlocProvider(
+        providers: [
+          BlocProvider.value(value: context.read<LiveGiftCubit>()),
+          BlocProvider.value(value: getIt<WalletCubit>()),
+        ],
+        child: const LiveGiftBottomSheet(),
+      ),
     );
   }
 
@@ -313,6 +333,11 @@ class _LiveViewerScreenState extends State<LiveViewerScreen> {
                   ),
                 ),
 
+                // Overlay gift
+                LiveGiftOverlayLayer(
+                  giftCatalog: context.read<LiveGiftCubit>().state.gifts,
+                ),
+
                 // Reaction buttons
                 _buildReactionButtons(),
               ],
@@ -457,36 +482,66 @@ class _LiveViewerScreenState extends State<LiveViewerScreen> {
       right: 12,
       bottom: 200,
       child: Column(
-        children: FoodEmotion.values.map((emotion) {
-          return Padding(
-            padding: const EdgeInsets.only(bottom: 12),
+        children: [
+          Padding(
+            padding: const EdgeInsets.only(bottom: 16),
             child: GestureDetector(
-              onTap: () => _sendReaction(emotion),
+              onTap: _showGiftSheet,
               child: Container(
                 width: 52,
                 height: 52,
                 decoration: BoxDecoration(
-                  color: FoodEmotionHelper.getColor(
-                    emotion,
-                  ).withValues(alpha: 0.3),
+                  gradient: const LinearGradient(
+                    colors: [Color(0xFF7C6AFF), Color(0xFFE040FB)],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                  ),
                   shape: BoxShape.circle,
-                  border: Border.all(
-                    color: FoodEmotionHelper.getColor(
-                      emotion,
-                    ).withValues(alpha: 0.6),
-                    width: 2,
-                  ),
+                  boxShadow: [
+                    BoxShadow(
+                      color: const Color(0xFF7C6AFF).withValues(alpha: 0.5),
+                      blurRadius: 12,
+                      spreadRadius: 2,
+                    ),
+                  ],
                 ),
-                child: Center(
-                  child: Text(
-                    FoodEmotionHelper.getEmoji(emotion),
-                    style: const TextStyle(fontSize: 26),
-                  ),
+                child: const Center(
+                  child: Text('🎁', style: TextStyle(fontSize: 26)),
                 ),
               ),
             ),
-          );
-        }).toList(),
+          ),
+          ...FoodEmotion.values.map((emotion) {
+            return Padding(
+              padding: const EdgeInsets.only(bottom: 12),
+              child: GestureDetector(
+                onTap: () => _sendReaction(emotion),
+                child: Container(
+                  width: 52,
+                  height: 52,
+                  decoration: BoxDecoration(
+                    color: FoodEmotionHelper.getColor(
+                      emotion,
+                    ).withValues(alpha: 0.3),
+                    shape: BoxShape.circle,
+                    border: Border.all(
+                      color: FoodEmotionHelper.getColor(
+                        emotion,
+                      ).withValues(alpha: 0.6),
+                      width: 2,
+                    ),
+                  ),
+                  child: Center(
+                    child: Text(
+                      FoodEmotionHelper.getEmoji(emotion),
+                      style: const TextStyle(fontSize: 26),
+                    ),
+                  ),
+                ),
+              ),
+            );
+          }),
+        ],
       ),
     );
   }

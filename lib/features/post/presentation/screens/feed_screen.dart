@@ -12,7 +12,9 @@ import 'package:eefood/features/livestream/presentation/provider/live_stream_cub
 import 'package:eefood/features/noti/presentation/provider/notification_cubit.dart';
 import 'package:eefood/features/noti/presentation/provider/notification_state.dart';
 import 'package:eefood/features/noti/presentation/screens/notification_screen.dart';
+import 'package:eefood/features/payment/presentation/provider/wallet_cubit.dart';
 import 'package:eefood/features/post/presentation/provider/story_list_cubit.dart';
+import 'package:eefood/features/post/presentation/widgets/feed_screen/app_bar_icon_btn.dart';
 import 'package:eefood/features/post/presentation/widgets/post/reaction_popup.dart';
 import 'package:eefood/features/post/presentation/widgets/story/story_section.dart';
 import 'package:eefood/features/recipe/presentation/screens/recipe_detail_page.dart';
@@ -39,6 +41,7 @@ class FeedScreen extends StatelessWidget {
         BlocProvider.value(value: getIt<PostListCubit>()..fetchPosts()),
         BlocProvider.value(value: getIt<NotificationCubit>()),
         BlocProvider.value(value: getIt<StoryCubit>()),
+        BlocProvider.value(value: getIt<WalletCubit>()),
       ],
       child: const FeedView(),
     );
@@ -266,9 +269,11 @@ class _FeedViewState extends State<FeedView> {
         // Guest → chỉ fetch posts
         await context.read<PostListCubit>().fetchPosts();
         return;
+      } else {
+        await context.read<NotificationCubit>().fetchUnreadCount();
+        await context.read<WalletCubit>().init(user.id);
       }
       await context.read<StoryCubit>().loadStories(user.id);
-      await context.read<NotificationCubit>().fetchUnreadCount();
       await context.read<PostListCubit>().fetchPosts();
     });
 
@@ -342,9 +347,8 @@ class _FeedViewState extends State<FeedView> {
       future: _getCurrentUser(),
       builder: (context, snapshot) {
         final user = snapshot.data;
-        final userName = user?.username ?? 'bạn';
         final avatarUrl = user?.avatarUrl;
-        final greeting = GreetingHelper.getGreeting(userName: userName);
+        final greeting = GreetingHelper.getGreeting();
 
         final isGuest = user == null;
 
@@ -363,7 +367,7 @@ class _FeedViewState extends State<FeedView> {
                     children: [
                       Expanded(
                         child: Text(
-                          'Food Feed 🍽️',
+                          'Food Feed',
                           style: TextStyle(
                             fontSize: 20,
                             fontWeight: FontWeight.w600,
@@ -403,13 +407,15 @@ class _FeedViewState extends State<FeedView> {
               ),
             ),
             actions: [
-              IconButton(
-                icon: const Icon(Icons.search_rounded),
-                onPressed: () => _showSearchPopup(context),
+              AppBarIconBtn(
+                color: const Color(0xFFFFF3E0),
+                iconColor: const Color(0xFFE65100),
+                icon: Icons.search_rounded,
+                onTap: () => _showSearchPopup(context),
               ),
-              IconButton(
-                onPressed: () {
-                  if(isGuest){
+              AppBarIconBtn(
+                onTap: () {
+                  if (isGuest) {
                     showLoginRequired(context);
                     return;
                   }
@@ -431,15 +437,16 @@ class _FeedViewState extends State<FeedView> {
                     ),
                   );
                 },
-                icon: const Icon(Icons.videocam),
+                color: const Color(0xFFE8F5E9),
+                iconColor: const Color(0xFF2E7D32),
+                icon: Icons.videocam_outlined,
               ),
 
               // ==== Notification badge fixed ====
-
-                BlocBuilder<NotificationCubit, NotificationState>(
+              BlocBuilder<NotificationCubit, NotificationState>(
                 builder: (context, state) {
                   return Padding(
-                    padding: const EdgeInsets.only(right: 12.0),
+                    padding: const EdgeInsets.symmetric(horizontal: 2),
                     child: GestureDetector(
                       onTap: () {
                         if (isGuest) {
@@ -467,12 +474,21 @@ class _FeedViewState extends State<FeedView> {
                           '${state.unreadCount}',
                           style: const TextStyle(
                             color: Colors.white,
-                            fontSize: 10,
+                            fontSize: 9,
                           ),
                         ),
-                        child: const Icon(
-                          Icons.notifications_none_rounded,
-                          size: 28,
+                        child: Container(
+                          width: 36,
+                          height: 36,
+                          decoration: BoxDecoration(
+                            color: const Color(0xFFFEEEEF),
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          child: const Icon(
+                            Icons.notifications_none_rounded,
+                            size: 19,
+                            color: Color(0xFFC62828),
+                          ),
                         ),
                       ),
                     ),
@@ -480,37 +496,83 @@ class _FeedViewState extends State<FeedView> {
                 },
               ),
 
+              Container(
+                width: 1,
+                height: 20,
+                margin: const EdgeInsets.symmetric(horizontal: 4),
+                color: Colors.grey.shade200,
+              ),
+
               // ==== User avatar ====
               Padding(
-                padding: const EdgeInsets.only(right: 10.0),
-                child: GestureDetector(
-                  onTap: () {
-                    if (isGuest) {
-                      showLoginRequired(context);
-                      return;
-                    }
+                padding: const EdgeInsets.only(right: 12.0),
+                child: Row(
+                  children: [
+                    GestureDetector(
+                      onTap: () {},
+                      child: Container(
+                        height: 36,
+                        padding: const EdgeInsets.symmetric(horizontal: 8),
+                        decoration: BoxDecoration(
+                          color: Colors.blue.shade50,
+                          borderRadius: BorderRadius.circular(
+                            10,
+                          ),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(
+                              Icons.diamond_outlined,
+                              size: 14,
+                              color: Colors.blue.shade600,
+                            ),
+                            const SizedBox(width: 3),
+                            BlocBuilder<WalletCubit, int>(
+                              builder: (context, balance) => Text(
+                                '$balance',
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w600,
+                                  color: Colors.blue.shade700,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    GestureDetector(
+                      onTap: () {
+                        if (isGuest) {
+                          showLoginRequired(context);
+                          return;
+                        }
 
-                    // User đã login
-                    Navigator.pushNamed(
-                      context,
-                      AppRoutes.personalUser,
-                      arguments: {'user': user},
-                    );
-                  },
-                  child: CircleAvatar(
-                    radius: 17,
-                    backgroundColor: Colors.orange.shade200,
-                    backgroundImage: avatarUrl != null
-                        ? CachedNetworkImageProvider(avatarUrl)
-                        : null,
-                    child: avatarUrl == null
-                        ? Icon(
-                      Icons.person,
-                      size: 20,
-                      color: Colors.orange.shade700,
-                    )
-                        : null,
-                  ),
+                        // User đã login
+                        Navigator.pushNamed(
+                          context,
+                          AppRoutes.personalUser,
+                          arguments: {'user': user},
+                        );
+                      },
+                      child: CircleAvatar(
+                        radius: 17,
+                        backgroundColor: Colors.orange.shade200,
+                        backgroundImage: avatarUrl != null
+                            ? CachedNetworkImageProvider(avatarUrl)
+                            : null,
+                        child: avatarUrl == null
+                            ? Icon(
+                                Icons.person,
+                                size: 20,
+                                color: Colors.orange.shade700,
+                              )
+                            : null,
+                      ),
+                    ),
+                  ],
                 ),
               ),
             ],
@@ -527,7 +589,7 @@ class _FeedViewState extends State<FeedView> {
                       builder: (context, storyState) {
                         return StorySection(
                           onCreateStory: () async {
-                            if(isGuest){
+                            if (isGuest) {
                               showLoginRequired(context);
                               return;
                             }
@@ -568,10 +630,8 @@ class _FeedViewState extends State<FeedView> {
                   slivers: [
                     SliverToBoxAdapter(child: _buildActiveFilters(postState)),
 
-                    if(isGuest)
-                      SliverToBoxAdapter(
-                        child: _buildGuestBanner(context),
-                      ),
+                    if (isGuest)
+                      SliverToBoxAdapter(child: _buildGuestBanner(context)),
 
                     // Story Section (an khi co loc)
                     SliverToBoxAdapter(
@@ -579,7 +639,7 @@ class _FeedViewState extends State<FeedView> {
                         builder: (context, storyState) {
                           return StorySection(
                             onCreateStory: () async {
-                              if(isGuest){
+                              if (isGuest) {
                                 showLoginRequired(context);
                                 return;
                               }
@@ -754,7 +814,10 @@ class _FeedViewState extends State<FeedView> {
             ),
             child: const Text(
               'Đăng nhập',
-              style: TextStyle(fontWeight: FontWeight.w600, color: Colors.deepOrange),
+              style: TextStyle(
+                fontWeight: FontWeight.w600,
+                color: Colors.deepOrange,
+              ),
             ),
           ),
         ],

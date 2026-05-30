@@ -1,5 +1,5 @@
 import 'dart:io';
-
+import 'package:eefood/features/livestream/presentation/provider/live_gift_cubit.dart';
 import 'package:eefood/features/livestream/presentation/provider/live_poll_cubit.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -138,13 +138,6 @@ class _LivePrepScreenState extends State<LivePrepScreen> {
       return;
     }
 
-    await context.read<LiveStreamCubit>().disposePreviewVideoTrack();
-  }
-
-  Future<void> _startLiveStream() async {
-    final isReady = await _prepareTracksForLive();
-    if (!isReady || !mounted) return;
-
     context.read<StartLiveCubit>().startLive(_descriptionController.text);
   }
 
@@ -214,6 +207,9 @@ class _LivePrepScreenState extends State<LivePrepScreen> {
                               connectSocket: true,
                             ),
                         ),
+                        BlocProvider(
+                          create: (_) => getIt<LiveGiftCubit>()..init(startState.stream!.id),
+                        ),
                       ],
                       child: LiveStreamScreen(stream: startState.stream!),
                     ),
@@ -241,6 +237,7 @@ class _LivePrepScreenState extends State<LivePrepScreen> {
           builder: (context, state) {
             return Stack(
               children: [
+                // Preview camera
                 Positioned.fill(
                   child: state.localVideoTrack != null && state.isCameraOn
                       ? VideoTrackRenderer(state.localVideoTrack!)
@@ -317,8 +314,6 @@ class _LivePrepScreenState extends State<LivePrepScreen> {
   }
 
   Widget _buildRightControls(LiveStreamState state) {
-    final isPreviewOn = state.localVideoTrack != null && state.isCameraOn;
-
     return Positioned(
       right: 16,
       top: 0,
@@ -328,14 +323,14 @@ class _LivePrepScreenState extends State<LivePrepScreen> {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             _buildControlButton(
-              icon: isPreviewOn ? Icons.videocam : Icons.videocam_off,
+              icon: state.isCameraOn ? Icons.videocam : Icons.videocam_off,
               label: 'Camera',
-              onPressed: () => _handleCameraPreviewToggle(state),
+              onPressed: () => context.read<LiveStreamCubit>().toggleCamera(),
             ),
             const SizedBox(height: 20),
             _buildControlButton(
               icon: state.isMicOn ? Icons.mic : Icons.mic_off,
-              label: state.isMicOn ? 'Mic khi live' : 'Live không mic',
+              label: state.isMicOn ? 'Tắt micro' : 'Bật micro',
               onPressed: () => context.read<LiveStreamCubit>().toggleMic(),
             ),
             const SizedBox(height: 20),
@@ -406,6 +401,7 @@ class _LivePrepScreenState extends State<LivePrepScreen> {
               ],
             ),
             const SizedBox(height: 16),
+            // Start button
             BlocBuilder<StartLiveCubit, StartLiveState>(
               builder: (context, startState) {
                 final isBusy = startState.loading || _isPreparingLive;
