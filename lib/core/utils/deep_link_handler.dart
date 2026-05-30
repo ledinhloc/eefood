@@ -5,6 +5,7 @@ import 'package:eefood/features/livestream/domain/repository/live_reaction_repo.
 import 'package:eefood/features/livestream/domain/repository/live_viewer_repository.dart';
 import 'package:eefood/features/livestream/presentation/provider/block_user_cubit.dart';
 import 'package:eefood/features/livestream/presentation/provider/live_comment_cubit.dart';
+import 'package:eefood/features/livestream/presentation/provider/live_gift_cubit.dart';
 import 'package:eefood/features/livestream/presentation/provider/live_poll_cubit.dart';
 import 'package:eefood/features/livestream/presentation/provider/live_reaction_cubit.dart';
 import 'package:eefood/features/livestream/presentation/provider/live_viewer_cubit.dart';
@@ -69,6 +70,9 @@ class DeepLinkHandler {
                   isHost: false,
                   connectSocket: true,
                 ),
+            ),
+            BlocProvider(
+              create: (_) => getIt<LiveGiftCubit>()..init(streamId),
             ),
           ],
           child: LiveViewerScreen(streamId: streamId),

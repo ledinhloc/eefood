@@ -1,6 +1,8 @@
 import 'dart:async';
 
+import 'package:eefood/features/livestream/presentation/provider/live_gift_cubit.dart';
 import 'package:eefood/features/livestream/presentation/provider/live_viewer_cubit.dart';
+import 'package:eefood/features/livestream/presentation/widgets/live_gift/live_gift_overlay_layer.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:livekit_client/livekit_client.dart';
@@ -56,6 +58,8 @@ class _LiveStreamScreenState extends State<LiveStreamScreen> {
     _liveStreamCubit = context.read<LiveStreamCubit>();
     _ensureTracksReady();
     _liveViewerCubit.joinLiveStream();
+
+    context.read<LiveGiftCubit>().init(widget.stream.id);
   }
 
   Future<void> _ensureTracksReady() async {
@@ -311,6 +315,7 @@ class _LiveStreamScreenState extends State<LiveStreamScreen> {
                 onShowViewerList: _showViewerList,
                 onShowPollManage: _showPollManageSheet,
               ),
+
               Positioned(
                 bottom: 30,
                 left: 10,
@@ -327,10 +332,22 @@ class _LiveStreamScreenState extends State<LiveStreamScreen> {
                 onShowCreatePoll: _showCreatePollSheet,
                 onShowPollManage: _showPollManageSheet,
               ),
+              const Positioned.fill(child: _GiftOverlayBridge()),
             ],
           ),
         ),
       ),
+    );
+  }
+}
+
+class _GiftOverlayBridge extends StatelessWidget {
+  const _GiftOverlayBridge();
+
+  @override
+  Widget build(BuildContext context) {
+    return LiveGiftOverlayLayer(
+      giftCatalog: context.read<LiveGiftCubit>().state.gifts,
     );
   }
 }

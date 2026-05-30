@@ -12,6 +12,7 @@ import 'package:eefood/features/livestream/presentation/provider/live_stream_cub
 import 'package:eefood/features/noti/presentation/provider/notification_cubit.dart';
 import 'package:eefood/features/noti/presentation/provider/notification_state.dart';
 import 'package:eefood/features/noti/presentation/screens/notification_screen.dart';
+import 'package:eefood/features/payment/presentation/provider/wallet_cubit.dart';
 import 'package:eefood/features/post/presentation/provider/story_list_cubit.dart';
 import 'package:eefood/features/post/presentation/widgets/feed_screen/app_bar_icon_btn.dart';
 import 'package:eefood/features/post/presentation/widgets/post/reaction_popup.dart';
@@ -40,6 +41,7 @@ class FeedScreen extends StatelessWidget {
         BlocProvider.value(value: getIt<PostListCubit>()..fetchPosts()),
         BlocProvider.value(value: getIt<NotificationCubit>()),
         BlocProvider.value(value: getIt<StoryCubit>()),
+        BlocProvider.value(value: getIt<WalletCubit>()),
       ],
       child: const FeedView(),
     );
@@ -267,9 +269,11 @@ class _FeedViewState extends State<FeedView> {
         // Guest → chỉ fetch posts
         await context.read<PostListCubit>().fetchPosts();
         return;
+      } else {
+        await context.read<NotificationCubit>().fetchUnreadCount();
+        await context.read<WalletCubit>().init(user.id);
       }
       await context.read<StoryCubit>().loadStories(user.id);
-      await context.read<NotificationCubit>().fetchUnreadCount();
       await context.read<PostListCubit>().fetchPosts();
     });
 
@@ -507,16 +511,12 @@ class _FeedViewState extends State<FeedView> {
                     GestureDetector(
                       onTap: () {},
                       child: Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 7,
-                          vertical: 4,
-                        ),
+                        height: 36,
+                        padding: const EdgeInsets.symmetric(horizontal: 8),
                         decoration: BoxDecoration(
                           color: Colors.blue.shade50,
-                          borderRadius: BorderRadius.circular(20),
-                          border: Border.all(
-                            color: Colors.blue.shade200,
-                            width: 1,
+                          borderRadius: BorderRadius.circular(
+                            10,
                           ),
                         ),
                         child: Row(
@@ -528,12 +528,14 @@ class _FeedViewState extends State<FeedView> {
                               color: Colors.blue.shade600,
                             ),
                             const SizedBox(width: 3),
-                            Text(
-                              '128',
-                              style: TextStyle(
-                                fontSize: 12,
-                                fontWeight: FontWeight.w600,
-                                color: Colors.blue.shade700,
+                            BlocBuilder<WalletCubit, int>(
+                              builder: (context, balance) => Text(
+                                '$balance',
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w600,
+                                  color: Colors.blue.shade700,
+                                ),
                               ),
                             ),
                           ],

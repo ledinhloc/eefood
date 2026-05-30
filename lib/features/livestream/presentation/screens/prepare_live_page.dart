@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'package:eefood/features/livestream/presentation/provider/live_gift_cubit.dart';
 import 'package:eefood/features/livestream/presentation/provider/live_poll_cubit.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -142,6 +143,9 @@ class _LivePrepScreenState extends State<LivePrepScreen> {
                               isHost: true,
                               connectSocket: true,
                             ),
+                        ),
+                        BlocProvider(
+                          create: (_) => getIt<LiveGiftCubit>()..init(startState.stream!.id),
                         ),
                       ],
                       child: LiveStreamScreen(stream: startState.stream!),
