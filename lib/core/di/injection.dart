@@ -37,6 +37,8 @@ import 'package:eefood/features/nutrition/domain/repositories/nutrition_reposito
 import 'package:eefood/features/nutrition/presentation/provider/nutrition_cubit.dart';
 import 'package:eefood/features/payment/data/repository/payment_repository_impl.dart';
 import 'package:eefood/features/payment/domain/repository/payment_repository.dart';
+import 'package:eefood/features/payment/presentation/provider/diamond_packages_cubit.dart';
+import 'package:eefood/features/payment/presentation/provider/payment_cubit.dart';
 import 'package:eefood/features/payment/presentation/provider/wallet_cubit.dart';
 import 'package:eefood/features/post/data/repositories/collection_repository_impl.dart';
 import 'package:eefood/features/post/data/repositories/comment_reaction_repository_impl.dart';
@@ -405,8 +407,12 @@ Future<void> setupDependencies() async {
     () => PaymentRepositoryImpl(dio: getIt<DioClient>().dio),
   );
 
-  getIt.registerLazySingleton<WalletCubit>(
+  getIt.registerFactory<WalletCubit>(
     () => WalletCubit(repository: getIt<PaymentRepository>()),
+  );
+
+  getIt.registerLazySingleton<DiamondPackagesCubit>(
+    () => DiamondPackagesCubit(repository: getIt<PaymentRepository>()),
   );
 
   getIt.registerLazySingleton<LiveGiftRepository>(
@@ -415,5 +421,9 @@ Future<void> setupDependencies() async {
 
   getIt.registerFactory<LiveGiftCubit>(
     () => LiveGiftCubit(repository: getIt<LiveGiftRepository>()),
+  );
+
+  getIt.registerFactory<PaymentCubit>(
+    () => PaymentCubit(paymentRepository: getIt<PaymentRepository>()),
   );
 }
