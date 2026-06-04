@@ -1,3 +1,4 @@
+import 'package:eefood/app_routes.dart';
 import 'package:eefood/core/constants/app_keys.dart';
 import 'package:eefood/core/di/injection.dart';
 import 'package:eefood/features/livestream/domain/repository/live_comment_repo.dart';
@@ -6,15 +7,15 @@ import 'package:eefood/features/livestream/domain/repository/live_viewer_reposit
 import 'package:eefood/features/livestream/presentation/provider/block_user_cubit.dart';
 import 'package:eefood/features/livestream/presentation/provider/live_comment_cubit.dart';
 import 'package:eefood/features/livestream/presentation/provider/live_gift_cubit.dart';
+import 'package:eefood/features/livestream/presentation/provider/live_leaderboard_cubit.dart';
 import 'package:eefood/features/livestream/presentation/provider/live_poll_cubit.dart';
 import 'package:eefood/features/livestream/presentation/provider/live_reaction_cubit.dart';
 import 'package:eefood/features/livestream/presentation/provider/live_viewer_cubit.dart';
 import 'package:eefood/features/livestream/presentation/provider/watch_live_cubit.dart';
 import 'package:eefood/features/livestream/presentation/screens/live_viewer_screen.dart';
+import 'package:eefood/main.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:eefood/app_routes.dart';
-import 'package:eefood/main.dart';
 
 class DeepLinkHandler {
   /// Hàm điều hướng an toàn với timeout
@@ -71,8 +72,9 @@ class DeepLinkHandler {
                   connectSocket: true,
                 ),
             ),
+            BlocProvider(create: (_) => getIt<LiveGiftCubit>()..init(streamId)),
             BlocProvider(
-              create: (_) => getIt<LiveGiftCubit>()..init(streamId),
+              create: (_) => getIt<LiveLeaderboardCubit>()..init(streamId),
             ),
           ],
           child: LiveViewerScreen(streamId: streamId),
@@ -145,7 +147,8 @@ class DeepLinkHandler {
       final uri = Uri.parse(url);
       debugPrint('[DeepLinkHandler] Handling web URL: $url');
 
-      if ((uri.host == 'eefood-preview-card.vercel.app' || uri.host == AppKeys.hostDeloy) &&
+      if ((uri.host == 'eefood-preview-card.vercel.app' ||
+              uri.host == AppKeys.hostDeloy) &&
           uri.pathSegments.length >= 2 &&
           uri.pathSegments.first == 'recipes') {
         final recipeId = int.tryParse(uri.pathSegments[1]);
@@ -165,8 +168,9 @@ class DeepLinkHandler {
     }
   }
 
-   static void _handleRecipeApprove(Uri uri){
-    final recipeId = uri.queryParameters['recipeId'] ??
+  static void _handleRecipeApprove(Uri uri) {
+    final recipeId =
+        uri.queryParameters['recipeId'] ??
         (uri.pathSegments.length > 2 ? uri.pathSegments[2] : null);
     final recipeName = uri.queryParameters['recipeName'];
     final message = uri.queryParameters['message'];

@@ -15,16 +15,19 @@ import 'package:eefood/features/cook_process/presentation/provider/ingredient_al
 import 'package:eefood/features/livestream/data/repositoty/live_block_repository_impl.dart';
 import 'package:eefood/features/livestream/data/repositoty/live_comment_repo_impl.dart';
 import 'package:eefood/features/livestream/data/repositoty/live_gift_repository_impl.dart';
+import 'package:eefood/features/livestream/data/repositoty/live_leaderboard_repository_impl.dart';
 import 'package:eefood/features/livestream/data/repositoty/live_poll_repository_impl.dart';
 import 'package:eefood/features/livestream/data/repositoty/live_reaction_repo_impl.dart';
 import 'package:eefood/features/livestream/data/repositoty/live_repository_impl.dart';
 import 'package:eefood/features/livestream/domain/repository/live_block_repository.dart';
 import 'package:eefood/features/livestream/domain/repository/live_comment_repo.dart';
 import 'package:eefood/features/livestream/domain/repository/live_gift_repository.dart';
+import 'package:eefood/features/livestream/domain/repository/live_leaderboard_repository.dart';
 import 'package:eefood/features/livestream/domain/repository/live_poll_repository.dart';
 import 'package:eefood/features/livestream/domain/repository/live_reaction_repo.dart';
 import 'package:eefood/features/livestream/domain/repository/live_repository.dart';
 import 'package:eefood/features/livestream/presentation/provider/live_gift_cubit.dart';
+import 'package:eefood/features/livestream/presentation/provider/live_leaderboard_cubit.dart';
 import 'package:eefood/features/livestream/presentation/provider/start_live_cubit.dart';
 import 'package:eefood/features/meal_plan/data/repository/meal_plan_repository_impl.dart';
 import 'package:eefood/features/meal_plan/domain/repository/meal_plan_repository.dart';
@@ -425,5 +428,13 @@ Future<void> setupDependencies() async {
 
   getIt.registerFactory<PaymentCubit>(
     () => PaymentCubit(paymentRepository: getIt<PaymentRepository>()),
+  );
+
+  getIt.registerLazySingleton<LiveLeaderboardRepository>(
+    () => LiveLeaderboardRepositoryImpl(dio: getIt<DioClient>().dio),
+  );
+
+  getIt.registerFactory<LiveLeaderboardCubit>(
+    () => LiveLeaderboardCubit(repository: getIt<LiveLeaderboardRepository>())
   );
 }

@@ -4,8 +4,10 @@ import 'dart:async';
 import 'package:eefood/core/di/injection.dart';
 import 'package:eefood/core/widgets/snack_bar.dart';
 import 'package:eefood/features/livestream/presentation/provider/live_gift_cubit.dart';
+import 'package:eefood/features/livestream/presentation/provider/live_leaderboard_cubit.dart';
 import 'package:eefood/features/livestream/presentation/provider/live_poll_cubit.dart';
 import 'package:eefood/features/livestream/presentation/provider/live_poll_state.dart';
+import 'package:eefood/features/livestream/presentation/widgets/leaderboard/live_leaderboard_strip.dart';
 import 'package:eefood/features/livestream/presentation/widgets/live_gift/live_gift_bottom_sheet.dart';
 import 'package:eefood/features/livestream/presentation/widgets/live_gift/live_gift_overlay_layer.dart';
 import 'package:eefood/features/livestream/presentation/widgets/live_poll/live_poll_viewer_bottom_sheet.dart';
@@ -44,9 +46,19 @@ class _LiveViewerScreenState extends State<LiveViewerScreen> {
   final ScrollController _scrollController = ScrollController();
   final List<LiveReactionResponse> _activeReactions = [];
 
+  late final LiveLeaderboardCubit _leaderboardCubit;
+  late final WalletCubit _walletCubit;
+
   @override
   void initState() {
     super.initState();
+
+    // leaderboard
+    _leaderboardCubit = context.read<LiveLeaderboardCubit>();
+    _leaderboardCubit.init(widget.streamId);
+
+    //wallet
+    _walletCubit = getIt<WalletCubit>();
 
     // Load stream
     context.read<WatchLiveCubit>().loadLive(widget.streamId);
@@ -120,7 +132,7 @@ class _LiveViewerScreenState extends State<LiveViewerScreen> {
     );
   }
 
-  void _showGiftSheet() {
+  void _showGiftSheet(stream) {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
@@ -128,7 +140,7 @@ class _LiveViewerScreenState extends State<LiveViewerScreen> {
       builder: (_) => MultiBlocProvider(
         providers: [
           BlocProvider.value(value: context.read<LiveGiftCubit>()),
-          BlocProvider.value(value: getIt<WalletCubit>()),
+          BlocProvider.value(value: _walletCubit..init(stream.userId)),
         ],
         child: const LiveGiftBottomSheet(),
       ),
@@ -140,6 +152,7 @@ class _LiveViewerScreenState extends State<LiveViewerScreen> {
     _timer?.cancel();
     _commentController.dispose();
     _scrollController.dispose();
+    _leaderboardCubit.unsubscribe(widget.streamId);
     super.dispose();
   }
 
@@ -277,6 +290,16 @@ class _LiveViewerScreenState extends State<LiveViewerScreen> {
                 // Top bar
                 _buildTopBar(stream, participantCount),
                 Positioned(
+                  top: 120,
+                  left: 10,
+                  child: SafeArea(
+                    child: LiveLeaderboardStrip(
+                      livestreamId: widget.streamId,
+                      isStreamer: false,
+                    ),
+                  ),
+                ),
+                Positioned(
                   top: 110,
                   left: 10,
                   right: 70,
@@ -317,7 +340,7 @@ class _LiveViewerScreenState extends State<LiveViewerScreen> {
                 ),
 
                 // Reaction buttons
-                _buildReactionButtons(),
+                _buildReactionButtons(stream),
               ],
             ),
           );
@@ -424,7 +447,7 @@ class _LiveViewerScreenState extends State<LiveViewerScreen> {
     );
   }
 
-  Widget _buildReactionButtons() {
+  Widget _buildReactionButtons(stream) {
     return Positioned(
       right: 12,
       bottom: 200,
@@ -433,7 +456,7 @@ class _LiveViewerScreenState extends State<LiveViewerScreen> {
           Padding(
             padding: const EdgeInsets.only(bottom: 16),
             child: GestureDetector(
-              onTap: _showGiftSheet,
+              onTap: () => _showGiftSheet(stream),
               child: Container(
                 width: 52,
                 height: 52,

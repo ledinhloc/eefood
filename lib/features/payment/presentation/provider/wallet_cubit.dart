@@ -13,8 +13,20 @@ class WalletCubit extends Cubit<int> {
   WalletCubit({required this.repository}) : super(0);
 
   Future<void> init(int userId) async {
+    // Nếu user khác, reset state và unsubscribe queue cũ
+    if (_cachedUserId != null && _cachedUserId != userId) {
+      emit(0); // Reset balance
+      _wsManager.unsubscribeUserQueue(
+        queue: 'wallet-balance',
+        logName: 'DiamondBalance',
+      );
+    }
+
+    _cachedUserId = userId;
     final balance = await repository.getBalance(userId);
-    emit(balance);
+    if (!isClosed) {
+      emit(balance);
+    }
 
     _wsManager.connect(
       logName: 'DiamondBalance',

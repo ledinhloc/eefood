@@ -1,7 +1,9 @@
 import 'dart:async';
 
 import 'package:eefood/features/livestream/presentation/provider/live_gift_cubit.dart';
+import 'package:eefood/features/livestream/presentation/provider/live_leaderboard_cubit.dart';
 import 'package:eefood/features/livestream/presentation/provider/live_viewer_cubit.dart';
+import 'package:eefood/features/livestream/presentation/widgets/leaderboard/live_leaderboard_strip.dart';
 import 'package:eefood/features/livestream/presentation/widgets/live_gift/live_gift_overlay_layer.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -46,6 +48,7 @@ class _LiveStreamScreenState extends State<LiveStreamScreen> {
 
   late final LiveViewerCubit _liveViewerCubit;
   late final LiveStreamCubit _liveStreamCubit;
+  late final LiveLeaderboardCubit _liveLeaderboardCubit;
 
   bool _isCleaningUp = false;
   bool _cleanupCompleted = false;
@@ -56,6 +59,7 @@ class _LiveStreamScreenState extends State<LiveStreamScreen> {
     super.initState();
     _liveViewerCubit = context.read<LiveViewerCubit>();
     _liveStreamCubit = context.read<LiveStreamCubit>();
+    _liveLeaderboardCubit = context.read<LiveLeaderboardCubit>();
     _ensureTracksReady();
     _liveViewerCubit.joinLiveStream();
 
@@ -154,6 +158,10 @@ class _LiveStreamScreenState extends State<LiveStreamScreen> {
       getIt<LiveStreamWebSocketManager>().disconnect(
         logName: 'LiveStreamScreen',
       );
+    } catch (_) {}
+
+    try {
+      _liveLeaderboardCubit.unsubscribe(widget.stream.id);
     } catch (_) {}
 
     if (endLiveOnServer && !_liveEndedOnServer) {
@@ -314,6 +322,17 @@ class _LiveStreamScreenState extends State<LiveStreamScreen> {
                 onEndLive: _endLiveStream,
                 onShowViewerList: _showViewerList,
                 onShowPollManage: _showPollManageSheet,
+              ),
+
+              Positioned(
+                top: 60,
+                left: 10,
+                child: SafeArea(
+                  child: LiveLeaderboardStrip(
+                    livestreamId: widget.stream.id,
+                    isStreamer: true,
+                  ),
+                ),
               ),
 
               Positioned(
@@ -497,6 +516,16 @@ class _LiveTopBar extends StatelessWidget {
                           onTap: onShowPollManage,
                         ),
                       ],
+                      // if (pollState.poll == null) ...[
+                      //   const SizedBox(height: 8),
+                      //   BlocProvider.value(
+                      //     value: context.read<LiveLeaderboardCubit>(),
+                      //     child: LiveLeaderboardStrip(
+                      //       livestreamId: stream.id,
+                      //       isStreamer: true,
+                      //     ),
+                      //   ),
+                      // ],
                     ],
                   ),
                 );
