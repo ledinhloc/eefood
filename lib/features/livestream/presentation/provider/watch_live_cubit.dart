@@ -29,14 +29,16 @@ class WatchLiveCubit extends Cubit<WatchLiveState> {
     try {
       await disconnect();
 
-      _safeEmit(state.copyWith(
-        loading: true,
-        isStreamEnded: false,
-        clearError: true,
-        clearStreamEndMessage: true,
-        clearRemoteVideoTrack: true,
-        clearRemoteAudioTrack: true,
-      ));
+      _safeEmit(
+        state.copyWith(
+          loading: true,
+          isStreamEnded: false,
+          clearError: true,
+          clearStreamEndMessage: true,
+          clearRemoteVideoTrack: true,
+          clearRemoteAudioTrack: true,
+        ),
+      );
 
       _cleanupCurrentWsSubscriptions();
 
@@ -45,20 +47,13 @@ class WatchLiveCubit extends Cubit<WatchLiveState> {
 
       _currentStreamId = id;
 
-      _safeEmit(state.copyWith(
-        loading: false,
-        stream: res,
-        clearError: true,
-      ));
+      _safeEmit(state.copyWith(loading: false, stream: res, clearError: true));
 
       _setupWebSocket(id);
       await connectToRoom(res);
     } catch (e) {
       developer.log('Error loading stream: $e', name: 'WatchLive');
-      _safeEmit(state.copyWith(
-        loading: false,
-        error: e.toString(),
-      ));
+      _safeEmit(state.copyWith(loading: false, error: e.toString()));
     }
   }
 
@@ -109,18 +104,15 @@ class WatchLiveCubit extends Cubit<WatchLiveState> {
 
   void _cleanupCurrentWsSubscriptions() {
     final streamId = _currentStreamId;
-    if (streamId == null) return;
+    if (streamId != null) {
+      _wsManager.unsubscribeTopic(
+        liveStreamId: streamId,
+        topic: 'livestream',
+        logName: 'WatchLive',
+      );
+    }
 
-    _wsManager.unsubscribeTopic(
-      liveStreamId: streamId,
-      topic: 'livestream',
-      logName: 'WatchLive',
-    );
-
-    _wsManager.unsubscribeUserQueue(
-      queue: 'livestream',
-      logName: 'WatchLive',
-    );
+    _wsManager.unsubscribeUserQueue(queue: 'livestream', logName: 'WatchLive');
   }
 
   Future<void> _handleStreamEnded(LiveStreamEndMessage message) async {
@@ -129,12 +121,14 @@ class WatchLiveCubit extends Cubit<WatchLiveState> {
     if (message.type == 'STREAM_ENDED') {
       await disconnect();
 
-      _safeEmit(state.copyWith(
-        isStreamEnded: true,
-        streamEndMessage: message.message,
-        isConnected: false,
-        isConnecting: false,
-      ));
+      _safeEmit(
+        state.copyWith(
+          isStreamEnded: true,
+          streamEndMessage: message.message,
+          isConnected: false,
+          isConnecting: false,
+        ),
+      );
     }
   }
 
@@ -145,19 +139,18 @@ class WatchLiveCubit extends Cubit<WatchLiveState> {
     }
 
     developer.log('Connecting to room...', name: 'WatchLive');
-    _safeEmit(state.copyWith(
-      isConnecting: true,
-      clearError: true,
-      clearRemoteVideoTrack: true,
-      clearRemoteAudioTrack: true,
-    ));
+    _safeEmit(
+      state.copyWith(
+        isConnecting: true,
+        clearError: true,
+        clearRemoteVideoTrack: true,
+        clearRemoteAudioTrack: true,
+      ),
+    );
 
     try {
       final room = Room(
-        roomOptions: const RoomOptions(
-          adaptiveStream: true,
-          dynacast: true,
-        ),
+        roomOptions: const RoomOptions(adaptiveStream: true, dynacast: true),
       );
 
       _listener = room.createListener()
@@ -228,13 +221,15 @@ class WatchLiveCubit extends Cubit<WatchLiveState> {
             'Room disconnected: ${event.reason}',
             name: 'WatchLive',
           );
-          _safeEmit(state.copyWith(
-            isConnected: false,
-            isConnecting: false,
-            clearRoom: true,
-            clearRemoteVideoTrack: true,
-            clearRemoteAudioTrack: true,
-          ));
+          _safeEmit(
+            state.copyWith(
+              isConnected: false,
+              isConnecting: false,
+              clearRoom: true,
+              clearRemoteVideoTrack: true,
+              clearRemoteAudioTrack: true,
+            ),
+          );
         });
 
       await room.connect(
@@ -248,12 +243,14 @@ class WatchLiveCubit extends Cubit<WatchLiveState> {
         name: 'WatchLive',
       );
 
-      _safeEmit(state.copyWith(
-        room: room,
-        isConnected: true,
-        isConnecting: false,
-        clearError: true,
-      ));
+      _safeEmit(
+        state.copyWith(
+          room: room,
+          isConnected: true,
+          isConnecting: false,
+          clearError: true,
+        ),
+      );
 
       _syncAllRemoteParticipants(room);
       await Future.delayed(const Duration(milliseconds: 500));
@@ -266,19 +263,18 @@ class WatchLiveCubit extends Cubit<WatchLiveState> {
         stackTrace: stackTrace,
       );
 
-      _safeEmit(state.copyWith(
-        isConnecting: false,
-        error: 'Loi ket noi: $e',
-      ));
+      _safeEmit(state.copyWith(isConnecting: false, error: 'Loi ket noi: $e'));
     }
   }
 
   void _syncAllRemoteParticipants(Room room) {
     if (room.remoteParticipants.isEmpty) {
-      _safeEmit(state.copyWith(
-        clearRemoteVideoTrack: true,
-        clearRemoteAudioTrack: true,
-      ));
+      _safeEmit(
+        state.copyWith(
+          clearRemoteVideoTrack: true,
+          clearRemoteAudioTrack: true,
+        ),
+      );
       return;
     }
 
@@ -309,12 +305,14 @@ class WatchLiveCubit extends Cubit<WatchLiveState> {
       }
     }
 
-    _safeEmit(state.copyWith(
-      remoteVideoTrack: nextVideoTrack,
-      remoteAudioTrack: nextAudioTrack,
-      clearRemoteVideoTrack: nextVideoTrack == null,
-      clearRemoteAudioTrack: nextAudioTrack == null,
-    ));
+    _safeEmit(
+      state.copyWith(
+        remoteVideoTrack: nextVideoTrack,
+        remoteAudioTrack: nextAudioTrack,
+        clearRemoteVideoTrack: nextVideoTrack == null,
+        clearRemoteAudioTrack: nextAudioTrack == null,
+      ),
+    );
   }
 
   Future<void> disconnect() async {
@@ -324,13 +322,15 @@ class WatchLiveCubit extends Cubit<WatchLiveState> {
     await state.room?.disconnect();
     await state.room?.dispose();
 
-    _safeEmit(state.copyWith(
-      clearRoom: true,
-      isConnected: false,
-      isConnecting: false,
-      clearRemoteVideoTrack: true,
-      clearRemoteAudioTrack: true,
-    ));
+    _safeEmit(
+      state.copyWith(
+        clearRoom: true,
+        isConnected: false,
+        isConnecting: false,
+        clearRemoteVideoTrack: true,
+        clearRemoteAudioTrack: true,
+      ),
+    );
   }
 
   @override

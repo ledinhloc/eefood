@@ -14,6 +14,7 @@ import '../../../../livestream/presentation/provider/block_user_cubit.dart';
 import '../../../../livestream/presentation/provider/live_comment_cubit.dart';
 import '../../../../livestream/presentation/provider/live_reaction_cubit.dart';
 import '../../../../livestream/presentation/provider/live_viewer_cubit.dart';
+import '../../../../livestream/presentation/provider/subtitle_cubit.dart';
 import '../../../../livestream/presentation/provider/watch_live_cubit.dart';
 import '../../../../livestream/presentation/screens/live_viewer_screen.dart';
 
@@ -33,6 +34,7 @@ class LiveStatusBadge extends StatelessWidget {
           MaterialPageRoute(
             builder: (_) => MultiBlocProvider(
               providers: [
+                BlocProvider(create: (_) => SubtitleCubit()),
                 BlocProvider(create: (_) => getIt<WatchLiveCubit>()),
                 BlocProvider(
                   create: (_) => LiveCommentCubit(

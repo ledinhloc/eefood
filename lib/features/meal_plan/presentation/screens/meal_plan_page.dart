@@ -20,7 +20,8 @@ class MealPlanPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return BlocProvider(
       create: (_) =>
-          MealPlanCubit(repository: getIt<MealPlanRepository>())..loadOverview(),
+          MealPlanCubit(repository: getIt<MealPlanRepository>())
+            ..loadOverview(),
       child: const _MealPlanView(),
     );
   }
@@ -99,7 +100,9 @@ class _MealPlanViewState extends State<_MealPlanView> {
         : const Color(0xFFF48C06); // Màu phụ để tạo gradient và điểm nhấn
     final softCream = isDark
         ? colorScheme.primaryContainer.withValues(alpha: 0.32)
-        : const Color(0xFFFFF4E6); // Nền kem nhẹ cho card hoặc vùng tách nội dung
+        : const Color(
+            0xFFFFF4E6,
+          ); // Nền kem nhẹ cho card hoặc vùng tách nội dung
 
     return Scaffold(
       backgroundColor: pageBackground,
@@ -170,38 +173,7 @@ class _MealPlanViewState extends State<_MealPlanView> {
         : const Color(0xFFF1D8C0);
     final plan = state.plan;
     if (plan == null) {
-      return Center(
-        child: Padding(
-          padding: const EdgeInsets.all(24),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(
-                Icons.restaurant_menu_outlined,
-                size: 56,
-                color: colorScheme.primary.withValues(alpha: 0.72),
-              ),
-              const SizedBox(height: 16),
-              Text(
-                l10n.mealPlanNoPlan,
-                style: theme.textTheme.titleMedium?.copyWith(
-                  fontWeight: FontWeight.w700,
-                ),
-                textAlign: TextAlign.center,
-              ),
-              const SizedBox(height: 16),
-              ElevatedButton.icon(
-                onPressed: () => showMealPlanGenerateSheet(
-                  context: context,
-                  cubit: context.read<MealPlanCubit>(),
-                ),
-                icon: const Icon(Icons.auto_awesome_outlined),
-                label: Text(l10n.mealPlanCreateAi),
-              ),
-            ],
-          ),
-        ),
-      );
+      return _buildEmptyPlanState(context, theme, primaryWarm, accentWarm);
     }
 
     return RefreshIndicator(
@@ -375,6 +347,109 @@ class _MealPlanViewState extends State<_MealPlanView> {
               );
             }),
         ],
+      ),
+    );
+  }
+
+  Widget _buildEmptyPlanState(
+    BuildContext context,
+    ThemeData theme,
+    Color primaryWarm,
+    Color accentWarm,
+  ) {
+    final l10n = AppLocalizations.of(context)!;
+    final isDark = theme.brightness == Brightness.dark;
+    final colorScheme = theme.colorScheme;
+
+    return Center(
+      child: SingleChildScrollView(
+        padding: const EdgeInsets.all(24),
+        child: Container(
+          width: double.infinity,
+          constraints: const BoxConstraints(maxWidth: 420),
+          padding: const EdgeInsets.all(24),
+          decoration: BoxDecoration(
+            color: isDark ? colorScheme.surface : Colors.white,
+            borderRadius: BorderRadius.circular(24),
+            border: Border.all(
+              color: primaryWarm.withValues(alpha: isDark ? 0.28 : 0.12),
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: primaryWarm.withValues(alpha: isDark ? 0.18 : 0.14),
+                blurRadius: 28,
+                offset: const Offset(0, 14),
+              ),
+            ],
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                width: 96,
+                height: 96,
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [primaryWarm, accentWarm],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                  ),
+                  shape: BoxShape.circle,
+                  boxShadow: [
+                    BoxShadow(
+                      color: accentWarm.withValues(alpha: 0.24),
+                      blurRadius: 22,
+                      offset: const Offset(0, 10),
+                    ),
+                  ],
+                ),
+                child: Icon(
+                  Icons.restaurant_menu_outlined,
+                  size: 46,
+                  color: Colors.white.withValues(alpha: 0.95),
+                ),
+              ),
+              const SizedBox(height: 22),
+              Text(
+                l10n.mealPlanNoPlan,
+                style: theme.textTheme.titleLarge?.copyWith(
+                  color: colorScheme.onSurface,
+                  fontWeight: FontWeight.w800,
+                ),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 8),
+              Text(
+                l10n.mealPlanGenerateSubtitle,
+                style: theme.textTheme.bodyMedium?.copyWith(
+                  color: colorScheme.onSurface.withValues(alpha: 0.66),
+                  height: 1.35,
+                ),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 22),
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton.icon(
+                  onPressed: () => showMealPlanGenerateSheet(
+                    context: context,
+                    cubit: context.read<MealPlanCubit>(),
+                  ),
+                  icon: const Icon(Icons.auto_awesome_outlined),
+                  label: Text(l10n.mealPlanCreateAi),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: primaryWarm,
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(vertical: 14),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }

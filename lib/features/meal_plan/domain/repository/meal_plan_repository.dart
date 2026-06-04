@@ -6,7 +6,7 @@ import 'package:eefood/features/meal_plan/data/model/meal_plan_response.dart';
 import 'package:eefood/features/meal_plan/data/model/meal_plan_upsert_request.dart';
 
 abstract class MealPlanRepository {
-  Future<MealPlanResponse> getCurrentMealPlan();
+  Future<MealPlanResponse?> getCurrentMealPlan();
 
   Future<List<MealPlanDailySummaryResponse>> getDailySummary();
 

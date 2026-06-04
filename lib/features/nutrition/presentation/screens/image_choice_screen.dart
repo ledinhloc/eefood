@@ -1,3 +1,4 @@
+import 'package:eefood/features/nutrition/presentation/screens/ingredient_search_page.dart';
 import 'package:eefood/features/nutrition/presentation/screens/nutrition_camera_screen.dart';
 import 'package:eefood/features/nutrition/presentation/screens/qr_scanner_screen.dart';
 import 'package:eefood/features/nutrition/presentation/widgets/choice_card.dart';
@@ -19,6 +20,7 @@ class _ImageChoiceScreenState extends State<ImageChoiceScreen>
   late Animation<Offset> _slideCard1;
   late Animation<Offset> _slideCard2;
   late Animation<Offset> _slideCard3;
+  late Animation<Offset> _slideCard4;
 
   @override
   void initState() {
@@ -57,6 +59,14 @@ class _ImageChoiceScreenState extends State<ImageChoiceScreen>
           ),
         );
 
+    _slideCard4 = Tween<Offset>(begin: const Offset(0.3, 0), end: Offset.zero)
+        .animate(
+          CurvedAnimation(
+            parent: _animController,
+            curve: const Interval(0.5, 1.0, curve: Curves.easeOutCubic),
+          ),
+        );
+
     _animController.forward();
   }
 
@@ -76,10 +86,11 @@ class _ImageChoiceScreenState extends State<ImageChoiceScreen>
     final cardBg1 = isDark ? const Color(0xFF1A1A1A) : const Color(0xFFFFF8F3);
     final cardBg2 = isDark ? const Color(0xFF1A1A1A) : const Color(0xFFF5F5F5);
     final cardBg3 = isDark ? const Color(0xFF1A1A1A) : const Color(0xFFF3F8FF);
+    final cardBg4 = isDark ? const Color(0xFF1A1A1A) : const Color(0xFFFFF7ED);
     final textColor = isDark ? Colors.white : const Color(0xFF1A1A1A);
     final subtitleColor = isDark
         ? Colors.white60
-        : const Color(0xFF1A1A1A).withOpacity(0.55);
+        : const Color(0xFF1A1A1A).withValues(alpha: 0.55);
 
     return Scaffold(
       backgroundColor: bgColor,
@@ -100,7 +111,7 @@ class _ImageChoiceScreenState extends State<ImageChoiceScreen>
         ),
         iconTheme: IconThemeData(color: textColor),
       ),
-      body: Padding(
+      body: SingleChildScrollView(
         padding: const EdgeInsets.symmetric(horizontal: 20),
         child: Column(
           children: [
@@ -127,11 +138,37 @@ class _ImageChoiceScreenState extends State<ImageChoiceScreen>
                   curve: const Interval(0.2, 0.7),
                 ),
                 child: ChoiceCard(
+                  title: 'Tìm món từ nguyên liệu',
+                  subtitle:
+                      'Chụp ảnh nguyên liệu để nhận diện và tìm món ăn phù hợp',
+                  icon: Icons.food_bank_outlined,
+                  accentColor: const Color(0xFFEF7D10),
+                  backgroundColor: cardBg1,
+                  textColor: textColor,
+                  subtitleColor: subtitleColor,
+                  isDark: isDark,
+                  onTap: () => Navigator.push(
+                    context,
+                    _buildPageRoute(const IngredientSearchPage()),
+                  ),
+                ),
+              ),
+            ),
+            const SizedBox(height: 16),
+            
+            SlideTransition(
+              position: _slideCard2,
+              child: FadeTransition(
+                opacity: CurvedAnimation(
+                  parent: _animController,
+                  curve: const Interval(0.3, 0.8),
+                ),
+                child: ChoiceCard(
                   title: l10n.lookUpTitle,
                   subtitle: l10n.lookUpSubtitle,
                   icon: Icons.image_search_rounded,
                   accentColor: const Color(0xFFFF6B00),
-                  backgroundColor: cardBg1,
+                  backgroundColor: cardBg2,
                   textColor: textColor,
                   subtitleColor: subtitleColor,
                   isDark: isDark,
@@ -142,23 +179,22 @@ class _ImageChoiceScreenState extends State<ImageChoiceScreen>
                 ),
               ),
             ),
-
             const SizedBox(height: 16),
 
             // Card 2: Phân tích dinh dưỡng
             SlideTransition(
-              position: _slideCard2,
+              position: _slideCard3,
               child: FadeTransition(
                 opacity: CurvedAnimation(
                   parent: _animController,
-                  curve: const Interval(0.3, 0.8),
+                  curve: const Interval(0.4, 0.9),
                 ),
                 child: ChoiceCard(
                   title: l10n.analyzeTitle,
                   subtitle: l10n.analyzeSubtitle,
                   icon: Icons.analytics_rounded,
                   accentColor: const Color(0xFF00C896),
-                  backgroundColor: cardBg2,
+                  backgroundColor: cardBg3,
                   textColor: textColor,
                   subtitleColor: subtitleColor,
                   isDark: isDark,
@@ -169,7 +205,6 @@ class _ImageChoiceScreenState extends State<ImageChoiceScreen>
                 ),
               ),
             ),
-
             const SizedBox(height: 16),
 
             // Card 3: Quét mã QR
@@ -178,14 +213,14 @@ class _ImageChoiceScreenState extends State<ImageChoiceScreen>
               child: FadeTransition(
                 opacity: CurvedAnimation(
                   parent: _animController,
-                  curve: const Interval(0.4, 0.9),
+                  curve: const Interval(0.5, 1.0),
                 ),
                 child: ChoiceCard(
                   title: l10n.qrTitle,
                   subtitle: l10n.qrSubtitle,
                   icon: Icons.qr_code_2_outlined,
                   accentColor: const Color(0xFF3B82F6),
-                  backgroundColor: cardBg3,
+                  backgroundColor: cardBg4,
                   textColor: textColor,
                   subtitleColor: subtitleColor,
                   isDark: isDark,
@@ -196,6 +231,7 @@ class _ImageChoiceScreenState extends State<ImageChoiceScreen>
                 ),
               ),
             ),
+            const SizedBox(height: 24),
           ],
         ),
       ),

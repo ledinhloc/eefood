@@ -205,6 +205,35 @@ class LiveStreamWebSocketManager {
     developer.log('Subscribed USER queue: $destination', name: logName);
   }
 
+  bool send({
+    required String destination,
+    Object? body,
+    required String logName,
+    Map<String, String>? headers,
+    void Function(String error)? onError,
+  }) {
+    if (!isConnected) {
+      final error = 'Cannot send, WebSocket not connected';
+      developer.log(error, name: logName);
+      onError?.call(error);
+      return false;
+    }
+
+    try {
+      _stompClient!.send(
+        destination: destination,
+        headers: headers ?? const {},
+        body: body == null ? null : jsonEncode(body),
+      );
+      developer.log('Sent message to: $destination', name: logName);
+      return true;
+    } catch (e) {
+      developer.log('Error sending message to $destination: $e', name: logName);
+      onError?.call('Error sending message to $destination: $e');
+      return false;
+    }
+  }
+
   void unsubscribeTopic({
     required int liveStreamId,
     required String topic,

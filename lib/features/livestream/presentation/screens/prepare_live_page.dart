@@ -18,10 +18,11 @@ import '../provider/live_stream_cubit.dart';
 import '../provider/live_stream_state.dart';
 import '../provider/live_viewer_cubit.dart';
 import '../provider/start_live_cubit.dart';
+import '../provider/subtitle_cubit.dart';
 import 'live_streaming_page.dart';
 
 class LivePrepScreen extends StatefulWidget {
-  const LivePrepScreen({Key? key}) : super(key: key);
+  const LivePrepScreen({super.key});
 
   @override
   State<LivePrepScreen> createState() => _LivePrepScreenState();
@@ -30,50 +31,111 @@ class LivePrepScreen extends StatefulWidget {
 class _LivePrepScreenState extends State<LivePrepScreen> {
   final TextEditingController _descriptionController = TextEditingController();
 
+  bool _isPreparingLive = false;
+
   @override
   void initState() {
     super.initState();
-    _initializeTracks();
+    _initializePreviewTrack();
   }
 
-  Future<void> _initializeTracks() async {
+  CameraCaptureOptions _previewCameraOptions(LiveStreamState state) {
+    return CameraCaptureOptions(
+      cameraPosition: state.isFrontCamera
+          ? CameraPosition.front
+          : CameraPosition.back,
+      params: VideoParametersPresets.h360_169,
+      maxFrameRate: 15,
+    );
+  }
+
+  AudioCaptureOptions _liveAudioOptions() {
+    return AudioCaptureOptions(
+      noiseSuppression: true,
+      echoCancellation: true,
+      autoGainControl: false,
+    );
+  }
+
+  Future<void> _initializePreviewTrack() async {
     if (!Platform.isAndroid && !Platform.isIOS) return;
+
+    final liveStreamCubit = context.read<LiveStreamCubit>();
+    final state = liveStreamCubit.state;
+    if (state.localVideoTrack != null) return;
 
     try {
       final videoTrack = await LocalVideoTrack.createCameraTrack(
-        const CameraCaptureOptions(cameraPosition: CameraPosition.front),
+        _previewCameraOptions(state),
       );
-      await Future.delayed(const Duration(milliseconds: 300));
 
-      final audioTrack = await LocalAudioTrack.create(
-        AudioCaptureOptions(
-          noiseSuppression: true,
-          echoCancellation: true,
-          autoGainControl: true,
-        ),
-      );
-      await Future.delayed(const Duration(milliseconds: 200));
+      if (!mounted) {
+        await videoTrack.stop();
+        await videoTrack.dispose();
+        return;
+      }
 
-      if (!mounted) return;
-
-      context.read<LiveStreamCubit>().setTracks(videoTrack, audioTrack);
-    } catch (e) {
-      print('Error initializing tracks: $e');
+      liveStreamCubit.setPreviewVideoTrack(videoTrack);
+    } catch (_) {
       if (mounted) {
-        showCustomSnackBar(context, "Không thể khởi tạo camera/microphone");
+        showCustomSnackBar(context, 'Không thể khởi tạo xem trước camera');
       }
     }
   }
 
-  void _startLiveStream() {
-    final state = context.read<LiveStreamCubit>().state;
+  Future<bool> _prepareTracksForLive() async {
+    if (!Platform.isAndroid && !Platform.isIOS) return false;
+    if (_isPreparingLive) return false;
 
-    if (state.localVideoTrack == null) {
-      showCustomSnackBar(context, 'Camera chưa sẵn sàng');
-      return;
+    final liveStreamCubit = context.read<LiveStreamCubit>();
+    var state = liveStreamCubit.state;
+
+    if (!state.isCameraOn) {
+      showCustomSnackBar(context, 'Bật camera để phát trực tiếp');
+      return false;
     }
-    if (state.localAudioTrack == null) {
-      showCustomSnackBar(context, 'Microphone chưa sẵn sàng');
+
+    setState(() => _isPreparingLive = true);
+    try {
+      if (state.localVideoTrack == null) {
+        final videoTrack = await LocalVideoTrack.createCameraTrack(
+          _previewCameraOptions(state),
+        );
+        liveStreamCubit.setPreviewVideoTrack(videoTrack);
+        state = liveStreamCubit.state;
+      }
+
+      if (state.localAudioTrack == null) {
+        final audioTrack = await LocalAudioTrack.create(_liveAudioOptions());
+        liveStreamCubit.setAudioTrack(audioTrack);
+
+        if (!state.isMicOn) {
+          await audioTrack.disable();
+        }
+      }
+
+      return true;
+    } catch (_) {
+      if (mounted) {
+        showCustomSnackBar(context, 'Không thể khởi tạo camera/microphone');
+      }
+      return false;
+    } finally {
+      if (mounted) {
+        setState(() => _isPreparingLive = false);
+      } else {
+        _isPreparingLive = false;
+      }
+    }
+  }
+
+  Future<void> _handleCameraPreviewToggle(LiveStreamState state) async {
+    if (state.localVideoTrack == null || !state.isCameraOn) {
+      final liveStreamCubit = context.read<LiveStreamCubit>();
+      if (!state.isCameraOn) {
+        await liveStreamCubit.toggleCamera();
+      }
+      await _initializePreviewTrack();
       return;
     }
 
@@ -136,6 +198,7 @@ class _LivePrepScreenState extends State<LivePrepScreen> {
                             startState.stream!.id,
                           ),
                         ),
+                        BlocProvider(create: (_) => SubtitleCubit()),
                         BlocProvider(create: (_) => BlockUserCubit()),
                         BlocProvider(
                           create: (_) => LivePollCubit()
@@ -346,18 +409,19 @@ class _LivePrepScreenState extends State<LivePrepScreen> {
             // Start button
             BlocBuilder<StartLiveCubit, StartLiveState>(
               builder: (context, startState) {
+                final isBusy = startState.loading || _isPreparingLive;
                 return SizedBox(
                   width: double.infinity,
                   height: 50,
                   child: ElevatedButton(
-                    onPressed: startState.loading ? null : _startLiveStream,
+                    onPressed: isBusy ? null : _startLiveStream,
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.blue,
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(8),
                       ),
                     ),
-                    child: startState.loading
+                    child: isBusy
                         ? const CircularProgressIndicator(color: Colors.white)
                         : const Text(
                             'Phát trực tiếp',
