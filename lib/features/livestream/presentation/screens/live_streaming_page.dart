@@ -51,6 +51,7 @@ class _LiveStreamScreenState extends State<LiveStreamScreen> {
 
   late final LiveViewerCubit _liveViewerCubit;
   late final LiveStreamCubit _liveStreamCubit;
+  late final SubtitleCubit _subtitleCubit;
 
   bool _isCleaningUp = false;
   bool _cleanupCompleted = false;
@@ -458,12 +459,14 @@ class _ReactionLayer extends StatelessWidget {
 
 class _LiveTopBar extends StatelessWidget {
   final LiveStreamResponse stream;
+  final SubtitleState subtitleState;
   final VoidCallback onEndLive;
   final VoidCallback onShowViewerList;
   final VoidCallback onShowPollManage;
 
   const _LiveTopBar({
     required this.stream,
+    required this.subtitleState,
     required this.onEndLive,
     required this.onShowViewerList,
     required this.onShowPollManage,
@@ -500,35 +503,16 @@ class _LiveTopBar extends StatelessWidget {
                         children: [
                           LiveStatusTimer(startTime: stream.startedAt!),
                           const SizedBox(width: 8),
-                          Container(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 10,
-                              vertical: 6,
-                            ),
-                            decoration: BoxDecoration(
-                              color: Colors.black54,
-                              borderRadius: BorderRadius.circular(4),
-                            ),
-                            child: const Row(
-                              children: [
-                                Icon(Icons.lock, color: Colors.white, size: 14),
-                                SizedBox(width: 4),
-                                Text(
-                                  'Chi minh toi',
-                                  style: TextStyle(
-                                    color: Colors.white,
-                                    fontSize: 12,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                          const SizedBox(width: 8),
                           _ViewerCountChip(
                             participantCount: participantCount,
                             onTap: onShowViewerList,
                           ),
                           const Spacer(),
+                          LiveSubtitleLanguageSelector(
+                            state: subtitleState,
+                            tooltip: 'Chọn phụ đề',
+                          ),
+                          const SizedBox(width: 4),
                           IconButton(
                             icon: const Icon(Icons.close, color: Colors.white),
                             onPressed: onEndLive,
