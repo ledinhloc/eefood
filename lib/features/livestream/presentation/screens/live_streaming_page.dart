@@ -12,6 +12,7 @@ import '../../../../core/di/injection.dart';
 import '../../../../core/widgets/snack_bar.dart';
 import '../../data/model/live_reaction_response.dart';
 import '../../data/model/live_stream_response.dart';
+import '../../domain/enum/subtitle_language.dart';
 import '../provider/block_user_cubit.dart';
 import '../provider/live_poll_cubit.dart';
 import '../provider/live_poll_state.dart';
@@ -21,12 +22,16 @@ import '../provider/live_stream_cubit.dart';
 import '../provider/live_stream_state.dart';
 import '../provider/livestream_websocket_manager.dart';
 import '../provider/start_live_cubit.dart';
+import '../provider/subtitle_cubit.dart';
+import '../provider/subtitle_state.dart';
 import '../widgets/create_poll_bottom_sheet.dart';
 import '../widgets/live_comment_list.dart';
 import '../widgets/live_poll/live_poll_banner.dart';
 import '../widgets/live_poll/live_poll_manage_bottom_sheet.dart';
 import '../widgets/live_reaction_animation.dart';
 import '../widgets/live_status_timer.dart';
+import '../widgets/live_subtitle_language_selector.dart';
+import '../widgets/live_subtitle_overlay.dart';
 import '../widgets/viewer_list_bottom_sheet.dart';
 
 class LiveStreamScreen extends StatefulWidget {
@@ -56,6 +61,9 @@ class _LiveStreamScreenState extends State<LiveStreamScreen> {
     super.initState();
     _liveViewerCubit = context.read<LiveViewerCubit>();
     _liveStreamCubit = context.read<LiveStreamCubit>();
+    _subtitleCubit = context.read<SubtitleCubit>();
+    _subtitleCubit.attachToStream(widget.stream.id);
+    _subtitleCubit.ensureConnected();
     _ensureTracksReady();
     _liveViewerCubit.joinLiveStream();
 
@@ -74,23 +82,30 @@ class _LiveStreamScreenState extends State<LiveStreamScreen> {
     }
 
     try {
-      final videoTrack = await LocalVideoTrack.createCameraTrack(
-        CameraCaptureOptions(
-          cameraPosition: state.isFrontCamera
-              ? CameraPosition.front
-              : CameraPosition.back,
-          params: VideoParametersPresets.h540_169,
-          maxFrameRate: 24,
-        ),
-      );
+      LocalVideoTrack? videoTrack = state.localVideoTrack;
+      LocalAudioTrack? audioTrack = state.localAudioTrack;
 
-      final audioTrack = await LocalAudioTrack.create(
-        AudioCaptureOptions(
-          noiseSuppression: true,
-          echoCancellation: true,
-          autoGainControl: true,
-        ),
-      );
+      if (videoTrack == null) {
+        videoTrack = await LocalVideoTrack.createCameraTrack(
+          CameraCaptureOptions(
+            cameraPosition: state.isFrontCamera
+                ? CameraPosition.front
+                : CameraPosition.back,
+            params: VideoParametersPresets.h360_169,
+            maxFrameRate: 15,
+          ),
+        );
+      }
+
+      if (audioTrack == null) {
+        audioTrack = await LocalAudioTrack.create(
+          AudioCaptureOptions(
+            noiseSuppression: true,
+            echoCancellation: true,
+            autoGainControl: false,
+          ),
+        );
+      }
 
       _liveStreamCubit.setTracks(videoTrack, audioTrack);
     } catch (_) {
@@ -297,43 +312,73 @@ class _LiveStreamScreenState extends State<LiveStreamScreen> {
               }
             },
           ),
+          BlocListener<SubtitleCubit, SubtitleState>(
+            listenWhen: (previous, current) =>
+                previous.subtitleError != current.subtitleError,
+            listener: (context, state) {
+              final error = state.subtitleError;
+              if (error != null && error.isNotEmpty) {
+                showCustomSnackBar(context, error);
+              }
+            },
+          ),
         ],
         child: Scaffold(
           backgroundColor: Colors.black,
-          body: Stack(
-            children: [
-              const Positioned.fill(child: _LiveVideoView()),
-              Positioned.fill(
-                child: _ReactionLayer(
-                  reactions: _activeReactions,
-                  onComplete: _onReactionCompleted,
-                ),
-              ),
-              _LiveTopBar(
-                stream: widget.stream,
-                onEndLive: _endLiveStream,
-                onShowViewerList: _showViewerList,
-                onShowPollManage: _showPollManageSheet,
-              ),
-
-              Positioned(
-                bottom: 30,
-                left: 10,
-                right: 16,
-                height: 400,
-                child: LiveCommentList(
-                  controller: _commentController,
-                  scrollController: _scrollController,
-                  isStreamer: true,
-                  inputBackgroundColor: Colors.transparent,
-                ),
-              ),
-              _LiveRightControls(
-                onShowCreatePoll: _showCreatePollSheet,
-                onShowPollManage: _showPollManageSheet,
-              ),
-              const Positioned.fill(child: _GiftOverlayBridge()),
-            ],
+          body: BlocBuilder<SubtitleCubit, SubtitleState>(
+            builder: (context, subtitleState) {
+              return Stack(
+                children: [
+                  const Positioned.fill(child: _LiveVideoView()),
+                  Positioned.fill(
+                    child: _ReactionLayer(
+                      reactions: _activeReactions,
+                      onComplete: _onReactionCompleted,
+                    ),
+                  ),
+                  _LiveTopBar(
+                    stream: widget.stream,
+                    subtitleState: subtitleState,
+                    onEndLive: _endLiveStream,
+                    onShowViewerList: _showViewerList,
+                    onShowPollManage: _showPollManageSheet,
+                  ),
+                  if (subtitleState.selectedSubtitleLanguage !=
+                          SubtitleLanguage.off &&
+                      subtitleState.latestSubtitle != null)
+                    Positioned(
+                      left: 20,
+                      right: 20,
+                      bottom: 280,
+                      child: SafeArea(
+                        child: Align(
+                          alignment: Alignment.bottomCenter,
+                          child: LiveSubtitleOverlay(
+                            subtitle: subtitleState.latestSubtitle!,
+                          ),
+                        ),
+                      ),
+                    ),
+                  Positioned(
+                    bottom: 30,
+                    left: 10,
+                    right: 16,
+                    height: 250,
+                    child: LiveCommentList(
+                      controller: _commentController,
+                      scrollController: _scrollController,
+                      isStreamer: true,
+                      inputBackgroundColor: Colors.transparent,
+                    ),
+                  ),
+                  _LiveRightControls(
+                    onShowCreatePoll: _showCreatePollSheet,
+                    onShowPollManage: _showPollManageSheet,
+                  ),
+                  const Positioned.fill(child: _GiftOverlayBridge()),
+                ],
+              );
+            },
           ),
         ),
       ),

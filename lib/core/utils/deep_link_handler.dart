@@ -9,6 +9,7 @@ import 'package:eefood/features/livestream/presentation/provider/live_gift_cubit
 import 'package:eefood/features/livestream/presentation/provider/live_poll_cubit.dart';
 import 'package:eefood/features/livestream/presentation/provider/live_reaction_cubit.dart';
 import 'package:eefood/features/livestream/presentation/provider/live_viewer_cubit.dart';
+import 'package:eefood/features/livestream/presentation/provider/subtitle_cubit.dart';
 import 'package:eefood/features/livestream/presentation/provider/watch_live_cubit.dart';
 import 'package:eefood/features/livestream/presentation/screens/live_viewer_screen.dart';
 import 'package:flutter/material.dart';
@@ -49,6 +50,7 @@ class DeepLinkHandler {
       MaterialPageRoute(
         builder: (_) => MultiBlocProvider(
           providers: [
+            BlocProvider(create: (_) => SubtitleCubit()),
             BlocProvider(create: (_) => getIt<WatchLiveCubit>()),
             BlocProvider(
               create: (_) =>

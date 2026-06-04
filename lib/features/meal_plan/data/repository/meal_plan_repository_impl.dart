@@ -15,10 +15,12 @@ class MealPlanRepositoryImpl implements MealPlanRepository {
   String _localDate(DateTime date) => date.toIso8601String().split('T').first;
 
   @override
-  Future<MealPlanResponse> getCurrentMealPlan() async {
+  Future<MealPlanResponse?> getCurrentMealPlan() async {
     try {
       final response = await dio.get('/v1/meal-plan');
-      return MealPlanResponse.fromJson(response.data['data']);
+      final data = response.data['data'];
+      if (data == null) return null;
+      return MealPlanResponse.fromJson(data as Map<String, dynamic>);
     } catch (err) {
       throw Exception('Get current meal plan failed: $err');
     }
