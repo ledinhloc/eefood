@@ -1,3 +1,5 @@
+import 'dart:developer' as developer;
+
 import 'package:eefood/core/di/injection.dart';
 import 'package:eefood/features/livestream/data/model/live_gift_item_response.dart';
 import 'package:eefood/features/livestream/data/model/send_gift_request.dart';
@@ -6,7 +8,6 @@ import 'package:eefood/features/livestream/domain/repository/live_gift_repositor
 import 'package:eefood/features/livestream/presentation/provider/live_gift_state.dart';
 import 'package:eefood/features/livestream/presentation/provider/livestream_websocket_manager.dart';
 import 'package:eefood/features/payment/presentation/provider/wallet_cubit.dart';
-import 'dart:developer' as developer;
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 class LiveGiftCubit extends Cubit<LiveGiftState> {
@@ -16,7 +17,7 @@ class LiveGiftCubit extends Cubit<LiveGiftState> {
 
   int? _liveStreamId;
 
-  LiveGiftCubit({required  this.repository}): super(const LiveGiftState());
+  LiveGiftCubit({required this.repository}) : super(const LiveGiftState());
 
   Future<void> init(int liveStreamId) async {
     _liveStreamId = liveStreamId;
@@ -58,7 +59,7 @@ class LiveGiftCubit extends Cubit<LiveGiftState> {
 
     final updated = List<SendGiftResponse>.from(state.incomingGifts)..add(gift);
     emit(state.copyWith(incomingGifts: updated));
-     try {
+    try {
       getIt<WalletCubit>().fetchBalance();
     } catch (_) {}
   }
@@ -111,6 +112,11 @@ class LiveGiftCubit extends Cubit<LiveGiftState> {
       if (newBalance != null) {
         try {
           getIt<WalletCubit>().setBalance(newBalance);
+        } catch (_) {}
+      } else {
+        // Nếu response không trả về balance, lấy từ server
+        try {
+          getIt<WalletCubit>().fetchBalance();
         } catch (_) {}
       }
 

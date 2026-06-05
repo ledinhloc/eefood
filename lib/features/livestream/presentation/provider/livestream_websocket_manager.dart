@@ -131,6 +131,39 @@ class LiveStreamWebSocketManager {
     developer.log('Subscribed to: $destination', name: logName);
   }
 
+  void subscribeTopicNew<T>({
+    required int liveStreamId,
+    required String topic,
+    required T Function(dynamic) fromJson, // ← dynamic, không ép Map
+    required void Function(T) onData,
+    required String logName,
+    required String logPrefix,
+    void Function(String error)? onError,
+  }) {
+    if (!isConnected) return;
+
+    final destination = '/topic/$topic/$liveStreamId';
+    if (_subscriptions.containsKey(destination)) return;
+
+    final unsubscribe = _stompClient!.subscribe(
+      destination: destination,
+      callback: (StompFrame frame) {
+        if (frame.body == null) return;
+        try {
+          final decoded = jsonDecode(frame.body!); // dynamic: Map hoặc List
+          final data = fromJson(decoded);
+          developer.log('Received $logPrefix from $destination', name: logName);
+          onData(data);
+        } catch (e) {
+          developer.log('Error parsing $logPrefix: $e', name: logName);
+          onError?.call('Error parsing $logPrefix: $e');
+        }
+      },
+    );
+
+    _subscriptions[destination] = unsubscribe;
+  }
+
   void subscribeUserQueue<T>({
     required String queue,
     required T Function(Map<String, dynamic>) fromJson,
