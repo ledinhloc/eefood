@@ -15,16 +15,19 @@ import 'package:eefood/features/cook_process/presentation/provider/ingredient_al
 import 'package:eefood/features/livestream/data/repositoty/live_block_repository_impl.dart';
 import 'package:eefood/features/livestream/data/repositoty/live_comment_repo_impl.dart';
 import 'package:eefood/features/livestream/data/repositoty/live_gift_repository_impl.dart';
+import 'package:eefood/features/livestream/data/repositoty/live_leaderboard_repository_impl.dart';
 import 'package:eefood/features/livestream/data/repositoty/live_poll_repository_impl.dart';
 import 'package:eefood/features/livestream/data/repositoty/live_reaction_repo_impl.dart';
 import 'package:eefood/features/livestream/data/repositoty/live_repository_impl.dart';
 import 'package:eefood/features/livestream/domain/repository/live_block_repository.dart';
 import 'package:eefood/features/livestream/domain/repository/live_comment_repo.dart';
 import 'package:eefood/features/livestream/domain/repository/live_gift_repository.dart';
+import 'package:eefood/features/livestream/domain/repository/live_leaderboard_repository.dart';
 import 'package:eefood/features/livestream/domain/repository/live_poll_repository.dart';
 import 'package:eefood/features/livestream/domain/repository/live_reaction_repo.dart';
 import 'package:eefood/features/livestream/domain/repository/live_repository.dart';
 import 'package:eefood/features/livestream/presentation/provider/live_gift_cubit.dart';
+import 'package:eefood/features/livestream/presentation/provider/live_leaderboard_cubit.dart';
 import 'package:eefood/features/livestream/presentation/provider/start_live_cubit.dart';
 import 'package:eefood/features/meal_plan/data/repository/meal_plan_repository_impl.dart';
 import 'package:eefood/features/meal_plan/domain/repository/meal_plan_repository.dart';
@@ -37,6 +40,8 @@ import 'package:eefood/features/nutrition/domain/repositories/nutrition_reposito
 import 'package:eefood/features/nutrition/presentation/provider/nutrition_cubit.dart';
 import 'package:eefood/features/payment/data/repository/payment_repository_impl.dart';
 import 'package:eefood/features/payment/domain/repository/payment_repository.dart';
+import 'package:eefood/features/payment/presentation/provider/diamond_packages_cubit.dart';
+import 'package:eefood/features/payment/presentation/provider/payment_cubit.dart';
 import 'package:eefood/features/payment/presentation/provider/wallet_cubit.dart';
 import 'package:eefood/features/post/data/repositories/collection_repository_impl.dart';
 import 'package:eefood/features/post/data/repositories/comment_reaction_repository_impl.dart';
@@ -405,8 +410,12 @@ Future<void> setupDependencies() async {
     () => PaymentRepositoryImpl(dio: getIt<DioClient>().dio),
   );
 
-  getIt.registerLazySingleton<WalletCubit>(
+  getIt.registerFactory<WalletCubit>(
     () => WalletCubit(repository: getIt<PaymentRepository>()),
+  );
+
+  getIt.registerLazySingleton<DiamondPackagesCubit>(
+    () => DiamondPackagesCubit(repository: getIt<PaymentRepository>()),
   );
 
   getIt.registerLazySingleton<LiveGiftRepository>(
@@ -415,5 +424,17 @@ Future<void> setupDependencies() async {
 
   getIt.registerFactory<LiveGiftCubit>(
     () => LiveGiftCubit(repository: getIt<LiveGiftRepository>()),
+  );
+
+  getIt.registerFactory<PaymentCubit>(
+    () => PaymentCubit(paymentRepository: getIt<PaymentRepository>()),
+  );
+
+  getIt.registerLazySingleton<LiveLeaderboardRepository>(
+    () => LiveLeaderboardRepositoryImpl(dio: getIt<DioClient>().dio),
+  );
+
+  getIt.registerFactory<LiveLeaderboardCubit>(
+    () => LiveLeaderboardCubit(repository: getIt<LiveLeaderboardRepository>())
   );
 }

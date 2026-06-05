@@ -50,57 +50,60 @@ class LiveGiftCard extends StatelessWidget {
           ),
         ],
       ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
+      child: Stack(
         children: [
-          // Avatar
-          AvatarChip(
-            name: gift.senderName ?? '?',
-            imageUrl: gift.senderImageUrl,
-          ),
-          const SizedBox(width: 8),
-
-          // Sender + label
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+          Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Text(
-                gift.senderName ?? 'Người dùng',
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontSize: 11.5,
-                  fontWeight: FontWeight.w700,
-                  letterSpacing: 0.2,
-                ),
+              // Avatar
+              AvatarChip(
+                name: gift.senderName ?? '?',
+                imageUrl: gift.senderImageUrl,
               ),
-              ShaderMask(
-                shaderCallback: (bounds) => const LinearGradient(
-                  colors: [Color(0xFFFFB86C), Color(0xFFFF79C6)],
-                ).createShader(bounds),
-                child: const Text(
-                  'đã tặng quà ✨',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 10,
-                    fontWeight: FontWeight.w500,
+              const SizedBox(width: 8),
+
+              // Sender + label
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    gift.senderName ?? 'Người dùng',
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 11.5,
+                      fontWeight: FontWeight.w700,
+                      letterSpacing: 0.2,
+                    ),
                   ),
-                ),
+                  ShaderMask(
+                    shaderCallback: (bounds) => const LinearGradient(
+                      colors: [Color(0xFFFFB86C), Color(0xFFFF79C6)],
+                    ).createShader(bounds),
+                    child: const Text(
+                      'đã tặng quà ✨',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 10,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ),
+                ],
               ),
+              const SizedBox(width: 10),
+
+              // Gift visual với particles
+              GiftVisual(gift: gift, particleCtrl: particleCtrl),
+
+              // Quantity
+              if ((gift.quantity ?? 1) > 1) ...[
+                const SizedBox(width: 6),
+                QuantityPill(quantity: gift.quantity!),
+              ],
             ],
           ),
-          const SizedBox(width: 10),
-
-          // Gift visual với particles
-          GiftVisual(gift: gift, particleCtrl: particleCtrl),
-
-          // Quantity
-          if ((gift.quantity ?? 1) > 1) ...[
-            const SizedBox(width: 6),
-            QuantityPill(quantity: gift.quantity!),
-          ],
-
-          // Shimmer overlay
+          // Shimmer overlay - positioned over everything
           ShimmerOverlay(ctrl: shimmerCtrl),
         ],
       ),

@@ -1,6 +1,7 @@
 import 'package:eefood/features/livestream/domain/repository/live_comment_repo.dart';
 import 'package:eefood/features/livestream/domain/repository/live_reaction_repo.dart';
 import 'package:eefood/features/livestream/presentation/provider/live_gift_cubit.dart';
+import 'package:eefood/features/livestream/presentation/provider/live_leaderboard_cubit.dart';
 import 'package:eefood/features/livestream/presentation/provider/live_poll_cubit.dart';
 import 'package:eefood/features/payment/presentation/provider/wallet_cubit.dart';
 import 'package:flutter/material.dart';
@@ -68,8 +69,14 @@ class LiveStatusBadge extends StatelessWidget {
                 // BlocProvider(
                 //   create: (_) => getIt<WalletCubit>()..init(stream!.userId),
                 // ),
+                BlocProvider(
+                  create: (_) =>
+                      getIt<LiveLeaderboardCubit>()..init(stream!.id),
+                ),
               ],
-              child: LiveViewerScreen(streamId: stream!.id),
+              child: LiveViewerScreen(
+                streamId: stream!.id,
+              ),
             ),
           ),
         );
