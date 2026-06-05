@@ -16,6 +16,9 @@ import 'package:eefood/features/meal_plan/presentation/screens/meal_plan_page.da
 import 'package:eefood/features/noti/presentation/screens/notification_screen.dart';
 import 'package:eefood/features/noti/presentation/screens/ntofication_settings_screen.dart';
 import 'package:eefood/features/nutrition/presentation/screens/image_choice_screen.dart';
+import 'package:eefood/features/payment/presentation/screens/payment_result_screen.dart';
+import 'package:eefood/features/payment/presentation/screens/recharge_screen.dart';
+import 'package:eefood/features/payment/presentation/screens/vnpay_webview_screen.dart';
 import 'package:eefood/features/post/presentation/provider/follow_cubit.dart';
 import 'package:eefood/features/post/presentation/provider/story_list_cubit.dart';
 import 'package:eefood/features/post/presentation/provider/story_setting_cubit.dart';
@@ -124,6 +127,11 @@ class AppRoutes {
   static const reviewStatsDetailPage = '/reviewStatsDetailPage';
   static const allReviewPage = '/allReviewPage';
   static const recipeComparePage = '/recipeComparePage';
+
+  /* feat payment */
+  static const recharge = '/recharge';
+  static const paymentResultScreen = '/paymentResultScreen';
+  static const vnpayWebviewScreen = '/vnpayWebviewScreen';
 
   // Danh sách các widget cho BottomNavigationBar trong main page
   static List<Widget> widgetOptions = <Widget>[
@@ -349,6 +357,25 @@ class AppRoutes {
           recipeIdA: args['recipeIdA'],
           recipeIdB: args['recipeIdB'],
         ),
+      );
+    },
+    recharge: (context) {
+      return const RechargeScreen();
+    },
+    paymentResultScreen: (context) {
+      final args = ModalRoute.of(context)!.settings.arguments as Map;
+      return PaymentResultScreen(
+        isSuccess: args['isSuccess'] as bool,
+        txnRef: args['txnRef'] as String?,
+        amount: args['amount'] as String?,
+        responseCode: args['responseCode'] as String?,
+      );
+    },
+    vnpayWebviewScreen: (context) {
+      final args = ModalRoute.of(context)!.settings.arguments as Map;
+      return VnpayWebviewScreen(
+        paymentUrl: args['paymentUrl'],
+        transactionId: args['transactionId'],
       );
     },
   };

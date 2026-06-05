@@ -1,7 +1,9 @@
 import 'dart:async';
 
 import 'package:eefood/features/livestream/presentation/provider/live_gift_cubit.dart';
+import 'package:eefood/features/livestream/presentation/provider/live_leaderboard_cubit.dart';
 import 'package:eefood/features/livestream/presentation/provider/live_viewer_cubit.dart';
+import 'package:eefood/features/livestream/presentation/widgets/leaderboard/live_leaderboard_strip.dart';
 import 'package:eefood/features/livestream/presentation/widgets/live_gift/live_gift_overlay_layer.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -51,6 +53,7 @@ class _LiveStreamScreenState extends State<LiveStreamScreen> {
 
   late final LiveViewerCubit _liveViewerCubit;
   late final LiveStreamCubit _liveStreamCubit;
+  late final LiveLeaderboardCubit _liveLeaderboardCubit;
   late final SubtitleCubit _subtitleCubit;
 
   bool _isCleaningUp = false;
@@ -62,7 +65,9 @@ class _LiveStreamScreenState extends State<LiveStreamScreen> {
     super.initState();
     _liveViewerCubit = context.read<LiveViewerCubit>();
     _liveStreamCubit = context.read<LiveStreamCubit>();
-    _subtitleCubit = context.read<SubtitleCubit>();
+	_liveLeaderboardCubit = context.read<LiveLeaderboardCubit>();
+
+	_subtitleCubit = context.read<SubtitleCubit>();
     _subtitleCubit.attachToStream(widget.stream.id);
     _subtitleCubit.ensureConnected();
     _ensureTracksReady();
@@ -170,6 +175,10 @@ class _LiveStreamScreenState extends State<LiveStreamScreen> {
       getIt<LiveStreamWebSocketManager>().disconnect(
         logName: 'LiveStreamScreen',
       );
+    } catch (_) {}
+
+    try {
+      _liveLeaderboardCubit.unsubscribe(widget.stream.id);
     } catch (_) {}
 
     if (endLiveOnServer && !_liveEndedOnServer) {
@@ -459,14 +468,12 @@ class _ReactionLayer extends StatelessWidget {
 
 class _LiveTopBar extends StatelessWidget {
   final LiveStreamResponse stream;
-  final SubtitleState subtitleState;
   final VoidCallback onEndLive;
   final VoidCallback onShowViewerList;
   final VoidCallback onShowPollManage;
 
   const _LiveTopBar({
     required this.stream,
-    required this.subtitleState,
     required this.onEndLive,
     required this.onShowViewerList,
     required this.onShowPollManage,
@@ -526,6 +533,16 @@ class _LiveTopBar extends StatelessWidget {
                           onTap: onShowPollManage,
                         ),
                       ],
+                      // if (pollState.poll == null) ...[
+                      //   const SizedBox(height: 8),
+                      //   BlocProvider.value(
+                      //     value: context.read<LiveLeaderboardCubit>(),
+                      //     child: LiveLeaderboardStrip(
+                      //       livestreamId: stream.id,
+                      //       isStreamer: true,
+                      //     ),
+                      //   ),
+                      // ],
                     ],
                   ),
                 );

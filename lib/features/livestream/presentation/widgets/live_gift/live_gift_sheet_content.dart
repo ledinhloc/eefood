@@ -1,3 +1,4 @@
+import 'package:eefood/app_routes.dart';
 import 'package:eefood/features/livestream/presentation/provider/live_gift_state.dart';
 import 'package:eefood/features/livestream/presentation/widgets/live_gift/balance_header.dart';
 import 'package:eefood/features/livestream/presentation/widgets/live_gift/gift_grid.dart';
@@ -16,6 +17,10 @@ class LiveGiftSheetContent extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final canAfford = state.selectedGift != null
+        ? state.canAfford(balance)
+        : true;
+
     return Container(
       height: MediaQuery.of(context).size.height * 0.52,
       decoration: const BoxDecoration(
@@ -35,7 +40,57 @@ class LiveGiftSheetContent extends StatelessWidget {
                 : GiftGrid(gifts: state.gifts, selected: state.selectedGift),
           ),
           if (state.selectedGift != null)
-            SendBar(state: state, balance: balance),
+            Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                SendBar(state: state, balance: balance),
+                if (!canAfford)
+                  SafeArea(
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 16,
+                        vertical: 10,
+                      ),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF0F0F1A),
+                        border: Border(
+                          top: BorderSide(
+                            color: Colors.white.withValues(alpha: 0.08),
+                          ),
+                        ),
+                      ),
+                      child: SizedBox(
+                        width: double.infinity,
+                        child: ElevatedButton.icon(
+                          onPressed: () {
+                            Navigator.pop(context);
+                            Navigator.pushNamed(context, AppRoutes.recharge);
+                          },
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: const Color(0xFF7C6AFF),
+                            padding: const EdgeInsets.symmetric(vertical: 12),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                          ),
+                          icon: const Text(
+                            '💎',
+                            style: TextStyle(fontSize: 16),
+                          ),
+                          label: const Text(
+                            'Nạp kim cương',
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 14,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+              ],
+            ),
         ],
       ),
     );

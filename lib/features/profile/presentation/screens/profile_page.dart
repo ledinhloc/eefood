@@ -216,6 +216,14 @@ class ProfilePage extends StatelessWidget {
                   trailing: const Icon(Icons.chevron_right_rounded),
                   onTap: () => Navigator.pushNamed(context, AppRoutes.mealPlan),
                 ),
+                ListTile(
+                  leading: const Icon(Icons.diamond_outlined),
+                  title: Text('Nạp kim cương'),
+                  subtitle: Text('Ủng hộ streamer yêu thích'),
+                  trailing: const Icon(Icons.chevron_right_rounded),
+                  onTap: () =>
+                      Navigator.pushNamed(context, AppRoutes.recharge),
+                ),
 
                 // const ListTile(
                 //   leading: Icon(Icons.restore),

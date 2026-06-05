@@ -1,3 +1,4 @@
+import 'package:eefood/app_routes.dart';
 import 'package:eefood/features/livestream/presentation/provider/live_gift_cubit.dart';
 import 'package:eefood/features/livestream/presentation/provider/live_gift_state.dart';
 import 'package:eefood/features/livestream/presentation/widgets/live_gift/live_gift_sheet_content.dart';
@@ -37,9 +38,15 @@ class LiveGiftBottomSheet extends StatelessWidget {
           children: [
             Text('💎', style: TextStyle(fontSize: 24)),
             SizedBox(width: 8),
-            Text(
-              'Không đủ kim cương',
-              style: TextStyle(color: Colors.white, fontSize: 16),
+            Expanded(
+              child: Text(
+                'Không đủ kim cương',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
             ),
           ],
         ),
@@ -51,8 +58,30 @@ class LiveGiftBottomSheet extends StatelessWidget {
           TextButton(
             onPressed: () => Navigator.pop(context),
             child: const Text(
-              'Đồng ý',
+              'Để sau',
               style: TextStyle(color: Color(0xFF7C6AFF)),
+            ),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              Navigator.pop(context);
+              Navigator.pushNamed(
+                context,
+                AppRoutes.recharge,
+              ); // Navigate to recharge screen
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFF7C6AFF),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(8),
+              ),
+            ),
+            child: const Text(
+              'Nạp ngay',
+              style: TextStyle(
+                color: Colors.white,
+                fontWeight: FontWeight.bold,
+              ),
             ),
           ),
         ],
