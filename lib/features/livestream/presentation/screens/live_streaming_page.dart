@@ -53,8 +53,8 @@ class _LiveStreamScreenState extends State<LiveStreamScreen> {
 
   late final LiveViewerCubit _liveViewerCubit;
   late final LiveStreamCubit _liveStreamCubit;
-  late final LiveLeaderboardCubit _liveLeaderboardCubit;
   late final SubtitleCubit _subtitleCubit;
+  late final LiveLeaderboardCubit _liveLeaderboardCubit;
 
   bool _isCleaningUp = false;
   bool _cleanupCompleted = false;
@@ -468,12 +468,14 @@ class _ReactionLayer extends StatelessWidget {
 
 class _LiveTopBar extends StatelessWidget {
   final LiveStreamResponse stream;
+  final SubtitleState subtitleState;
   final VoidCallback onEndLive;
   final VoidCallback onShowViewerList;
   final VoidCallback onShowPollManage;
 
   const _LiveTopBar({
     required this.stream,
+    required this.subtitleState,
     required this.onEndLive,
     required this.onShowViewerList,
     required this.onShowPollManage,
