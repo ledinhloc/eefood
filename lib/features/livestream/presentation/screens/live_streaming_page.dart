@@ -54,6 +54,7 @@ class _LiveStreamScreenState extends State<LiveStreamScreen> {
   late final LiveViewerCubit _liveViewerCubit;
   late final LiveStreamCubit _liveStreamCubit;
   late final LiveLeaderboardCubit _liveLeaderboardCubit;
+  late final SubtitleCubit _subtitleCubit;
 
   bool _isCleaningUp = false;
   bool _cleanupCompleted = false;
