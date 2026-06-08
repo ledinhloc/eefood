@@ -73,11 +73,7 @@ class PostRepositoryImpl extends PostRepository {
       if (response.statusCode == 200) {
         final data = response.data['data'] as Map<String, dynamic>?;
         final labels = data?['labels'] as List<dynamic>? ?? const [];
-        final parsedLabels = labels.map((label) => label.toString().trim()).where((
-          label,
-        ) {
-          return label.isNotEmpty;
-        }).toList();
+        final parsedLabels = labels.cast<String>();
 
         debugPrint('[IngredientDetect] parsedLabels=$parsedLabels');
         return parsedLabels;

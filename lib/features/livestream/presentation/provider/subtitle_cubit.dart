@@ -152,6 +152,7 @@ class SubtitleCubit extends Cubit<SubtitleState> {
     }
 
     if (_wsManager.isConnected) {
+      _subscribeToSubtitles(liveStreamId);
       _registerSubtitle(liveStreamId: liveStreamId, targetLanguage: language);
       return;
     }
