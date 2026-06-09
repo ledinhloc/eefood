@@ -8,7 +8,7 @@ class SubtitleState {
   final String? subtitleError;
 
   const SubtitleState({
-    this.selectedSubtitleLanguage = SubtitleLanguage.vi,
+    this.selectedSubtitleLanguage = SubtitleLanguage.off,
     this.latestSubtitle,
     this.isSubtitleConnected = false,
     this.subtitleError,
