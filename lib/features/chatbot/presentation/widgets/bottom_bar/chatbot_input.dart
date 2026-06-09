@@ -311,7 +311,7 @@ class _ChatbotInputState extends State<ChatbotInput> {
                           Expanded(
                             child: TextField(
                               controller: _textController,
-                              focusNode: _focusNode,
+                              focusNode: _focusNode,  
                               maxLines: null,
                               textInputAction: TextInputAction.send,
                               style: TextStyle(
