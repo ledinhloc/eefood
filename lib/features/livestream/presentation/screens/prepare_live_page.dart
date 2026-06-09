@@ -129,15 +129,9 @@ class _LivePrepScreenState extends State<LivePrepScreen> {
     }
   }
 
-  Future<void> _handleCameraPreviewToggle(LiveStreamState state) async {
-    if (state.localVideoTrack == null || !state.isCameraOn) {
-      final liveStreamCubit = context.read<LiveStreamCubit>();
-      if (!state.isCameraOn) {
-        await liveStreamCubit.toggleCamera();
-      }
-      await _initializePreviewTrack();
-      return;
-    }
+  Future<void> _startLiveStream() async {
+    final isReady = await _prepareTracksForLive();
+    if (!isReady || !mounted) return;
 
     context.read<StartLiveCubit>().startLive(_descriptionController.text);
   }
@@ -209,7 +203,9 @@ class _LivePrepScreenState extends State<LivePrepScreen> {
                             ),
                         ),
                         BlocProvider(
-                          create: (_) => getIt<LiveGiftCubit>()..init(startState.stream!.id),
+                          create: (_) =>
+                              getIt<LiveGiftCubit>()
+                                ..init(startState.stream!.id),
                         ),
                         BlocProvider(
                           create: (_) =>

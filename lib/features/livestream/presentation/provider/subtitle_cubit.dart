@@ -13,6 +13,8 @@ class SubtitleCubit extends Cubit<SubtitleState> {
   static const String _subtitleQueue = 'livestream/subtitles';
   static const String _subtitleRegisterDestination =
       '/app/live/subtitles/register';
+  static const String _subtitleUnregisterDestination =
+      '/app/live/subtitles/unregister';
 
   final LiveStreamWebSocketManager _wsManager =
       getIt<LiveStreamWebSocketManager>();
@@ -144,11 +146,13 @@ class SubtitleCubit extends Cubit<SubtitleState> {
     if (liveStreamId == null) return;
 
     if (language == SubtitleLanguage.off) {
+      _unregisterSubtitle();
       _stopSubtitleStream();
       return;
     }
 
     if (_wsManager.isConnected) {
+      _subscribeToSubtitles(liveStreamId);
       _registerSubtitle(liveStreamId: liveStreamId, targetLanguage: language);
       return;
     }
@@ -183,6 +187,22 @@ class SubtitleCubit extends Cubit<SubtitleState> {
         state.copyWith(isSubtitleConnected: true, clearSubtitleError: true),
       );
     }
+  }
+
+  // Báo backend dừng gửi phụ đề cho người xem hiện tại.
+  void _unregisterSubtitle() {
+    if (!_wsManager.isConnected) return;
+
+    _wsManager.send(
+      destination: _subtitleUnregisterDestination,
+      logName: 'Subtitle',
+      onError: (error) {
+        developer.log('Subtitle unregister error: $error', name: 'Subtitle');
+        _safeEmit(
+          state.copyWith(isSubtitleConnected: false, subtitleError: error),
+        );
+      },
+    );
   }
 
   // Đánh dấu kết nối phụ đề đang mất mà không xóa ngôn ngữ đã chọn.

@@ -1,4 +1,4 @@
-import 'package:eefood/features/nutrition/presentation/screens/ingredient_search_page.dart';
+import 'package:eefood/features/post/presentation/widgets/search/ingredient_search_page.dart';
 import 'package:eefood/features/nutrition/presentation/screens/nutrition_camera_screen.dart';
 import 'package:eefood/features/nutrition/presentation/screens/qr_scanner_screen.dart';
 import 'package:eefood/features/nutrition/presentation/widgets/choice_card.dart';
