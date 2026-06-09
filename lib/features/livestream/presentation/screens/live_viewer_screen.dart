@@ -218,7 +218,7 @@ class _LiveViewerScreenState extends State<LiveViewerScreen> {
                     ),
                     const SizedBox(height: 16),
                     Text(
-                      'Lỗi: ${state.error}',
+                      '${state.error}',
                       style: const TextStyle(color: Colors.white),
                       textAlign: TextAlign.center,
                     ),
