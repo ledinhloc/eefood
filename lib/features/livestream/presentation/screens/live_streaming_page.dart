@@ -67,7 +67,7 @@ class _LiveStreamScreenState extends State<LiveStreamScreen> {
     _liveStreamCubit = context.read<LiveStreamCubit>();
 	_liveLeaderboardCubit = context.read<LiveLeaderboardCubit>();
 
-	_subtitleCubit = context.read<SubtitleCubit>();
+	  _subtitleCubit = context.read<SubtitleCubit>();
     _subtitleCubit.attachToStream(widget.stream.id);
     _subtitleCubit.ensureConnected();
     _ensureTracksReady();

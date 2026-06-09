@@ -62,13 +62,12 @@ class _LiveViewerScreenState extends State<LiveViewerScreen> {
     _subtitleCubit.attachToStream(widget.streamId);
     _subtitleCubit.ensureConnected();
 
-    // leaderboard
     _leaderboardCubit = context.read<LiveLeaderboardCubit>();
-    _leaderboardCubit.init(widget.streamId);
+    _leaderboardCubit.init(widget.streamId); // Load stream
+    _walletCubit = getIt<WalletCubit>();
 
     // Load stream
     context.read<WatchLiveCubit>().loadLive(widget.streamId);
-
     // Join as viewer
     context.read<LiveViewerCubit>().joinLiveStream();
   }
