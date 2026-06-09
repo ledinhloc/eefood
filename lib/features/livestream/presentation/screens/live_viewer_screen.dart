@@ -50,6 +50,7 @@ class _LiveViewerScreenState extends State<LiveViewerScreen> {
   final ScrollController _scrollController = ScrollController();
   final List<LiveReactionResponse> _activeReactions = [];
 
+  late final SubtitleCubit _subtitleCubit;
   late final LiveLeaderboardCubit _leaderboardCubit;
   late final WalletCubit _walletCubit;
 
@@ -57,10 +58,15 @@ class _LiveViewerScreenState extends State<LiveViewerScreen> {
   void initState() {
     super.initState();
 
-	context.read<SubtitleCubit>().attachToStream(widget.streamId);
-    context.read<SubtitleCubit>().ensureConnected();	// leaderboard
+    _subtitleCubit = context.read<SubtitleCubit>();
+    _subtitleCubit.attachToStream(widget.streamId);
+    _subtitleCubit.ensureConnected();
+
+    // leaderboard
     _leaderboardCubit = context.read<LiveLeaderboardCubit>();
-    _leaderboardCubit.init(widget.streamId);    // Load stream
+    _leaderboardCubit.init(widget.streamId);
+
+    // Load stream
     context.read<WatchLiveCubit>().loadLive(widget.streamId);
 
     // Join as viewer
@@ -113,24 +119,9 @@ class _LiveViewerScreenState extends State<LiveViewerScreen> {
 
   void _leaveLiveStream() async {
     context.read<LiveViewerCubit>().leaveLiveStream();
-    context.read<SubtitleCubit>().disposeStream();
+    _subtitleCubit.disposeStream();
     await context.read<WatchLiveCubit>().disconnect();
     if (mounted) Navigator.pop(context);
-  }
-
-  void _showViewerList() {
-    final viewerCubit = context.read<LiveViewerCubit>();
-    showModalBottomSheet(
-      context: context,
-      backgroundColor: Colors.transparent,
-      isScrollControlled: true,
-      builder: (context) {
-        return BlocProvider.value(
-          value: viewerCubit,
-          child: const ViewerListBottomSheet(),
-        );
-      },
-    );
   }
 
   void _showGiftSheet(stream) {
@@ -151,7 +142,6 @@ class _LiveViewerScreenState extends State<LiveViewerScreen> {
   @override
   void dispose() {
     _timer?.cancel();
-    context.read<SubtitleCubit>().disposeStream();
     _commentController.dispose();
     _scrollController.dispose();
     _leaderboardCubit.unsubscribe(widget.streamId);
@@ -410,7 +400,7 @@ class _LiveViewerScreenState extends State<LiveViewerScreen> {
               LiveStatusTimer(startTime: stream.startedAt!),
               const SizedBox(width: 8),
               GestureDetector(
-                onTap: _showViewerList,
+                onTap: null,
                 child: Container(
                   padding: const EdgeInsets.symmetric(
                     horizontal: 10,

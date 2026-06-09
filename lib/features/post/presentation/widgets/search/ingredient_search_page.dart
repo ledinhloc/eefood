@@ -138,6 +138,9 @@ class _IngredientSearchPageState extends State<IngredientSearchPage> {
       debugPrintStack(stackTrace: stackTrace);
       if (!mounted) return;
       Navigator.of(context).pop();
+      setState(() {
+        _previewImage = null;
+      });
       await showCustomSnackBar(
         context,
         'Không nhận diện được nguyên liệu trong ảnh',
