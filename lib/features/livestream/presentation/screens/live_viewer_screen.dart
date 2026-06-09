@@ -57,12 +57,12 @@ class _LiveViewerScreenState extends State<LiveViewerScreen> {
   void initState() {
     super.initState();
 
-	context.read<SubtitleCubit>().attachToStream(widget.streamId);
-    context.read<SubtitleCubit>().ensureConnected();	// leaderboard
+    context.read<SubtitleCubit>().attachToStream(widget.streamId);
+    context.read<SubtitleCubit>().ensureConnected(); // leaderboard
     _leaderboardCubit = context.read<LiveLeaderboardCubit>();
-    _leaderboardCubit.init(widget.streamId);    // Load stream
+    _leaderboardCubit.init(widget.streamId); // Load stream
+    _walletCubit = getIt<WalletCubit>();
     context.read<WatchLiveCubit>().loadLive(widget.streamId);
-
     // Join as viewer
     context.read<LiveViewerCubit>().joinLiveStream();
   }
