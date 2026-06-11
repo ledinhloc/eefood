@@ -56,7 +56,7 @@ class LiveStreamWebSocketManager {
 
     _stompClient = StompClient(
       config: StompConfig.sockJS(
-        url: '${AppKeys.baseUrl}/ws-reaction?token=$token',
+        url: _buildSockJsUrl(token),
         stompConnectHeaders: {'Authorization': 'Bearer $token'},
         webSocketConnectHeaders: {'Authorization': 'Bearer $token'},
         onConnect: (frame) {
@@ -87,6 +87,22 @@ class LiveStreamWebSocketManager {
     );
 
     _stompClient?.activate();
+  }
+
+  String _buildSockJsUrl(String token) {
+    final baseUri = Uri.parse(AppKeys.baseUrl);
+    final port = baseUri.hasPort
+        ? baseUri.port
+        : baseUri.scheme == 'https'
+        ? 443
+        : 80;
+    return Uri(
+      scheme: baseUri.scheme,
+      host: baseUri.host,
+      port: port,
+      path: '${baseUri.path}/ws-reaction',
+      queryParameters: {'token': token},
+    ).toString();
   }
 
   void subscribeTopic<T>({

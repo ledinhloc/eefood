@@ -9,15 +9,15 @@ bool isValidEmail(String email) {
   return emailRegExp.hasMatch(email);
 }
 
-String getLiveKitWsUrl(String baseUrl, {int? wsPort}){
-  Uri uri = Uri.parse(baseUrl);
-  String scheme = uri.scheme == 'https' ? 'wss' : 'ws';
-  int port = wsPort ?? uri.port;
+String getLiveKitWsUrl(String baseUrl) {
+  final uri = Uri.parse(baseUrl);
+
+  final isHttps = uri.scheme == 'https';
+
   return Uri(
-    scheme: scheme,
-    host: uri.host,
-    port: port,
-    path: ''
+    scheme: isHttps ? 'wss' : 'ws',
+    host: isHttps ? 'livekit.${uri.host}' : uri.host,
+    port: isHttps ? null : 7880,
   ).toString();
 }
 //format time
