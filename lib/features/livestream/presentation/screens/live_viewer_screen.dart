@@ -56,6 +56,7 @@ class _LiveViewerScreenState extends State<LiveViewerScreen> {
   late final SubtitleCubit _subtitleCubit;
   late final LiveLeaderboardCubit _leaderboardCubit;
   late final WalletCubit _walletCubit;
+  late final UserModel? user;
 
   @override
   void initState() {
@@ -65,17 +66,24 @@ class _LiveViewerScreenState extends State<LiveViewerScreen> {
     _subtitleCubit.ensureConnected();
 
     _leaderboardCubit = context.read<LiveLeaderboardCubit>();
-     _walletCubit = getIt<WalletCubit>();
+    _walletCubit = getIt<WalletCubit>();
 
-    user = await _getCurrentUser();
-    _leaderboardCubit.init(widget.streamId);
-    context.read<WatchLiveCubit>().loadLive(widget.streamId);
-    // Join as viewer
-    context.read<LiveViewerCubit>().joinLiveStream();
-
-
+    _init();
   }
 
+  Future<void> _init() async {
+    user = await _getCurrentUser();
+
+    if (!mounted) return;
+
+    context.read<SubtitleCubit>().attachToStream(widget.streamId);
+    context.read<SubtitleCubit>().ensureConnected();
+
+    _leaderboardCubit.init(widget.streamId);
+
+    context.read<WatchLiveCubit>().loadLive(widget.streamId);
+    context.read<LiveViewerCubit>().joinLiveStream();
+  }
 
   Future<UserModel?> _getCurrentUser() async {
     try {
@@ -318,10 +326,7 @@ class _LiveViewerScreenState extends State<LiveViewerScreen> {
                           mainAxisSize: MainAxisSize.min,
                           children: [
                             if (poll != null) ...[
-                              LivePollBanner(
-                                poll: poll,
-                                onTap: _showPollSheet,
-                              ),
+                              LivePollBanner(poll: poll, onTap: _showPollSheet),
                               const SizedBox(height: 8),
                             ],
                             LiveLeaderboardStrip(
