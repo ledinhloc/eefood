@@ -16,9 +16,11 @@ import 'package:eefood/features/meal_plan/presentation/screens/meal_plan_page.da
 import 'package:eefood/features/noti/presentation/screens/notification_screen.dart';
 import 'package:eefood/features/noti/presentation/screens/ntofication_settings_screen.dart';
 import 'package:eefood/features/nutrition/presentation/screens/image_choice_screen.dart';
+import 'package:eefood/features/payment/presentation/provider/wallet_history_cubit.dart';
 import 'package:eefood/features/payment/presentation/screens/payment_result_screen.dart';
 import 'package:eefood/features/payment/presentation/screens/recharge_screen.dart';
 import 'package:eefood/features/payment/presentation/screens/vnpay_webview_screen.dart';
+import 'package:eefood/features/payment/presentation/screens/wallet_history_screen.dart';
 import 'package:eefood/features/post/presentation/provider/follow_cubit.dart';
 import 'package:eefood/features/post/presentation/provider/story_list_cubit.dart';
 import 'package:eefood/features/post/presentation/provider/story_setting_cubit.dart';
@@ -132,6 +134,7 @@ class AppRoutes {
   static const recharge = '/recharge';
   static const paymentResultScreen = '/paymentResultScreen';
   static const vnpayWebviewScreen = '/vnpayWebviewScreen';
+  static const walletHistoryScreen = '/walletHistoryScreen';
 
   // Danh sách các widget cho BottomNavigationBar trong main page
   static List<Widget> widgetOptions = <Widget>[
@@ -376,6 +379,16 @@ class AppRoutes {
       return VnpayWebviewScreen(
         paymentUrl: args['paymentUrl'],
         transactionId: args['transactionId'],
+      );
+    },
+    walletHistoryScreen: (context) {
+      final args = ModalRoute.of(context)!.settings.arguments as Map;
+      return BlocProvider(
+        create: (_) => getIt<WalletHistoryCubit>(),
+        child: WalletHistoryScreen(
+          userId: args['userId'] as num,
+          userName: args['userName'],
+        ),
       );
     },
   };

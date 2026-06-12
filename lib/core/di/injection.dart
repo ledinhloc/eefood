@@ -43,6 +43,7 @@ import 'package:eefood/features/payment/domain/repository/payment_repository.dar
 import 'package:eefood/features/payment/presentation/provider/diamond_packages_cubit.dart';
 import 'package:eefood/features/payment/presentation/provider/payment_cubit.dart';
 import 'package:eefood/features/payment/presentation/provider/wallet_cubit.dart';
+import 'package:eefood/features/payment/presentation/provider/wallet_history_cubit.dart';
 import 'package:eefood/features/post/data/repositories/collection_repository_impl.dart';
 import 'package:eefood/features/post/data/repositories/comment_reaction_repository_impl.dart';
 import 'package:eefood/features/post/data/repositories/comment_repository_impl.dart';
@@ -435,6 +436,8 @@ Future<void> setupDependencies() async {
   );
 
   getIt.registerFactory<LiveLeaderboardCubit>(
-    () => LiveLeaderboardCubit(repository: getIt<LiveLeaderboardRepository>())
+    () => LiveLeaderboardCubit(repository: getIt<LiveLeaderboardRepository>()),
   );
+
+  getIt.registerFactory(() => WalletHistoryCubit(getIt<PaymentRepository>()));
 }
