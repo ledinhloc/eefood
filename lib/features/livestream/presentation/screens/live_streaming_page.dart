@@ -65,9 +65,9 @@ class _LiveStreamScreenState extends State<LiveStreamScreen> {
     super.initState();
     _liveViewerCubit = context.read<LiveViewerCubit>();
     _liveStreamCubit = context.read<LiveStreamCubit>();
-	_liveLeaderboardCubit = context.read<LiveLeaderboardCubit>();
+    _liveLeaderboardCubit = context.read<LiveLeaderboardCubit>();
 
-	  _subtitleCubit = context.read<SubtitleCubit>();
+    _subtitleCubit = context.read<SubtitleCubit>();
     _subtitleCubit.attachToStream(widget.stream.id);
     _subtitleCubit.ensureConnected();
     _ensureTracksReady();
@@ -535,16 +535,17 @@ class _LiveTopBar extends StatelessWidget {
                           onTap: onShowPollManage,
                         ),
                       ],
-                      // if (pollState.poll == null) ...[
-                      //   const SizedBox(height: 8),
-                      //   BlocProvider.value(
-                      //     value: context.read<LiveLeaderboardCubit>(),
-                      //     child: LiveLeaderboardStrip(
-                      //       livestreamId: stream.id,
-                      //       isStreamer: true,
-                      //     ),
-                      //   ),
-                      // ],
+                      const SizedBox(height: 80),
+                      Align(
+                        alignment: Alignment.centerLeft,
+                        child: BlocProvider.value(
+                          value: context.read<LiveLeaderboardCubit>(),
+                          child: LiveLeaderboardStrip(
+                            livestreamId: stream.id,
+                            isStreamer: true,
+                          ),
+                        ),
+                      ),
                     ],
                   ),
                 );

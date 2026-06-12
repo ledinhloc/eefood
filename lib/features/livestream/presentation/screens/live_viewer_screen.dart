@@ -1,7 +1,10 @@
 import 'dart:async';
+import 'dart:convert';
 
+import 'package:eefood/core/constants/app_keys.dart';
 import 'package:eefood/core/di/injection.dart';
 import 'package:eefood/core/widgets/snack_bar.dart';
+import 'package:eefood/features/auth/data/models/user_model.dart';
 import 'package:eefood/features/livestream/presentation/provider/live_gift_cubit.dart';
 import 'package:eefood/features/livestream/presentation/provider/live_leaderboard_cubit.dart';
 import 'package:eefood/features/livestream/presentation/provider/live_poll_cubit.dart';
@@ -15,6 +18,7 @@ import 'package:eefood/features/payment/presentation/provider/wallet_cubit.dart'
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:livekit_client/livekit_client.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../../../core/utils/food_emotion_helper.dart';
 import '../../data/model/live_reaction_response.dart';
@@ -52,19 +56,37 @@ class _LiveViewerScreenState extends State<LiveViewerScreen> {
 
   late final LiveLeaderboardCubit _leaderboardCubit;
   late final WalletCubit _walletCubit;
-
+  late final UserModel? user;
   @override
   void initState() {
     super.initState();
+    _leaderboardCubit = context.read<LiveLeaderboardCubit>();
+     _walletCubit = getIt<WalletCubit>();
+    _init();
+  }
+
+  Future<void> _init() async {
+    user = await _getCurrentUser();
+
+    if (!mounted) return;
 
     context.read<SubtitleCubit>().attachToStream(widget.streamId);
-    context.read<SubtitleCubit>().ensureConnected(); // leaderboard
-    _leaderboardCubit = context.read<LiveLeaderboardCubit>();
-    _leaderboardCubit.init(widget.streamId); // Load stream
-    _walletCubit = getIt<WalletCubit>();
+    context.read<SubtitleCubit>().ensureConnected();
+
+    _leaderboardCubit.init(widget.streamId);
+
     context.read<WatchLiveCubit>().loadLive(widget.streamId);
-    // Join as viewer
     context.read<LiveViewerCubit>().joinLiveStream();
+  }
+
+  Future<UserModel?> _getCurrentUser() async {
+    try {
+      final prefs = getIt<SharedPreferences>();
+      final str = prefs.getString(AppKeys.user);
+      return str != null ? UserModel.fromJson(jsonDecode(str)) : null;
+    } catch (_) {
+      return null;
+    }
   }
 
   void _showPollSheet() {
@@ -133,7 +155,7 @@ class _LiveViewerScreenState extends State<LiveViewerScreen> {
     );
   }
 
-  void _showGiftSheet(stream) {
+  void _showGiftSheet() {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
@@ -141,7 +163,7 @@ class _LiveViewerScreenState extends State<LiveViewerScreen> {
       builder: (_) => MultiBlocProvider(
         providers: [
           BlocProvider.value(value: context.read<LiveGiftCubit>()),
-          BlocProvider.value(value: _walletCubit..init(stream.userId)),
+          BlocProvider.value(value: _walletCubit..init(user!.id)),
         ],
         child: const LiveGiftBottomSheet(),
       ),
@@ -287,28 +309,29 @@ class _LiveViewerScreenState extends State<LiveViewerScreen> {
                 // Top bar
                 _buildTopBar(stream, participantCount, subtitleState),
                 Positioned(
-                  top: 120,
-                  left: 10,
-                  child: SafeArea(
-                    child: LiveLeaderboardStrip(
-                      livestreamId: widget.streamId,
-                      isStreamer: false,
-                    ),
-                  ),
-                ),
-                Positioned(
-                  top: 110,
+                  top: 132,
                   left: 10,
                   right: 70,
                   child: SafeArea(
                     child: BlocBuilder<LivePollCubit, LivePollState>(
                       builder: (context, pollState) {
                         final poll = pollState.poll;
-                        if (poll == null) return const SizedBox.shrink();
-
-                        return LivePollBanner(
-                          poll: poll,
-                          onTap: _showPollSheet,
+                        return Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            if (poll != null) ...[
+                              LivePollBanner(
+                                poll: poll,
+                                onTap: _showPollSheet,
+                              ),
+                              const SizedBox(height: 8),
+                            ],
+                            LiveLeaderboardStrip(
+                              livestreamId: widget.streamId,
+                              isStreamer: false,
+                            ),
+                          ],
                         );
                       },
                     ),
@@ -355,7 +378,7 @@ class _LiveViewerScreenState extends State<LiveViewerScreen> {
                 ),
 
                 // Reaction buttons
-                _buildReactionButtons(stream),
+                _buildReactionButtons(),
               ],
             ),
           );
@@ -493,7 +516,7 @@ class _LiveViewerScreenState extends State<LiveViewerScreen> {
     );
   }
 
-  Widget _buildReactionButtons(stream) {
+  Widget _buildReactionButtons() {
     return Positioned(
       right: 12,
       bottom: 200,
@@ -502,7 +525,7 @@ class _LiveViewerScreenState extends State<LiveViewerScreen> {
           Padding(
             padding: const EdgeInsets.only(bottom: 16),
             child: GestureDetector(
-              onTap: () => _showGiftSheet(stream),
+              onTap: () => _showGiftSheet(),
               child: Container(
                 width: 52,
                 height: 52,
