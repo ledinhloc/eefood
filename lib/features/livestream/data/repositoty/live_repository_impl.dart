@@ -43,6 +43,10 @@ class LiveRepositoryImpl extends LiveRepository{
     final res = await dio.get(
       '/v1/livestreams/$liveStreamId'
     );
-    return LiveStreamResponse.fromJson(res.data['data']);
+    final data = res.data['data'];
+    if (data == null) {
+      throw 'Bạn không thể xem livestream này';
+    }
+    return LiveStreamResponse.fromJson(data);
   }
 }

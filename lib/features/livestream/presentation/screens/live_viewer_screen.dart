@@ -53,31 +53,29 @@ class _LiveViewerScreenState extends State<LiveViewerScreen> {
   final TextEditingController _commentController = TextEditingController();
   final ScrollController _scrollController = ScrollController();
   final List<LiveReactionResponse> _activeReactions = [];
-
+  late final SubtitleCubit _subtitleCubit;
   late final LiveLeaderboardCubit _leaderboardCubit;
   late final WalletCubit _walletCubit;
-  late final UserModel? user;
+
   @override
   void initState() {
     super.initState();
+    _subtitleCubit = context.read<SubtitleCubit>();
+    _subtitleCubit.attachToStream(widget.streamId);
+    _subtitleCubit.ensureConnected();
+
     _leaderboardCubit = context.read<LiveLeaderboardCubit>();
      _walletCubit = getIt<WalletCubit>();
-    _init();
-  }
 
-  Future<void> _init() async {
     user = await _getCurrentUser();
-
-    if (!mounted) return;
-
-    context.read<SubtitleCubit>().attachToStream(widget.streamId);
-    context.read<SubtitleCubit>().ensureConnected();
-
     _leaderboardCubit.init(widget.streamId);
-
     context.read<WatchLiveCubit>().loadLive(widget.streamId);
+    // Join as viewer
     context.read<LiveViewerCubit>().joinLiveStream();
+
+
   }
+
 
   Future<UserModel?> _getCurrentUser() async {
     try {
@@ -135,7 +133,7 @@ class _LiveViewerScreenState extends State<LiveViewerScreen> {
 
   void _leaveLiveStream() async {
     context.read<LiveViewerCubit>().leaveLiveStream();
-    context.read<SubtitleCubit>().disposeStream();
+    _subtitleCubit.disposeStream();
     await context.read<WatchLiveCubit>().disconnect();
     if (mounted) Navigator.pop(context);
   }
@@ -173,7 +171,6 @@ class _LiveViewerScreenState extends State<LiveViewerScreen> {
   @override
   void dispose() {
     _timer?.cancel();
-    context.read<SubtitleCubit>().disposeStream();
     _commentController.dispose();
     _scrollController.dispose();
     _leaderboardCubit.unsubscribe(widget.streamId);
@@ -433,7 +430,7 @@ class _LiveViewerScreenState extends State<LiveViewerScreen> {
               LiveStatusTimer(startTime: stream.startedAt!),
               const SizedBox(width: 8),
               GestureDetector(
-                onTap: _showViewerList,
+                onTap: null,
                 child: Container(
                   padding: const EdgeInsets.symmetric(
                     horizontal: 10,
