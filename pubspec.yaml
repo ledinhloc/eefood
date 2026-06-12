@@ -68,6 +68,7 @@ dependencies:
   shimmer: ^3.0.0 #skeleton loading
   speech_to_text: ^7.3.0
   camera: ^0.11.0
+  camera_android: ^0.10.10+6
   photo_manager: ^3.7.1
   image_gallery_saver_plus: ^4.0.1
   google_sign_in: ^6.2.1

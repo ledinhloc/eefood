@@ -39,7 +39,6 @@ class LivePollCubit extends Cubit<LivePollState> {
     required int liveStreamId,
     bool connectSocket = true,
     bool isHost = false,
-    int? pollId,
   }) async {
     emit(
       state.copyWith(
@@ -54,12 +53,7 @@ class LivePollCubit extends Cubit<LivePollState> {
     }
 
     try {
-      if (pollId != null) {
-        await loadPollDetail(pollId: pollId);
-      } else {
-        await loadActivePoll();
-      }
-
+      await loadActivePoll();
       final currentPollId = state.poll?.id;
       if (currentPollId != null) {
         await loadPollResultIfNeeded(pollId: currentPollId);

@@ -14,7 +14,7 @@ class AppKeys{
   static const fcmToken = 'fcmToken';
   static const user = 'user';
   static const baseUrl = String.fromEnvironment('BASE_URL', defaultValue: 'http://192.168.1.16:8222');
-  static final livekitUrl = getLiveKitWsUrl(baseUrl, wsPort: 7880);
+  static final livekitUrl = getLiveKitWsUrl(baseUrl);
   static const webDeloyUrl = "https://eefoodpreviewapp.vercel.app";
   static const hostDeloy = "eefoodpreviewapp.vercel.app";
   static const recentKey = 'recent_search_keywords';

@@ -268,7 +268,11 @@ class WatchLiveCubit extends Cubit<WatchLiveState> {
   }
 
   void _syncAllRemoteParticipants(Room room) {
-    if (room.remoteParticipants.isEmpty) {
+    final streamers = room.remoteParticipants.values.where(
+      (participant) => participant.identity.startsWith('streamer_'),
+    );
+
+    if (streamers.isEmpty) {
       _safeEmit(
         state.copyWith(
           clearRemoteVideoTrack: true,
@@ -278,12 +282,16 @@ class WatchLiveCubit extends Cubit<WatchLiveState> {
       return;
     }
 
-    for (final participant in room.remoteParticipants.values) {
+    for (final participant in streamers) {
       _syncParticipantTracks(participant);
     }
   }
 
   void _syncParticipantTracks(RemoteParticipant participant) {
+    if (!participant.identity.startsWith('streamer_')) {
+      return;
+    }
+
     developer.log(
       'Sync participant tracks: ${participant.identity}',
       name: 'WatchLive',
