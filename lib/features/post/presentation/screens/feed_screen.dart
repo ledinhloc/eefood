@@ -509,15 +509,26 @@ class _FeedViewState extends State<FeedView> {
                 child: Row(
                   children: [
                     GestureDetector(
-                      onTap: () {},
+                      onTap: () {
+                        if (isGuest) {
+                          showLoginRequired(context);
+                          return;
+                        }
+                        Navigator.pushNamed(
+                          context,
+                          AppRoutes.walletHistoryScreen,
+                          arguments: {
+                            'userId': user.id,
+                            'userName': user.username,
+                          },
+                        );
+                      },
                       child: Container(
                         height: 36,
                         padding: const EdgeInsets.symmetric(horizontal: 8),
                         decoration: BoxDecoration(
                           color: Colors.blue.shade50,
-                          borderRadius: BorderRadius.circular(
-                            10,
-                          ),
+                          borderRadius: BorderRadius.circular(10),
                         ),
                         child: Row(
                           mainAxisSize: MainAxisSize.min,
