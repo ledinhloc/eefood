@@ -76,7 +76,7 @@ class _WalletHistoryScreenState extends State<WalletHistoryScreen> {
           ),
           BlocBuilder<WalletHistoryCubit, WalletHistoryState>(
             builder: (_, state) => Text(
-              'ID: ${widget.userName}',
+              '${widget.userName}',
               style: const TextStyle(
                 fontSize: 11,
                 color: Colors.grey,
