@@ -37,11 +37,6 @@ class SimilarRecipesCubit extends Cubit<SimilarRecipesState> {
 
   SimilarRecipesCubit() : super(const SimilarRecipesState());
 
-  void _emit(SimilarRecipesState nextState) {
-    if (isClosed) return;
-    emit(nextState);
-  }
-
   Future<void> loadSimilarRecipes(
     int recipeId, {
     List<String>? ingredients,
@@ -51,7 +46,7 @@ class SimilarRecipesCubit extends Cubit<SimilarRecipesState> {
         ? state.selectedIngredients
         : ingredients.toSet();
 
-    _emit(
+    emit(
       state.copyWith(isLoading: true, selectedIngredients: selectedIngredients),
     );
 
@@ -63,7 +58,7 @@ class SimilarRecipesCubit extends Cubit<SimilarRecipesState> {
             : selectedIngredients.toList(),
         limit: limit,
       );
-      _emit(
+      emit(
         state.copyWith(
           isLoading: false,
           recipes: recipes,
@@ -71,7 +66,7 @@ class SimilarRecipesCubit extends Cubit<SimilarRecipesState> {
         ),
       );
     } catch (e) {
-      _emit(
+      emit(
         state.copyWith(
           isLoading: false,
           selectedIngredients: selectedIngredients,
