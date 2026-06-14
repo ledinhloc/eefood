@@ -75,7 +75,7 @@ class _MealPlanItemUpsertSheetContentState
   late MealPlanItemStatus _status;
   late MealPlanItemSource _source;
 
-  bool get _isEditing => widget.item?.id != null;
+  bool get _isEditing => widget.item != null;
 
   @override
   void initState() {
@@ -94,10 +94,10 @@ class _MealPlanItemUpsertSheetContentState
       text: item?.customMealName ?? '',
     );
     _plannedServingsController = TextEditingController(
-      text: item?.plannedServings?.toString() ?? '1',
+      text: item?.plannedServings?.toString() ?? '',
     );
     _actualServingsController = TextEditingController(
-      text: item?.actualServings?.toString() ?? '1',
+      text: item?.actualServings?.toString() ?? '',
     );
     _noteController = TextEditingController(text: item?.note ?? '');
     _ingredientDrafts =
@@ -174,13 +174,9 @@ class _MealPlanItemUpsertSheetContentState
       ),
     );
 
-    if (!mounted || !widget.parentContext.mounted) {
-      return;
-    }
-
-    final error = widget.cubit.state.itemSubmitError;
-    if (error != null) {
-      showCustomSnackBar(context, error, isError: true);
+    if (!mounted ||
+        !widget.parentContext.mounted ||
+        widget.cubit.state.error != null) {
       return;
     }
 

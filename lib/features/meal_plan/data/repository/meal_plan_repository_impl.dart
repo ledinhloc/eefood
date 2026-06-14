@@ -118,11 +118,6 @@ class MealPlanRepositoryImpl implements MealPlanRepository {
         options: Options(contentType: 'application/json'),
       );
       return MealPlanItemResponse.fromJson(response.data['data']);
-    } on DioException catch (err) {
-      if (err.response?.statusCode == 409) {
-        throw Exception('MEAL_PLAN_ITEM_DUPLICATE');
-      }
-      throw Exception('Upsert meal plan item failed: $err');
     } catch (err) {
       throw Exception('Upsert meal plan item failed: $err');
     }
