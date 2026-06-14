@@ -19,7 +19,7 @@ class MealPlanCubit extends Cubit<MealPlanState> {
     emit(nextState);
   }
 
-  // So sánh theo "ngày" thay vì so sánh full DateTime để tránh lệch giờ/phút/giây.
+  // So sánh theo "ngày" thay vì so sánh full DateTime để tránh lệch giờ/phút/giây
   bool _sameDay(DateTime? a, DateTime? b) {
     if (a == null || b == null) return false;
     return a.year == b.year && a.month == b.month && a.day == b.day;
