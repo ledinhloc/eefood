@@ -12,6 +12,7 @@ class MealPlanState {
   final List<MealPlanItemResponse> dayItems;
   final List<DateTime> highlightedDates;
   final String? error;
+  final String? itemSubmitError;
 
   const MealPlanState({
     this.isLoading = false,
@@ -23,6 +24,7 @@ class MealPlanState {
     this.dayItems = const [],
     this.highlightedDates = const [],
     this.error,
+    this.itemSubmitError,
   });
 
   MealPlanState copyWith({
@@ -37,6 +39,8 @@ class MealPlanState {
     List<DateTime>? highlightedDates,
     String? error,
     bool clearError = false,
+    String? itemSubmitError,
+    bool clearItemSubmitError = false,
   }) {
     return MealPlanState(
       isLoading: isLoading ?? this.isLoading,
@@ -50,6 +54,9 @@ class MealPlanState {
       dayItems: dayItems ?? this.dayItems,
       highlightedDates: highlightedDates ?? this.highlightedDates,
       error: clearError ? null : (error ?? this.error),
+      itemSubmitError: clearItemSubmitError
+          ? null
+          : (itemSubmitError ?? this.itemSubmitError),
     );
   }
 }

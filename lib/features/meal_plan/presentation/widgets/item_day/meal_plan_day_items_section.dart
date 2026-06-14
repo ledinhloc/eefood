@@ -135,33 +135,33 @@ class _MealPlanDayItemsSectionState extends State<MealPlanDayItemsSection> {
       return;
     }
 
-    final confirmed = await showDialog<bool>(
-      context: context,
-      builder: (dialogContext) {
-        return AlertDialog(
-          title: Text(l10n.mealPlanDeleteItemTitle),
-          content: Text(
-            l10n.mealPlanDeleteItemMessage(_itemTitle(context, item)),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(dialogContext, false),
-              child: Text(l10n.cancel),
-            ),
-            ElevatedButton(
-              onPressed: () => Navigator.pop(dialogContext, true),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Theme.of(dialogContext).colorScheme.error,
-                foregroundColor: Theme.of(dialogContext).colorScheme.onError,
-              ),
-              child: Text(l10n.mealPlanDeleteAction),
-            ),
-          ],
-        );
-      },
-    );
+    // final confirmed = await showDialog<bool>(
+    //   context: context,
+    //   builder: (dialogContext) {
+    //     return AlertDialog(
+    //       title: Text(l10n.mealPlanDeleteItemTitle),
+    //       content: Text(
+    //         l10n.mealPlanDeleteItemMessage(_itemTitle(context, item)),
+    //       ),
+    //       actions: [
+    //         TextButton(
+    //           onPressed: () => Navigator.pop(dialogContext, false),
+    //           child: Text(l10n.cancel),
+    //         ),
+    //         ElevatedButton(
+    //           onPressed: () => Navigator.pop(dialogContext, true),
+    //           style: ElevatedButton.styleFrom(
+    //             backgroundColor: Theme.of(dialogContext).colorScheme.error,
+    //             foregroundColor: Theme.of(dialogContext).colorScheme.onError,
+    //           ),
+    //           child: Text(l10n.mealPlanDeleteAction),
+    //         ),
+    //       ],
+    //     );
+    //   },
+    // );
 
-    if (confirmed != true || !context.mounted) return;
+    // if (confirmed != true || !context.mounted) return;
     await context.read<MealPlanCubit>().deleteMealPlanItem(itemId);
   }
 
@@ -212,7 +212,7 @@ class _MealPlanDayItemsSectionState extends State<MealPlanDayItemsSection> {
       _updatingItemIds.remove(itemId);
     });
 
-    final error = cubit.state.error;
+    final error = cubit.state.itemSubmitError;
     if (error != null) {
       showCustomSnackBar(this.context, error, isError: true);
       return;
