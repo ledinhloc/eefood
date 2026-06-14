@@ -18,8 +18,11 @@ Future<bool> showCustomSnackBar(
 
   Timer? timer;
   late OverlayEntry entry;
+  var isClosed = false;
 
   void close(bool dismissedByUser) {
+    if (isClosed) return;
+    isClosed = true;
     timer?.cancel();
     if (entry.mounted) {
       entry.remove();

@@ -10,7 +10,7 @@ import 'package:eefood/features/meal_plan/domain/enum/meal_plan_item_status.dart
 import 'package:eefood/features/meal_plan/domain/enum/meal_slot.dart';
 import 'package:eefood/features/meal_plan/domain/repository/meal_plan_repository.dart';
 import 'package:eefood/features/meal_plan/presentation/provider/meal_plan_cubit.dart';
-import 'package:eefood/features/meal_plan/presentation/widgets/meal_plan_item_upsert_sheet.dart';
+import 'package:eefood/features/meal_plan/presentation/widgets/update_item/meal_plan_item_upsert_sheet.dart';
 import 'package:eefood/features/post/presentation/provider/follow_cubit.dart';
 import 'package:eefood/features/post/presentation/provider/post_list_cubit.dart';
 import 'package:eefood/features/recipe/application/services/recipe_pdf_service.dart';

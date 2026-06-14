@@ -9,7 +9,7 @@ import 'package:eefood/features/meal_plan/presentation/provider/meal_plan_cubit.
 import 'package:eefood/features/meal_plan/presentation/widgets/item_day/meal_plan_item_nutrition_sheet.dart';
 import 'package:eefood/features/meal_plan/presentation/widgets/item_day/nutrition_badge.dart';
 import 'package:eefood/features/meal_plan/presentation/widgets/item_day/status_drop_down.dart';
-import 'package:eefood/features/meal_plan/presentation/widgets/meal_plan_item_upsert_sheet.dart';
+import 'package:eefood/features/meal_plan/presentation/widgets/update_item/meal_plan_item_upsert_sheet.dart';
 import 'package:eefood/features/recipe/presentation/screens/recipe_detail_page.dart';
 import 'package:eefood/l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
@@ -135,33 +135,33 @@ class _MealPlanDayItemsSectionState extends State<MealPlanDayItemsSection> {
       return;
     }
 
-    final confirmed = await showDialog<bool>(
-      context: context,
-      builder: (dialogContext) {
-        return AlertDialog(
-          title: Text(l10n.mealPlanDeleteItemTitle),
-          content: Text(
-            l10n.mealPlanDeleteItemMessage(_itemTitle(context, item)),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(dialogContext, false),
-              child: Text(l10n.cancel),
-            ),
-            ElevatedButton(
-              onPressed: () => Navigator.pop(dialogContext, true),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Theme.of(dialogContext).colorScheme.error,
-                foregroundColor: Theme.of(dialogContext).colorScheme.onError,
-              ),
-              child: Text(l10n.mealPlanDeleteAction),
-            ),
-          ],
-        );
-      },
-    );
+    // final confirmed = await showDialog<bool>(
+    //   context: context,
+    //   builder: (dialogContext) {
+    //     return AlertDialog(
+    //       title: Text(l10n.mealPlanDeleteItemTitle),
+    //       content: Text(
+    //         l10n.mealPlanDeleteItemMessage(_itemTitle(context, item)),
+    //       ),
+    //       actions: [
+    //         TextButton(
+    //           onPressed: () => Navigator.pop(dialogContext, false),
+    //           child: Text(l10n.cancel),
+    //         ),
+    //         ElevatedButton(
+    //           onPressed: () => Navigator.pop(dialogContext, true),
+    //           style: ElevatedButton.styleFrom(
+    //             backgroundColor: Theme.of(dialogContext).colorScheme.error,
+    //             foregroundColor: Theme.of(dialogContext).colorScheme.onError,
+    //           ),
+    //           child: Text(l10n.mealPlanDeleteAction),
+    //         ),
+    //       ],
+    //     );
+    //   },
+    // );
 
-    if (confirmed != true || !context.mounted) return;
+    // if (confirmed != true || !context.mounted) return;
     await context.read<MealPlanCubit>().deleteMealPlanItem(itemId);
   }
 
@@ -212,7 +212,7 @@ class _MealPlanDayItemsSectionState extends State<MealPlanDayItemsSection> {
       _updatingItemIds.remove(itemId);
     });
 
-    final error = cubit.state.error;
+    final error = cubit.state.itemSubmitError;
     if (error != null) {
       showCustomSnackBar(this.context, error, isError: true);
       return;
