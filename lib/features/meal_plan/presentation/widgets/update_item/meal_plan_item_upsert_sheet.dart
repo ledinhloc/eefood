@@ -7,7 +7,8 @@ import 'package:eefood/features/meal_plan/domain/enum/meal_plan_item_source.dart
 import 'package:eefood/features/meal_plan/domain/enum/meal_plan_item_status.dart';
 import 'package:eefood/features/meal_plan/domain/enum/meal_slot.dart';
 import 'package:eefood/features/meal_plan/presentation/provider/meal_plan_cubit.dart';
-import 'package:eefood/features/meal_plan/presentation/widgets/meal_plan_ingredients_editor.dart';
+import 'package:eefood/features/meal_plan/presentation/widgets/update_item/meal_plan_ingredient_draft.dart';
+import 'package:eefood/features/meal_plan/presentation/widgets/update_item/meal_plan_ingredients_editor.dart';
 import 'package:eefood/l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
@@ -197,33 +198,67 @@ class _MealPlanItemUpsertSheetContentState
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
     final isDark = theme.brightness == Brightness.dark;
-    final primaryColor = colorScheme.primary;
-    final onPrimaryColor = colorScheme.onPrimary;
+    final primaryColor = isDark
+        ? colorScheme.primary
+        : const Color(0xFFE85D04);
+    final accentColor = isDark
+        ? colorScheme.secondary
+        : const Color(0xFFF48C06);
+    final onPrimaryColor = isDark ? colorScheme.onPrimary : Colors.white;
     final sheetBackground = isDark
         ? Color.alphaBlend(
             colorScheme.onSurface.withValues(alpha: 0.04),
             colorScheme.surface,
           )
-        : colorScheme.surface;
-
-    return Container(
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        color: sheetBackground,
-        borderRadius: BorderRadius.circular(28),
+        : const Color(0xFFFFFBF7);
+    final fieldFillColor = isDark
+        ? colorScheme.surfaceContainerHighest.withValues(alpha: 0.38)
+        : Colors.white;
+    final fieldBorderColor = isDark
+        ? colorScheme.onSurface.withValues(alpha: 0.18)
+        : const Color(0xFFF2D4B7);
+    final formTheme = theme.copyWith(
+      inputDecorationTheme: theme.inputDecorationTheme.copyWith(
+        filled: true,
+        fillColor: fieldFillColor,
+        enabledBorder: OutlineInputBorder(
+          borderSide: BorderSide(color: fieldBorderColor),
+          borderRadius: BorderRadius.circular(16),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderSide: BorderSide(color: primaryColor, width: 1.5),
+          borderRadius: BorderRadius.circular(16),
+        ),
       ),
-      child: SingleChildScrollView(
+    );
+
+    return Theme(
+      data: formTheme,
+      child: Container(
+        constraints: BoxConstraints(
+          maxHeight: MediaQuery.sizeOf(context).height * 0.85,
+        ),
+        padding: const EdgeInsets.all(20),
+        decoration: BoxDecoration(
+          color: sheetBackground,
+          borderRadius: BorderRadius.circular(28),
+        ),
         child: Column(
           mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+          Flexible(
+            child: SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
             Center(
               child: Container(
                 width: 44,
                 height: 5,
                 decoration: BoxDecoration(
-                  color: colorScheme.onSurface.withValues(
-                    alpha: isDark ? 0.26 : 0.18,
+                  gradient: LinearGradient(
+                    colors: [primaryColor, accentColor],
                   ),
                   borderRadius: BorderRadius.circular(999),
                 ),
@@ -234,7 +269,11 @@ class _MealPlanItemUpsertSheetContentState
               _isEditing
                   ? l10n.mealPlanEditItemTitle
                   : l10n.mealPlanAddItemTitle,
-              style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w800),
+              style: TextStyle(
+                color: primaryColor,
+                fontSize: 20,
+                fontWeight: FontWeight.w800,
+              ),
             ),
             const SizedBox(height: 18),
             TextField(
@@ -290,7 +329,6 @@ class _MealPlanItemUpsertSheetContentState
                 readOnly: true,
                 decoration: InputDecoration(
                   labelText: l10n.mealPlanLinkedMeal,
-                  helperText: l10n.mealPlanLinkedMealHelper,
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(16),
                   ),
@@ -366,7 +404,7 @@ class _MealPlanItemUpsertSheetContentState
               drafts: _ingredientDrafts,
               onAdd: () {
                 setState(() {
-                  _ingredientDrafts.add(MealPlanIngredientDraft.empty());
+                  _ingredientDrafts.insert(0, MealPlanIngredientDraft.empty());
                 });
               },
               onRemove: (index) {
@@ -376,24 +414,30 @@ class _MealPlanItemUpsertSheetContentState
                 });
               },
             ),
-            const SizedBox(height: 18),
-            SizedBox(
-              width: double.infinity,
-              child: ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: primaryColor,
-                  foregroundColor: onPrimaryColor,
-                  padding: const EdgeInsets.symmetric(vertical: 14),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(16),
-                  ),
-                ),
-                onPressed: _save,
-                child: Text(
-                  _isEditing ? l10n.mealPlanSaveChanges : l10n.mealPlanAddItem,
-                ),
+                ],
               ),
             ),
+          ),
+          const SizedBox(height: 18),
+          SizedBox(
+            width: double.infinity,
+            child: ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: primaryColor,
+                foregroundColor: onPrimaryColor,
+                elevation: 2,
+                shadowColor: primaryColor.withValues(alpha: 0.28),
+                padding: const EdgeInsets.symmetric(vertical: 14),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(16),
+                ),
+              ),
+              onPressed: _save,
+              child: Text(
+                _isEditing ? l10n.mealPlanSaveChanges : l10n.mealPlanAddItem,
+              ),
+            ),
+          ),
           ],
         ),
       ),

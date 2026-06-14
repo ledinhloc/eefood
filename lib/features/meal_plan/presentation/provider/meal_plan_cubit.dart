@@ -59,22 +59,6 @@ class MealPlanCubit extends Cubit<MealPlanState> {
     );
   }
 
-  DateTime? _resolveInitialSelectedDate(
-    List<MealPlanDailySummaryResponse> summaries,
-    MealPlanResponse? plan,
-  ) {
-    if (summaries.isEmpty) return plan?.startDate;
-
-    final today = DateTime.now();
-    for (final summary in summaries) {
-      if (_sameDay(summary.planDate, today)) {
-        return summary.planDate;
-      }
-    }
-
-    return summaries.first.planDate ?? plan?.startDate;
-  }
-
   // Load dữ liệu overview của màn Meal Plan:
   Future<void> loadOverview() async {
     _emit(state.copyWith(isLoading: true, clearError: true));
@@ -86,14 +70,12 @@ class MealPlanCubit extends Cubit<MealPlanState> {
 
       final plan = results[0] as MealPlanResponse?;
       final summaries = results[1] as List<MealPlanDailySummaryResponse>;
-      final selectedDate = _resolveInitialSelectedDate(summaries, plan);
 
       _emit(
         state.copyWith(
           isLoading: false,
           plan: plan,
           dailySummaries: summaries,
-          selectedDate: selectedDate,
           dayItems: const [],
           highlightedDates: const [],
         ),

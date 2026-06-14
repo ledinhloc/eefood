@@ -9,7 +9,7 @@ import 'package:eefood/features/meal_plan/presentation/provider/meal_plan_cubit.
 import 'package:eefood/features/meal_plan/presentation/widgets/item_day/meal_plan_item_nutrition_sheet.dart';
 import 'package:eefood/features/meal_plan/presentation/widgets/item_day/nutrition_badge.dart';
 import 'package:eefood/features/meal_plan/presentation/widgets/item_day/status_drop_down.dart';
-import 'package:eefood/features/meal_plan/presentation/widgets/meal_plan_item_upsert_sheet.dart';
+import 'package:eefood/features/meal_plan/presentation/widgets/update_item/meal_plan_item_upsert_sheet.dart';
 import 'package:eefood/features/recipe/presentation/screens/recipe_detail_page.dart';
 import 'package:eefood/l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
