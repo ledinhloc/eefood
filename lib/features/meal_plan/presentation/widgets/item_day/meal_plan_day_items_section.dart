@@ -212,7 +212,7 @@ class _MealPlanDayItemsSectionState extends State<MealPlanDayItemsSection> {
       _updatingItemIds.remove(itemId);
     });
 
-    final error = cubit.state.error;
+    final error = cubit.state.itemSubmitError;
     if (error != null) {
       showCustomSnackBar(this.context, error, isError: true);
       return;

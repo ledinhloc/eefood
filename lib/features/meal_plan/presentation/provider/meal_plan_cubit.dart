@@ -249,7 +249,7 @@ class MealPlanCubit extends Cubit<MealPlanState> {
     _emit(
       state.copyWith(
         isSubmitting: showSubmittingState ? true : state.isSubmitting,
-        clearError: true,
+        clearItemSubmitError: true,
       ),
     );
     try {
@@ -271,10 +271,13 @@ class MealPlanCubit extends Cubit<MealPlanState> {
       }
       await refreshDailySummaryByDate(targetDate);
     } catch (e) {
+      final errorMessage = e.toString().contains('MEAL_PLAN_ITEM_DUPLICATE')
+          ? 'Món ăn đã được thêm vào bữa ăn đã chọn'
+          : e.toString();
       _emit(
         state.copyWith(
           isSubmitting: showSubmittingState ? false : state.isSubmitting,
-          error: e.toString(),
+          itemSubmitError: errorMessage,
         ),
       );
     }

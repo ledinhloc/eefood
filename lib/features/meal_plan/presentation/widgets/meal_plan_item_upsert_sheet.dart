@@ -174,9 +174,13 @@ class _MealPlanItemUpsertSheetContentState
       ),
     );
 
-    if (!mounted ||
-        !widget.parentContext.mounted ||
-        widget.cubit.state.error != null) {
+    if (!mounted || !widget.parentContext.mounted) {
+      return;
+    }
+
+    final error = widget.cubit.state.itemSubmitError;
+    if (error != null) {
+      showCustomSnackBar(context, error, isError: true);
       return;
     }
 
