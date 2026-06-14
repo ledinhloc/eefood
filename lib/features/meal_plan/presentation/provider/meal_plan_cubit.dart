@@ -14,6 +14,11 @@ class MealPlanCubit extends Cubit<MealPlanState> {
 
   MealPlanCubit({required this.repository}) : super(const MealPlanState());
 
+  void _emit(MealPlanState nextState) {
+    if (isClosed) return;
+    emit(nextState);
+  }
+
   // So sánh theo "ngày" thay vì so sánh full DateTime để tránh lệch giờ/phút/giây.
   bool _sameDay(DateTime? a, DateTime? b) {
     if (a == null || b == null) return false;
@@ -72,7 +77,7 @@ class MealPlanCubit extends Cubit<MealPlanState> {
 
   // Load dữ liệu overview của màn Meal Plan:
   Future<void> loadOverview() async {
-    emit(state.copyWith(isLoading: true, clearError: true));
+    _emit(state.copyWith(isLoading: true, clearError: true));
     try {
       final results = await Future.wait<Object?>([
         repository.getCurrentMealPlan(),
@@ -83,7 +88,7 @@ class MealPlanCubit extends Cubit<MealPlanState> {
       final summaries = results[1] as List<MealPlanDailySummaryResponse>;
       final selectedDate = _resolveInitialSelectedDate(summaries, plan);
 
-      emit(
+      _emit(
         state.copyWith(
           isLoading: false,
           plan: plan,
@@ -98,14 +103,14 @@ class MealPlanCubit extends Cubit<MealPlanState> {
       //   await loadItemsByDate(selectedDate);
       // }
     } catch (e) {
-      emit(state.copyWith(isLoading: false, error: e.toString()));
+      _emit(state.copyWith(isLoading: false, error: e.toString()));
     }
   }
 
   // Khi đổi ngày, xóa item cache của ngày cũ để buộc màn chi tiết ngày load lại đúng dữ liệu.
   Future<void> toggleDate(DateTime date) async {
     if (_sameDay(state.selectedDate, date)) {
-      emit(
+      _emit(
         state.copyWith(
           clearSelectedDate: true,
           dayItems: const [],
@@ -115,7 +120,7 @@ class MealPlanCubit extends Cubit<MealPlanState> {
       return;
     }
 
-    emit(state.copyWith(selectedDate: date, dayItems: const []));
+    _emit(state.copyWith(selectedDate: date, dayItems: const []));
     await loadItemsByDate(date);
   }
 
@@ -125,28 +130,28 @@ class MealPlanCubit extends Cubit<MealPlanState> {
     final targetDate = date ?? state.selectedDate;
     if (targetDate == null) return;
 
-    emit(state.copyWith(isLoadingItems: true, clearError: true));
+    _emit(state.copyWith(isLoadingItems: true, clearError: true));
     try {
       final items = await repository.getMealPlanItemsByDate(targetDate);
-      emit(state.copyWith(isLoadingItems: false, dayItems: items));
+      _emit(state.copyWith(isLoadingItems: false, dayItems: items));
     } catch (e) {
-      emit(state.copyWith(isLoadingItems: false, error: e.toString()));
+      _emit(state.copyWith(isLoadingItems: false, error: e.toString()));
     }
   }
 
   // Load chi tiết một item khi user mở item detail/bottom sheet.
   Future<void> loadItemDetail(int id) async {
-    emit(state.copyWith(isSubmitting: true, clearError: true));
+    _emit(state.copyWith(isSubmitting: true, clearError: true));
     try {
       final item = await repository.getMealPlanItemDetail(id);
-      emit(
+      _emit(
         state.copyWith(
           isSubmitting: false,
           dayItems: _upsertItemInList(state.dayItems, item),
         ),
       );
     } catch (e) {
-      emit(state.copyWith(isSubmitting: false, error: e.toString()));
+      _emit(state.copyWith(isSubmitting: false, error: e.toString()));
     }
   }
 
@@ -154,33 +159,33 @@ class MealPlanCubit extends Cubit<MealPlanState> {
   Future<void> refreshDailySummaryByDate([DateTime? _]) async {
     try {
       final summaries = await repository.getDailySummary();
-      emit(state.copyWith(dailySummaries: summaries));
+      _emit(state.copyWith(dailySummaries: summaries));
     } catch (e) {
-      emit(state.copyWith(error: e.toString()));
+      _emit(state.copyWith(error: e.toString()));
     }
   }
 
   // Cập nhật metadata của meal plan hiện tại như goal, date range, note.
   Future<void> upsertMealPlan(MealPlanUpsertRequest request) async {
-    emit(state.copyWith(isSubmitting: true, clearError: true));
+    _emit(state.copyWith(isSubmitting: true, clearError: true));
     try {
       final plan = await repository.upsertMealPlan(request);
-      emit(state.copyWith(isSubmitting: false, plan: plan));
+      _emit(state.copyWith(isSubmitting: false, plan: plan));
     } catch (e) {
-      emit(state.copyWith(isSubmitting: false, error: e.toString()));
+      _emit(state.copyWith(isSubmitting: false, error: e.toString()));
     }
   }
 
   // Generate meal plan ban đầu.
   // Sau khi generate xong, load lại daily summary để overview phản ánh dữ liệu mới nhất.
   Future<bool> generateMealPlan(MealPlanGenerateRequest request) async {
-    emit(state.copyWith(isSubmitting: true, clearError: true));
+    _emit(state.copyWith(isSubmitting: true, clearError: true));
     try {
       final plan = await repository.generateMealPlan(request);
       final summaries = await repository.getDailySummary();
       final selectedDate = request.startDate ??
           (summaries.isNotEmpty ? summaries.first.planDate : plan.startDate);
-      emit(
+      _emit(
         state.copyWith(
           isSubmitting: false,
           plan: plan,
@@ -195,7 +200,7 @@ class MealPlanCubit extends Cubit<MealPlanState> {
       );
       return true;
     } catch (e) {
-      emit(
+      _emit(
         state.copyWith(
           isSubmitting: false,
           error: 'Chưa tạo được kế hoạch, vui lòng thử lại',
@@ -210,7 +215,7 @@ class MealPlanCubit extends Cubit<MealPlanState> {
     required DateTime startDate,
     int? days,
   }) async {
-    emit(state.copyWith(isSubmitting: true, clearError: true));
+    _emit(state.copyWith(isSubmitting: true, clearError: true));
     try {
       final plan = await repository.continueMealPlan(
         startDate: startDate,
@@ -218,7 +223,7 @@ class MealPlanCubit extends Cubit<MealPlanState> {
       );
       final summaries = await repository.getDailySummary();
       final selectedDate = startDate;
-      emit(
+      _emit(
         state.copyWith(
           isSubmitting: false,
           plan: plan,
@@ -230,7 +235,7 @@ class MealPlanCubit extends Cubit<MealPlanState> {
       );
       await loadItemsByDate(selectedDate);
     } catch (e) {
-      emit(state.copyWith(isSubmitting: false, error: e.toString()));
+      _emit(state.copyWith(isSubmitting: false, error: e.toString()));
     }
   }
 
@@ -241,7 +246,7 @@ class MealPlanCubit extends Cubit<MealPlanState> {
     MealPlanItemUpsertRequest request, {
     bool showSubmittingState = true,
   }) async {
-    emit(
+    _emit(
       state.copyWith(
         isSubmitting: showSubmittingState ? true : state.isSubmitting,
         clearError: true,
@@ -252,7 +257,7 @@ class MealPlanCubit extends Cubit<MealPlanState> {
       final targetDate =
           item.planDate ?? request.planDate ?? state.selectedDate;
       final shouldPatchCurrentList = _sameDay(targetDate, state.selectedDate);
-      emit(
+      _emit(
         state.copyWith(
           isSubmitting: showSubmittingState ? false : state.isSubmitting,
           selectedDate: targetDate ?? state.selectedDate,
@@ -266,7 +271,7 @@ class MealPlanCubit extends Cubit<MealPlanState> {
       }
       await refreshDailySummaryByDate(targetDate);
     } catch (e) {
-      emit(
+      _emit(
         state.copyWith(
           isSubmitting: showSubmittingState ? false : state.isSubmitting,
           error: e.toString(),
@@ -279,18 +284,18 @@ class MealPlanCubit extends Cubit<MealPlanState> {
   // - xóa item trong list local
   // - refresh summary ngày đang xem
   Future<void> deleteMealPlanItem(int id) async {
-    emit(state.copyWith(isSubmitting: true, clearError: true));
+    _emit(state.copyWith(isSubmitting: true, clearError: true));
     try {
       final plan = await repository.deleteMealPlanItem(id);
       final updatedItems = state.dayItems
           .where((item) => item.id != id)
           .toList();
-      emit(
+      _emit(
         state.copyWith(isSubmitting: false, plan: plan, dayItems: updatedItems),
       );
       await refreshDailySummaryByDate();
     } catch (e) {
-      emit(state.copyWith(isSubmitting: false, error: e.toString()));
+      _emit(state.copyWith(isSubmitting: false, error: e.toString()));
     }
   }
 }

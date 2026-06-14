@@ -75,7 +75,7 @@ class _MealPlanItemUpsertSheetContentState
   late MealPlanItemStatus _status;
   late MealPlanItemSource _source;
 
-  bool get _isEditing => widget.item != null;
+  bool get _isEditing => widget.item?.id != null;
 
   @override
   void initState() {
@@ -94,10 +94,10 @@ class _MealPlanItemUpsertSheetContentState
       text: item?.customMealName ?? '',
     );
     _plannedServingsController = TextEditingController(
-      text: item?.plannedServings?.toString() ?? '',
+      text: item?.plannedServings?.toString() ?? '1',
     );
     _actualServingsController = TextEditingController(
-      text: item?.actualServings?.toString() ?? '',
+      text: item?.actualServings?.toString() ?? '1',
     );
     _noteController = TextEditingController(text: item?.note ?? '');
     _ingredientDrafts =
