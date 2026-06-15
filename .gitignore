@@ -50,3 +50,5 @@ app.*.map.json
 .flutter-plugins-dependencies
 
 **/google-services.json
+
+.codex/

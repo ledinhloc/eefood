@@ -158,7 +158,11 @@ class AppRoutes {
       return EditProfilePage(user: user);
     },
     foodPreference: (context) => const FoodPreferencesPage(),
-    mealPlan: (context) => const MealPlanPage(),
+    mealPlan: (context) {
+      final args =
+          ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>?;
+      return MealPlanPage(initialDate: args?['date'] as DateTime?);
+    },
     bodyMetrics: (context) => const BodyMetricsPage(),
     register: (context) => RegisterPage(),
     verifyOtp: (context) {

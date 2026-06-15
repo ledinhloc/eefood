@@ -20,7 +20,11 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 
 class DeepLinkHandler {
   /// Hàm điều hướng an toàn với timeout
-  static void _navigateSafely(String route, {Object? arguments}) {
+  static void _navigateSafely(
+    String route, {
+    Object? arguments,
+    bool replaceCurrent = false,
+  }) {
     Future.delayed(const Duration(milliseconds: 100), () {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         final navState = navigatorKey.currentState;
@@ -28,7 +32,16 @@ class DeepLinkHandler {
 
         // Kiểm tra route hiện tại để tránh push trùng
         final currentRoute = ModalRoute.of(navState.context)?.settings.name;
-        if (currentRoute == route) return;
+        if (currentRoute == route) {
+          if (replaceCurrent)
+            navState.pushReplacementNamed(route, arguments: arguments);
+          return;
+        }
+
+        if (replaceCurrent) {
+          navState.pushReplacementNamed(route, arguments: arguments);
+          return;
+        }
 
         // Sử dụng pushReplacementNamed để tránh stack quá nhiều
         navState.pushNamed(route, arguments: arguments);
@@ -89,21 +102,30 @@ class DeepLinkHandler {
   static void handleDeepLink(String url) {
     try {
       final uri = Uri.parse(url);
+      final pathSegments =
+          uri.host.isNotEmpty && uri.scheme != 'http' && uri.scheme != 'https'
+          ? [uri.host, ...uri.pathSegments]
+          : uri.pathSegments;
 
       // Log để debug
       debugPrint('[DeepLinkHandler] Handling deep link: $url');
-      debugPrint('[DeepLinkHandler] Path segments: ${uri.pathSegments}');
+      debugPrint('[DeepLinkHandler] Path segments: $pathSegments');
 
-      if (uri.pathSegments.isEmpty) {
+      if (pathSegments.isEmpty) {
         _navigateSafely(AppRoutes.splashPage);
         return;
       }
 
-      final first = uri.pathSegments.first;
-      final id = uri.pathSegments.length > 1 ? uri.pathSegments[1] : null;
+      final first = pathSegments.first;
+      final id = pathSegments.length > 1 ? pathSegments[1] : null;
 
       if (first == 'recipe-approve') {
         _handleRecipeApprove(uri);
+        return;
+      }
+
+      if (first == 'meal-plan') {
+        _handleMealPlan(uri);
         return;
       }
 
@@ -204,5 +226,19 @@ class DeepLinkHandler {
       },
     );
     return;
+  }
+
+  static void _handleMealPlan(Uri uri) {
+    DateTime? date;
+    final dateStr = uri.queryParameters['date'];
+    if (dateStr != null && dateStr.isNotEmpty) {
+      date = DateTime.tryParse(dateStr);
+    }
+
+    _navigateSafely(
+      AppRoutes.mealPlan,
+      arguments: {'date': date},
+      replaceCurrent: true,
+    );
   }
 }

@@ -60,7 +60,8 @@ class MealPlanCubit extends Cubit<MealPlanState> {
   }
 
   // Load dữ liệu overview của màn Meal Plan:
-  Future<void> loadOverview() async {
+  Future<void> loadOverview({DateTime? initialDate}) async {
+    final targetDate = initialDate ?? state.selectedDate;
     _emit(state.copyWith(isLoading: true, clearError: true));
     try {
       final results = await Future.wait<Object?>([
@@ -76,14 +77,15 @@ class MealPlanCubit extends Cubit<MealPlanState> {
           isLoading: false,
           plan: plan,
           dailySummaries: summaries,
+          selectedDate: targetDate,
           dayItems: const [],
           highlightedDates: const [],
         ),
       );
 
-      // if (selectedDate != null) {
-      //   await loadItemsByDate(selectedDate);
-      // }
+      if (targetDate != null) {
+        await loadItemsByDate(targetDate);
+      }
     } catch (e) {
       _emit(state.copyWith(isLoading: false, error: e.toString()));
     }
