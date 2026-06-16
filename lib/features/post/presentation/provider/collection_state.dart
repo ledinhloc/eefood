@@ -19,12 +19,15 @@ class CollectionState {
     CollectionStatus? status,
     List<CollectionModel>? collections,
     CollectionModel? selectedCollection,
+    bool clearSelectedCollection = false,
     String? error,
   }) {
     return CollectionState(
       status: status ?? this.status,
       collections: collections ?? this.collections,
-      selectedCollection: selectedCollection ?? this.selectedCollection,
+      selectedCollection: clearSelectedCollection
+          ? null
+          : selectedCollection ?? this.selectedCollection,
       error: error ?? this.error,
     );
   }

@@ -38,7 +38,7 @@ class CollectionCubit extends Cubit<CollectionState> {
         ),
       );
     } catch (e) {
-      if(isClosed) return;
+      if (isClosed) return;
       if (e is DioError && e.response?.statusCode == 401) {
         // Guest: return empty collections silently
         emit(
@@ -53,14 +53,24 @@ class CollectionCubit extends Cubit<CollectionState> {
   }
 
   Future<void> fetchCollectionDetail(int id) async {
-    emit(state.copyWith(status: CollectionStatus.loading));
+    if (isClosed) return;
+    emit(
+      state.copyWith(
+        status: CollectionStatus.loading,
+        clearSelectedCollection: state.selectedCollection?.id != id,
+      ),
+    );
     try {
       final collection = await repository.getCollectionById(id);
 
-      final updatedCollections = state.collections.map((c) {
-        return c.id == id ? collection : c;
-      }).toList();
+      final collectionExists = state.collections.any((c) => c.id == id);
+      final updatedCollections = collectionExists
+          ? state.collections.map((c) {
+              return c.id == id ? collection : c;
+            }).toList()
+          : [...state.collections, collection];
 
+      if (isClosed) return;
       emit(
         state.copyWith(
           status: CollectionStatus.success,
@@ -76,8 +86,17 @@ class CollectionCubit extends Cubit<CollectionState> {
   }
 
   Future<void> selectCollectionDetail(int id) async {
-    final collection = state.collections.firstWhere((c) => c.id == id);
-    emit(state.copyWith(selectedCollection: collection));
+    if (isClosed) return;
+
+    for (final collection in state.collections) {
+      if (collection.id == id) {
+        emit(state.copyWith(selectedCollection: collection));
+        await fetchCollectionDetail(id);
+        return;
+      }
+    }
+
+    await fetchCollectionDetail(id);
   }
 
   Future<void> createCollection(String name) async {
