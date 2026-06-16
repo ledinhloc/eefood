@@ -1,6 +1,6 @@
 import 'package:eefood/features/recipe/data/models/recipe_compare_response.dart';
 import 'package:eefood/features/recipe/presentation/widgets/compare_recipe/health_score/health_score_section.dart';
-import 'package:eefood/features/recipe/presentation/widgets/compare_recipe/nutrition_compare/nutrition_compare_section.dart';
+import 'package:eefood/features/recipe/presentation/widgets/compare_recipe/nutrition_compare/nutrition_section_wrapper.dart';
 import 'package:eefood/features/recipe/presentation/widgets/compare_recipe/recipe_card_compare.dart';
 import 'package:eefood/features/recipe/presentation/widgets/compare_recipe/time_compare/time_compare_section.dart';
 import 'package:eefood/features/recipe/presentation/widgets/compare_recipe/vs_divider.dart';
@@ -52,7 +52,7 @@ class CompareContent extends StatelessWidget {
           TimeCompareSection(recipeA: recipeA, recipeB: recipeB),
           const SizedBox(height: 16),
           // Nutrition Comparison
-          NutritionCompareSection(recipeA: recipeA, recipeB: recipeB),
+          NutritionSectionWrapper(recipeA: recipeA, recipeB: recipeB),
           const SizedBox(height: 16),
           // Health Score
           HealthScoreSection(recipeA: recipeA, recipeB: recipeB),
