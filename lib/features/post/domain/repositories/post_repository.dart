@@ -1,10 +1,14 @@
 import 'dart:io';
 
+import '../../data/models/ingredient_detection_result.dart';
 import '../../data/models/post_model.dart';
 
 abstract class PostRepository {
   Future<String> getKeywordFromImage(File imageFile);
   Future<List<String>> detectIngredientLabels(File imageFile);
+  Future<IngredientDetectionResult> detectIngredientsWithAnnotatedImage(
+    File imageFile,
+  );
   Future<List<PostModel>> getAllPosts(
     int page,
     int size, {
