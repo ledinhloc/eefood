@@ -18,6 +18,8 @@ Future<void> showMealPlanItemUpsertSheet({
   required MealPlanCubit cubit,
   required DateTime selectedDate,
   MealPlanItemResponse? item,
+  String? initialCustomMealName,
+  List<String> initialIngredientNames = const [],
 }) async {
   final parentContext = context;
 
@@ -38,6 +40,8 @@ Future<void> showMealPlanItemUpsertSheet({
           cubit: cubit,
           selectedDate: selectedDate,
           item: item,
+          initialCustomMealName: initialCustomMealName,
+          initialIngredientNames: initialIngredientNames,
         ),
       );
     },
@@ -49,12 +53,16 @@ class _MealPlanItemUpsertSheetContent extends StatefulWidget {
   final MealPlanCubit cubit;
   final DateTime selectedDate;
   final MealPlanItemResponse? item;
+  final String? initialCustomMealName;
+  final List<String> initialIngredientNames;
 
   const _MealPlanItemUpsertSheetContent({
     required this.parentContext,
     required this.cubit,
     required this.selectedDate,
     required this.item,
+    required this.initialCustomMealName,
+    required this.initialIngredientNames,
   });
 
   @override
@@ -92,7 +100,7 @@ class _MealPlanItemUpsertSheetContentState
       text: DateFormat('dd/MM/yyyy').format(_planDate),
     );
     _customMealNameController = TextEditingController(
-      text: item?.customMealName ?? '',
+      text: item?.customMealName ?? widget.initialCustomMealName ?? '',
     );
     _plannedServingsController = TextEditingController(
       text: item?.plannedServings?.toString() ?? '1',
@@ -101,10 +109,16 @@ class _MealPlanItemUpsertSheetContentState
       text: item?.actualServings?.toString() ?? '1',
     );
     _noteController = TextEditingController(text: item?.note ?? '');
-    _ingredientDrafts =
-        (item?.ingredients ?? const <MealPlanItemIngredientResponse>[])
-            .map(MealPlanIngredientDraft.fromResponse)
-            .toList();
+    final itemIngredients =
+        item?.ingredients ?? const <MealPlanItemIngredientResponse>[];
+    _ingredientDrafts = itemIngredients.isNotEmpty
+        ? itemIngredients.map(MealPlanIngredientDraft.fromResponse).toList()
+        : widget.initialIngredientNames
+              .map((name) => name.trim())
+              .where((name) => name.isNotEmpty)
+              .toSet()
+              .map(MealPlanIngredientDraft.fromName)
+              .toList();
   }
 
   @override
@@ -198,9 +212,7 @@ class _MealPlanItemUpsertSheetContentState
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
     final isDark = theme.brightness == Brightness.dark;
-    final primaryColor = isDark
-        ? colorScheme.primary
-        : const Color(0xFFE85D04);
+    final primaryColor = isDark ? colorScheme.primary : const Color(0xFFE85D04);
     final accentColor = isDark
         ? colorScheme.secondary
         : const Color(0xFFF48C06);
@@ -246,198 +258,201 @@ class _MealPlanItemUpsertSheetContentState
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-          Flexible(
-            child: SingleChildScrollView(
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-            Center(
-              child: Container(
-                width: 44,
-                height: 5,
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    colors: [primaryColor, accentColor],
-                  ),
-                  borderRadius: BorderRadius.circular(999),
+            Flexible(
+              child: SingleChildScrollView(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Center(
+                      child: Container(
+                        width: 44,
+                        height: 5,
+                        decoration: BoxDecoration(
+                          gradient: LinearGradient(
+                            colors: [primaryColor, accentColor],
+                          ),
+                          borderRadius: BorderRadius.circular(999),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 18),
+                    Text(
+                      _isEditing
+                          ? l10n.mealPlanEditItemTitle
+                          : l10n.mealPlanAddItemTitle,
+                      style: TextStyle(
+                        color: primaryColor,
+                        fontSize: 20,
+                        fontWeight: FontWeight.w800,
+                      ),
+                    ),
+                    const SizedBox(height: 18),
+                    TextField(
+                      controller: _dateController,
+                      readOnly: true,
+                      onTap: _pickDate,
+                      decoration: InputDecoration(
+                        labelText: l10n.mealPlanApplyDate,
+                        suffixIcon: const Icon(Icons.calendar_month_outlined),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(16),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 14),
+                    DropdownButtonFormField<MealSlot>(
+                      value: _mealSlot,
+                      decoration: InputDecoration(
+                        labelText: l10n.mealPlanMealSlot,
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(16),
+                        ),
+                      ),
+                      items: MealSlot.values
+                          .map(
+                            (slot) => DropdownMenuItem(
+                              value: slot,
+                              child: Text(slot.localizedLabel(l10n)),
+                            ),
+                          )
+                          .toList(),
+                      onChanged: (value) {
+                        if (value == null) return;
+                        setState(() => _mealSlot = value);
+                      },
+                    ),
+                    const SizedBox(height: 14),
+                    if (_source == MealPlanItemSource.custom) ...[
+                      TextField(
+                        controller: _customMealNameController,
+                        decoration: InputDecoration(
+                          labelText: l10n.mealPlanItemName,
+                          hintText: l10n.mealPlanItemNameHint,
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(16),
+                          ),
+                        ),
+                      ),
+                    ] else ...[
+                      TextFormField(
+                        initialValue:
+                            widget.item?.recipeTitle ?? l10n.mealPlanLinkedMeal,
+                        readOnly: true,
+                        decoration: InputDecoration(
+                          labelText: l10n.mealPlanLinkedMeal,
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(16),
+                          ),
+                        ),
+                      ),
+                    ],
+                    const SizedBox(height: 14),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: TextField(
+                            controller: _plannedServingsController,
+                            keyboardType: TextInputType.number,
+                            decoration: InputDecoration(
+                              labelText: l10n.mealPlanPlannedServings,
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(16),
+                              ),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: TextField(
+                            controller: _actualServingsController,
+                            keyboardType: TextInputType.number,
+                            decoration: InputDecoration(
+                              labelText: l10n.mealPlanActualServings,
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(16),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 14),
+                    DropdownButtonFormField<MealPlanItemStatus>(
+                      value: _status,
+                      decoration: InputDecoration(
+                        labelText: l10n.mealPlanStatus,
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(16),
+                        ),
+                      ),
+                      items: MealPlanItemStatus.values
+                          .map(
+                            (itemStatus) => DropdownMenuItem(
+                              value: itemStatus,
+                              child: Text(itemStatus.localizedLabel(l10n)),
+                            ),
+                          )
+                          .toList(),
+                      onChanged: (value) {
+                        if (value == null) return;
+                        setState(() => _status = value);
+                      },
+                    ),
+                    const SizedBox(height: 14),
+                    TextField(
+                      controller: _noteController,
+                      minLines: 2,
+                      maxLines: 4,
+                      decoration: InputDecoration(
+                        labelText: l10n.mealPlanNote,
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(16),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 14),
+                    MealPlanIngredientsEditor(
+                      drafts: _ingredientDrafts,
+                      onAdd: () {
+                        setState(() {
+                          _ingredientDrafts.insert(
+                            0,
+                            MealPlanIngredientDraft.empty(),
+                          );
+                        });
+                      },
+                      onRemove: (index) {
+                        setState(() {
+                          final draft = _ingredientDrafts.removeAt(index);
+                          draft.dispose();
+                        });
+                      },
+                    ),
+                  ],
                 ),
               ),
             ),
             const SizedBox(height: 18),
-            Text(
-              _isEditing
-                  ? l10n.mealPlanEditItemTitle
-                  : l10n.mealPlanAddItemTitle,
-              style: TextStyle(
-                color: primaryColor,
-                fontSize: 20,
-                fontWeight: FontWeight.w800,
-              ),
-            ),
-            const SizedBox(height: 18),
-            TextField(
-              controller: _dateController,
-              readOnly: true,
-              onTap: _pickDate,
-              decoration: InputDecoration(
-                labelText: l10n.mealPlanApplyDate,
-                suffixIcon: const Icon(Icons.calendar_month_outlined),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(16),
-                ),
-              ),
-            ),
-            const SizedBox(height: 14),
-            DropdownButtonFormField<MealSlot>(
-              value: _mealSlot,
-              decoration: InputDecoration(
-                labelText: l10n.mealPlanMealSlot,
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(16),
-                ),
-              ),
-              items: MealSlot.values
-                  .map(
-                    (slot) => DropdownMenuItem(
-                      value: slot,
-                      child: Text(slot.localizedLabel(l10n)),
-                    ),
-                  )
-                  .toList(),
-              onChanged: (value) {
-                if (value == null) return;
-                setState(() => _mealSlot = value);
-              },
-            ),
-            const SizedBox(height: 14),
-            if (_source == MealPlanItemSource.custom) ...[
-              TextField(
-                controller: _customMealNameController,
-                decoration: InputDecoration(
-                  labelText: l10n.mealPlanItemName,
-                  hintText: l10n.mealPlanItemNameHint,
-                  border: OutlineInputBorder(
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: primaryColor,
+                  foregroundColor: onPrimaryColor,
+                  elevation: 2,
+                  shadowColor: primaryColor.withValues(alpha: 0.28),
+                  padding: const EdgeInsets.symmetric(vertical: 14),
+                  shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(16),
                   ),
                 ),
-              ),
-            ] else ...[
-              TextFormField(
-                initialValue:
-                    widget.item?.recipeTitle ?? l10n.mealPlanLinkedMeal,
-                readOnly: true,
-                decoration: InputDecoration(
-                  labelText: l10n.mealPlanLinkedMeal,
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(16),
-                  ),
-                ),
-              ),
-            ],
-            const SizedBox(height: 14),
-            Row(
-              children: [
-                Expanded(
-                  child: TextField(
-                    controller: _plannedServingsController,
-                    keyboardType: TextInputType.number,
-                    decoration: InputDecoration(
-                      labelText: l10n.mealPlanPlannedServings,
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(16),
-                      ),
-                    ),
-                  ),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: TextField(
-                    controller: _actualServingsController,
-                    keyboardType: TextInputType.number,
-                    decoration: InputDecoration(
-                      labelText: l10n.mealPlanActualServings,
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(16),
-                      ),
-                    ),
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 14),
-            DropdownButtonFormField<MealPlanItemStatus>(
-              value: _status,
-              decoration: InputDecoration(
-                labelText: l10n.mealPlanStatus,
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(16),
-                ),
-              ),
-              items: MealPlanItemStatus.values
-                  .map(
-                    (itemStatus) => DropdownMenuItem(
-                      value: itemStatus,
-                      child: Text(itemStatus.localizedLabel(l10n)),
-                    ),
-                  )
-                  .toList(),
-              onChanged: (value) {
-                if (value == null) return;
-                setState(() => _status = value);
-              },
-            ),
-            const SizedBox(height: 14),
-            TextField(
-              controller: _noteController,
-              minLines: 2,
-              maxLines: 4,
-              decoration: InputDecoration(
-                labelText: l10n.mealPlanNote,
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(16),
+                onPressed: _save,
+                child: Text(
+                  _isEditing ? l10n.mealPlanSaveChanges : l10n.mealPlanAddItem,
                 ),
               ),
             ),
-            const SizedBox(height: 14),
-            MealPlanIngredientsEditor(
-              drafts: _ingredientDrafts,
-              onAdd: () {
-                setState(() {
-                  _ingredientDrafts.insert(0, MealPlanIngredientDraft.empty());
-                });
-              },
-              onRemove: (index) {
-                setState(() {
-                  final draft = _ingredientDrafts.removeAt(index);
-                  draft.dispose();
-                });
-              },
-            ),
-                ],
-              ),
-            ),
-          ),
-          const SizedBox(height: 18),
-          SizedBox(
-            width: double.infinity,
-            child: ElevatedButton(
-              style: ElevatedButton.styleFrom(
-                backgroundColor: primaryColor,
-                foregroundColor: onPrimaryColor,
-                elevation: 2,
-                shadowColor: primaryColor.withValues(alpha: 0.28),
-                padding: const EdgeInsets.symmetric(vertical: 14),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(16),
-                ),
-              ),
-              onPressed: _save,
-              child: Text(
-                _isEditing ? l10n.mealPlanSaveChanges : l10n.mealPlanAddItem,
-              ),
-            ),
-          ),
           ],
         ),
       ),

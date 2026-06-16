@@ -1,14 +1,17 @@
 import 'dart:convert';
 import 'dart:io';
-import 'dart:typed_data';
 
 import 'package:camera/camera.dart';
 import 'package:eefood/app_routes.dart';
 import 'package:eefood/core/di/injection.dart';
 import 'package:eefood/core/widgets/snack_bar.dart';
+import 'package:eefood/features/meal_plan/domain/repository/meal_plan_repository.dart';
+import 'package:eefood/features/meal_plan/presentation/provider/meal_plan_cubit.dart';
+import 'package:eefood/features/meal_plan/presentation/widgets/update_item/meal_plan_item_upsert_sheet.dart';
 import 'package:eefood/features/post/data/models/ingredient_detection_result.dart';
 import 'package:eefood/features/post/presentation/provider/post_list_cubit.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:image_picker/image_picker.dart';
 
@@ -24,6 +27,7 @@ class _IngredientSearchPageState extends State<IngredientSearchPage> {
   CameraController? _cameraController;
   bool _isInitialized = false;
   bool _isFlashOn = false;
+  bool _isPickingImage = false;
   File? _previewImage;
   IngredientDetectionResult? _detectionResult;
 
@@ -74,7 +78,22 @@ class _IngredientSearchPageState extends State<IngredientSearchPage> {
   }
 
   Future<void> _pickFromGallery() async {
-    final image = await _picker.pickImage(source: ImageSource.gallery);
+    if (_isPickingImage) return;
+
+    _isPickingImage = true;
+    final XFile? image;
+    try {
+      image = await _picker.pickImage(source: ImageSource.gallery);
+    } on PlatformException catch (e) {
+      debugPrint('[IngredientSearchPage] pick image failed error=$e');
+      if (e.code == 'already_active') {
+        return;
+      }
+      rethrow;
+    } finally {
+      _isPickingImage = false;
+    }
+
     if (image == null || !mounted) return;
 
     final file = File(image.path);
@@ -194,6 +213,39 @@ class _IngredientSearchPageState extends State<IngredientSearchPage> {
     }
   }
 
+  Future<void> _addDetectedIngredientsToMealPlan() async {
+    final labels = (_detectionResult?.labels ?? const <String>[])
+        .map((label) => label.trim())
+        .where((label) => label.isNotEmpty)
+        .toSet()
+        .toList();
+
+    if (labels.isEmpty) {
+      await showCustomSnackBar(
+        context,
+        'Không có nguyên liệu để thêm vào kế hoạch',
+        isError: true,
+      );
+      return;
+    }
+
+    final mealPlanCubit = MealPlanCubit(
+      repository: getIt<MealPlanRepository>(),
+    );
+
+    try {
+      await showMealPlanItemUpsertSheet(
+        context: context,
+        cubit: mealPlanCubit,
+        selectedDate: DateTime.now(),
+        initialCustomMealName: 'Nguyên liệu từ ảnh',
+        initialIngredientNames: labels,
+      );
+    } finally {
+      await mealPlanCubit.close();
+    }
+  }
+
   Uint8List? _annotatedImageBytes() {
     final base64Image = _detectionResult?.annotatedImageBase64;
     if (base64Image == null || base64Image.isEmpty) return null;
@@ -252,9 +304,9 @@ class _IngredientSearchPageState extends State<IngredientSearchPage> {
           ),
         ),
         title: const Text(
-              'Quét nguyên liệu',
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700),
-            ),
+          'Quét nguyên liệu',
+          style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700),
+        ),
         actions: [
           Padding(
             padding: const EdgeInsets.only(right: 12),
@@ -342,7 +394,7 @@ class _IngredientSearchPageState extends State<IngredientSearchPage> {
           Positioned(
             left: 24,
             right: 24,
-            bottom: 130,
+            bottom: hasDetection ? 186 : 130,
             child: hasDetection
                 ? ConstrainedBox(
                     constraints: const BoxConstraints(maxHeight: 92),
@@ -385,30 +437,52 @@ class _IngredientSearchPageState extends State<IngredientSearchPage> {
             child: hasDetection
                 ? Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 24),
-                    child: Row(
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
                       children: [
-                        Expanded(
+                        SizedBox(
+                          width: double.infinity,
                           child: OutlinedButton(
-                            onPressed: _clearDetection,
+                            onPressed: _addDetectedIngredientsToMealPlan,
                             style: OutlinedButton.styleFrom(
                               foregroundColor: Colors.white,
                               side: const BorderSide(color: Colors.white70),
                               padding: const EdgeInsets.symmetric(vertical: 14),
                             ),
-                            child: const Text('Chụp lại'),
+                            child: const Text('Thêm vào kế hoạch'),
                           ),
                         ),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: ElevatedButton(
-                            onPressed: _searchDetectedIngredients,
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: const Color(0xFFE67E22),
-                              foregroundColor: Colors.white,
-                              padding: const EdgeInsets.symmetric(vertical: 14),
+                        const SizedBox(height: 10),
+                        Row(
+                          children: [
+                            Expanded(
+                              child: OutlinedButton(
+                                onPressed: _clearDetection,
+                                style: OutlinedButton.styleFrom(
+                                  foregroundColor: Colors.white,
+                                  side: const BorderSide(color: Colors.white70),
+                                  padding: const EdgeInsets.symmetric(
+                                    vertical: 14,
+                                  ),
+                                ),
+                                child: const Text('Chụp lại'),
+                              ),
                             ),
-                            child: const Text('Tìm món'),
-                          ),
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: ElevatedButton(
+                                onPressed: _searchDetectedIngredients,
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: const Color(0xFFE67E22),
+                                  foregroundColor: Colors.white,
+                                  padding: const EdgeInsets.symmetric(
+                                    vertical: 14,
+                                  ),
+                                ),
+                                child: const Text('Tìm món'),
+                              ),
+                            ),
+                          ],
                         ),
                       ],
                     ),
