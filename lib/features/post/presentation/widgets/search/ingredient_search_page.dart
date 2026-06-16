@@ -232,13 +232,19 @@ class _IngredientSearchPageState extends State<IngredientSearchPage> {
     final mealPlanCubit = MealPlanCubit(
       repository: getIt<MealPlanRepository>(),
     );
+    final now = DateTime.now();
+    final detectedMealName =
+        'Nguyên liệu từ ảnh '
+        '${now.hour.toString().padLeft(2, '0')}:'
+        '${now.minute.toString().padLeft(2, '0')}:'
+        '${now.second.toString().padLeft(2, '0')}';
 
     try {
       await showMealPlanItemUpsertSheet(
         context: context,
         cubit: mealPlanCubit,
         selectedDate: DateTime.now(),
-        initialCustomMealName: 'Nguyên liệu từ ảnh',
+        initialCustomMealName: detectedMealName,
         initialIngredientNames: labels,
       );
     } finally {
