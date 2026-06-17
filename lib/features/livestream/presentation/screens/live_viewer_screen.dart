@@ -314,9 +314,9 @@ class _LiveViewerScreenState extends State<LiveViewerScreen> {
                 // Top bar
                 _buildTopBar(stream, participantCount, subtitleState),
                 Positioned(
-                  top: 132,
+                  top: 90,
                   left: 10,
-                  right: 70,
+                  right: 10,
                   child: SafeArea(
                     child: BlocBuilder<LivePollCubit, LivePollState>(
                       builder: (context, pollState) {

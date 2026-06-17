@@ -278,20 +278,14 @@ class _CreatePollBottomSheetState extends State<CreatePollBottomSheet> {
                       dropdownColor: const Color(0xFF2C2C2E),
                       style: const TextStyle(color: Colors.white),
                       decoration: _dropdownDecoration(),
-                      items: const [
-                        DropdownMenuItem(
-                          value: PollResultVisibility.always,
-                          child: Text('Luôn hiển thị'),
-                        ),
-                        DropdownMenuItem(
-                          value: PollResultVisibility.afterVote,
-                          child: Text('Sau khi vote'),
-                        ),
-                        DropdownMenuItem(
-                          value: PollResultVisibility.afterClose,
-                          child: Text('Sau khi đóng poll'),
-                        ),
-                      ],
+                      items: PollResultVisibility.values
+                          .map(
+                            (visibility) => DropdownMenuItem(
+                              value: visibility,
+                              child: Text(visibility.text),
+                            ),
+                          )
+                          .toList(),
                       onChanged: (value) {
                         if (value == null) return;
                         setState(() {
@@ -307,16 +301,14 @@ class _CreatePollBottomSheetState extends State<CreatePollBottomSheet> {
                       dropdownColor: const Color(0xFF2C2C2E),
                       style: const TextStyle(color: Colors.white),
                       decoration: _dropdownDecoration(),
-                      items: const [
-                        DropdownMenuItem(
-                          value: PollVoterVisibility.anonymous,
-                          child: Text('Ẩn danh sách người vote'),
-                        ),
-                        DropdownMenuItem(
-                          value: PollVoterVisibility.public,
-                          child: Text('Hiện danh sách người vote'),
-                        ),
-                      ],
+                      items: PollVoterVisibility.values
+                          .map(
+                            (visibility) => DropdownMenuItem(
+                              value: visibility,
+                              child: Text(visibility.text),
+                            ),
+                          )
+                          .toList(),
                       onChanged: (value) {
                         if (value == null) return;
                         setState(() {
@@ -332,20 +324,14 @@ class _CreatePollBottomSheetState extends State<CreatePollBottomSheet> {
                       dropdownColor: const Color(0xFF2C2C2E),
                       style: const TextStyle(color: Colors.white),
                       decoration: _dropdownDecoration(),
-                      items: const [
-                        DropdownMenuItem(
-                          value: PollOptionAddMode.hostOnly,
-                          child: Text('Chỉ chủ live'),
-                        ),
-                        DropdownMenuItem(
-                          value: PollOptionAddMode.viewerWithApproval,
-                          child: Text('Người xem cần được chấp nhận.'),
-                        ),
-                        DropdownMenuItem(
-                          value: PollOptionAddMode.viewerFree,
-                          child: Text('Mọi người'),
-                        ),
-                      ],
+                      items: PollOptionAddMode.values
+                          .map(
+                            (mode) => DropdownMenuItem(
+                              value: mode,
+                              child: Text(mode.text),
+                            ),
+                          )
+                          .toList(),
                       onChanged: (value) {
                         if (value == null) return;
                         setState(() {

@@ -238,7 +238,6 @@ class DeepLinkHandler {
     _navigateSafely(
       AppRoutes.mealPlan,
       arguments: {'date': date},
-      replaceCurrent: true,
     );
   }
 }
