@@ -8,6 +8,7 @@ class StatusDropdown extends StatelessWidget {
   final Color textColor;
   final Color borderColor;
   final Color fillColor;
+  final double width;
   final ValueChanged<MealPlanItemStatus?> onChanged;
 
   const StatusDropdown({
@@ -17,6 +18,7 @@ class StatusDropdown extends StatelessWidget {
     required this.textColor,
     required this.borderColor,
     required this.fillColor,
+    this.width = 150,
     required this.onChanged,
   });
 
@@ -28,7 +30,7 @@ class StatusDropdown extends StatelessWidget {
     final menuTextColor = theme.colorScheme.onSurface;
 
     return SizedBox(
-      width: 150,
+      width: width,
       height: 36,
       child: DecoratedBox(
         decoration: BoxDecoration(
