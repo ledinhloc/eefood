@@ -7,9 +7,6 @@ enum PollOptionAddMode {
 
   @JsonValue('VIEWER_WITH_APPROVAL')
   viewerWithApproval,
-
-  @JsonValue('VIEWER_FREE')
-  viewerFree,
 }
 
 extension PollOptionAddModeX on PollOptionAddMode {
@@ -19,8 +16,6 @@ extension PollOptionAddModeX on PollOptionAddMode {
         return 'Chỉ host được thêm đáp án';
       case PollOptionAddMode.viewerWithApproval:
         return 'Viewer đề xuất, host duyệt';
-      case PollOptionAddMode.viewerFree:
-        return 'Viewer được thêm tự do';
     }
   }
 }

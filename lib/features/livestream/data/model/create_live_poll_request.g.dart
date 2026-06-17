@@ -51,5 +51,4 @@ const _$PollVoterVisibilityEnumMap = {
 const _$PollOptionAddModeEnumMap = {
   PollOptionAddMode.hostOnly: 'HOST_ONLY',
   PollOptionAddMode.viewerWithApproval: 'VIEWER_WITH_APPROVAL',
-  PollOptionAddMode.viewerFree: 'VIEWER_FREE',
 };

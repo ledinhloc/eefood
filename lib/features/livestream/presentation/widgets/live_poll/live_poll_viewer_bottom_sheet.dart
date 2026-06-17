@@ -1,4 +1,4 @@
-﻿import 'package:eefood/features/livestream/domain/enum/poll_option_add_mode.dart';
+import 'package:eefood/features/livestream/domain/enum/poll_option_add_mode.dart';
 import 'package:eefood/features/livestream/domain/enum/poll_result_visibility.dart';
 import 'package:eefood/features/livestream/domain/enum/poll_voter_visibility.dart';
 import 'package:flutter/material.dart';
@@ -116,6 +116,8 @@ class _PollViewerContentState extends State<_PollViewerContent> {
     final state = widget.state;
     final canShowVoters =
         poll.setting.voterVisibility == PollVoterVisibility.public;
+    final canProposeOption =
+        poll.setting.optionAddMode != PollOptionAddMode.hostOnly;
 
     return SingleChildScrollView(
       child: Column(
@@ -280,8 +282,10 @@ class _PollViewerContentState extends State<_PollViewerContent> {
                     : Text(state.hasVoted ? 'Bình chọn lại' : 'Gửi bình chọn'),
               ),
             ),
-            const SizedBox(height: 12),
-            OptionProposalComposer(pollId: poll.id),
+            if (canProposeOption) ...[
+              const SizedBox(height: 12),
+              OptionProposalComposer(pollId: poll.id),
+            ],
           ],
           const SizedBox(height: 16),
           if (canShowResult) ...[
@@ -394,5 +398,3 @@ class _PollViewerContentState extends State<_PollViewerContent> {
     );
   }
 }
-
-
