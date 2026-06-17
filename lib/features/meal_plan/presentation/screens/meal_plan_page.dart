@@ -14,14 +14,16 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
 
 class MealPlanPage extends StatelessWidget {
-  const MealPlanPage({super.key});
+  final DateTime? initialDate;
+
+  const MealPlanPage({super.key, this.initialDate});
 
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
       create: (_) =>
           MealPlanCubit(repository: getIt<MealPlanRepository>())
-            ..loadOverview(),
+            ..loadOverview(initialDate: initialDate),
       child: const _MealPlanView(),
     );
   }

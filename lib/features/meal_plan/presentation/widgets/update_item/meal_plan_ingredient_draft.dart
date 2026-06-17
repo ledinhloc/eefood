@@ -24,6 +24,15 @@ class MealPlanIngredientDraft {
     );
   }
 
+  factory MealPlanIngredientDraft.fromName(String name) {
+    return MealPlanIngredientDraft(
+      nameController: TextEditingController(text: name),
+      quantityController: TextEditingController(),
+      unitController: TextEditingController(),
+      noteController: TextEditingController(),
+    );
+  }
+
   factory MealPlanIngredientDraft.fromResponse(
     MealPlanItemIngredientResponse item,
   ) {
