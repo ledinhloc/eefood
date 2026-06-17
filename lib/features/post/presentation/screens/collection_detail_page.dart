@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
-import '../../../../core/di/injection.dart';
 import '../provider/collection_cubit.dart';
 import '../provider/collection_state.dart';
 import '../widgets/collection/collection_more_button.dart';
@@ -16,11 +15,12 @@ class CollectionDetailPage extends StatefulWidget {
 }
 
 class _CollectionDetailPageState extends State<CollectionDetailPage> {
-  final cubit = getIt<CollectionCubit>();
+  late final CollectionCubit cubit;
 
   @override
   void initState() {
     super.initState();
+    cubit = context.read<CollectionCubit>();
     cubit.selectCollectionDetail(widget.collectionId);
   }
 
@@ -31,7 +31,7 @@ class _CollectionDetailPageState extends State<CollectionDetailPage> {
       builder: (context, state) {
         final collection = state.selectedCollection;
 
-        if (collection == null) {
+        if (collection == null || collection.id != widget.collectionId) {
           return const Scaffold(
             body: Center(
               child: CircularProgressIndicator(color: Color(0xFFFF8C42)),
