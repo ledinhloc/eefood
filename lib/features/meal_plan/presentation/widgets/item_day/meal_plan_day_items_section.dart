@@ -294,16 +294,18 @@ class _MealPlanDayItemsSectionState extends State<MealPlanDayItemsSection> {
             ),
             child: LayoutBuilder(
               builder: (context, constraints) {
-                final isCompact = constraints.maxWidth < 330;
-                final imageSize = isCompact ? 96.0 : 116.0;
-                final contentWidth = isCompact
-                    ? constraints.maxWidth
-                    : constraints.maxWidth - imageSize - 10;
+                final imageSize = (constraints.maxWidth * 0.32).clamp(
+                  72.0,
+                  116.0,
+                );
+                final spacing = (constraints.maxWidth * 0.03).clamp(6.0, 10.0);
+                final contentWidth = constraints.maxWidth - imageSize - spacing;
+                final actionButtonSize = contentWidth < 170 ? 24.0 : 28.0;
+                final actionIconSize = contentWidth < 170 ? 15.0 : 16.0;
+                final chipHorizontalPadding = contentWidth < 170 ? 6.0 : 8.0;
 
-                return Wrap(
-                  spacing: 10,
-                  runSpacing: 10,
-                  crossAxisAlignment: WrapCrossAlignment.start,
+                return Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Material(
                       color: Colors.transparent,
@@ -359,60 +361,67 @@ class _MealPlanDayItemsSectionState extends State<MealPlanDayItemsSection> {
                         ),
                       ),
                     ),
-                    SizedBox(
-                      width: contentWidth,
+                    SizedBox(width: spacing),
+                    Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Row(
                             crossAxisAlignment: CrossAxisAlignment.center,
                             children: [
-                              Container(
-                                height: 28,
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 8,
-                                ),
-                                alignment: Alignment.center,
-                                decoration: BoxDecoration(
-                                  color: widget.softCream,
-                                  borderRadius: BorderRadius.circular(999),
-                                ),
-                                child: Text(
-                                  item.mealSlot.localizedLabel(l10n),
-                                  style: TextStyle(
-                                    color: widget.primaryWarm,
-                                    fontSize: 11,
-                                    fontWeight: FontWeight.w700,
+                              Flexible(
+                                child: Container(
+                                  height: 28,
+                                  padding: EdgeInsets.symmetric(
+                                    horizontal: chipHorizontalPadding,
+                                  ),
+                                  alignment: Alignment.center,
+                                  decoration: BoxDecoration(
+                                    color: widget.softCream,
+                                    borderRadius: BorderRadius.circular(999),
+                                  ),
+                                  child: Text(
+                                    item.mealSlot.localizedLabel(l10n),
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                    style: TextStyle(
+                                      color: widget.primaryWarm,
+                                      fontSize: 11,
+                                      fontWeight: FontWeight.w700,
+                                    ),
                                   ),
                                 ),
                               ),
-                              const Spacer(),
+                              SizedBox(width: spacing),
                               IconButton(
                                 onPressed: () =>
                                     _openUpsertSheet(context, item: item),
-                                icon: const Icon(Icons.edit_outlined, size: 16),
+                                icon: Icon(
+                                  Icons.edit_outlined,
+                                  size: actionIconSize,
+                                ),
                                 tooltip: l10n.mealPlanEditItemTooltip,
                                 color: widget.primaryWarm,
                                 padding: EdgeInsets.zero,
-                                constraints: const BoxConstraints.tightFor(
-                                  width: 28,
-                                  height: 28,
+                                constraints: BoxConstraints.tightFor(
+                                  width: actionButtonSize,
+                                  height: actionButtonSize,
                                 ),
                                 visualDensity: VisualDensity.compact,
                               ),
                               IconButton(
                                 onPressed: () =>
                                     _handleDeleteItem(context, item),
-                                icon: const Icon(
+                                icon: Icon(
                                   Icons.delete_outline,
-                                  size: 16,
+                                  size: actionIconSize,
                                 ),
                                 tooltip: l10n.mealPlanDeleteItemTooltip,
                                 color: colorScheme.error,
                                 padding: EdgeInsets.zero,
-                                constraints: const BoxConstraints.tightFor(
-                                  width: 28,
-                                  height: 28,
+                                constraints: BoxConstraints.tightFor(
+                                  width: actionButtonSize,
+                                  height: actionButtonSize,
                                 ),
                                 visualDensity: VisualDensity.compact,
                               ),
@@ -457,7 +466,7 @@ class _MealPlanDayItemsSectionState extends State<MealPlanDayItemsSection> {
                           Align(
                             alignment: Alignment.centerRight,
                             child: StatusDropdown(
-                              width: contentWidth < 150 ? contentWidth : 150,
+                              width: (contentWidth * 0.72).clamp(112.0, 150.0),
                               value: item.status,
                               isBusy: _updatingItemIds.contains(item.id),
                               textColor: item.status.textColor(isDark),
