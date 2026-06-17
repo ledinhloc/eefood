@@ -404,7 +404,7 @@ Future<void> setupDependencies() async {
   );
 
   getIt.registerFactory<RecipeCompareCubit>(
-    () => RecipeCompareCubit(repository: getIt<RecipeRepository>()),
+    () => RecipeCompareCubit(repository: getIt<RecipeRepository>(), nutritionRepository: getIt<NutritionRepository>()),
   );
 
   getIt.registerLazySingleton<PaymentRepository>(

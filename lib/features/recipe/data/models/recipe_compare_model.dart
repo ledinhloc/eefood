@@ -1,3 +1,4 @@
+import 'package:eefood/features/nutrition/data/models/nutrition_analysis_model.dart';
 import 'package:json_annotation/json_annotation.dart';
 
 part 'recipe_compare_model.g.dart';
@@ -53,4 +54,29 @@ class RecipeCompareModel {
       _$RecipeCompareModelFromJson(json);
 
   Map<String, dynamic> toJson() => _$RecipeCompareModelToJson(this);
+
+  RecipeCompareModel patchFromNutrition(NutritionAnalysisModel n) {
+    return RecipeCompareModel(
+      id: id,
+      title: title,
+      imageUrl: imageUrl,
+      videoUrl: videoUrl,
+      prepTime: prepTime,
+      cookTime: cookTime,
+      totalTime: totalTime,
+      difficulty: difficulty,
+      region: region,
+      stepCount: stepCount,
+      ingredientCount: ingredientCount,
+      calories: n.totalCalories,
+      protein: n.totalProtein,
+      fat: n.totalFat,
+      carb: n.totalCarb,
+      fiber: n.totalFiber,
+      sugar: n.totalSugar,
+      cal: cal,
+      sodium: n.totalSodium,
+      healthScore: n.healthScore,
+    );
+  }
 }

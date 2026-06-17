@@ -21,8 +21,8 @@ class CollectionMessageCard extends StatelessWidget {
         Navigator.push(
           context,
           MaterialPageRoute(
-            builder: (_) => BlocProvider(
-              create: (_) => collectionCubit..fetchCollectionsByUser(),
+            builder: (_) => BlocProvider.value(
+              value: collectionCubit,
               child: CollectionDetailPage(collectionId: collectionModel.id),
             ),
           ),
