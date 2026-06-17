@@ -5,6 +5,7 @@ import 'package:eefood/features/post/domain/repositories/post_repository.dart';
 import 'package:flutter/foundation.dart';
 import 'package:http_parser/http_parser.dart';
 
+import '../models/ingredient_detection_result.dart';
 import '../models/post_model.dart';
 
 class PostRepositoryImpl extends PostRepository {
@@ -57,7 +58,7 @@ class PostRepositoryImpl extends PostRepository {
 
     try {
       final response = await dio.post(
-        '/v1/vision/ingredients/detect',
+        '/v1/vision/ingredients/detections',
         data: formData,
         options: Options(
           contentType: 'multipart/form-data',
@@ -156,6 +157,63 @@ class PostRepositoryImpl extends PostRepository {
       return content.map((json) => PostModel.fromJson(json)).toList();
     } else {
       throw Exception('Failed to load posts');
+    }
+  }
+
+  @override
+  Future<IngredientDetectionResult> detectIngredientsWithAnnotatedImage(
+    File imageFile,
+  ) async {
+    final String fileName = imageFile.path.split('/').last;
+    debugPrint(
+      '[IngredientDetect] start annotated file=$fileName path=${imageFile.path}',
+    );
+
+    final formData = FormData.fromMap({
+      'file': await MultipartFile.fromFile(
+        imageFile.path,
+        filename: fileName,
+        contentType: MediaType('image', 'jpeg'),
+      ),
+    });
+
+    try {
+      final response = await dio.post(
+        '/v1/vision/ingredients/detections/with-annotated-image',
+        data: formData,
+        options: Options(
+          contentType: 'multipart/form-data',
+          sendTimeout: Duration(seconds: 20),
+          receiveTimeout: Duration(seconds: 20),
+        ),
+      );
+
+      debugPrint('[IngredientDetect] annotated status=${response.statusCode}');
+
+      if (response.statusCode == 200) {
+        final data = response.data['data'] as Map<String, dynamic>?;
+        if (data == null) {
+          throw Exception('Ingredient detection data is empty');
+        }
+
+        return IngredientDetectionResult.fromJson(data);
+      }
+
+      throw Exception(
+        'Failed to detect ingredients from image: status=${response.statusCode}',
+      );
+    } on DioException catch (e) {
+      debugPrint(
+        '[IngredientDetect] annotated DioException type=${e.type} '
+        'status=${e.response?.statusCode} '
+        'message=${e.message} '
+        'data=${e.response?.data}',
+      );
+      rethrow;
+    } catch (e, stackTrace) {
+      debugPrint('[IngredientDetect] annotated unexpected error=$e');
+      debugPrintStack(stackTrace: stackTrace);
+      rethrow;
     }
   }
 
