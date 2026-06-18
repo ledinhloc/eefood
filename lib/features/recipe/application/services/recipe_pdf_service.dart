@@ -2,19 +2,22 @@ import 'dart:io';
 
 import 'package:eefood/core/constants/app_keys.dart';
 import 'package:eefood/core/di/injection.dart';
+import 'package:eefood/core/network/dio_client.dart';
 import 'package:eefood/features/nutrition/data/models/nutrition_analysis_model.dart';
 import 'package:eefood/features/nutrition/domain/repositories/nutrition_repository.dart';
 import 'package:eefood/features/recipe/data/models/recipe_detail_model.dart';
 import 'package:eefood/features/recipe/data/models/recipe_step_model.dart';
+import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
-import 'package:printing/printing.dart' as printing;
 import 'package:share_plus/share_plus.dart';
 
 class RecipePdfService {
+  static const Duration _loadTimeout = Duration(seconds: 7);
+
   static void disablePdfDebug() {
     pw.Document.debug = false;
     pw.RichText.debug = false;
@@ -183,7 +186,16 @@ class RecipePdfService {
 
     try {
       if (uri.scheme == 'http' || uri.scheme == 'https') {
-        return printing.networkImage(url, cache: true);
+        final response = await getIt<DioClient>().dio
+            .get<List<int>>(
+              url,
+              options: Options(responseType: ResponseType.bytes),
+            )
+            .timeout(_loadTimeout);
+        final data = response.data;
+        if (data == null || data.isEmpty) return null;
+
+        return pw.MemoryImage(Uint8List.fromList(data));
       }
     } catch (error, stackTrace) {
       debugPrint('[RecipePdf] Load network image failed: $url');
@@ -200,37 +212,30 @@ class RecipePdfService {
         .where((url) => url.isNotEmpty)
         .toList();
 
-    final images = <pw.ImageProvider>[];
-    for (var index = 0; index < urls.length; index++) {
-      final url = urls[index];
-      final image = await _loadNetworkImage(url);
-      if (image != null) {
-        images.add(image);
-      }
-    }
-
-    return images;
+    final images = await Future.wait(urls.map(_loadNetworkImage));
+    return images.whereType<pw.ImageProvider>().toList();
   }
 
   Future<Map<int, List<pw.ImageProvider>>> _loadStepImages(
     List<RecipeStepModel> steps,
   ) async {
-    final stepImages = <int, List<pw.ImageProvider>>{};
+    final entries = await Future.wait(
+      steps.map(
+        (step) async =>
+            MapEntry(step.stepNumber, await _loadImages(step.imageUrls)),
+      ),
+    );
 
-    for (final step in steps) {
-      stepImages[step.stepNumber] = await _loadImages(step.imageUrls);
-    }
-
-    return stepImages;
+    return Map.fromEntries(entries);
   }
 
   Future<NutritionAnalysisModel?> _loadNutrition(int? recipeId) async {
     if (recipeId == null) return null;
 
     try {
-      return await getIt<NutritionRepository>().getNutritionByRecipeId(
-        recipeId,
-      );
+      return await getIt<NutritionRepository>()
+          .getNutritionByRecipeId(recipeId)
+          .timeout(_loadTimeout);
     } catch (error, stackTrace) {
       debugPrint('[RecipePdf] Load nutrition failed: $error');
       debugPrintStack(stackTrace: stackTrace);
