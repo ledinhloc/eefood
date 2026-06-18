@@ -14,11 +14,14 @@ class StartLiveCubit extends Cubit<StartLiveState>{
   final LiveRepository repository;
   StartLiveCubit(this.repository) : super(StartLiveState());
 
-  Future<void> startLive(String description) async {
+  Future<void> startLive(String description, String spokenLanguage) async {
     try{
       
       emit(StartLiveState(loading: true));
-      final res = await repository.startLiveStream(description);
+      final res = await repository.startLiveStream(
+        description,
+        spokenLanguage,
+      );
       emit(StartLiveState(stream: res));
     }catch(e){
       emit(StartLiveState(error: e.toString()));

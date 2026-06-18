@@ -8,6 +8,7 @@ import 'package:livekit_client/livekit_client.dart';
 
 import '../../../../core/di/injection.dart';
 import '../../../../core/widgets/snack_bar.dart';
+import '../../domain/enum/subtitle_language.dart';
 import '../../domain/repository/live_comment_repo.dart';
 import '../../domain/repository/live_reaction_repo.dart';
 import '../../domain/repository/live_viewer_repository.dart';
@@ -19,6 +20,7 @@ import '../provider/live_stream_state.dart';
 import '../provider/live_viewer_cubit.dart';
 import '../provider/start_live_cubit.dart';
 import '../provider/subtitle_cubit.dart';
+import '../widgets/prepare_live/spoken_language_selector.dart';
 import 'live_streaming_page.dart';
 
 class LivePrepScreen extends StatefulWidget {
@@ -32,6 +34,7 @@ class _LivePrepScreenState extends State<LivePrepScreen> {
   final TextEditingController _descriptionController = TextEditingController();
 
   bool _isPreparingLive = false;
+  SubtitleLanguage _spokenLanguage = SubtitleLanguage.vi;
 
   @override
   void initState() {
@@ -133,7 +136,10 @@ class _LivePrepScreenState extends State<LivePrepScreen> {
     final isReady = await _prepareTracksForLive();
     if (!isReady || !mounted) return;
 
-    context.read<StartLiveCubit>().startLive(_descriptionController.text);
+    context.read<StartLiveCubit>().startLive(
+      _descriptionController.text,
+      _spokenLanguage.code,
+    );
   }
 
   Future<void> _handleClose() async {
@@ -358,26 +364,50 @@ class _LivePrepScreenState extends State<LivePrepScreen> {
     return Positioned(
       left: 0,
       right: 0,
-      bottom: MediaQuery.viewInsetsOf(context).bottom+40,
+      bottom: MediaQuery.viewInsetsOf(context).bottom + 40,
       child: Container(
         padding: const EdgeInsets.all(16),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
+            SpokenLanguageSelector(
+              selectedLanguage: _spokenLanguage,
+              onChanged: (language) {
+                setState(() => _spokenLanguage = language);
+              },
+            ),
+            const SizedBox(height: 12),
             // Description input
             TextField(
               controller: _descriptionController,
-              style: const TextStyle(color: Colors.black),
-              decoration: const InputDecoration(
+              style: const TextStyle(color: Colors.black87),
+              decoration: InputDecoration(
                 hintText: 'Thêm mô tả...',
-                hintStyle: TextStyle(color: Colors.grey),
-                prefixIcon: Icon(Icons.share, color: Colors.black),
+                hintStyle: const TextStyle(color: Colors.black45),
+                prefixIcon: const Icon(
+                  Icons.edit_note,
+                  color: Colors.blue,
+                ),
                 filled: true,
-                fillColor: Colors.white,
-                border: InputBorder.none,
+                fillColor: Colors.white.withValues(alpha: 0.95),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(14),
+                  borderSide: BorderSide.none,
+                ),
+                enabledBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(14),
+                  borderSide: const BorderSide(color: Colors.white54),
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(14),
+                  borderSide: const BorderSide(
+                    color: Colors.blue,
+                    width: 2,
+                  ),
+                ),
               ),
             ),
-            const SizedBox(height: 8),
+            const SizedBox(height: 12),
             // Start button
             BlocBuilder<StartLiveCubit, StartLiveState>(
               builder: (context, startState) {
