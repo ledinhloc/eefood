@@ -147,21 +147,6 @@ class _LiveViewerScreenState extends State<LiveViewerScreen> {
     if (mounted) Navigator.pop(context);
   }
 
-  void _showViewerList() {
-    final viewerCubit = context.read<LiveViewerCubit>();
-    showModalBottomSheet(
-      context: context,
-      backgroundColor: Colors.transparent,
-      isScrollControlled: true,
-      builder: (context) {
-        return BlocProvider.value(
-          value: viewerCubit,
-          child: const ViewerListBottomSheet(),
-        );
-      },
-    );
-  }
-
   void _showGiftSheet() {
     showModalBottomSheet(
       context: context,

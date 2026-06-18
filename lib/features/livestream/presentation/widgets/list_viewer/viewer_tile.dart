@@ -11,7 +11,7 @@ import '../../provider/block_user_cubit.dart';
 class ViewerTile extends StatelessWidget {
   final ViewerModel viewer;
 
-  const ViewerTile({Key? key, required this.viewer}) : super(key: key);
+  const ViewerTile({super.key, required this.viewer});
 
   Future<void> _openProfile(BuildContext context) async {
     try {
@@ -35,30 +35,71 @@ class ViewerTile extends StatelessWidget {
   Widget build(BuildContext context) {
     final blockCubit = context.read<BlockUserCubit>();
 
-    return ListTile(
-      leading: CircleAvatar(
-        backgroundImage: viewer.avatarUrl != null
-            ? CachedNetworkImageProvider(viewer.avatarUrl!)
-            : null,
-        child: viewer.avatarUrl == null ? const Icon(Icons.person) : null,
-      ),
-
-      title: GestureDetector(
+    return Material(
+      color: const Color(0xFF191D27),
+      borderRadius: BorderRadius.circular(16),
+      child: InkWell(
         onTap: () => _openProfile(context),
-        child: Text(
-          viewer.username,
-          style: const TextStyle(
-            color: Colors.white,
-            fontWeight: FontWeight.w600,
+        borderRadius: BorderRadius.circular(16),
+        child: Padding(
+          padding: const EdgeInsets.all(12),
+          child: Row(
+            children: [
+              CircleAvatar(
+                radius: 23,
+                backgroundColor: const Color(0xFF2A3040),
+                backgroundImage:
+                    viewer.avatarUrl != null && viewer.avatarUrl!.isNotEmpty
+                    ? CachedNetworkImageProvider(viewer.avatarUrl!)
+                    : null,
+                child: viewer.avatarUrl == null || viewer.avatarUrl!.isEmpty
+                    ? const Icon(Icons.person_rounded, color: Colors.white70)
+                    : null,
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      viewer.username,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 15,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    const SizedBox(height: 3),
+                    const Row(
+                      children: [
+                        Icon(Icons.circle, color: Color(0xFF4CD964), size: 8),
+                        SizedBox(width: 5),
+                        Text(
+                          'Đang xem',
+                          style: TextStyle(color: Colors.white54, fontSize: 12),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+              IconButton(
+                tooltip: 'Chặn người xem',
+                style: IconButton.styleFrom(
+                  backgroundColor: const Color(0x1AEF5350),
+                ),
+                icon: const Icon(
+                  Icons.block_rounded,
+                  color: Color(0xFFEF7774),
+                  size: 21,
+                ),
+                onPressed: () => blockCubit.blockUser(viewer.userId),
+              ),
+            ],
           ),
         ),
-      ),
-
-      trailing: IconButton(
-        icon: const Icon(Icons.block, color: Colors.red),
-        onPressed: () {
-          blockCubit.blockUser(viewer.userId);
-        },
       ),
     );
   }
