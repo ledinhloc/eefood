@@ -10,7 +10,6 @@ class LiveStreamState {
   final bool isFlashOn;
   final bool isConnected;
   final String? error;
-  final int viewerCount;
 
   LiveStreamState({
     this.room,
@@ -22,7 +21,6 @@ class LiveStreamState {
     this.isFlashOn = false,
     this.isConnected = false,
     this.error,
-    this.viewerCount = 0,
   });
 
   LiveStreamState copyWith({
@@ -35,7 +33,6 @@ class LiveStreamState {
     bool? isFlashOn,
     bool? isConnected,
     String? error,
-    int? viewerCount,
     bool clearRoom = false,
     bool clearVideoTrack = false,
     bool clearAudioTrack = false,
@@ -53,7 +50,6 @@ class LiveStreamState {
       isFlashOn: isFlashOn ?? this.isFlashOn,
       isConnected: isConnected ?? this.isConnected,
       error: clearError ? null : error,
-      viewerCount: viewerCount ?? this.viewerCount,
     );
   }
 

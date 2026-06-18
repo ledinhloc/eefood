@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:eefood/features/livestream/presentation/provider/live_gift_cubit.dart';
 import 'package:eefood/features/livestream/presentation/provider/live_leaderboard_cubit.dart';
 import 'package:eefood/features/livestream/presentation/provider/live_viewer_cubit.dart';
+import 'package:eefood/features/livestream/presentation/provider/live_viewer_state.dart';
 import 'package:eefood/features/livestream/presentation/widgets/leaderboard/live_leaderboard_strip.dart';
 import 'package:eefood/features/livestream/presentation/widgets/live_gift/live_gift_overlay_layer.dart';
 import 'package:flutter/material.dart';
@@ -51,7 +52,6 @@ class _LiveStreamScreenState extends State<LiveStreamScreen> {
   final ValueNotifier<List<LiveReactionResponse>> _activeReactions =
       ValueNotifier<List<LiveReactionResponse>>([]);
 
-  late final LiveViewerCubit _liveViewerCubit;
   late final LiveStreamCubit _liveStreamCubit;
   late final SubtitleCubit _subtitleCubit;
   late final LiveLeaderboardCubit _liveLeaderboardCubit;
@@ -63,7 +63,6 @@ class _LiveStreamScreenState extends State<LiveStreamScreen> {
   @override
   void initState() {
     super.initState();
-    _liveViewerCubit = context.read<LiveViewerCubit>();
     _liveStreamCubit = context.read<LiveStreamCubit>();
     _liveLeaderboardCubit = context.read<LiveLeaderboardCubit>();
 
@@ -71,7 +70,7 @@ class _LiveStreamScreenState extends State<LiveStreamScreen> {
     _subtitleCubit.attachToStream(widget.stream.id);
     _subtitleCubit.ensureConnected();
     _ensureTracksReady();
-    _liveViewerCubit.joinLiveStream();
+    // _liveViewerCubit.joinLiveStream();
 
     context.read<LiveGiftCubit>().init(widget.stream.id);
   }
@@ -167,9 +166,9 @@ class _LiveStreamScreenState extends State<LiveStreamScreen> {
       await _liveStreamCubit.disconnect();
     } catch (_) {}
 
-    try {
-      await _liveViewerCubit.leaveLiveStream();
-    } catch (_) {}
+    // try {
+    //   await _liveViewerCubit.leaveLiveStream();
+    // } catch (_) {}
 
     try {
       getIt<LiveStreamWebSocketManager>().disconnect(
@@ -335,6 +334,7 @@ class _LiveStreamScreenState extends State<LiveStreamScreen> {
         ],
         child: Scaffold(
           backgroundColor: Colors.black,
+          resizeToAvoidBottomInset: false,
           body: BlocBuilder<SubtitleCubit, SubtitleState>(
             builder: (context, subtitleState) {
               return Stack(
@@ -370,7 +370,7 @@ class _LiveStreamScreenState extends State<LiveStreamScreen> {
                       ),
                     ),
                   Positioned(
-                    bottom: 30,
+                    bottom: MediaQuery.viewInsetsOf(context).bottom + 30,
                     left: 10,
                     right: 16,
                     height: 250,
@@ -488,8 +488,8 @@ class _LiveTopBar extends StatelessWidget {
       left: 0,
       right: 0,
       child: SafeArea(
-        child: BlocSelector<LiveStreamCubit, LiveStreamState, int>(
-          selector: (state) => state.viewerCount,
+        child: BlocSelector<LiveViewerCubit, LiveViewerState, int>(
+          selector: (state) => state.viewers.length,
           builder: (context, participantCount) {
             return BlocBuilder<LivePollCubit, LivePollState>(
               builder: (context, pollState) {

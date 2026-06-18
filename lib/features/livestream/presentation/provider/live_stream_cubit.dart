@@ -104,8 +104,6 @@ class LiveStreamCubit extends Cubit<LiveStreamState> {
           ),
         ),
       );
-      room.addListener(_onRoomUpdate);
-
       await room.connect(livekitUrl, token);
 
       if (state.localVideoTrack!.mediaStreamTrack.enabled) {
@@ -124,12 +122,6 @@ class LiveStreamCubit extends Cubit<LiveStreamState> {
       _logTrackState('connectToRoom:error');
       _safeEmit(state.copyWith(error: 'Connection error: $e'));
     }
-  }
-
-  void _onRoomUpdate() {
-    if (isClosed) return;
-    final participantCount = (state.room?.remoteParticipants.length ?? 0) + 1;
-    _safeEmit(state.copyWith(viewerCount: participantCount));
   }
 
   Future<void> toggleCamera() async {
@@ -300,7 +292,6 @@ class LiveStreamCubit extends Cubit<LiveStreamState> {
         isMicOn: true,
         isFrontCamera: true,
         isFlashOn: false,
-        viewerCount: 0,
         clearError: true,
       ),
     );
@@ -325,7 +316,6 @@ class LiveStreamCubit extends Cubit<LiveStreamState> {
 
   Future<void> disconnect() async {
     _logTrackState('disconnect:start');
-    state.room?.removeListener(_onRoomUpdate);
 
     try {
       await state.localVideoTrack?.stop();
@@ -352,7 +342,6 @@ class LiveStreamCubit extends Cubit<LiveStreamState> {
         clearVideoTrack: true,
         clearAudioTrack: true,
         isConnected: false,
-        viewerCount: 0,
         isCameraOn: true,
         isMicOn: true,
         isFrontCamera: true,
@@ -365,7 +354,6 @@ class LiveStreamCubit extends Cubit<LiveStreamState> {
 
   @override
   Future<void> close() async {
-    state.room?.removeListener(_onRoomUpdate);
     await disconnect();
     return super.close();
   }
