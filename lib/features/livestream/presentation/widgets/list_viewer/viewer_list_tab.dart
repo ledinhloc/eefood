@@ -1,9 +1,9 @@
-import 'package:eefood/features/livestream/presentation/widgets/viewer_tile.dart';
+import 'package:eefood/features/livestream/presentation/widgets/list_viewer/viewer_tile.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
-import '../provider/live_viewer_cubit.dart';
-import '../provider/live_viewer_state.dart';
+import '../../provider/live_viewer_cubit.dart';
+import '../../provider/live_viewer_state.dart';
 
 class ViewerListTab extends StatelessWidget {
   const ViewerListTab({Key? key}) : super(key: key);

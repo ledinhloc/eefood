@@ -38,7 +38,7 @@ import '../widgets/live_reaction_animation.dart';
 import '../widgets/live_status_timer.dart';
 import '../widgets/live_subtitle_language_selector.dart';
 import '../widgets/live_subtitle_overlay.dart';
-import '../widgets/viewer_list_bottom_sheet.dart';
+import '../widgets/list_viewer/viewer_list_bottom_sheet.dart';
 
 class LiveViewerScreen extends StatefulWidget {
   final int streamId;

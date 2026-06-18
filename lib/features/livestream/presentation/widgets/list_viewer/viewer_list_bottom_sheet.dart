@@ -1,8 +1,8 @@
-import 'package:eefood/features/livestream/presentation/widgets/viewer_list_tab.dart';
+import 'package:eefood/features/livestream/presentation/widgets/list_viewer/viewer_list_tab.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
-import '../provider/block_user_cubit.dart';
+import '../../provider/block_user_cubit.dart';
 import 'blocked_list_tab.dart';
 
 class ViewerListBottomSheet extends StatefulWidget {

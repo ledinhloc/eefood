@@ -27,7 +27,7 @@ import '../provider/livestream_websocket_manager.dart';
 import '../provider/start_live_cubit.dart';
 import '../provider/subtitle_cubit.dart';
 import '../provider/subtitle_state.dart';
-import '../widgets/create_poll_bottom_sheet.dart';
+import '../widgets/live_poll/create_poll_bottom_sheet.dart';
 import '../widgets/live_comment_list.dart';
 import '../widgets/live_poll/live_poll_banner.dart';
 import '../widgets/live_poll/live_poll_manage_bottom_sheet.dart';
@@ -35,7 +35,7 @@ import '../widgets/live_reaction_animation.dart';
 import '../widgets/live_status_timer.dart';
 import '../widgets/live_subtitle_language_selector.dart';
 import '../widgets/live_subtitle_overlay.dart';
-import '../widgets/viewer_list_bottom_sheet.dart';
+import '../widgets/list_viewer/viewer_list_bottom_sheet.dart';
 
 class LiveStreamScreen extends StatefulWidget {
   final LiveStreamResponse stream;
