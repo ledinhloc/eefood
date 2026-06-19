@@ -22,7 +22,7 @@ class PaymentCubit extends Cubit<PaymentState> {
       if (response != null && response.paymentUrl != null) {
         emit(
           PaymentSuccess(
-            paymentUrl: response.paymentUrl!,
+            paymentUrl: response.paymentUrl,
             transactionId: response.transactionId ?? 0,
           ),
         );

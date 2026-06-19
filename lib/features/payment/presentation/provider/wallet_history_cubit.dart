@@ -6,6 +6,8 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 class WalletHistoryCubit extends Cubit<WalletHistoryState> {
   final PaymentRepository _paymentRepository;
 
+  static const _unset = Object();
+
   WalletHistoryCubit(this._paymentRepository)
     : super(const WalletHistoryState());
 
@@ -50,12 +52,14 @@ class WalletHistoryCubit extends Cubit<WalletHistoryState> {
 
   Future<void> changeFilter({
     required num userId,
-    String? filterType,
+    Object? filterType = _unset,
     String? sort,
   }) async {
     _safeEmit(
       state.copyWith(
-        filterType: filterType,
+        filterType: filterType == _unset
+            ? state.filterType
+            : filterType as String?,
         sort: sort ?? state.sort,
         histories: [],
         currentPage: 1,
