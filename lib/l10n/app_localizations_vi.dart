@@ -610,6 +610,20 @@ class AppLocalizationsVi extends AppLocalizations {
   String get mealPlanRegenerateAction => 'Đổi món đã chọn';
 
   @override
+  String get mealPlanAddToShoppingAction => 'Mua sắm';
+
+  @override
+  String mealPlanAddToShoppingSuccess(int count) {
+    return 'Đã thêm nguyên liệu của $count món vào danh sách mua sắm';
+  }
+
+  @override
+  String get mealPlanNoRecipeForShopping => 'Các món đã chọn không liên kết với công thức';
+
+  @override
+  String get mealPlanAddToShoppingFailed => 'Không thể thêm nguyên liệu vào danh sách mua sắm';
+
+  @override
   String get mealPlanRegenerateReason => 'Lý do thay đổi (không bắt buộc)';
 
   @override

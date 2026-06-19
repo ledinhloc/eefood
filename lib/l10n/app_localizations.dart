@@ -1277,6 +1277,30 @@ abstract class AppLocalizations {
   /// **'Replace selected meals'**
   String get mealPlanRegenerateAction;
 
+  /// No description provided for @mealPlanAddToShoppingAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Shopping list'**
+  String get mealPlanAddToShoppingAction;
+
+  /// No description provided for @mealPlanAddToShoppingSuccess.
+  ///
+  /// In en, this message translates to:
+  /// **'Added ingredients from {count} meals to your shopping list'**
+  String mealPlanAddToShoppingSuccess(int count);
+
+  /// No description provided for @mealPlanNoRecipeForShopping.
+  ///
+  /// In en, this message translates to:
+  /// **'The selected meals are not linked to recipes'**
+  String get mealPlanNoRecipeForShopping;
+
+  /// No description provided for @mealPlanAddToShoppingFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not add ingredients to the shopping list'**
+  String get mealPlanAddToShoppingFailed;
+
   /// No description provided for @mealPlanRegenerateReason.
   ///
   /// In en, this message translates to:

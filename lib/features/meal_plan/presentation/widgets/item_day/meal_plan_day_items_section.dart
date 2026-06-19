@@ -1,3 +1,4 @@
+import 'package:eefood/core/di/injection.dart';
 import 'package:eefood/core/widgets/media_view_page.dart';
 import 'package:eefood/core/widgets/snack_bar.dart';
 import 'package:eefood/features/meal_plan/data/model/meal_plan_item_ingredient_upsert_request.dart';
@@ -12,6 +13,7 @@ import 'package:eefood/features/meal_plan/presentation/widgets/item_day/nutritio
 import 'package:eefood/features/meal_plan/presentation/widgets/item_day/status_drop_down.dart';
 import 'package:eefood/features/meal_plan/presentation/widgets/meal_plan_regenerate_sheet.dart';
 import 'package:eefood/features/meal_plan/presentation/widgets/update_item/meal_plan_item_upsert_sheet.dart';
+import 'package:eefood/features/recipe/domain/repositories/shopping_repository.dart';
 import 'package:eefood/features/recipe/presentation/screens/recipe_detail_page.dart';
 import 'package:eefood/l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
@@ -41,6 +43,7 @@ class MealPlanDayItemsSection extends StatefulWidget {
 class _MealPlanDayItemsSectionState extends State<MealPlanDayItemsSection> {
   final Set<int> _updatingItemIds = <int>{};
   final Set<int> _selectedItemIds = <int>{};
+  bool _isAddingToShopping = false;
 
   bool get _isSelecting => _selectedItemIds.isNotEmpty;
 
@@ -90,6 +93,68 @@ class _MealPlanDayItemsSectionState extends State<MealPlanDayItemsSection> {
       this.context,
       AppLocalizations.of(this.context)!.mealPlanRegenerateSuccess,
     );
+  }
+
+  Future<void> _addSelectedToShoppingList() async {
+    final l10n = AppLocalizations.of(context)!;
+    final servingsByRecipeId = <int, int>{};
+
+    for (final item in widget.items) {
+      if (!_selectedItemIds.contains(item.id) || item.recipeId == null) {
+        continue;
+      }
+
+      final servings = item.actualServings ?? item.plannedServings ?? 1;
+      servingsByRecipeId.update(
+        item.recipeId!,
+        (current) => current + servings,
+        ifAbsent: () => servings,
+      );
+    }
+
+    if (servingsByRecipeId.isEmpty) {
+      showCustomSnackBar(
+        context,
+        l10n.mealPlanNoRecipeForShopping,
+        isError: true,
+      );
+      return;
+    }
+
+    setState(() {
+      _isAddingToShopping = true;
+    });
+
+    try {
+      final repository = getIt<ShoppingRepository>();
+      await Future.wait(
+        servingsByRecipeId.entries.map(
+          (entry) => repository.addRecipe(entry.key, servings: entry.value),
+        ),
+      );
+
+      if (!mounted) return;
+
+      setState(() {
+        _isAddingToShopping = false;
+        _selectedItemIds.clear();
+      });
+      showCustomSnackBar(
+        context,
+        l10n.mealPlanAddToShoppingSuccess(servingsByRecipeId.length),
+      );
+    } catch (_) {
+      if (!mounted) return;
+
+      setState(() {
+        _isAddingToShopping = false;
+      });
+      showCustomSnackBar(
+        context,
+        l10n.mealPlanAddToShoppingFailed,
+        isError: true,
+      );
+    }
   }
 
   String _value(num? value, {String suffix = ''}) {
@@ -242,7 +307,6 @@ class _MealPlanDayItemsSectionState extends State<MealPlanDayItemsSection> {
       showCustomSnackBar(this.context, error, isError: true);
       return;
     }
-
   }
 
   @override
@@ -307,6 +371,8 @@ class _MealPlanDayItemsSectionState extends State<MealPlanDayItemsSection> {
               });
             },
             onRegenerate: () => _showRegenerateSheet(context),
+            onAddToShopping: _addSelectedToShoppingList,
+            isAddingToShopping: _isAddingToShopping,
           ),
         ],
         const SizedBox(height: 10),

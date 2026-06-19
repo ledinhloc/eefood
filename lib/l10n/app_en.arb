@@ -239,6 +239,17 @@
   },
   "mealPlanRegenerateTitle": "Replace meals with AI",
   "mealPlanRegenerateAction": "Replace selected meals",
+  "mealPlanAddToShoppingAction": "Shopping list",
+  "mealPlanAddToShoppingSuccess": "Added ingredients from {count} meals to your shopping list",
+  "@mealPlanAddToShoppingSuccess": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "mealPlanNoRecipeForShopping": "The selected meals are not linked to recipes",
+  "mealPlanAddToShoppingFailed": "Could not add ingredients to the shopping list",
   "mealPlanRegenerateReason": "Reason for replacement (optional)",
   "mealPlanRegenerateReasonHint": "For example: Less oil and more vegetables...",
   "mealPlanRegenerating": "AI is choosing new meals...",

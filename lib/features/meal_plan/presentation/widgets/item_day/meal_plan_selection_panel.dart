@@ -6,6 +6,8 @@ class MealPlanSelectionPanel extends StatelessWidget {
   final Color primaryWarm;
   final VoidCallback onCancel;
   final VoidCallback onRegenerate;
+  final VoidCallback onAddToShopping;
+  final bool isAddingToShopping;
 
   const MealPlanSelectionPanel({
     super.key,
@@ -13,6 +15,8 @@ class MealPlanSelectionPanel extends StatelessWidget {
     required this.primaryWarm,
     required this.onCancel,
     required this.onRegenerate,
+    required this.onAddToShopping,
+    required this.isAddingToShopping,
   });
 
   @override
@@ -20,11 +24,11 @@ class MealPlanSelectionPanel extends StatelessWidget {
     final l10n = AppLocalizations.of(context)!;
 
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+      padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
-        color: primaryWarm.withValues(alpha: 0.10),
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: primaryWarm.withValues(alpha: 0.28)),
+        color: primaryWarm.withValues(alpha: 0.08),
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(color: primaryWarm.withValues(alpha: 0.20)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -59,20 +63,62 @@ class MealPlanSelectionPanel extends StatelessWidget {
             overflow: TextOverflow.ellipsis,
             style: Theme.of(context).textTheme.bodySmall,
           ),
-          const SizedBox(height: 4),
-          SizedBox(
-            width: double.infinity,
-            child: ElevatedButton.icon(
-              onPressed: onRegenerate,
-              style: ElevatedButton.styleFrom(
-                minimumSize: const Size.fromHeight(36),
-                padding: const EdgeInsets.symmetric(horizontal: 12),
-                tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                visualDensity: VisualDensity.compact,
+          const SizedBox(height: 10),
+          Row(
+            children: [
+              Expanded(
+                child: OutlinedButton.icon(
+                  onPressed: isAddingToShopping ? null : onAddToShopping,
+                  style: OutlinedButton.styleFrom(
+                    foregroundColor: primaryWarm,
+                    minimumSize: const Size.fromHeight(44),
+                    padding: const EdgeInsets.symmetric(horizontal: 12),
+                    tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                    side: BorderSide(
+                      color: primaryWarm.withValues(alpha: 0.45),
+                    ),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                  icon: isAddingToShopping
+                      ? const SizedBox(
+                          width: 16,
+                          height: 16,
+                          child: CircularProgressIndicator(strokeWidth: 2),
+                        )
+                      : const Icon(Icons.add_shopping_cart_outlined, size: 18),
+                  label: Text(
+                    l10n.mealPlanAddToShoppingAction,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
               ),
-              icon: const Icon(Icons.auto_awesome),
-              label: Text(l10n.mealPlanRegenerateAction),
-            ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: ElevatedButton.icon(
+                  onPressed: isAddingToShopping ? null : onRegenerate,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: primaryWarm,
+                    foregroundColor: Colors.white,
+                    elevation: 0,
+                    minimumSize: const Size.fromHeight(44),
+                    padding: const EdgeInsets.symmetric(horizontal: 12),
+                    tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                  icon: const Icon(Icons.auto_awesome, size: 18),
+                  label: Text(
+                    l10n.mealPlanRegenerateAction,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+              ),
+            ],
           ),
         ],
       ),

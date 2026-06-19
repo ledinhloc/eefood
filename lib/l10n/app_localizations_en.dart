@@ -610,6 +610,20 @@ class AppLocalizationsEn extends AppLocalizations {
   String get mealPlanRegenerateAction => 'Replace selected meals';
 
   @override
+  String get mealPlanAddToShoppingAction => 'Shopping list';
+
+  @override
+  String mealPlanAddToShoppingSuccess(int count) {
+    return 'Added ingredients from $count meals to your shopping list';
+  }
+
+  @override
+  String get mealPlanNoRecipeForShopping => 'The selected meals are not linked to recipes';
+
+  @override
+  String get mealPlanAddToShoppingFailed => 'Could not add ingredients to the shopping list';
+
+  @override
   String get mealPlanRegenerateReason => 'Reason for replacement (optional)';
 
   @override
