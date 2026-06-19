@@ -19,11 +19,15 @@ class LiveRepositoryImpl extends LiveRepository{
   }
 
   @override
-  Future<LiveStreamResponse> startLiveStream(String description) async {
+  Future<LiveStreamResponse> startLiveStream(
+    String description,
+    String spokenLanguage,
+  ) async {
     final res = await dio.post(
       '/v1/livestreams/start',
       queryParameters: {
-        'description': description
+        'description': description,
+        'spokenLanguage': spokenLanguage,
       },
     );
     return LiveStreamResponse.fromJson(res.data['data']);

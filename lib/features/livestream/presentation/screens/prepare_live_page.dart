@@ -8,6 +8,7 @@ import 'package:livekit_client/livekit_client.dart';
 
 import '../../../../core/di/injection.dart';
 import '../../../../core/widgets/snack_bar.dart';
+import '../../domain/enum/subtitle_language.dart';
 import '../../domain/repository/live_comment_repo.dart';
 import '../../domain/repository/live_reaction_repo.dart';
 import '../../domain/repository/live_viewer_repository.dart';
@@ -19,6 +20,7 @@ import '../provider/live_stream_state.dart';
 import '../provider/live_viewer_cubit.dart';
 import '../provider/start_live_cubit.dart';
 import '../provider/subtitle_cubit.dart';
+import '../widgets/prepare_live/spoken_language_selector.dart';
 import 'live_streaming_page.dart';
 
 class LivePrepScreen extends StatefulWidget {
@@ -32,6 +34,7 @@ class _LivePrepScreenState extends State<LivePrepScreen> {
   final TextEditingController _descriptionController = TextEditingController();
 
   bool _isPreparingLive = false;
+  SubtitleLanguage _spokenLanguage = SubtitleLanguage.vi;
 
   @override
   void initState() {
@@ -133,7 +136,10 @@ class _LivePrepScreenState extends State<LivePrepScreen> {
     final isReady = await _prepareTracksForLive();
     if (!isReady || !mounted) return;
 
-    context.read<StartLiveCubit>().startLive(_descriptionController.text);
+    context.read<StartLiveCubit>().startLive(
+      _descriptionController.text,
+      _spokenLanguage.code,
+    );
   }
 
   Future<void> _handleClose() async {
@@ -150,6 +156,7 @@ class _LivePrepScreenState extends State<LivePrepScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      resizeToAvoidBottomInset: false,
       backgroundColor: Colors.black,
       body: MultiBlocListener(
         listeners: [
@@ -209,7 +216,8 @@ class _LivePrepScreenState extends State<LivePrepScreen> {
                         ),
                         BlocProvider(
                           create: (_) =>
-                              getIt<LiveLeaderboardCubit>()..init(startState.stream!.id),
+                              getIt<LiveLeaderboardCubit>()
+                                ..init(startState.stream!.id),
                         ),
                       ],
                       child: LiveStreamScreen(stream: startState.stream!),
@@ -296,9 +304,9 @@ class _LivePrepScreenState extends State<LivePrepScreen> {
                 ),
                 child: const Row(
                   children: [
-                    Icon(Icons.lock, color: Colors.white, size: 16),
+                    Icon(Icons.public, color: Colors.white, size: 16),
                     SizedBox(width: 4),
-                    Text('Chỉ mình tôi', style: TextStyle(color: Colors.white)),
+                    Text('Công khai', style: TextStyle(color: Colors.white)),
                   ],
                 ),
               ),
@@ -328,13 +336,13 @@ class _LivePrepScreenState extends State<LivePrepScreen> {
               label: 'Camera',
               onPressed: () => context.read<LiveStreamCubit>().toggleCamera(),
             ),
-            const SizedBox(height: 20),
+            // const SizedBox(height: 20),
             _buildControlButton(
               icon: state.isMicOn ? Icons.mic : Icons.mic_off,
               label: state.isMicOn ? 'Tắt micro' : 'Bật micro',
               onPressed: () => context.read<LiveStreamCubit>().toggleMic(),
             ),
-            const SizedBox(height: 20),
+            // const SizedBox(height: 20),
             _buildControlButton(
               icon: Icons.cameraswitch,
               label: 'Xoay',
@@ -345,7 +353,7 @@ class _LivePrepScreenState extends State<LivePrepScreen> {
               label: 'Flash',
               onPressed: () => context.read<LiveStreamCubit>().toggleFlash(),
             ),
-            const SizedBox(height: 20),
+            // const SizedBox(height: 20),
           ],
         ),
       ),
@@ -356,52 +364,50 @@ class _LivePrepScreenState extends State<LivePrepScreen> {
     return Positioned(
       left: 0,
       right: 0,
-      bottom: 0,
+      bottom: MediaQuery.viewInsetsOf(context).bottom + 40,
       child: Container(
         padding: const EdgeInsets.all(16),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
+            SpokenLanguageSelector(
+              selectedLanguage: _spokenLanguage,
+              onChanged: (language) {
+                setState(() => _spokenLanguage = language);
+              },
+            ),
+            const SizedBox(height: 12),
             // Description input
             TextField(
               controller: _descriptionController,
-              style: const TextStyle(color: Colors.white),
-              decoration: const InputDecoration(
+              style: const TextStyle(color: Colors.black87),
+              decoration: InputDecoration(
                 hintText: 'Thêm mô tả...',
-                hintStyle: TextStyle(color: Colors.white70),
-                border: InputBorder.none,
-                prefixIcon: Icon(Icons.share, color: Colors.white),
+                hintStyle: const TextStyle(color: Colors.black45),
+                prefixIcon: const Icon(
+                  Icons.edit_note,
+                  color: Colors.blue,
+                ),
+                filled: true,
+                fillColor: Colors.white.withValues(alpha: 0.95),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(14),
+                  borderSide: BorderSide.none,
+                ),
+                enabledBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(14),
+                  borderSide: const BorderSide(color: Colors.white54),
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(14),
+                  borderSide: const BorderSide(
+                    color: Colors.blue,
+                    width: 2,
+                  ),
+                ),
               ),
             ),
-            const SizedBox(height: 8),
-            Row(
-              children: [
-                const CircleAvatar(radius: 20, child: Icon(Icons.person)),
-                const SizedBox(width: 8),
-                const Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Chia sẻ lên',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    Text('Tin: Bật', style: TextStyle(color: Colors.white70)),
-                  ],
-                ),
-                const Spacer(),
-                IconButton(
-                  icon: const Icon(
-                    Icons.arrow_forward_ios,
-                    color: Colors.white,
-                  ),
-                  onPressed: () {},
-                ),
-              ],
-            ),
-            const SizedBox(height: 16),
+            const SizedBox(height: 12),
             // Start button
             BlocBuilder<StartLiveCubit, StartLiveState>(
               builder: (context, startState) {
@@ -431,7 +437,6 @@ class _LivePrepScreenState extends State<LivePrepScreen> {
                 );
               },
             ),
-            const SizedBox(height: 20),
           ],
         ),
       ),
@@ -461,7 +466,7 @@ class _LivePrepScreenState extends State<LivePrepScreen> {
           width: 80,
           child: Text(
             label,
-            style: const TextStyle(color: Colors.white, fontSize: 11),
+            style: const TextStyle(color: Colors.black, fontSize: 11),
             textAlign: TextAlign.center,
             maxLines: 2,
             overflow: TextOverflow.ellipsis,
