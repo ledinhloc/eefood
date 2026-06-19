@@ -591,4 +591,33 @@ class AppLocalizationsVi extends AppLocalizations {
 
   @override
   String get mealPlanStatusSkipped => 'Đã bỏ qua';
+
+  @override
+  String mealPlanSelectedItems(int count) {
+    return 'Đã chọn $count món';
+  }
+
+  @override
+  String get mealPlanRegenerateTitle => 'Đổi món bằng AI';
+
+  @override
+  String get mealPlanRegenerateAction => 'Đổi món đã chọn';
+
+  @override
+  String get mealPlanRegenerateReason => 'Lý do thay đổi (không bắt buộc)';
+
+  @override
+  String get mealPlanRegenerateReasonHint => 'Ví dụ: Muốn món ít dầu, nhiều rau hơn...';
+
+  @override
+  String get mealPlanRegenerating => 'AI đang chọn món mới...';
+
+  @override
+  String get mealPlanRegenerateSuccess => 'Đã đổi các món được chọn';
+
+  @override
+  String get mealPlanSelectItemsHint => 'Nhấn vào món khác để chọn thêm';
+
+  @override
+  String get mealPlanDoneCannotRegenerate => 'Không thể đổi món đã ăn';
 }

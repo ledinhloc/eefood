@@ -335,7 +335,7 @@ class _MealPlanViewState extends State<_MealPlanView> {
                     ),
                     if (isSelected)
                       Padding(
-                        padding: const EdgeInsets.fromLTRB(10, 6, 10, 10),
+                        padding: const EdgeInsets.fromLTRB(6, 6, 6, 10),
                         child: MealPlanDayItemsSection(
                           isLoading: state.isLoadingItems,
                           items: state.dayItems,

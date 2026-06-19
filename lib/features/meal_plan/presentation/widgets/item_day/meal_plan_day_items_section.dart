@@ -7,8 +7,10 @@ import 'package:eefood/features/meal_plan/domain/enum/meal_plan_item_status.dart
 import 'package:eefood/features/meal_plan/domain/enum/meal_slot.dart';
 import 'package:eefood/features/meal_plan/presentation/provider/meal_plan_cubit.dart';
 import 'package:eefood/features/meal_plan/presentation/widgets/item_day/meal_plan_item_nutrition_sheet.dart';
+import 'package:eefood/features/meal_plan/presentation/widgets/item_day/meal_plan_selection_panel.dart';
 import 'package:eefood/features/meal_plan/presentation/widgets/item_day/nutrition_badge.dart';
 import 'package:eefood/features/meal_plan/presentation/widgets/item_day/status_drop_down.dart';
+import 'package:eefood/features/meal_plan/presentation/widgets/meal_plan_regenerate_sheet.dart';
 import 'package:eefood/features/meal_plan/presentation/widgets/update_item/meal_plan_item_upsert_sheet.dart';
 import 'package:eefood/features/recipe/presentation/screens/recipe_detail_page.dart';
 import 'package:eefood/l10n/app_localizations.dart';
@@ -38,6 +40,57 @@ class MealPlanDayItemsSection extends StatefulWidget {
 
 class _MealPlanDayItemsSectionState extends State<MealPlanDayItemsSection> {
   final Set<int> _updatingItemIds = <int>{};
+  final Set<int> _selectedItemIds = <int>{};
+
+  bool get _isSelecting => _selectedItemIds.isNotEmpty;
+
+  @override
+  void didUpdateWidget(covariant MealPlanDayItemsSection oldWidget) {
+    super.didUpdateWidget(oldWidget);
+
+    if (oldWidget.selectedDate != widget.selectedDate) {
+      _selectedItemIds.clear();
+      return;
+    }
+
+    final selectableIds = widget.items
+        .where((item) => item.status != MealPlanItemStatus.done)
+        .map((item) => item.id)
+        .whereType<int>()
+        .toSet();
+    _selectedItemIds.removeWhere((id) => !selectableIds.contains(id));
+  }
+
+  void _toggleSelection(MealPlanItemResponse item) {
+    final itemId = item.id;
+    if (itemId == null || item.status == MealPlanItemStatus.done) return;
+
+    setState(() {
+      if (!_selectedItemIds.add(itemId)) {
+        _selectedItemIds.remove(itemId);
+      }
+    });
+  }
+
+  Future<void> _showRegenerateSheet(BuildContext context) async {
+    if (_selectedItemIds.isEmpty) return;
+
+    final success = await showMealPlanRegenerateSheet(
+      context: context,
+      cubit: context.read<MealPlanCubit>(),
+      itemIds: _selectedItemIds.toList(),
+    );
+
+    if (!mounted || success != true) return;
+
+    setState(() {
+      _selectedItemIds.clear();
+    });
+    showCustomSnackBar(
+      this.context,
+      AppLocalizations.of(this.context)!.mealPlanRegenerateSuccess,
+    );
+  }
 
   String _value(num? value, {String suffix = ''}) {
     if (value == null) return '--';
@@ -134,34 +187,6 @@ class _MealPlanDayItemsSectionState extends State<MealPlanDayItemsSection> {
       showCustomSnackBar(context, l10n.mealPlanCannotDeleteItem, isError: true);
       return;
     }
-
-    // final confirmed = await showDialog<bool>(
-    //   context: context,
-    //   builder: (dialogContext) {
-    //     return AlertDialog(
-    //       title: Text(l10n.mealPlanDeleteItemTitle),
-    //       content: Text(
-    //         l10n.mealPlanDeleteItemMessage(_itemTitle(context, item)),
-    //       ),
-    //       actions: [
-    //         TextButton(
-    //           onPressed: () => Navigator.pop(dialogContext, false),
-    //           child: Text(l10n.cancel),
-    //         ),
-    //         ElevatedButton(
-    //           onPressed: () => Navigator.pop(dialogContext, true),
-    //           style: ElevatedButton.styleFrom(
-    //             backgroundColor: Theme.of(dialogContext).colorScheme.error,
-    //             foregroundColor: Theme.of(dialogContext).colorScheme.onError,
-    //           ),
-    //           child: Text(l10n.mealPlanDeleteAction),
-    //         ),
-    //       ],
-    //     );
-    //   },
-    // );
-
-    // if (confirmed != true || !context.mounted) return;
     await context.read<MealPlanCubit>().deleteMealPlanItem(itemId);
   }
 
@@ -218,10 +243,6 @@ class _MealPlanDayItemsSectionState extends State<MealPlanDayItemsSection> {
       return;
     }
 
-    // showCustomSnackBar(
-    //   this.context,
-    //   AppLocalizations.of(this.context)!.mealPlanItemUpdated,
-    // );
   }
 
   @override
@@ -271,222 +292,297 @@ class _MealPlanDayItemsSectionState extends State<MealPlanDayItemsSection> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         _SectionHeader(
-          onAdd: widget.selectedDate == null
+          onAdd: _isSelecting || widget.selectedDate == null
               ? null
               : () => _openUpsertSheet(context),
         ),
+        if (_isSelecting) ...[
+          const SizedBox(height: 10),
+          MealPlanSelectionPanel(
+            selectedItemCount: _selectedItemIds.length,
+            primaryWarm: widget.primaryWarm,
+            onCancel: () {
+              setState(() {
+                _selectedItemIds.clear();
+              });
+            },
+            onRegenerate: () => _showRegenerateSheet(context),
+          ),
+        ],
         const SizedBox(height: 10),
-        ...widget.items.map(
-          (item) => Container(
-            margin: const EdgeInsets.only(bottom: 8),
-            padding: const EdgeInsets.all(10),
-            decoration: BoxDecoration(
-              color: cardColor,
-              borderRadius: BorderRadius.circular(18),
-              border: Border.all(color: borderColor),
-              boxShadow: [
-                BoxShadow(
-                  color: shadowColor,
-                  blurRadius: 14,
-                  offset: const Offset(0, 4),
-                ),
-              ],
-            ),
-            child: LayoutBuilder(
-              builder: (context, constraints) {
-                final imageSize = (constraints.maxWidth * 0.32).clamp(
-                  72.0,
-                  116.0,
-                );
-                final spacing = (constraints.maxWidth * 0.03).clamp(6.0, 10.0);
-                final contentWidth = constraints.maxWidth - imageSize - spacing;
-                final actionButtonSize = contentWidth < 170 ? 24.0 : 28.0;
-                final actionIconSize = contentWidth < 170 ? 15.0 : 16.0;
-                final chipHorizontalPadding = contentWidth < 170 ? 6.0 : 8.0;
+        ...widget.items.map((item) {
+          final itemId = item.id;
+          final canSelect =
+              itemId != null && item.status != MealPlanItemStatus.done;
+          final isSelected =
+              itemId != null && _selectedItemIds.contains(itemId);
 
-                return Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Material(
-                      color: Colors.transparent,
-                      child: InkWell(
-                        onTap: item.imageUrl?.isNotEmpty == true
-                            ? () => _openImage(context, item.imageUrl!)
-                            : null,
-                        borderRadius: BorderRadius.circular(18),
-                        child: SizedBox(
-                          width: imageSize,
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Container(
-                                width: imageSize,
-                                height: imageSize,
-                                decoration: BoxDecoration(
-                                  color: widget.softCream,
-                                  borderRadius: BorderRadius.circular(18),
-                                ),
-                                child:
-                                    item.imageUrl != null &&
-                                        item.imageUrl!.isNotEmpty
-                                    ? ClipRRect(
-                                        borderRadius: BorderRadius.circular(18),
-                                        child: Image.network(
-                                          item.imageUrl!,
-                                          fit: BoxFit.cover,
-                                          errorBuilder: (_, __, ___) => Icon(
-                                            Icons.fastfood_outlined,
-                                            color: widget.primaryWarm,
-                                            size: 32,
-                                          ),
-                                        ),
-                                      )
-                                    : Icon(
-                                        Icons.fastfood_outlined,
-                                        color: widget.primaryWarm,
-                                        size: 32,
-                                      ),
-                              ),
-                              if (item.calories != null)
-                                const SizedBox(height: 8),
-                              if (item.calories != null)
-                                NutritionBadge(
-                                  text: _value(item.calories, suffix: ' kcal'),
-                                  textColor: tertiaryTextColor,
-                                  onTap: () =>
-                                      _showNutritionDialog(context, item),
-                                ),
-                            ],
-                          ),
-                        ),
-                      ),
+          return GestureDetector(
+            onLongPress: canSelect ? () => _toggleSelection(item) : null,
+            child: Stack(
+              children: [
+                Container(
+                  margin: const EdgeInsets.only(bottom: 8),
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: cardColor,
+                    borderRadius: BorderRadius.circular(18),
+                    border: Border.all(
+                      color: isSelected ? widget.primaryWarm : borderColor,
+                      width: isSelected ? 2 : 1,
                     ),
-                    SizedBox(width: spacing),
-                    Expanded(
-                      child: Column(
+                    boxShadow: [
+                      BoxShadow(
+                        color: shadowColor,
+                        blurRadius: 14,
+                        offset: const Offset(0, 4),
+                      ),
+                    ],
+                  ),
+                  child: LayoutBuilder(
+                    builder: (context, constraints) {
+                      final imageSize = (constraints.maxWidth * 0.32).clamp(
+                        72.0,
+                        116.0,
+                      );
+                      final spacing = (constraints.maxWidth * 0.03).clamp(
+                        6.0,
+                        10.0,
+                      );
+                      final contentWidth =
+                          constraints.maxWidth - imageSize - spacing;
+                      final actionButtonSize = contentWidth < 170 ? 24.0 : 28.0;
+                      final actionIconSize = contentWidth < 170 ? 15.0 : 16.0;
+                      final chipHorizontalPadding = contentWidth < 170
+                          ? 6.0
+                          : 8.0;
+
+                      return Row(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Row(
-                            crossAxisAlignment: CrossAxisAlignment.center,
-                            children: [
-                              Flexible(
-                                child: Container(
-                                  height: 28,
-                                  padding: EdgeInsets.symmetric(
-                                    horizontal: chipHorizontalPadding,
-                                  ),
-                                  alignment: Alignment.center,
-                                  decoration: BoxDecoration(
-                                    color: widget.softCream,
-                                    borderRadius: BorderRadius.circular(999),
-                                  ),
-                                  child: Text(
-                                    item.mealSlot.localizedLabel(l10n),
-                                    maxLines: 1,
-                                    overflow: TextOverflow.ellipsis,
-                                    style: TextStyle(
+                          Material(
+                            color: Colors.transparent,
+                            child: InkWell(
+                              onTap: item.imageUrl?.isNotEmpty == true
+                                  ? () => _openImage(context, item.imageUrl!)
+                                  : null,
+                              borderRadius: BorderRadius.circular(18),
+                              child: SizedBox(
+                                width: imageSize,
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Container(
+                                      width: imageSize,
+                                      height: imageSize,
+                                      decoration: BoxDecoration(
+                                        color: widget.softCream,
+                                        borderRadius: BorderRadius.circular(18),
+                                      ),
+                                      child:
+                                          item.imageUrl != null &&
+                                              item.imageUrl!.isNotEmpty
+                                          ? ClipRRect(
+                                              borderRadius:
+                                                  BorderRadius.circular(18),
+                                              child: Image.network(
+                                                item.imageUrl!,
+                                                fit: BoxFit.cover,
+                                                errorBuilder: (_, __, ___) =>
+                                                    Icon(
+                                                      Icons.fastfood_outlined,
+                                                      color: widget.primaryWarm,
+                                                      size: 32,
+                                                    ),
+                                              ),
+                                            )
+                                          : Icon(
+                                              Icons.fastfood_outlined,
+                                              color: widget.primaryWarm,
+                                              size: 32,
+                                            ),
+                                    ),
+                                    if (item.calories != null)
+                                      const SizedBox(height: 8),
+                                    if (item.calories != null)
+                                      NutritionBadge(
+                                        text: _value(
+                                          item.calories,
+                                          suffix: ' kcal',
+                                        ),
+                                        textColor: tertiaryTextColor,
+                                        onTap: () =>
+                                            _showNutritionDialog(context, item),
+                                      ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          ),
+                          SizedBox(width: spacing),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Row(
+                                  crossAxisAlignment: CrossAxisAlignment.center,
+                                  children: [
+                                    Flexible(
+                                      child: Container(
+                                        height: 28,
+                                        padding: EdgeInsets.symmetric(
+                                          horizontal: chipHorizontalPadding,
+                                        ),
+                                        alignment: Alignment.center,
+                                        decoration: BoxDecoration(
+                                          color: widget.softCream,
+                                          borderRadius: BorderRadius.circular(
+                                            999,
+                                          ),
+                                        ),
+                                        child: Text(
+                                          item.mealSlot.localizedLabel(l10n),
+                                          maxLines: 1,
+                                          overflow: TextOverflow.ellipsis,
+                                          style: TextStyle(
+                                            color: widget.primaryWarm,
+                                            fontSize: 11,
+                                            fontWeight: FontWeight.w700,
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                    SizedBox(width: spacing),
+                                    IconButton(
+                                      onPressed: () =>
+                                          _openUpsertSheet(context, item: item),
+                                      icon: Icon(
+                                        Icons.edit_outlined,
+                                        size: actionIconSize,
+                                      ),
+                                      tooltip: l10n.mealPlanEditItemTooltip,
                                       color: widget.primaryWarm,
-                                      fontSize: 11,
-                                      fontWeight: FontWeight.w700,
+                                      padding: EdgeInsets.zero,
+                                      constraints: BoxConstraints.tightFor(
+                                        width: actionButtonSize,
+                                        height: actionButtonSize,
+                                      ),
+                                      visualDensity: VisualDensity.compact,
+                                    ),
+                                    IconButton(
+                                      onPressed: () =>
+                                          _handleDeleteItem(context, item),
+                                      icon: Icon(
+                                        Icons.delete_outline,
+                                        size: actionIconSize,
+                                      ),
+                                      tooltip: l10n.mealPlanDeleteItemTooltip,
+                                      color: colorScheme.error,
+                                      padding: EdgeInsets.zero,
+                                      constraints: BoxConstraints.tightFor(
+                                        width: actionButtonSize,
+                                        height: actionButtonSize,
+                                      ),
+                                      visualDensity: VisualDensity.compact,
+                                    ),
+                                  ],
+                                ),
+                                const SizedBox(height: 6),
+                                GestureDetector(
+                                  onTap: item.recipeId != null
+                                      ? () => _openRecipeDetail(
+                                          context,
+                                          item.recipeId!,
+                                        )
+                                      : null,
+                                  child: Text(
+                                    _itemTitle(context, item),
+                                    maxLines: 2,
+                                    overflow: TextOverflow.ellipsis,
+                                    style: theme.textTheme.titleSmall?.copyWith(
+                                      height: 1.15,
+                                      fontWeight: FontWeight.w800,
+                                      color: item.recipeId != null
+                                          ? widget.primaryWarm
+                                          : null,
+                                      decoration: item.recipeId != null
+                                          ? TextDecoration.underline
+                                          : TextDecoration.none,
+                                      decorationColor: item.recipeId != null
+                                          ? widget.primaryWarm
+                                          : null,
                                     ),
                                   ),
                                 ),
-                              ),
-                              SizedBox(width: spacing),
-                              IconButton(
-                                onPressed: () =>
-                                    _openUpsertSheet(context, item: item),
-                                icon: Icon(
-                                  Icons.edit_outlined,
-                                  size: actionIconSize,
+                                const SizedBox(height: 2),
+                                Text(
+                                  l10n.mealPlanServings(
+                                    '${item.actualServings ?? item.plannedServings ?? '--'}',
+                                  ),
+                                  style: theme.textTheme.bodySmall?.copyWith(
+                                    fontSize: 11,
+                                    color: secondaryTextColor,
+                                  ),
                                 ),
-                                tooltip: l10n.mealPlanEditItemTooltip,
-                                color: widget.primaryWarm,
-                                padding: EdgeInsets.zero,
-                                constraints: BoxConstraints.tightFor(
-                                  width: actionButtonSize,
-                                  height: actionButtonSize,
+                                const SizedBox(height: 8),
+                                Align(
+                                  alignment: Alignment.centerRight,
+                                  child: StatusDropdown(
+                                    width: (contentWidth * 0.72).clamp(
+                                      112.0,
+                                      150.0,
+                                    ),
+                                    value: item.status,
+                                    isBusy: _updatingItemIds.contains(item.id),
+                                    textColor: item.status.textColor(isDark),
+                                    borderColor: item.status.borderColor(
+                                      isDark,
+                                    ),
+                                    fillColor: item.status.backgroundColor(
+                                      isDark,
+                                    ),
+                                    onChanged: (value) {
+                                      if (value == null) return;
+                                      _updateItemStatus(context, item, value);
+                                    },
+                                  ),
                                 ),
-                                visualDensity: VisualDensity.compact,
-                              ),
-                              IconButton(
-                                onPressed: () =>
-                                    _handleDeleteItem(context, item),
-                                icon: Icon(
-                                  Icons.delete_outline,
-                                  size: actionIconSize,
-                                ),
-                                tooltip: l10n.mealPlanDeleteItemTooltip,
-                                color: colorScheme.error,
-                                padding: EdgeInsets.zero,
-                                constraints: BoxConstraints.tightFor(
-                                  width: actionButtonSize,
-                                  height: actionButtonSize,
-                                ),
-                                visualDensity: VisualDensity.compact,
-                              ),
-                            ],
-                          ),
-                          const SizedBox(height: 6),
-                          GestureDetector(
-                            onTap: item.recipeId != null
-                                ? () =>
-                                      _openRecipeDetail(context, item.recipeId!)
-                                : null,
-                            child: Text(
-                              _itemTitle(context, item),
-                              maxLines: 2,
-                              overflow: TextOverflow.ellipsis,
-                              style: theme.textTheme.titleSmall?.copyWith(
-                                height: 1.15,
-                                fontWeight: FontWeight.w800,
-                                color: item.recipeId != null
-                                    ? widget.primaryWarm
-                                    : null,
-                                decoration: item.recipeId != null
-                                    ? TextDecoration.underline
-                                    : TextDecoration.none,
-                                decorationColor: item.recipeId != null
-                                    ? widget.primaryWarm
-                                    : null,
-                              ),
-                            ),
-                          ),
-                          const SizedBox(height: 2),
-                          Text(
-                            l10n.mealPlanServings(
-                              '${item.actualServings ?? item.plannedServings ?? '--'}',
-                            ),
-                            style: theme.textTheme.bodySmall?.copyWith(
-                              fontSize: 11,
-                              color: secondaryTextColor,
-                            ),
-                          ),
-                          const SizedBox(height: 8),
-                          Align(
-                            alignment: Alignment.centerRight,
-                            child: StatusDropdown(
-                              width: (contentWidth * 0.72).clamp(112.0, 150.0),
-                              value: item.status,
-                              isBusy: _updatingItemIds.contains(item.id),
-                              textColor: item.status.textColor(isDark),
-                              borderColor: item.status.borderColor(isDark),
-                              fillColor: item.status.backgroundColor(isDark),
-                              onChanged: (value) {
-                                if (value == null) return;
-                                _updateItemStatus(context, item, value);
-                              },
+                              ],
                             ),
                           ),
                         ],
+                      );
+                    },
+                  ),
+                ),
+                if (_isSelecting)
+                  Positioned.fill(
+                    child: Material(
+                      color: Colors.transparent,
+                      child: InkWell(
+                        borderRadius: BorderRadius.circular(18),
+                        onTap: canSelect ? () => _toggleSelection(item) : () {},
                       ),
                     ),
-                  ],
-                );
-              },
+                  ),
+                if (isSelected)
+                  Positioned(
+                    top: 8,
+                    left: 8,
+                    child: CircleAvatar(
+                      radius: 13,
+                      backgroundColor: widget.primaryWarm,
+                      child: const Icon(
+                        Icons.check,
+                        color: Colors.white,
+                        size: 17,
+                      ),
+                    ),
+                  ),
+              ],
             ),
-          ),
-        ),
+          );
+        }),
       ],
     );
   }

@@ -1246,6 +1246,60 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Skipped'**
   String get mealPlanStatusSkipped;
+
+  /// No description provided for @mealPlanSelectedItems.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} items selected'**
+  String mealPlanSelectedItems(int count);
+
+  /// No description provided for @mealPlanRegenerateTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Replace meals with AI'**
+  String get mealPlanRegenerateTitle;
+
+  /// No description provided for @mealPlanRegenerateAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Replace selected meals'**
+  String get mealPlanRegenerateAction;
+
+  /// No description provided for @mealPlanRegenerateReason.
+  ///
+  /// In en, this message translates to:
+  /// **'Reason for replacement (optional)'**
+  String get mealPlanRegenerateReason;
+
+  /// No description provided for @mealPlanRegenerateReasonHint.
+  ///
+  /// In en, this message translates to:
+  /// **'For example: Less oil and more vegetables...'**
+  String get mealPlanRegenerateReasonHint;
+
+  /// No description provided for @mealPlanRegenerating.
+  ///
+  /// In en, this message translates to:
+  /// **'AI is choosing new meals...'**
+  String get mealPlanRegenerating;
+
+  /// No description provided for @mealPlanRegenerateSuccess.
+  ///
+  /// In en, this message translates to:
+  /// **'Selected meals were replaced'**
+  String get mealPlanRegenerateSuccess;
+
+  /// No description provided for @mealPlanSelectItemsHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Tap other meals to select more'**
+  String get mealPlanSelectItemsHint;
+
+  /// No description provided for @mealPlanDoneCannotRegenerate.
+  ///
+  /// In en, this message translates to:
+  /// **'Completed meals cannot be replaced'**
+  String get mealPlanDoneCannotRegenerate;
 }
 
 class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {

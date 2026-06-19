@@ -226,5 +226,21 @@
   "mealPlanMealSlotSnack": "Bữa phụ",
   "mealPlanStatusPlanned": "Đã lên kế hoạch",
   "mealPlanStatusDone": "Đã ăn",
-  "mealPlanStatusSkipped": "Đã bỏ qua"
+  "mealPlanStatusSkipped": "Đã bỏ qua",
+  "mealPlanSelectedItems": "Đã chọn {count} món",
+  "@mealPlanSelectedItems": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "mealPlanRegenerateTitle": "Đổi món bằng AI",
+  "mealPlanRegenerateAction": "Đổi món đã chọn",
+  "mealPlanRegenerateReason": "Lý do thay đổi (không bắt buộc)",
+  "mealPlanRegenerateReasonHint": "Ví dụ: Muốn món ít dầu, nhiều rau hơn...",
+  "mealPlanRegenerating": "AI đang chọn món mới...",
+  "mealPlanRegenerateSuccess": "Đã đổi các món được chọn",
+  "mealPlanSelectItemsHint": "Nhấn vào món khác để chọn thêm",
+  "mealPlanDoneCannotRegenerate": "Không thể đổi món đã ăn"
 }

@@ -226,5 +226,21 @@
   "mealPlanMealSlotSnack": "Snack",
   "mealPlanStatusPlanned": "Planned",
   "mealPlanStatusDone": "Done",
-  "mealPlanStatusSkipped": "Skipped"
+  "mealPlanStatusSkipped": "Skipped",
+  "mealPlanSelectedItems": "{count} items selected",
+  "@mealPlanSelectedItems": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "mealPlanRegenerateTitle": "Replace meals with AI",
+  "mealPlanRegenerateAction": "Replace selected meals",
+  "mealPlanRegenerateReason": "Reason for replacement (optional)",
+  "mealPlanRegenerateReasonHint": "For example: Less oil and more vegetables...",
+  "mealPlanRegenerating": "AI is choosing new meals...",
+  "mealPlanRegenerateSuccess": "Selected meals were replaced",
+  "mealPlanSelectItemsHint": "Tap other meals to select more",
+  "mealPlanDoneCannotRegenerate": "Completed meals cannot be replaced"
 }

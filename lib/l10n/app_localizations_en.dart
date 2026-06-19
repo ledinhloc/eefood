@@ -591,4 +591,33 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get mealPlanStatusSkipped => 'Skipped';
+
+  @override
+  String mealPlanSelectedItems(int count) {
+    return '$count items selected';
+  }
+
+  @override
+  String get mealPlanRegenerateTitle => 'Replace meals with AI';
+
+  @override
+  String get mealPlanRegenerateAction => 'Replace selected meals';
+
+  @override
+  String get mealPlanRegenerateReason => 'Reason for replacement (optional)';
+
+  @override
+  String get mealPlanRegenerateReasonHint => 'For example: Less oil and more vegetables...';
+
+  @override
+  String get mealPlanRegenerating => 'AI is choosing new meals...';
+
+  @override
+  String get mealPlanRegenerateSuccess => 'Selected meals were replaced';
+
+  @override
+  String get mealPlanSelectItemsHint => 'Tap other meals to select more';
+
+  @override
+  String get mealPlanDoneCannotRegenerate => 'Completed meals cannot be replaced';
 }
