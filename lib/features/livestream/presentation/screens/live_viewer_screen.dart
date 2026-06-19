@@ -27,6 +27,7 @@ import '../../domain/enum/subtitle_language.dart';
 import '../provider/live_reaction_cubit.dart';
 import '../provider/live_reaction_state.dart';
 import '../provider/live_viewer_cubit.dart';
+import '../provider/live_viewer_state.dart';
 import '../provider/subtitle_cubit.dart';
 import '../provider/subtitle_state.dart';
 import '../provider/watch_live_cubit.dart';
@@ -37,7 +38,7 @@ import '../widgets/live_reaction_animation.dart';
 import '../widgets/live_status_timer.dart';
 import '../widgets/live_subtitle_language_selector.dart';
 import '../widgets/live_subtitle_overlay.dart';
-import '../widgets/viewer_list_bottom_sheet.dart';
+import '../widgets/list_viewer/viewer_list_bottom_sheet.dart';
 
 class LiveViewerScreen extends StatefulWidget {
   final int streamId;
@@ -144,21 +145,6 @@ class _LiveViewerScreenState extends State<LiveViewerScreen> {
     _subtitleCubit.disposeStream();
     await context.read<WatchLiveCubit>().disconnect();
     if (mounted) Navigator.pop(context);
-  }
-
-  void _showViewerList() {
-    final viewerCubit = context.read<LiveViewerCubit>();
-    showModalBottomSheet(
-      context: context,
-      backgroundColor: Colors.transparent,
-      isScrollControlled: true,
-      builder: (context) {
-        return BlocProvider.value(
-          value: viewerCubit,
-          child: const ViewerListBottomSheet(),
-        );
-      },
-    );
   }
 
   void _showGiftSheet() {
@@ -292,11 +278,10 @@ class _LiveViewerScreenState extends State<LiveViewerScreen> {
           }
 
           final stream = state.stream!;
-          final participantCount =
-              (state.room?.remoteParticipants.length ?? 0) + 1;
 
           return Scaffold(
             backgroundColor: Colors.black,
+            resizeToAvoidBottomInset: false,
             body: Stack(
               children: [
                 // Video display
@@ -312,7 +297,7 @@ class _LiveViewerScreenState extends State<LiveViewerScreen> {
                 }),
 
                 // Top bar
-                _buildTopBar(stream, participantCount, subtitleState),
+                _buildTopBar(stream, subtitleState),
                 Positioned(
                   top: 90,
                   left: 10,
@@ -363,7 +348,7 @@ class _LiveViewerScreenState extends State<LiveViewerScreen> {
 
                 // Comments
                 Positioned(
-                  bottom: 30,
+                  bottom: MediaQuery.viewInsetsOf(context).bottom + 30,
                   left: 10,
                   right: 16,
                   height: 250,
@@ -413,7 +398,6 @@ class _LiveViewerScreenState extends State<LiveViewerScreen> {
 
   Widget _buildTopBar(
     dynamic stream,
-    int participantCount,
     SubtitleState state,
   ) {
     return Positioned(
@@ -434,35 +418,40 @@ class _LiveViewerScreenState extends State<LiveViewerScreen> {
             children: [
               LiveStatusTimer(startTime: stream.startedAt!),
               const SizedBox(width: 8),
-              GestureDetector(
-                onTap: null,
-                child: Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 10,
-                    vertical: 6,
-                  ),
-                  decoration: BoxDecoration(
-                    color: Colors.black54,
-                    borderRadius: BorderRadius.circular(4),
-                  ),
-                  child: Row(
-                    children: [
-                      const Icon(
-                        Icons.visibility,
-                        color: Colors.white,
-                        size: 14,
+              BlocSelector<LiveViewerCubit, LiveViewerState, int>(
+                selector: (state) => state.viewers.length,
+                builder: (context, viewerCount) {
+                  return GestureDetector(
+                    onTap: null,
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 10,
+                        vertical: 6,
                       ),
-                      const SizedBox(width: 4),
-                      Text(
-                        '$participantCount',
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontSize: 12,
-                        ),
+                      decoration: BoxDecoration(
+                        color: Colors.black54,
+                        borderRadius: BorderRadius.circular(4),
                       ),
-                    ],
-                  ),
-                ),
+                      child: Row(
+                        children: [
+                          const Icon(
+                            Icons.visibility,
+                            color: Colors.white,
+                            size: 14,
+                          ),
+                          const SizedBox(width: 4),
+                          Text(
+                            '$viewerCount',
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 12,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  );
+                },
               ),
               const Spacer(),
               LiveSubtitleLanguageSelector(
