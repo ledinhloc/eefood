@@ -22,6 +22,8 @@ abstract class MealPlanRepository {
     int? days,
   });
 
+  Future<void> deleteCurrentMealPlan();
+
   Future<MealPlanItemResponse> upsertMealPlanItem(
     MealPlanItemUpsertRequest request,
   );

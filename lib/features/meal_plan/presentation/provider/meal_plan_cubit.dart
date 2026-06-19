@@ -226,6 +226,27 @@ class MealPlanCubit extends Cubit<MealPlanState> {
     }
   }
 
+  Future<bool> deleteCurrentMealPlan() async {
+    _emit(state.copyWith(isSubmitting: true, clearError: true));
+    try {
+      await repository.deleteCurrentMealPlan();
+      _emit(
+        state.copyWith(
+          isSubmitting: false,
+          clearPlan: true,
+          dailySummaries: const [],
+          clearSelectedDate: true,
+          dayItems: const [],
+          highlightedDates: const [],
+        ),
+      );
+      return true;
+    } catch (e) {
+      _emit(state.copyWith(isSubmitting: false, error: e.toString()));
+      return false;
+    }
+  }
+
   // Thêm mới hoặc cập nhật một item:
   // - cập nhật item local ngay để UI mượt
   // - sau đó refresh summary của đúng ngày liên quan
@@ -269,7 +290,6 @@ class MealPlanCubit extends Cubit<MealPlanState> {
       );
     }
   }
-
 
   Future<bool> regenerateMealPlanItems(
     List<int> itemIds, {

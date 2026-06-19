@@ -380,6 +380,12 @@ class AppLocalizationsVi extends AppLocalizations {
   String get mealPlanDeleteAction => 'Xóa meal plan';
 
   @override
+  String get mealPlanDeleteConfirmMessage => 'Bạn có chắc muốn xóa kế hoạch ăn uống hiện tại không?';
+
+  @override
+  String get mealPlanDeleteSuccess => 'Đã xóa kế hoạch ăn uống';
+
+  @override
   String get mealPlanContinueTitle => 'Sinh tiếp meal plan';
 
   @override

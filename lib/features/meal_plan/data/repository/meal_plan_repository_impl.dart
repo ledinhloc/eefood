@@ -109,6 +109,15 @@ class MealPlanRepositoryImpl implements MealPlanRepository {
   }
 
   @override
+  Future<void> deleteCurrentMealPlan() async {
+    try {
+      await dio.delete('/v1/meal-plan');
+    } catch (err) {
+      throw Exception('Delete meal plan failed: $err');
+    }
+  }
+
+  @override
   Future<MealPlanItemResponse> upsertMealPlanItem(
     MealPlanItemUpsertRequest request,
   ) async {

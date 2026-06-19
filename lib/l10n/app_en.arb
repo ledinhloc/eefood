@@ -137,6 +137,8 @@
   "mealPlanUpdateAction": "Update meal plan",
   "mealPlanContinueAction": "Continue meal plan",
   "mealPlanDeleteAction": "Delete meal plan",
+  "mealPlanDeleteConfirmMessage": "Are you sure you want to delete the current meal plan?",
+  "mealPlanDeleteSuccess": "Meal plan deleted successfully",
   "mealPlanContinueTitle": "Continue meal plan",
   "mealPlanContinueSubtitle": "Choose a start date and number of days for AI to continue the plan.",
   "mealPlanStartDate": "Start date",

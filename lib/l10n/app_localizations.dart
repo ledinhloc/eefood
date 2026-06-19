@@ -833,6 +833,18 @@ abstract class AppLocalizations {
   /// **'Delete meal plan'**
   String get mealPlanDeleteAction;
 
+  /// No description provided for @mealPlanDeleteConfirmMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Are you sure you want to delete the current meal plan?'**
+  String get mealPlanDeleteConfirmMessage;
+
+  /// No description provided for @mealPlanDeleteSuccess.
+  ///
+  /// In en, this message translates to:
+  /// **'Meal plan deleted successfully'**
+  String get mealPlanDeleteSuccess;
+
   /// No description provided for @mealPlanContinueTitle.
   ///
   /// In en, this message translates to:

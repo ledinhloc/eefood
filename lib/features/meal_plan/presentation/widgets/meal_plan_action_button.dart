@@ -45,36 +45,141 @@ class MealPlanActionButton extends StatelessWidget {
     await showMealPlanContinueSheet(context: context, cubit: cubit, plan: plan);
   }
 
-  void _handleDeleteTap(BuildContext context) {
+  Future<void> _handleDeleteTap(BuildContext context) async {
     final l10n = AppLocalizations.of(context)!;
-    showCustomSnackBar(context, l10n.mealPlanDeleteNotSupported, isError: true);
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) {
+        final theme = Theme.of(dialogContext);
+        final colorScheme = theme.colorScheme;
+        final errorColor = colorScheme.error;
+
+        return Dialog(
+          insetPadding: const EdgeInsets.symmetric(horizontal: 24),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(24),
+          ),
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(20, 24, 20, 20),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Container(
+                  width: 56,
+                  height: 56,
+                  decoration: BoxDecoration(
+                    color: errorColor.withValues(alpha: 0.10),
+                    shape: BoxShape.circle,
+                  ),
+                  child: Icon(
+                    Icons.delete_outline_rounded,
+                    color: errorColor,
+                    size: 28,
+                  ),
+                ),
+                const SizedBox(height: 16),
+                Text(
+                  l10n.mealPlanDeleteAction,
+                  textAlign: TextAlign.center,
+                  style: theme.textTheme.titleLarge?.copyWith(
+                    fontWeight: FontWeight.w800,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  l10n.mealPlanDeleteConfirmMessage,
+                  textAlign: TextAlign.center,
+                  style: theme.textTheme.bodyMedium?.copyWith(
+                    color: colorScheme.onSurfaceVariant,
+                    height: 1.4,
+                  ),
+                ),
+                const SizedBox(height: 24),
+                Row(
+                  children: [
+                    Expanded(
+                      child: OutlinedButton(
+                        onPressed: () => Navigator.pop(dialogContext, false),
+                        style: OutlinedButton.styleFrom(
+                          minimumSize: const Size.fromHeight(46),
+                          side: BorderSide(color: colorScheme.outlineVariant),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(14),
+                          ),
+                        ),
+                        child: Text(l10n.cancel),
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: ElevatedButton(
+                        onPressed: () => Navigator.pop(dialogContext, true),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: errorColor,
+                          foregroundColor: colorScheme.onError,
+                          elevation: 0,
+                          minimumSize: const Size.fromHeight(46),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(14),
+                          ),
+                        ),
+                        child: Text(l10n.mealPlanDeleteAction),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+
+    if (confirmed != true || !context.mounted) return;
+
+    final success = await context.read<MealPlanCubit>().deleteCurrentMealPlan();
+    if (!context.mounted || !success) return;
+
+    showCustomSnackBar(context, l10n.mealPlanDeleteSuccess);
   }
 
   Future<void> _openActions(BuildContext context) async {
     final l10n = AppLocalizations.of(context)!;
-    final colorScheme = Theme.of(context).colorScheme;
-    await showCustomBottomSheet(context, [
-      BottomSheetOption(
-        icon: const Icon(Icons.edit_outlined, color: Colors.blueGrey),
-        title: l10n.mealPlanUpdateAction,
-        onTap: () => _handleEditTap(context),
-      ),
-      BottomSheetOption(
-        icon: const Icon(Icons.auto_awesome_outlined, color: Colors.orange),
-        title: l10n.mealPlanCreateAi,
-        onTap: () => _handleGenerateTap(context),
-      ),
-      BottomSheetOption(
-        icon: const Icon(Icons.update_outlined, color: Colors.deepOrange),
-        title: l10n.mealPlanContinueAction,
-        onTap: () => _handleContinueTap(context),
-      ),
-      BottomSheetOption(
-        icon: const Icon(Icons.delete_outline, color: Colors.red),
-        title: l10n.mealPlanDeleteAction,
-        onTap: () => _handleDeleteTap(context),
-      ),
-    ]);
+    final hasPlan = context.read<MealPlanCubit>().state.plan != null;
+    await showCustomBottomSheet(
+      context,
+      hasPlan
+          ? [
+              BottomSheetOption(
+                icon: const Icon(Icons.edit_outlined, color: Colors.blueGrey),
+                title: l10n.mealPlanUpdateAction,
+                onTap: () => _handleEditTap(context),
+              ),
+              BottomSheetOption(
+                icon: const Icon(
+                  Icons.update_outlined,
+                  color: Colors.deepOrange,
+                ),
+                title: l10n.mealPlanContinueAction,
+                onTap: () => _handleContinueTap(context),
+              ),
+              BottomSheetOption(
+                icon: const Icon(Icons.delete_outline, color: Colors.red),
+                title: l10n.mealPlanDeleteAction,
+                onTap: () => _handleDeleteTap(context),
+              ),
+            ]
+          : [
+              BottomSheetOption(
+                icon: const Icon(
+                  Icons.auto_awesome_outlined,
+                  color: Colors.orange,
+                ),
+                title: l10n.mealPlanCreateAi,
+                onTap: () => _handleGenerateTap(context),
+              ),
+            ],
+    );
   }
 
   @override

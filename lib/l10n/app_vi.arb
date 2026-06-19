@@ -137,6 +137,8 @@
   "mealPlanUpdateAction": "Cập nhật meal plan",
   "mealPlanContinueAction": "Sinh tiếp meal plan",
   "mealPlanDeleteAction": "Xóa meal plan",
+  "mealPlanDeleteConfirmMessage": "Bạn có chắc muốn xóa kế hoạch ăn uống hiện tại không?",
+  "mealPlanDeleteSuccess": "Đã xóa kế hoạch ăn uống",
   "mealPlanContinueTitle": "Sinh tiếp meal plan",
   "mealPlanContinueSubtitle": "Chọn ngày bắt đầu và số ngày để AI tiếp tục.",
   "mealPlanStartDate": "Ngày bắt đầu",

@@ -380,6 +380,12 @@ class AppLocalizationsEn extends AppLocalizations {
   String get mealPlanDeleteAction => 'Delete meal plan';
 
   @override
+  String get mealPlanDeleteConfirmMessage => 'Are you sure you want to delete the current meal plan?';
+
+  @override
+  String get mealPlanDeleteSuccess => 'Meal plan deleted successfully';
+
+  @override
   String get mealPlanContinueTitle => 'Continue meal plan';
 
   @override
