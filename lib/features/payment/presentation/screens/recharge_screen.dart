@@ -19,6 +19,7 @@ class RechargeScreen extends StatefulWidget {
 class _RechargeScreenState extends State<RechargeScreen> {
   late PaymentCubit _paymentCubit;
   late DiamondPackagesCubit _packagesCubit;
+
   int? _selectedPackageId;
   bool _isLoadingDialogOpen = false;
 
@@ -44,15 +45,17 @@ class _RechargeScreenState extends State<RechargeScreen> {
             _isLoadingDialogOpen = false;
             Navigator.of(context).pop();
           }
-          Navigator.of(context).pushNamed(
-            AppRoutes.vnpayWebviewScreen,
-            arguments: {
-              'paymentUrl': state.paymentUrl,
-              'transactionId': state.transactionId,
-            },
-          ).then((_) {
-            _paymentCubit.reset();
-          });
+          Navigator.of(context)
+              .pushNamed(
+                AppRoutes.vnpayWebviewScreen,
+                arguments: {
+                  'paymentUrl': state.paymentUrl,
+                  'transactionId': state.transactionId,
+                },
+              )
+              .then((_) {
+                _paymentCubit.reset();
+              });
         } else if (state is PaymentFailure) {
           if (_isLoadingDialogOpen) {
             _isLoadingDialogOpen = false;
@@ -407,10 +410,5 @@ class _RechargeScreenState extends State<RechargeScreen> {
         ),
       ),
     );
-  }
-
-  @override
-  void dispose() {
-    super.dispose();
   }
 }
