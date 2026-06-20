@@ -31,12 +31,12 @@ class LivePollSettingsCard extends StatelessWidget {
             onTap: onTap,
             borderRadius: BorderRadius.circular(22),
             child: Padding(
-              padding: const EdgeInsets.all(16),
+              padding: const EdgeInsets.all(13),
               child: Row(
                 children: [
                   Container(
-                    width: 42,
-                    height: 42,
+                    width: 38,
+                    height: 38,
                     decoration: BoxDecoration(
                       color: const Color(0xFFFF8A3D).withValues(alpha: 0.16),
                       borderRadius: BorderRadius.circular(14),
@@ -46,7 +46,7 @@ class LivePollSettingsCard extends StatelessWidget {
                       color: Color(0xFFFFB067),
                     ),
                   ),
-                  const SizedBox(width: 12),
+                  const SizedBox(width: 10),
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -59,7 +59,7 @@ class LivePollSettingsCard extends StatelessWidget {
                             fontWeight: FontWeight.w800,
                           ),
                         ),
-                        const SizedBox(height: 4),
+                        const SizedBox(height: 3),
                         Text(
                           summary,
                           style: const TextStyle(
@@ -76,7 +76,7 @@ class LivePollSettingsCard extends StatelessWidget {
                     child: const Icon(
                       Icons.keyboard_arrow_down_rounded,
                       color: Colors.white70,
-                      size: 28,
+                      size: 26,
                     ),
                   ),
                 ],
@@ -90,7 +90,7 @@ class LivePollSettingsCard extends StatelessWidget {
                 : CrossFadeState.showFirst,
             firstChild: const SizedBox.shrink(),
             secondChild: Padding(
-              padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+              padding: const EdgeInsets.fromLTRB(13, 0, 13, 13),
               child: Column(children: children),
             ),
           ),
@@ -116,8 +116,8 @@ class LivePollSettingRow extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       width: double.infinity,
-      margin: const EdgeInsets.only(top: 10),
-      padding: const EdgeInsets.all(14),
+      margin: const EdgeInsets.only(top: 8),
+      padding: const EdgeInsets.all(11),
       decoration: BoxDecoration(
         color: const Color(0xFF181415),
         borderRadius: BorderRadius.circular(16),
@@ -126,15 +126,15 @@ class LivePollSettingRow extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Container(
-            width: 34,
-            height: 34,
+            width: 32,
+            height: 32,
             decoration: BoxDecoration(
               color: Colors.white.withValues(alpha: 0.06),
               borderRadius: BorderRadius.circular(10),
             ),
-            child: Icon(icon, color: const Color(0xFFFFB067), size: 18),
+            child: Icon(icon, color: const Color(0xFFFFB067), size: 17),
           ),
-          const SizedBox(width: 12),
+          const SizedBox(width: 10),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -143,7 +143,7 @@ class LivePollSettingRow extends StatelessWidget {
                   title,
                   style: const TextStyle(color: Colors.white60, fontSize: 12),
                 ),
-                const SizedBox(height: 4),
+                const SizedBox(height: 3),
                 Text(
                   value,
                   style: const TextStyle(
