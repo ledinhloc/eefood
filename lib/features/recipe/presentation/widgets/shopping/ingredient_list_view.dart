@@ -7,41 +7,53 @@ import '../ingredient_tile.dart';
 class IngredientListWidget extends StatelessWidget {
   final List<ShoppingIngredientModel> ingredients;
 
-  const IngredientListWidget({
-    super.key,
-    required this.ingredients,
-  });
+  const IngredientListWidget({super.key, required this.ingredients});
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     if (ingredients.isEmpty) {
-      return Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(
-              Icons.shopping_basket_outlined,
-              size: 80,
-              color: Colors.grey.shade400,
-            ),
-            const SizedBox(height: 16),
-            Text(
-              'Không có nguyên liệu',
-              style: TextStyle(
-                fontSize: 16,
-                color: theme.colorScheme.onSurface,
-              ),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              'Thêm món ăn để có nguyên liệu',
-              style: TextStyle(
-                fontSize: 14,
-                color: theme.colorScheme.onSurface,
-              ),
-            ),
-          ],
+      return RefreshIndicator(
+        onRefresh: () => context.read<ShoppingCubit>().load(),
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            return ListView(
+              physics: const AlwaysScrollableScrollPhysics(),
+              children: [
+                SizedBox(
+                  height: constraints.maxHeight,
+                  child: Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(
+                          Icons.shopping_basket_outlined,
+                          size: 80,
+                          color: Colors.grey.shade400,
+                        ),
+                        const SizedBox(height: 16),
+                        Text(
+                          'Không có nguyên liệu',
+                          style: TextStyle(
+                            fontSize: 16,
+                            color: theme.colorScheme.onSurface,
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        Text(
+                          'Thêm món ăn để có nguyên liệu',
+                          style: TextStyle(
+                            fontSize: 14,
+                            color: theme.colorScheme.onSurface,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
+            );
+          },
         ),
       );
     }
@@ -49,6 +61,7 @@ class IngredientListWidget extends StatelessWidget {
     return RefreshIndicator(
       onRefresh: () => context.read<ShoppingCubit>().load(),
       child: ListView.builder(
+        physics: const AlwaysScrollableScrollPhysics(),
         padding: const EdgeInsets.all(8),
         itemCount: ingredients.length,
         itemBuilder: (context, index) {

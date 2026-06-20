@@ -2,6 +2,7 @@ import 'package:dio/dio.dart';
 import 'package:eefood/features/meal_plan/data/model/meal_plan_daily_summary_response.dart';
 import 'package:eefood/features/meal_plan/data/model/meal_plan_generate_request.dart';
 import 'package:eefood/features/meal_plan/data/model/meal_plan_item_response.dart';
+import 'package:eefood/features/meal_plan/data/model/meal_plan_items_regenerate_request.dart';
 import 'package:eefood/features/meal_plan/data/model/meal_plan_item_upsert_request.dart';
 import 'package:eefood/features/meal_plan/data/model/meal_plan_response.dart';
 import 'package:eefood/features/meal_plan/data/model/meal_plan_upsert_request.dart';
@@ -108,6 +109,15 @@ class MealPlanRepositoryImpl implements MealPlanRepository {
   }
 
   @override
+  Future<void> deleteCurrentMealPlan() async {
+    try {
+      await dio.delete('/v1/meal-plan');
+    } catch (err) {
+      throw Exception('Delete meal plan failed: $err');
+    }
+  }
+
+  @override
   Future<MealPlanItemResponse> upsertMealPlanItem(
     MealPlanItemUpsertRequest request,
   ) async {
@@ -125,6 +135,25 @@ class MealPlanRepositoryImpl implements MealPlanRepository {
       throw Exception('Upsert meal plan item failed: $err');
     } catch (err) {
       throw Exception('Upsert meal plan item failed: $err');
+    }
+  }
+
+  @override
+  Future<List<MealPlanItemResponse>> regenerateMealPlanItems(
+    MealPlanItemsRegenerateRequest request,
+  ) async {
+    try {
+      final response = await dio.post(
+        '/v1/meal-plan/items/regenerate',
+        data: request.toJson(),
+        options: Options(contentType: 'application/json'),
+      );
+      final data = (response.data['data'] as List<dynamic>?) ?? [];
+      return data
+          .map((e) => MealPlanItemResponse.fromJson(e as Map<String, dynamic>))
+          .toList();
+    } catch (err) {
+      throw Exception('Regenerate meal plan items failed: $err');
     }
   }
 

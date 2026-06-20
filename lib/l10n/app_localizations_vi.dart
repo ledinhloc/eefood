@@ -380,6 +380,12 @@ class AppLocalizationsVi extends AppLocalizations {
   String get mealPlanDeleteAction => 'Xóa meal plan';
 
   @override
+  String get mealPlanDeleteConfirmMessage => 'Bạn có chắc muốn xóa kế hoạch ăn uống hiện tại không?';
+
+  @override
+  String get mealPlanDeleteSuccess => 'Đã xóa kế hoạch ăn uống';
+
+  @override
   String get mealPlanContinueTitle => 'Sinh tiếp meal plan';
 
   @override
@@ -591,4 +597,47 @@ class AppLocalizationsVi extends AppLocalizations {
 
   @override
   String get mealPlanStatusSkipped => 'Đã bỏ qua';
+
+  @override
+  String mealPlanSelectedItems(int count) {
+    return 'Đã chọn $count món';
+  }
+
+  @override
+  String get mealPlanRegenerateTitle => 'Đổi món bằng AI';
+
+  @override
+  String get mealPlanRegenerateAction => 'Đổi món đã chọn';
+
+  @override
+  String get mealPlanAddToShoppingAction => 'Mua sắm';
+
+  @override
+  String mealPlanAddToShoppingSuccess(int count) {
+    return 'Đã thêm nguyên liệu của $count món vào danh sách mua sắm';
+  }
+
+  @override
+  String get mealPlanNoRecipeForShopping => 'Các món đã chọn không liên kết với công thức';
+
+  @override
+  String get mealPlanAddToShoppingFailed => 'Không thể thêm nguyên liệu vào danh sách mua sắm';
+
+  @override
+  String get mealPlanRegenerateReason => 'Lý do thay đổi (không bắt buộc)';
+
+  @override
+  String get mealPlanRegenerateReasonHint => 'Ví dụ: Muốn món ít dầu, nhiều rau hơn...';
+
+  @override
+  String get mealPlanRegenerating => 'AI đang chọn món mới...';
+
+  @override
+  String get mealPlanRegenerateSuccess => 'Đã đổi các món được chọn';
+
+  @override
+  String get mealPlanSelectItemsHint => 'Nhấn vào món khác để chọn thêm';
+
+  @override
+  String get mealPlanDoneCannotRegenerate => 'Không thể đổi món đã ăn';
 }

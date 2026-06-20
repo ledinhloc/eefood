@@ -137,6 +137,8 @@
   "mealPlanUpdateAction": "Update meal plan",
   "mealPlanContinueAction": "Continue meal plan",
   "mealPlanDeleteAction": "Delete meal plan",
+  "mealPlanDeleteConfirmMessage": "Are you sure you want to delete the current meal plan?",
+  "mealPlanDeleteSuccess": "Meal plan deleted successfully",
   "mealPlanContinueTitle": "Continue meal plan",
   "mealPlanContinueSubtitle": "Choose a start date and number of days for AI to continue the plan.",
   "mealPlanStartDate": "Start date",
@@ -226,5 +228,32 @@
   "mealPlanMealSlotSnack": "Snack",
   "mealPlanStatusPlanned": "Planned",
   "mealPlanStatusDone": "Done",
-  "mealPlanStatusSkipped": "Skipped"
+  "mealPlanStatusSkipped": "Skipped",
+  "mealPlanSelectedItems": "{count} items selected",
+  "@mealPlanSelectedItems": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "mealPlanRegenerateTitle": "Replace meals with AI",
+  "mealPlanRegenerateAction": "Replace selected meals",
+  "mealPlanAddToShoppingAction": "Shopping list",
+  "mealPlanAddToShoppingSuccess": "Added ingredients from {count} meals to your shopping list",
+  "@mealPlanAddToShoppingSuccess": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "mealPlanNoRecipeForShopping": "The selected meals are not linked to recipes",
+  "mealPlanAddToShoppingFailed": "Could not add ingredients to the shopping list",
+  "mealPlanRegenerateReason": "Reason for replacement (optional)",
+  "mealPlanRegenerateReasonHint": "For example: Less oil and more vegetables...",
+  "mealPlanRegenerating": "AI is choosing new meals...",
+  "mealPlanRegenerateSuccess": "Selected meals were replaced",
+  "mealPlanSelectItemsHint": "Tap other meals to select more",
+  "mealPlanDoneCannotRegenerate": "Completed meals cannot be replaced"
 }

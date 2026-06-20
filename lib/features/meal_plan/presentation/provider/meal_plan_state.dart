@@ -32,6 +32,7 @@ class MealPlanState {
     bool? isLoadingItems,
     bool? isSubmitting,
     MealPlanResponse? plan,
+    bool clearPlan = false,
     List<MealPlanDailySummaryResponse>? dailySummaries,
     DateTime? selectedDate,
     bool clearSelectedDate = false,
@@ -46,7 +47,7 @@ class MealPlanState {
       isLoading: isLoading ?? this.isLoading,
       isLoadingItems: isLoadingItems ?? this.isLoadingItems,
       isSubmitting: isSubmitting ?? this.isSubmitting,
-      plan: plan ?? this.plan,
+      plan: clearPlan ? null : (plan ?? this.plan),
       dailySummaries: dailySummaries ?? this.dailySummaries,
       selectedDate: clearSelectedDate
           ? null
