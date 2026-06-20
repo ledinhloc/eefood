@@ -191,6 +191,7 @@ Future<void> showMealPlanUpsertSheet({
                     const SizedBox(height: 14),
                     TextField(
                       controller: userHealthNoteController,
+                      readOnly: true,
                       minLines: 2,
                       maxLines: 4,
                       decoration: InputDecoration(

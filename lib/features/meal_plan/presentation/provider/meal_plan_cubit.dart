@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../data/model/meal_plan_daily_summary_response.dart';
 import '../../data/model/meal_plan_generate_request.dart';
 import '../../data/model/meal_plan_item_response.dart';
+import '../../data/model/meal_plan_items_regenerate_request.dart';
 import '../../data/model/meal_plan_item_upsert_request.dart';
 import '../../data/model/meal_plan_response.dart';
 import '../../data/model/meal_plan_upsert_request.dart';
@@ -55,7 +56,8 @@ class MealPlanCubit extends Cubit<MealPlanState> {
     if (startDate == null || days == null || days <= 0) return const [];
     return List.generate(
       days,
-      (index) => DateTime(startDate.year, startDate.month, startDate.day + index),
+      (index) =>
+          DateTime(startDate.year, startDate.month, startDate.day + index),
     );
   }
 
@@ -167,7 +169,8 @@ class MealPlanCubit extends Cubit<MealPlanState> {
     try {
       final plan = await repository.generateMealPlan(request);
       final summaries = await repository.getDailySummary();
-      final selectedDate = request.startDate ??
+      final selectedDate =
+          request.startDate ??
           (summaries.isNotEmpty ? summaries.first.planDate : plan.startDate);
       _emit(
         state.copyWith(
@@ -223,6 +226,27 @@ class MealPlanCubit extends Cubit<MealPlanState> {
     }
   }
 
+  Future<bool> deleteCurrentMealPlan() async {
+    _emit(state.copyWith(isSubmitting: true, clearError: true));
+    try {
+      await repository.deleteCurrentMealPlan();
+      _emit(
+        state.copyWith(
+          isSubmitting: false,
+          clearPlan: true,
+          dailySummaries: const [],
+          clearSelectedDate: true,
+          dayItems: const [],
+          highlightedDates: const [],
+        ),
+      );
+      return true;
+    } catch (e) {
+      _emit(state.copyWith(isSubmitting: false, error: e.toString()));
+      return false;
+    }
+  }
+
   // Thêm mới hoặc cập nhật một item:
   // - cập nhật item local ngay để UI mượt
   // - sau đó refresh summary của đúng ngày liên quan
@@ -264,6 +288,37 @@ class MealPlanCubit extends Cubit<MealPlanState> {
           itemSubmitError: errorMessage,
         ),
       );
+    }
+  }
+
+  Future<bool> regenerateMealPlanItems(
+    List<int> itemIds, {
+    String? reason,
+  }) async {
+    if (itemIds.isEmpty) return false;
+
+    _emit(state.copyWith(isSubmitting: true, clearError: true));
+    try {
+      final regeneratedItems = await repository.regenerateMealPlanItems(
+        MealPlanItemsRegenerateRequest(
+          itemIds: itemIds,
+          reason: reason?.trim().isEmpty == true ? null : reason?.trim(),
+        ),
+      );
+      final regeneratedById = {
+        for (final item in regeneratedItems)
+          if (item.id != null) item.id!: item,
+      };
+      final updatedItems = state.dayItems
+          .map((item) => regeneratedById[item.id] ?? item)
+          .toList();
+
+      _emit(state.copyWith(isSubmitting: false, dayItems: updatedItems));
+      await refreshDailySummaryByDate();
+      return true;
+    } catch (e) {
+      _emit(state.copyWith(isSubmitting: false, error: e.toString()));
+      return false;
     }
   }
 

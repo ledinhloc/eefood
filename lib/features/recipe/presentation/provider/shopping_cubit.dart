@@ -7,7 +7,7 @@ import 'shopping_state.dart';
 class ShoppingCubit extends Cubit<ShoppingState> {
   final ShoppingRepository repository;
 
-  ShoppingCubit({ required this.repository}) : super(const ShoppingState());
+  ShoppingCubit({required this.repository}) : super(const ShoppingState());
 
   Future<void> loadByRecipe() async {
     emit(state.copyWith(isLoading: true, error: null));
@@ -77,38 +77,54 @@ class ShoppingCubit extends Cubit<ShoppingState> {
 
   // cập nhật ingredient
   List<ShoppingIngredientModel> _updateIngredients(
-      List<ShoppingIngredientModel> ingredients,
-      List<int> shoppingIngredientIds,
-      bool purchased) {
+    List<ShoppingIngredientModel> ingredients,
+    List<int> shoppingIngredientIds,
+    bool purchased,
+  ) {
     return ingredients.map((ing) {
       return shoppingIngredientIds.contains(ing.id)
-        ? ing.copyWith(purchased: purchased)
-        : ing;
+          ? ing.copyWith(purchased: purchased)
+          : ing;
     }).toList();
   }
 
-  Future<void> togglePurchased(ShoppingIngredientModel ing, bool purchased) async {
+  Future<void> togglePurchased(
+    ShoppingIngredientModel ing,
+    bool purchased,
+  ) async {
     final prevState = state;
 
-    final List<int> shoppingIds = ing.shoppingIngredientIds != null && ing.shoppingIngredientIds!.isNotEmpty
-        ? ing.shoppingIngredientIds!        // dùng list trong model
+    final List<int> shoppingIds =
+        ing.shoppingIngredientIds != null &&
+            ing.shoppingIngredientIds!.isNotEmpty
+        ? ing.shoppingIngredientIds! // dùng list trong model
         : (ing.id != null ? [ing.id!] : []); // fallback về id đơn lẻ
 
-    if(shoppingIds.isEmpty){
+    if (shoppingIds.isEmpty) {
       return;
     }
 
     // cập nhật recipes
     final updatedRecipes = state.recipes.map((recipe) {
       return recipe.copyWith(
-        ingredients: _updateIngredients(recipe.ingredients, shoppingIds, purchased),
+        ingredients: _updateIngredients(
+          recipe.ingredients,
+          shoppingIds,
+          purchased,
+        ),
       );
     }).toList();
 
     // cập nhật ingredients
-    final updatedIngredients = _updateIngredients(state.ingredients, shoppingIds, purchased);
+    final updatedIngredients = _updateIngredients(
+      state.ingredients,
+      shoppingIds,
+      purchased,
+    );
 
-    emit(state.copyWith(ingredients: updatedIngredients, recipes: updatedRecipes));
+    emit(
+      state.copyWith(ingredients: updatedIngredients, recipes: updatedRecipes),
+    );
     try {
       await repository.togglePurchased(shoppingIds, purchased);
     } catch (e) {
@@ -131,12 +147,19 @@ class ShoppingCubit extends Cubit<ShoppingState> {
     }
   }
 
-  Future<void> removeItem(int recipeId) async {
+  Future<void> removeItem(int itemId) async {
+    final previousState = state;
+    final updatedRecipes = state.recipes
+        .where((item) => item.id != itemId)
+        .toList();
+
+    emit(state.copyWith(recipes: updatedRecipes, error: null));
+
     try {
-      await repository.removeItem(recipeId);
+      await repository.removeItem(itemId);
       await load();
     } catch (e) {
-      emit(state.copyWith(error: e.toString()));
+      emit(previousState.copyWith(error: e.toString()));
     }
   }
 

@@ -137,6 +137,8 @@
   "mealPlanUpdateAction": "Cập nhật meal plan",
   "mealPlanContinueAction": "Sinh tiếp meal plan",
   "mealPlanDeleteAction": "Xóa meal plan",
+  "mealPlanDeleteConfirmMessage": "Bạn có chắc muốn xóa kế hoạch ăn uống hiện tại không?",
+  "mealPlanDeleteSuccess": "Đã xóa kế hoạch ăn uống",
   "mealPlanContinueTitle": "Sinh tiếp meal plan",
   "mealPlanContinueSubtitle": "Chọn ngày bắt đầu và số ngày để AI tiếp tục.",
   "mealPlanStartDate": "Ngày bắt đầu",
@@ -226,5 +228,32 @@
   "mealPlanMealSlotSnack": "Bữa phụ",
   "mealPlanStatusPlanned": "Đã lên kế hoạch",
   "mealPlanStatusDone": "Đã ăn",
-  "mealPlanStatusSkipped": "Đã bỏ qua"
+  "mealPlanStatusSkipped": "Đã bỏ qua",
+  "mealPlanSelectedItems": "Đã chọn {count} món",
+  "@mealPlanSelectedItems": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "mealPlanRegenerateTitle": "Đổi món bằng AI",
+  "mealPlanRegenerateAction": "Đổi món đã chọn",
+  "mealPlanAddToShoppingAction": "Mua sắm",
+  "mealPlanAddToShoppingSuccess": "Đã thêm nguyên liệu của {count} món vào danh sách mua sắm",
+  "@mealPlanAddToShoppingSuccess": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "mealPlanNoRecipeForShopping": "Các món đã chọn không liên kết với công thức",
+  "mealPlanAddToShoppingFailed": "Không thể thêm nguyên liệu vào danh sách mua sắm",
+  "mealPlanRegenerateReason": "Lý do thay đổi (không bắt buộc)",
+  "mealPlanRegenerateReasonHint": "Ví dụ: Muốn món ít dầu, nhiều rau hơn...",
+  "mealPlanRegenerating": "AI đang chọn món mới...",
+  "mealPlanRegenerateSuccess": "Đã đổi các món được chọn",
+  "mealPlanSelectItemsHint": "Nhấn vào món khác để chọn thêm",
+  "mealPlanDoneCannotRegenerate": "Không thể đổi món đã ăn"
 }

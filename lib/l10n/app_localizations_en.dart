@@ -380,6 +380,12 @@ class AppLocalizationsEn extends AppLocalizations {
   String get mealPlanDeleteAction => 'Delete meal plan';
 
   @override
+  String get mealPlanDeleteConfirmMessage => 'Are you sure you want to delete the current meal plan?';
+
+  @override
+  String get mealPlanDeleteSuccess => 'Meal plan deleted successfully';
+
+  @override
   String get mealPlanContinueTitle => 'Continue meal plan';
 
   @override
@@ -591,4 +597,47 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get mealPlanStatusSkipped => 'Skipped';
+
+  @override
+  String mealPlanSelectedItems(int count) {
+    return '$count items selected';
+  }
+
+  @override
+  String get mealPlanRegenerateTitle => 'Replace meals with AI';
+
+  @override
+  String get mealPlanRegenerateAction => 'Replace selected meals';
+
+  @override
+  String get mealPlanAddToShoppingAction => 'Shopping list';
+
+  @override
+  String mealPlanAddToShoppingSuccess(int count) {
+    return 'Added ingredients from $count meals to your shopping list';
+  }
+
+  @override
+  String get mealPlanNoRecipeForShopping => 'The selected meals are not linked to recipes';
+
+  @override
+  String get mealPlanAddToShoppingFailed => 'Could not add ingredients to the shopping list';
+
+  @override
+  String get mealPlanRegenerateReason => 'Reason for replacement (optional)';
+
+  @override
+  String get mealPlanRegenerateReasonHint => 'For example: Less oil and more vegetables...';
+
+  @override
+  String get mealPlanRegenerating => 'AI is choosing new meals...';
+
+  @override
+  String get mealPlanRegenerateSuccess => 'Selected meals were replaced';
+
+  @override
+  String get mealPlanSelectItemsHint => 'Tap other meals to select more';
+
+  @override
+  String get mealPlanDoneCannotRegenerate => 'Completed meals cannot be replaced';
 }

@@ -833,6 +833,18 @@ abstract class AppLocalizations {
   /// **'Delete meal plan'**
   String get mealPlanDeleteAction;
 
+  /// No description provided for @mealPlanDeleteConfirmMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Are you sure you want to delete the current meal plan?'**
+  String get mealPlanDeleteConfirmMessage;
+
+  /// No description provided for @mealPlanDeleteSuccess.
+  ///
+  /// In en, this message translates to:
+  /// **'Meal plan deleted successfully'**
+  String get mealPlanDeleteSuccess;
+
   /// No description provided for @mealPlanContinueTitle.
   ///
   /// In en, this message translates to:
@@ -1246,6 +1258,84 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Skipped'**
   String get mealPlanStatusSkipped;
+
+  /// No description provided for @mealPlanSelectedItems.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} items selected'**
+  String mealPlanSelectedItems(int count);
+
+  /// No description provided for @mealPlanRegenerateTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Replace meals with AI'**
+  String get mealPlanRegenerateTitle;
+
+  /// No description provided for @mealPlanRegenerateAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Replace selected meals'**
+  String get mealPlanRegenerateAction;
+
+  /// No description provided for @mealPlanAddToShoppingAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Shopping list'**
+  String get mealPlanAddToShoppingAction;
+
+  /// No description provided for @mealPlanAddToShoppingSuccess.
+  ///
+  /// In en, this message translates to:
+  /// **'Added ingredients from {count} meals to your shopping list'**
+  String mealPlanAddToShoppingSuccess(int count);
+
+  /// No description provided for @mealPlanNoRecipeForShopping.
+  ///
+  /// In en, this message translates to:
+  /// **'The selected meals are not linked to recipes'**
+  String get mealPlanNoRecipeForShopping;
+
+  /// No description provided for @mealPlanAddToShoppingFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not add ingredients to the shopping list'**
+  String get mealPlanAddToShoppingFailed;
+
+  /// No description provided for @mealPlanRegenerateReason.
+  ///
+  /// In en, this message translates to:
+  /// **'Reason for replacement (optional)'**
+  String get mealPlanRegenerateReason;
+
+  /// No description provided for @mealPlanRegenerateReasonHint.
+  ///
+  /// In en, this message translates to:
+  /// **'For example: Less oil and more vegetables...'**
+  String get mealPlanRegenerateReasonHint;
+
+  /// No description provided for @mealPlanRegenerating.
+  ///
+  /// In en, this message translates to:
+  /// **'AI is choosing new meals...'**
+  String get mealPlanRegenerating;
+
+  /// No description provided for @mealPlanRegenerateSuccess.
+  ///
+  /// In en, this message translates to:
+  /// **'Selected meals were replaced'**
+  String get mealPlanRegenerateSuccess;
+
+  /// No description provided for @mealPlanSelectItemsHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Tap other meals to select more'**
+  String get mealPlanSelectItemsHint;
+
+  /// No description provided for @mealPlanDoneCannotRegenerate.
+  ///
+  /// In en, this message translates to:
+  /// **'Completed meals cannot be replaced'**
+  String get mealPlanDoneCannotRegenerate;
 }
 
 class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {
