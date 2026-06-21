@@ -238,7 +238,7 @@
     }
   },
   "mealPlanRegenerateTitle": "Đổi món bằng AI",
-  "mealPlanRegenerateAction": "Đổi món đã chọn",
+  "mealPlanRegenerateAction": "Đổi món",
   "mealPlanAddToShoppingAction": "Mua sắm",
   "mealPlanAddToShoppingSuccess": "Đã thêm nguyên liệu của {count} món vào danh sách mua sắm",
   "@mealPlanAddToShoppingSuccess": {

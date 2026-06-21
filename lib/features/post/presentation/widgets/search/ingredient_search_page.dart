@@ -234,7 +234,7 @@ class _IngredientSearchPageState extends State<IngredientSearchPage> {
     );
     final now = DateTime.now();
     final detectedMealName =
-        'Nguyên liệu từ ảnh '
+        '${labels.join(', ')} '
         '${now.hour.toString().padLeft(2, '0')}:'
         '${now.minute.toString().padLeft(2, '0')}:'
         '${now.second.toString().padLeft(2, '0')}';

@@ -607,7 +607,7 @@ class AppLocalizationsVi extends AppLocalizations {
   String get mealPlanRegenerateTitle => 'Đổi món bằng AI';
 
   @override
-  String get mealPlanRegenerateAction => 'Đổi món đã chọn';
+  String get mealPlanRegenerateAction => 'Đổi món';
 
   @override
   String get mealPlanAddToShoppingAction => 'Mua sắm';
