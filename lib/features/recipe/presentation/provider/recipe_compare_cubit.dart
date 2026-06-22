@@ -8,9 +8,12 @@ class RecipeCompareCubit extends Cubit<RecipeCompareState> {
   final RecipeRepository repository;
   final NutritionRepository nutritionRepository;
 
-  RecipeCompareCubit({required this.repository, required this.nutritionRepository}): super(RecipeCompareInitial());
+  RecipeCompareCubit({
+    required this.repository,
+    required this.nutritionRepository,
+  }) : super(RecipeCompareInitial());
 
-   Future<void> analyzeNutrition({required bool isRecipeA}) async {
+  Future<void> analyzeNutrition({required bool isRecipeA}) async {
     final current = state;
     if (current is! RecipeCompareLoaded) return;
 
@@ -27,23 +30,26 @@ class RecipeCompareCubit extends Cubit<RecipeCompareState> {
     );
 
     try {
-      final nutrition = await nutritionRepository.getNutritionByRecipeId(recipe!.id!);
+      final nutrition = await nutritionRepository.getNutritionByRecipeId(
+        recipe!.id!,
+      );
       if (nutrition == null)
         throw Exception('Không lấy được dữ liệu dinh dưỡng');
 
       final patched = recipe.patchFromNutrition(nutrition);
-      final newData = isRecipeA
-          ? RecipeCompareResponse(
-              recipeA: patched,
-              recipeB: current.data.recipeB,
-            )
-          : RecipeCompareResponse(
-              recipeA: current.data.recipeA,
-              recipeB: patched,
-            );
 
       final latest = state;
       if (latest is! RecipeCompareLoaded) return;
+
+      final newData = isRecipeA
+          ? RecipeCompareResponse(
+              recipeA: patched,
+              recipeB: latest.data.recipeB,
+            )
+          : RecipeCompareResponse(
+              recipeA: latest.data.recipeA,
+              recipeB: patched,
+            );
       emit(
         latest.copyWith(
           data: newData,
@@ -65,7 +71,7 @@ class RecipeCompareCubit extends Cubit<RecipeCompareState> {
     }
   }
 
-   Future<void> compareRecipes(int recipeIdA, int recipeIdB) async {
+  Future<void> compareRecipes(int recipeIdA, int recipeIdB) async {
     emit(RecipeCompareLoading());
     try {
       final result = await repository.compareRecipe(recipeIdA, recipeIdB);
