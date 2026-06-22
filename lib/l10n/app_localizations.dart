@@ -1336,6 +1336,42 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Completed meals cannot be replaced'**
   String get mealPlanDoneCannotRegenerate;
+
+  /// No description provided for @bodyMetricsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Body Metrics'**
+  String get bodyMetricsTitle;
+
+  /// No description provided for @bodyMetricsSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Track your height and weight over time'**
+  String get bodyMetricsSubtitle;
+
+  /// No description provided for @mealPlanProfileTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Meal Plan'**
+  String get mealPlanProfileTitle;
+
+  /// No description provided for @mealPlanProfileSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'View your meal plan and daily summaries'**
+  String get mealPlanProfileSubtitle;
+
+  /// No description provided for @rechargeTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Diamond Recharge'**
+  String get rechargeTitle;
+
+  /// No description provided for @rechargeSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Support your favorite streamers'**
+  String get rechargeSubtitle;
 }
 
 class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {

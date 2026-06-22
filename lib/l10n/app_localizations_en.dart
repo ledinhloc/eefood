@@ -640,4 +640,22 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get mealPlanDoneCannotRegenerate => 'Completed meals cannot be replaced';
+
+  @override
+  String get bodyMetricsTitle => 'Body Metrics';
+
+  @override
+  String get bodyMetricsSubtitle => 'Track your height and weight over time';
+
+  @override
+  String get mealPlanProfileTitle => 'Meal Plan';
+
+  @override
+  String get mealPlanProfileSubtitle => 'View your meal plan and daily summaries';
+
+  @override
+  String get rechargeTitle => 'Diamond Recharge';
+
+  @override
+  String get rechargeSubtitle => 'Support your favorite streamers';
 }
