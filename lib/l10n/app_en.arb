@@ -255,5 +255,11 @@
   "mealPlanRegenerating": "AI is choosing new meals...",
   "mealPlanRegenerateSuccess": "Selected meals were replaced",
   "mealPlanSelectItemsHint": "Tap other meals to select more",
-  "mealPlanDoneCannotRegenerate": "Completed meals cannot be replaced"
+  "mealPlanDoneCannotRegenerate": "Completed meals cannot be replaced",
+  "bodyMetricsTitle": "Body Metrics",
+  "bodyMetricsSubtitle": "Track your height and weight over time",
+  "mealPlanProfileTitle": "Meal Plan",
+  "mealPlanProfileSubtitle": "View your meal plan and daily summaries",
+  "rechargeTitle": "Diamond Recharge",
+  "rechargeSubtitle": "Support your favorite streamers"
 }

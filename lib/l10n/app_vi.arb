@@ -255,5 +255,11 @@
   "mealPlanRegenerating": "AI đang chọn món mới...",
   "mealPlanRegenerateSuccess": "Đã đổi các món được chọn",
   "mealPlanSelectItemsHint": "Nhấn vào món khác để chọn thêm",
-  "mealPlanDoneCannotRegenerate": "Không thể đổi món đã ăn"
+  "mealPlanDoneCannotRegenerate": "Không thể đổi món đã ăn",
+  "bodyMetricsTitle": "Chỉ số cơ thể",
+  "bodyMetricsSubtitle": "Theo dõi chiều cao, cân nặng theo thời gian",
+  "mealPlanProfileTitle": "Meal Plan",
+  "mealPlanProfileSubtitle": "Xem kế hoạch bữa ăn và tổng hợp từng ngày",
+  "rechargeTitle": "Nạp kim cương",
+  "rechargeSubtitle": "Ủng hộ streamer yêu thích"
 }

@@ -199,30 +199,25 @@ class ProfilePage extends StatelessWidget {
                 ),
                 ListTile(
                   leading: const Icon(Icons.monitor_weight_outlined),
-                  title: const Text('Chỉ số cơ thể'),
-                  subtitle: const Text(
-                    'Theo dõi chiều cao, cân nặng theo thời gian',
-                  ),
+                  title: Text(l10n.bodyMetricsTitle),
+                  subtitle: Text(l10n.bodyMetricsSubtitle),
                   trailing: const Icon(Icons.chevron_right_rounded),
                   onTap: () =>
                       Navigator.pushNamed(context, AppRoutes.bodyMetrics),
                 ),
                 ListTile(
                   leading: const Icon(Icons.calendar_month_outlined),
-                  title: const Text('Meal Plan'),
-                  subtitle: const Text(
-                    'Xem kế hoạch bữa ăn và tổng hợp từng ngày',
-                  ),
+                  title: Text(l10n.mealPlanProfileTitle),
+                  subtitle: Text(l10n.mealPlanProfileSubtitle),
                   trailing: const Icon(Icons.chevron_right_rounded),
                   onTap: () => Navigator.pushNamed(context, AppRoutes.mealPlan),
                 ),
                 ListTile(
                   leading: const Icon(Icons.diamond_outlined),
-                  title: Text('Nạp kim cương'),
-                  subtitle: Text('Ủng hộ streamer yêu thích'),
+                  title: Text(l10n.rechargeTitle),
+                  subtitle: Text(l10n.rechargeSubtitle),
                   trailing: const Icon(Icons.chevron_right_rounded),
-                  onTap: () =>
-                      Navigator.pushNamed(context, AppRoutes.recharge),
+                  onTap: () => Navigator.pushNamed(context, AppRoutes.recharge),
                 ),
 
                 // const ListTile(

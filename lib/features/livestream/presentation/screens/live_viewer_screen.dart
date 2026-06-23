@@ -299,7 +299,7 @@ class _LiveViewerScreenState extends State<LiveViewerScreen> {
                 // Top bar
                 _buildTopBar(stream, subtitleState),
                 Positioned(
-                  top: 90,
+                  top: 150,
                   left: 10,
                   right: 10,
                   child: SafeArea(

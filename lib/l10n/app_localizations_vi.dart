@@ -640,4 +640,22 @@ class AppLocalizationsVi extends AppLocalizations {
 
   @override
   String get mealPlanDoneCannotRegenerate => 'Không thể đổi món đã ăn';
+
+  @override
+  String get bodyMetricsTitle => 'Chỉ số cơ thể';
+
+  @override
+  String get bodyMetricsSubtitle => 'Theo dõi chiều cao, cân nặng theo thời gian';
+
+  @override
+  String get mealPlanProfileTitle => 'Meal Plan';
+
+  @override
+  String get mealPlanProfileSubtitle => 'Xem kế hoạch bữa ăn và tổng hợp từng ngày';
+
+  @override
+  String get rechargeTitle => 'Nạp kim cương';
+
+  @override
+  String get rechargeSubtitle => 'Ủng hộ streamer yêu thích';
 }
