@@ -15,11 +15,11 @@ Future<void> showMealPlanContinueSheet({
   final l10n = AppLocalizations.of(context)!;
   final today = DateTime.now();
   final normalizedToday = DateTime(today.year, today.month, today.day);
-  final nextPlanDate = plan.endDate != null
+  final minimumStartDate = plan.endDate != null
       ? DateTime(plan.endDate!.year, plan.endDate!.month, plan.endDate!.day + 1)
       : normalizedToday;
-  final initialDate = nextPlanDate.isAfter(normalizedToday)
-      ? nextPlanDate
+  final initialDate = minimumStartDate.isAfter(normalizedToday)
+      ? minimumStartDate
       : normalizedToday;
   final startDateController = TextEditingController(
     text: DateFormat('dd/MM/yyyy').format(initialDate),
@@ -35,7 +35,7 @@ Future<void> showMealPlanContinueSheet({
     final picked = await showDatePicker(
       context: context,
       initialDate: selectedDate,
-      firstDate: DateTime(initialDate.year - 1),
+      firstDate: minimumStartDate,
       lastDate: DateTime(initialDate.year + 2),
     );
     if (picked != null) {
