@@ -25,7 +25,7 @@ class LivePollViewerBottomSheet extends StatelessWidget {
           final poll = state.poll;
 
           return Container(
-            padding: const EdgeInsets.fromLTRB(16, 16, 16, 24),
+            padding: const EdgeInsets.fromLTRB(16, 12, 16, 18),
             decoration: const BoxDecoration(
               color: Color(0xFF1C1C1E),
               borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
@@ -51,7 +51,7 @@ class _NoPollView extends StatelessWidget {
     return const Column(
       mainAxisSize: MainAxisSize.min,
       children: [
-        SizedBox(height: 8),
+        SizedBox(height: 6),
         Text(
           'Hiện chưa có poll',
           style: TextStyle(
@@ -60,7 +60,7 @@ class _NoPollView extends StatelessWidget {
             fontWeight: FontWeight.w700,
           ),
         ),
-        SizedBox(height: 8),
+        SizedBox(height: 6),
         Text(
           'Khi streamer tạo poll, bạn sẽ thấy tại đây',
           style: TextStyle(color: Colors.white70),
@@ -133,7 +133,7 @@ class _PollViewerContentState extends State<_PollViewerContent> {
               ),
             ),
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: 12),
           const Text(
             'Bình chọn',
             style: TextStyle(
@@ -142,10 +142,10 @@ class _PollViewerContentState extends State<_PollViewerContent> {
               fontWeight: FontWeight.w700,
             ),
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: 12),
           Container(
             width: double.infinity,
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
             decoration: BoxDecoration(
               color: const Color(0xFF2C2C2E),
               borderRadius: BorderRadius.circular(12),
@@ -158,10 +158,10 @@ class _PollViewerContentState extends State<_PollViewerContent> {
               ),
             ),
           ),
-          const SizedBox(height: 12),
+          const SizedBox(height: 8),
           Container(
             width: double.infinity,
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
             decoration: BoxDecoration(
               color: const Color(0xFF2C2C2E),
               borderRadius: BorderRadius.circular(12),
@@ -174,7 +174,7 @@ class _PollViewerContentState extends State<_PollViewerContent> {
               ),
             ),
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: 12),
           LivePollSettingsCard(
             isExpanded: _isSettingsExpanded,
             summary: livePollSettingsSummary(poll.setting),
@@ -215,7 +215,7 @@ class _PollViewerContentState extends State<_PollViewerContent> {
               ),
             ],
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: 12),
           if (poll.status == PollStatus.open) ...[
             const Text(
               'Chọn đáp án',
@@ -224,7 +224,7 @@ class _PollViewerContentState extends State<_PollViewerContent> {
                 fontWeight: FontWeight.w700,
               ),
             ),
-            const SizedBox(height: 10),
+            const SizedBox(height: 8),
             ...poll.options.map((option) {
               final isSelected = state.selectedOptionIds.contains(option.id);
 
@@ -232,10 +232,10 @@ class _PollViewerContentState extends State<_PollViewerContent> {
                 onTap: () => cubit.toggleOption(optionId: option.id),
                 child: Container(
                   width: double.infinity,
-                  margin: const EdgeInsets.only(bottom: 10),
+                  margin: const EdgeInsets.only(bottom: 8),
                   padding: const EdgeInsets.symmetric(
                     horizontal: 12,
-                    vertical: 12,
+                    vertical: 10,
                   ),
                   decoration: BoxDecoration(
                     color: isSelected
@@ -261,7 +261,7 @@ class _PollViewerContentState extends State<_PollViewerContent> {
                 ),
               );
             }),
-            const SizedBox(height: 8),
+            const SizedBox(height: 6),
             SizedBox(
               width: double.infinity,
               child: ElevatedButton(
@@ -271,7 +271,7 @@ class _PollViewerContentState extends State<_PollViewerContent> {
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.orange,
                   foregroundColor: Colors.white,
-                  padding: const EdgeInsets.symmetric(vertical: 14),
+                  padding: const EdgeInsets.symmetric(vertical: 12),
                 ),
                 child: state.actionLoading
                     ? const SizedBox(
@@ -283,11 +283,11 @@ class _PollViewerContentState extends State<_PollViewerContent> {
               ),
             ),
             if (canProposeOption) ...[
-              const SizedBox(height: 12),
+              const SizedBox(height: 10),
               OptionProposalComposer(pollId: poll.id),
             ],
           ],
-          const SizedBox(height: 16),
+          const SizedBox(height: 12),
           if (canShowResult) ...[
             SizedBox(
               width: double.infinity,
@@ -298,18 +298,18 @@ class _PollViewerContentState extends State<_PollViewerContent> {
                 style: OutlinedButton.styleFrom(
                   foregroundColor: Colors.white,
                   side: const BorderSide(color: Colors.white24),
-                  padding: const EdgeInsets.symmetric(vertical: 14),
+                  padding: const EdgeInsets.symmetric(vertical: 12),
                 ),
                 child: Text(
                   state.result == null ? 'Xem kết quả' : 'Làm mới kết quả',
                 ),
               ),
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: 12),
             if (state.loading && state.result == null)
               const Center(
                 child: Padding(
-                  padding: EdgeInsets.symmetric(vertical: 12),
+                  padding: EdgeInsets.symmetric(vertical: 10),
                   child: CircularProgressIndicator(),
                 ),
               )
@@ -322,7 +322,7 @@ class _PollViewerContentState extends State<_PollViewerContent> {
                   fontSize: 16,
                 ),
               ),
-              const SizedBox(height: 10),
+              const SizedBox(height: 8),
               ...state.result!.options.map(
                 (item) => GestureDetector(
                   onTap: canShowVoters
@@ -337,7 +337,7 @@ class _PollViewerContentState extends State<_PollViewerContent> {
                     margin: const EdgeInsets.only(bottom: 8),
                     padding: const EdgeInsets.symmetric(
                       horizontal: 12,
-                      vertical: 10,
+                      vertical: 9,
                     ),
                     decoration: BoxDecoration(
                       color: const Color(0xFF2C2C2E),
@@ -374,7 +374,7 @@ class _PollViewerContentState extends State<_PollViewerContent> {
           ] else ...[
             Container(
               width: double.infinity,
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
               decoration: BoxDecoration(
                 color: const Color(0xFF2C2C2E),
                 borderRadius: BorderRadius.circular(12),
@@ -390,7 +390,7 @@ class _PollViewerContentState extends State<_PollViewerContent> {
             ),
           ],
           if (state.error != null) ...[
-            const SizedBox(height: 12),
+            const SizedBox(height: 10),
             Text(state.error!, style: const TextStyle(color: Colors.redAccent)),
           ],
         ],

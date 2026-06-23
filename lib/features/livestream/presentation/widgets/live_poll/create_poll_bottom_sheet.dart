@@ -118,10 +118,14 @@ class _CreatePollBottomSheetState extends State<CreatePollBottomSheet> {
     return BlocBuilder<LivePollCubit, LivePollState>(
       builder: (context, state) {
         return Container(
-          padding: EdgeInsets.fromLTRB(16, 16, 16, 16 + bottomInset),
+          padding: EdgeInsets.fromLTRB(16, 12, 16, 12 + bottomInset),
           decoration: const BoxDecoration(
-            color: Color(0xFF1C1C1E),
-            borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+            gradient: LinearGradient(
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter,
+              colors: [Color(0xFF3A251E), Color(0xFF2A1E1A), Color(0xFF1C1715)],
+            ),
+            borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
           ),
           child: SafeArea(
             top: false,
@@ -136,26 +140,26 @@ class _CreatePollBottomSheetState extends State<CreatePollBottomSheet> {
                         width: 42,
                         height: 4,
                         decoration: BoxDecoration(
-                          color: Colors.white24,
+                          color: Color(0xFFA98C7D),
                           borderRadius: BorderRadius.circular(999),
                         ),
                       ),
                     ),
-                    const SizedBox(height: 16),
+                    const SizedBox(height: 12),
                     const Text(
                       'Tạo poll',
                       style: TextStyle(
-                        color: Colors.white,
+                        color: Color(0xFFFFF7EF),
                         fontSize: 18,
                         fontWeight: FontWeight.w700,
                       ),
                     ),
-                    const SizedBox(height: 16),
+                    const SizedBox(height: 12),
 
                     _buildLabel('Câu hỏi'),
                     _buildTextField(
                       controller: _questionController,
-                      hint: 'Ví dụ: Mọi người muốn xem món nào tiếp theo?',
+                      hint: 'Live này nên nấu nguyên liệu gì?',
                       validator: (value) {
                         if (value == null || value.trim().isEmpty) {
                           return 'Vui lòng nhập câu hỏi';
@@ -164,18 +168,22 @@ class _CreatePollBottomSheetState extends State<CreatePollBottomSheet> {
                       },
                     ),
 
-                    const SizedBox(height: 16),
+                    const SizedBox(height: 12),
                     _buildLabel('Đáp án'),
 
                     ...List.generate(_optionControllers.length, (index) {
                       return Padding(
-                        padding: const EdgeInsets.only(bottom: 10),
+                        padding: const EdgeInsets.only(bottom: 8),
                         child: Row(
                           children: [
                             Expanded(
                               child: _buildTextField(
                                 controller: _optionControllers[index],
-                                hint: 'Đáp án ${index + 1}',
+                                hint: switch (index) {
+                                  0 => 'Cá',
+                                  1 => 'Tôm',
+                                  _ => 'Đáp án ${index + 1}',
+                                },
                                 validator: (value) {
                                   if (value == null || value.trim().isEmpty) {
                                     return 'Không được để trống';
@@ -190,7 +198,7 @@ class _CreatePollBottomSheetState extends State<CreatePollBottomSheet> {
                                 onPressed: () => _removeOption(index),
                                 icon: const Icon(
                                   Icons.close,
-                                  color: Colors.white70,
+                                  color: Color(0xFFC7B1A6),
                                 ),
                               ),
                           ],
@@ -200,17 +208,24 @@ class _CreatePollBottomSheetState extends State<CreatePollBottomSheet> {
 
                     TextButton.icon(
                       onPressed: _addOption,
-                      icon: const Icon(Icons.add, color: Colors.orange),
+                      icon: const Icon(Icons.add, color: Color(0xFFF2BC78)),
                       label: const Text(
                         'Thêm đáp án',
-                        style: TextStyle(color: Colors.orange),
+                        style: TextStyle(
+                          color: Color(0xFFF2BC78),
+                          fontWeight: FontWeight.w600,
+                        ),
                       ),
                     ),
 
-                    const SizedBox(height: 8),
+                    const SizedBox(height: 4),
 
                     SwitchListTile(
                       contentPadding: EdgeInsets.zero,
+                      activeColor: const Color(0xFFF8C98D),
+                      activeTrackColor: const Color(0xFFC9783C),
+                      inactiveThumbColor: const Color(0xFFD8C5BA),
+                      inactiveTrackColor: const Color(0xFF625049),
                       value: _multipleChoice,
                       onChanged: (value) {
                         setState(() {
@@ -224,12 +239,16 @@ class _CreatePollBottomSheetState extends State<CreatePollBottomSheet> {
                       },
                       title: const Text(
                         'Cho phép chọn nhiều đáp án',
-                        style: TextStyle(color: Colors.white),
+                        style: TextStyle(color: Color(0xFFFFF7EF)),
                       ),
                     ),
 
                     SwitchListTile(
                       contentPadding: EdgeInsets.zero,
+                      activeColor: const Color(0xFFF8C98D),
+                      activeTrackColor: const Color(0xFFC9783C),
+                      inactiveThumbColor: const Color(0xFFD8C5BA),
+                      inactiveTrackColor: const Color(0xFF625049),
                       value: _allowChangeVote,
                       onChanged: (value) {
                         setState(() {
@@ -238,17 +257,17 @@ class _CreatePollBottomSheetState extends State<CreatePollBottomSheet> {
                       },
                       title: const Text(
                         'Cho phép đổi lựa chọn',
-                        style: TextStyle(color: Colors.white),
+                        style: TextStyle(color: Color(0xFFFFF7EF)),
                       ),
                     ),
 
                     if (_multipleChoice) ...[
-                      const SizedBox(height: 12),
+                      const SizedBox(height: 8),
                       _buildLabel('Số lựa chọn tối đa'),
                       DropdownButtonFormField<int>(
                         value: _maxChoices.clamp(2, _optionControllers.length),
-                        dropdownColor: const Color(0xFF2C2C2E),
-                        style: const TextStyle(color: Colors.white),
+                        dropdownColor: const Color(0xFF352723),
+                        style: const TextStyle(color: Color(0xFFFFF7EF)),
                         decoration: _dropdownDecoration(),
                         items:
                             List.generate(
@@ -271,12 +290,12 @@ class _CreatePollBottomSheetState extends State<CreatePollBottomSheet> {
                       ),
                     ],
 
-                    const SizedBox(height: 12),
+                    const SizedBox(height: 8),
                     _buildLabel('Hiển thị kết quả'),
                     DropdownButtonFormField<PollResultVisibility>(
                       value: _resultVisibility,
-                      dropdownColor: const Color(0xFF2C2C2E),
-                      style: const TextStyle(color: Colors.white),
+                      dropdownColor: const Color(0xFF352723),
+                      style: const TextStyle(color: Color(0xFFFFF7EF)),
                       decoration: _dropdownDecoration(),
                       items: PollResultVisibility.values
                           .map(
@@ -294,12 +313,12 @@ class _CreatePollBottomSheetState extends State<CreatePollBottomSheet> {
                       },
                     ),
 
-                    const SizedBox(height: 12),
+                    const SizedBox(height: 8),
                     _buildLabel('Hiển thị người vote'),
                     DropdownButtonFormField<PollVoterVisibility>(
                       value: _voterVisibility,
-                      dropdownColor: const Color(0xFF2C2C2E),
-                      style: const TextStyle(color: Colors.white),
+                      dropdownColor: const Color(0xFF352723),
+                      style: const TextStyle(color: Color(0xFFFFF7EF)),
                       decoration: _dropdownDecoration(),
                       items: PollVoterVisibility.values
                           .map(
@@ -317,12 +336,12 @@ class _CreatePollBottomSheetState extends State<CreatePollBottomSheet> {
                       },
                     ),
 
-                    const SizedBox(height: 12),
+                    const SizedBox(height: 8),
                     _buildLabel('Quyền thêm đáp án'),
                     DropdownButtonFormField<PollOptionAddMode>(
                       value: _optionAddMode,
-                      dropdownColor: const Color(0xFF2C2C2E),
-                      style: const TextStyle(color: Colors.white),
+                      dropdownColor: const Color(0xFF352723),
+                      style: const TextStyle(color: Color(0xFFFFF7EF)),
                       decoration: _dropdownDecoration(),
                       items: PollOptionAddMode.values
                           .map(
@@ -344,22 +363,26 @@ class _CreatePollBottomSheetState extends State<CreatePollBottomSheet> {
                       const SizedBox(height: 12),
                       Text(
                         state.error!,
-                        style: const TextStyle(color: Colors.redAccent),
+                        style: const TextStyle(color: Color(0xFFFF8178)),
                       ),
                     ],
 
-                    const SizedBox(height: 20),
+                    const SizedBox(height: 16),
 
                     SizedBox(
                       width: double.infinity,
                       child: ElevatedButton(
                         onPressed: state.actionLoading ? null : _submit,
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.orange,
+                          backgroundColor: const Color(0xFFD98645),
                           foregroundColor: Colors.white,
-                          padding: const EdgeInsets.symmetric(vertical: 14),
+                          disabledBackgroundColor: const Color(0xFF76513D),
+                          padding: const EdgeInsets.symmetric(vertical: 12),
                           shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(14),
+                            borderRadius: BorderRadius.circular(16),
+                          ),
+                          textStyle: const TextStyle(
+                            fontWeight: FontWeight.w700,
                           ),
                         ),
                         child: state.actionLoading
@@ -386,11 +409,11 @@ class _CreatePollBottomSheetState extends State<CreatePollBottomSheet> {
 
   Widget _buildLabel(String text) {
     return Padding(
-      padding: const EdgeInsets.only(bottom: 8),
+      padding: const EdgeInsets.only(bottom: 6),
       child: Text(
         text,
         style: const TextStyle(
-          color: Colors.white,
+          color: Color(0xFFE1CEC3),
           fontWeight: FontWeight.w600,
         ),
       ),
@@ -405,28 +428,58 @@ class _CreatePollBottomSheetState extends State<CreatePollBottomSheet> {
     return TextFormField(
       controller: controller,
       validator: validator,
-      style: const TextStyle(color: Colors.white),
+      cursorColor: const Color(0xFFF2BC78),
+      style: const TextStyle(color: Color(0xFFFFF7EF)),
       decoration: InputDecoration(
+        contentPadding: const EdgeInsets.symmetric(
+          horizontal: 12,
+          vertical: 12,
+        ),
         hintText: hint,
-        hintStyle: const TextStyle(color: Colors.white54),
+        hintStyle: const TextStyle(color: Color(0xFFB5A097)),
         filled: true,
-        fillColor: const Color(0xFF2C2C2E),
+        fillColor: const Color(0xFF352723),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide.none,
+          borderSide: const BorderSide(color: Color(0xFF60483D)),
         ),
-        errorStyle: const TextStyle(color: Colors.redAccent),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: const BorderSide(color: Color(0xFF60483D)),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: const BorderSide(color: Color(0xFFF2BC78), width: 1.4),
+        ),
+        errorBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: const BorderSide(color: Color(0xFFFF8178)),
+        ),
+        focusedErrorBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: const BorderSide(color: Color(0xFFFF8178), width: 1.4),
+        ),
+        errorStyle: const TextStyle(color: Color(0xFFFF8178)),
       ),
     );
   }
 
   InputDecoration _dropdownDecoration() {
     return InputDecoration(
+      contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
       filled: true,
-      fillColor: const Color(0xFF2C2C2E),
+      fillColor: const Color(0xFF352723),
       border: OutlineInputBorder(
         borderRadius: BorderRadius.circular(12),
-        borderSide: BorderSide.none,
+        borderSide: const BorderSide(color: Color(0xFF60483D)),
+      ),
+      enabledBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(12),
+        borderSide: const BorderSide(color: Color(0xFF60483D)),
+      ),
+      focusedBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(12),
+        borderSide: const BorderSide(color: Color(0xFFF2BC78), width: 1.4),
       ),
     );
   }

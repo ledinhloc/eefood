@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import 'package:eefood/features/livestream/data/model/live_poll_response.dart';
@@ -28,7 +28,7 @@ class LivePollManageBottomSheet extends StatelessWidget {
           final poll = state.poll;
 
           return Container(
-            padding: const EdgeInsets.fromLTRB(16, 16, 16, 24),
+            padding: const EdgeInsets.fromLTRB(16, 12, 16, 18),
             decoration: const BoxDecoration(
               gradient: LinearGradient(
                 begin: Alignment.topCenter,
@@ -65,10 +65,10 @@ class _EmptyPollView extends StatelessWidget {
       mainAxisSize: MainAxisSize.min,
       children: [
         _buildHandle(),
-        const SizedBox(height: 24),
+        const SizedBox(height: 18),
         Container(
-          width: 72,
-          height: 72,
+          width: 64,
+          height: 64,
           decoration: BoxDecoration(
             color: const Color(0xFFFF8A3D).withValues(alpha: 0.18),
             shape: BoxShape.circle,
@@ -76,10 +76,10 @@ class _EmptyPollView extends StatelessWidget {
           child: const Icon(
             Icons.restaurant_menu,
             color: Color(0xFFFFB067),
-            size: 34,
+            size: 30,
           ),
         ),
-        const SizedBox(height: 18),
+        const SizedBox(height: 14),
         const Text(
           'Chưa có poll',
           style: TextStyle(
@@ -88,13 +88,13 @@ class _EmptyPollView extends StatelessWidget {
             fontWeight: FontWeight.w800,
           ),
         ),
-        const SizedBox(height: 8),
+        const SizedBox(height: 6),
         const Text(
           'Tạo một poll mới để hỏi khán giả hôm nay nên ăn gì.',
           textAlign: TextAlign.center,
           style: TextStyle(color: Colors.white70, height: 1.4),
         ),
-        const SizedBox(height: 24),
+        const SizedBox(height: 18),
         SizedBox(
           width: double.infinity,
           child: ElevatedButton(
@@ -105,7 +105,7 @@ class _EmptyPollView extends StatelessWidget {
             style: ElevatedButton.styleFrom(
               backgroundColor: const Color(0xFFFF8A3D),
               foregroundColor: Colors.white,
-              padding: const EdgeInsets.symmetric(vertical: 15),
+              padding: const EdgeInsets.symmetric(vertical: 12),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(16),
               ),
@@ -177,9 +177,9 @@ class _PollManageContentState extends State<_PollManageContent> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           _buildHandle(),
-          const SizedBox(height: 18),
+          const SizedBox(height: 12),
           _HeroPollCard(poll: poll),
-          const SizedBox(height: 16),
+          const SizedBox(height: 12),
           Row(
             children: [
               Expanded(
@@ -190,7 +190,7 @@ class _PollManageContentState extends State<_PollManageContent> {
                   accentColor: poll.status.color,
                 ),
               ),
-              const SizedBox(width: 12),
+              const SizedBox(width: 10),
               Expanded(
                 child: _StatTile(
                   icon: Icons.format_list_bulleted,
@@ -201,7 +201,7 @@ class _PollManageContentState extends State<_PollManageContent> {
               ),
             ],
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: 12),
           LivePollSettingsCard(
             isExpanded: _isSettingsExpanded,
             summary: _settingsSummary(setting),
@@ -242,7 +242,7 @@ class _PollManageContentState extends State<_PollManageContent> {
               ),
             ],
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: 12),
           if (canOpen || canClose)
             Row(
               children: [
@@ -271,7 +271,7 @@ class _PollManageContentState extends State<_PollManageContent> {
                   ),
               ],
             ),
-          if (canOpen || canClose) const SizedBox(height: 12),
+          if (canOpen || canClose) const SizedBox(height: 10),
           Row(
             children: [
               Expanded(
@@ -283,7 +283,7 @@ class _PollManageContentState extends State<_PollManageContent> {
                       : () => cubit.loadPollResult(pollId: poll.id),
                 ),
               ),
-              const SizedBox(width: 12),
+              const SizedBox(width: 10),
               Expanded(
                 child: _ActionButton(
                   label: 'Tạo poll mới',
@@ -300,7 +300,7 @@ class _PollManageContentState extends State<_PollManageContent> {
               ),
             ],
           ),
-          const SizedBox(height: 22),
+          const SizedBox(height: 16),
           const Text(
             'Kết quả',
             style: TextStyle(
@@ -309,11 +309,11 @@ class _PollManageContentState extends State<_PollManageContent> {
               fontWeight: FontWeight.w800,
             ),
           ),
-          const SizedBox(height: 10),
+          const SizedBox(height: 8),
           if (state.result == null)
             Container(
               width: double.infinity,
-              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 11),
               decoration: BoxDecoration(
                 color: const Color(0xFF221C1D),
                 borderRadius: BorderRadius.circular(18),
@@ -334,10 +334,10 @@ class _PollManageContentState extends State<_PollManageContent> {
                 ),
                 child: Container(
                   width: double.infinity,
-                  margin: const EdgeInsets.only(bottom: 10),
+                  margin: const EdgeInsets.only(bottom: 8),
                   padding: const EdgeInsets.symmetric(
-                    horizontal: 14,
-                    vertical: 12,
+                    horizontal: 12,
+                    vertical: 10,
                   ),
                   decoration: BoxDecoration(
                     color: const Color(0xFF221C1D),
@@ -358,7 +358,7 @@ class _PollManageContentState extends State<_PollManageContent> {
                       Container(
                         padding: const EdgeInsets.symmetric(
                           horizontal: 10,
-                          vertical: 6,
+                          vertical: 5,
                         ),
                         decoration: BoxDecoration(
                           color: const Color(
@@ -381,7 +381,7 @@ class _PollManageContentState extends State<_PollManageContent> {
                 ),
               ),
             ),
-          const SizedBox(height: 20),
+          const SizedBox(height: 16),
           PollOptionProposalSection(poll: poll),
           if (state.error != null) ...[
             const SizedBox(height: 12),
@@ -425,7 +425,7 @@ class _HeroPollCard extends StatelessWidget {
 
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.all(18),
+      padding: const EdgeInsets.all(15),
       decoration: BoxDecoration(
         gradient: const LinearGradient(
           begin: Alignment.topLeft,
@@ -441,15 +441,15 @@ class _HeroPollCard extends StatelessWidget {
           Row(
             children: [
               Container(
-                width: 44,
-                height: 44,
+                width: 40,
+                height: 40,
                 decoration: BoxDecoration(
                   color: const Color(0xFFFF8A3D).withValues(alpha: 0.18),
                   borderRadius: BorderRadius.circular(14),
                 ),
                 child: const Icon(Icons.local_dining, color: Color(0xFFFFB067)),
               ),
-              const SizedBox(width: 12),
+              const SizedBox(width: 10),
               Expanded(
                 child: Text(
                   'Quản lý poll',
@@ -463,7 +463,7 @@ class _HeroPollCard extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.symmetric(
                   horizontal: 12,
-                  vertical: 7,
+                  vertical: 6,
                 ),
                 decoration: BoxDecoration(
                   color: statusColor.withValues(alpha: 0.16),
@@ -479,7 +479,7 @@ class _HeroPollCard extends StatelessWidget {
               ),
             ],
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: 12),
           Text(
             poll.question,
             style: const TextStyle(
@@ -511,7 +511,7 @@ class _StatTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.all(14),
+      padding: const EdgeInsets.all(11),
       decoration: BoxDecoration(
         color: const Color(0xFF221C1D),
         borderRadius: BorderRadius.circular(18),
@@ -520,15 +520,15 @@ class _StatTile extends StatelessWidget {
       child: Row(
         children: [
           Container(
-            width: 38,
-            height: 38,
+            width: 34,
+            height: 34,
             decoration: BoxDecoration(
               color: accentColor.withValues(alpha: 0.14),
               borderRadius: BorderRadius.circular(12),
             ),
-            child: Icon(icon, color: accentColor, size: 20),
+            child: Icon(icon, color: accentColor, size: 18),
           ),
-          const SizedBox(width: 12),
+          const SizedBox(width: 10),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -576,7 +576,7 @@ class _ActionButton extends StatelessWidget {
       style: ElevatedButton.styleFrom(
         backgroundColor: color,
         foregroundColor: Colors.white,
-        padding: const EdgeInsets.symmetric(vertical: 15),
+        padding: const EdgeInsets.symmetric(vertical: 12),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         textStyle: const TextStyle(fontWeight: FontWeight.w700),
       ),
@@ -605,7 +605,7 @@ class _SecondaryButton extends StatelessWidget {
         foregroundColor: Colors.white,
         side: const BorderSide(color: Colors.white12),
         backgroundColor: Colors.white.withValues(alpha: 0.03),
-        padding: const EdgeInsets.symmetric(vertical: 15),
+        padding: const EdgeInsets.symmetric(vertical: 12),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         textStyle: const TextStyle(fontWeight: FontWeight.w700),
       ),

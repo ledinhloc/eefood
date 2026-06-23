@@ -607,7 +607,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get mealPlanRegenerateTitle => 'Replace meals with AI';
 
   @override
-  String get mealPlanRegenerateAction => 'Replace selected meals';
+  String get mealPlanRegenerateAction => 'Replace';
 
   @override
   String get mealPlanAddToShoppingAction => 'Shopping list';

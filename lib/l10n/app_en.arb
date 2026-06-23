@@ -238,7 +238,7 @@
     }
   },
   "mealPlanRegenerateTitle": "Replace meals with AI",
-  "mealPlanRegenerateAction": "Replace selected meals",
+  "mealPlanRegenerateAction": "Replace",
   "mealPlanAddToShoppingAction": "Shopping list",
   "mealPlanAddToShoppingSuccess": "Added ingredients from {count} meals to your shopping list",
   "@mealPlanAddToShoppingSuccess": {

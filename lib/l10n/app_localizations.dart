@@ -1274,7 +1274,7 @@ abstract class AppLocalizations {
   /// No description provided for @mealPlanRegenerateAction.
   ///
   /// In en, this message translates to:
-  /// **'Replace selected meals'**
+  /// **'Replace'**
   String get mealPlanRegenerateAction;
 
   /// No description provided for @mealPlanAddToShoppingAction.
