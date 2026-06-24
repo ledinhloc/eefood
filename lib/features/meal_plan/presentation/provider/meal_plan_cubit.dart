@@ -177,7 +177,7 @@ class MealPlanCubit extends Cubit<MealPlanState> {
           isSubmitting: false,
           plan: plan,
           dailySummaries: summaries,
-          selectedDate: selectedDate,
+          // selectedDate: selectedDate,
           dayItems: const [],
           highlightedDates: _buildHighlightedDates(
             request.startDate ?? selectedDate,
