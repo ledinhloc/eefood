@@ -111,21 +111,22 @@ class RecipeCard extends StatelessWidget {
                       final options = <BottomSheetOption>[
                         if (item.recipeId != null)
                           BottomSheetOption(
-                          icon: Icon(
-                            Icons.visibility_outlined,
-                            color: Colors.orange.shade700,
+                            icon: Icon(
+                              Icons.visibility_outlined,
+                              color: Colors.orange.shade700,
+                            ),
+                            title: "Xem món ăn",
+                            onTap: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (_) => RecipeDetailPage(
+                                    recipeId: item.recipeId!,
+                                  ),
+                                ),
+                              );
+                            },
                           ),
-                          title: "Xem món ăn",
-                          onTap: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (_) =>
-                                    RecipeDetailPage(recipeId: item.recipeId!),
-                              ),
-                            );
-                          },
-                        ),
                         BottomSheetOption(
                           icon: Icon(
                             Icons.edit_outlined,

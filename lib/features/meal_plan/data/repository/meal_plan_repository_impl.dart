@@ -186,6 +186,18 @@ class MealPlanRepositoryImpl implements MealPlanRepository {
   }
 
   @override
+  Future<void> addItemsToShopping(List<int> itemIds) async {
+    try {
+      await dio.post(
+        '/v1/meal-plan/items/shopping',
+        queryParameters: {'itemIds': itemIds.join(',')},
+      );
+    } catch (err) {
+      throw Exception('Add meal plan items to shopping failed: $err');
+    }
+  }
+
+  @override
   Future<MealPlanResponse> deleteMealPlanItem(int id) async {
     try {
       final response = await dio.delete('/v1/meal-plan/items/$id');

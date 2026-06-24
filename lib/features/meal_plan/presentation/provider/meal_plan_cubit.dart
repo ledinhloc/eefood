@@ -322,6 +322,20 @@ class MealPlanCubit extends Cubit<MealPlanState> {
     }
   }
 
+  Future<bool> addItemsToShopping(List<int> itemIds) async {
+    if (itemIds.isEmpty) return false;
+
+    _emit(state.copyWith(isSubmitting: true, clearError: true));
+    try {
+      await repository.addItemsToShopping(itemIds);
+      _emit(state.copyWith(isSubmitting: false));
+      return true;
+    } catch (e) {
+      _emit(state.copyWith(isSubmitting: false, error: e.toString()));
+      return false;
+    }
+  }
+
   // Xóa item khỏi plan hiện tại:
   // - xóa item trong list local
   // - refresh summary ngày đang xem

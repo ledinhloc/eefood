@@ -113,7 +113,13 @@ class _MealPlanDayItemsSectionState extends State<MealPlanDayItemsSection> {
     });
 
     try {
-      await getIt<ShoppingCubit>().addMealPlanItems(itemIds);
+      final success = await context.read<MealPlanCubit>().addItemsToShopping(
+        itemIds,
+      );
+      if (!success) {
+        throw Exception('Add meal plan items to shopping failed');
+      }
+      await getIt<ShoppingCubit>().load();
 
       if (!mounted) return;
 
