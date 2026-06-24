@@ -5,7 +5,7 @@ part 'meal_plan_item_ingredient_upsert_request.g.dart';
 @JsonSerializable()
 class MealPlanItemIngredientUpsertRequest {
   final String? name;
-  final String? quantity;
+  final double? quantity;
   final String? unit;
   final String? note;
 

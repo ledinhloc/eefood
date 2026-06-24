@@ -6,10 +6,7 @@ class IngredientEditorCard extends StatelessWidget {
   final MealPlanIngredientDraft draft;
   final VoidCallback onRemove;
 
-  const IngredientEditorCard({
-    required this.draft,
-    required this.onRemove,
-  });
+  const IngredientEditorCard({required this.draft, required this.onRemove});
 
   @override
   Widget build(BuildContext context) {
@@ -18,9 +15,7 @@ class IngredientEditorCard extends StatelessWidget {
     final isDark = theme.brightness == Brightness.dark;
     final colorScheme = theme.colorScheme;
     final accentColor = isDark ? colorScheme.primary : const Color(0xFFE85D04);
-    final cardColor = isDark
-        ? colorScheme.surface
-        : const Color(0xFFFFF7ED);
+    final cardColor = isDark ? colorScheme.surface : const Color(0xFFFFF7ED);
     final fieldColor = isDark
         ? colorScheme.surfaceContainerHighest.withValues(alpha: 0.45)
         : Colors.white;
@@ -76,6 +71,9 @@ class IngredientEditorCard extends StatelessWidget {
               Expanded(
                 child: TextField(
                   controller: draft.quantityController,
+                  keyboardType: const TextInputType.numberWithOptions(
+                    decimal: true,
+                  ),
                   decoration: InputDecoration(
                     hintText: l10n.mealPlanIngredientQuantity,
                     isDense: true,
