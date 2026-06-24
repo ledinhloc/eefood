@@ -174,4 +174,19 @@ class ShoppingCubit extends Cubit<ShoppingState> {
       emit(state.copyWith(error: e.toString()));
     }
   }
+
+  Future<void> addMealPlanItems(List<int> itemIds) async {
+    if (itemIds.isEmpty) return;
+
+    try {
+      await repository.addMealPlanItems(itemIds);
+      await load();
+    } catch (e) {
+      if (e is DioError && e.response?.statusCode == 401) {
+        return;
+      }
+      emit(state.copyWith(error: e.toString()));
+      rethrow;
+    }
+  }
 }

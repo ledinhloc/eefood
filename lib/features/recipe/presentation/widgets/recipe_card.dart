@@ -108,8 +108,9 @@ class RecipeCard extends StatelessWidget {
                     padding: EdgeInsets.zero,
                     constraints: const BoxConstraints(),
                     onPressed: () async {
-                      await showCustomBottomSheet(context, [
-                        BottomSheetOption(
+                      final options = <BottomSheetOption>[
+                        if (item.recipeId != null)
+                          BottomSheetOption(
                           icon: Icon(
                             Icons.visibility_outlined,
                             color: Colors.orange.shade700,
@@ -136,7 +137,7 @@ class RecipeCard extends StatelessWidget {
                               context,
                               item,
                             );
-                            if (newServing != null) {
+                            if (newServing != null && item.id != null) {
                               context.read<ShoppingCubit>().updateServings(
                                 item.id!,
                                 newServing,
@@ -156,7 +157,9 @@ class RecipeCard extends StatelessWidget {
                             );
                           },
                         ),
-                      ]);
+                      ];
+
+                      await showCustomBottomSheet(context, options);
                     },
                   ),
                 ],

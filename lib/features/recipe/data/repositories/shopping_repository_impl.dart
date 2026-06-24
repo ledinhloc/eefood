@@ -27,6 +27,11 @@ class ShoppingRepositoryImpl implements ShoppingRepository {
   }
 
   @override
+  Future<void> addMealPlanItems(List<int> itemIds) async {
+    await dio.post('/v1/meal-plan/items/shopping', queryParameters: {'itemIds': itemIds.join(',')});
+  }
+
+  @override
   Future<void> removeItem(int itemId) async {
     await dio.delete('/v1/shopping/$itemId');
   }

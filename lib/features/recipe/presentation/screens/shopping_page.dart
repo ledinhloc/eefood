@@ -13,8 +13,8 @@ class ShoppingPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return BlocProvider(
-      create: (_) => getIt<ShoppingCubit>()..load(),
+    return BlocProvider.value(
+      value: getIt<ShoppingCubit>()..load(),
       child: const ShoppingView(),
     );
   }

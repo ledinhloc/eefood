@@ -13,7 +13,7 @@ import 'package:eefood/features/meal_plan/presentation/widgets/item_day/nutritio
 import 'package:eefood/features/meal_plan/presentation/widgets/item_day/status_drop_down.dart';
 import 'package:eefood/features/meal_plan/presentation/widgets/meal_plan_regenerate_sheet.dart';
 import 'package:eefood/features/meal_plan/presentation/widgets/update_item/meal_plan_item_upsert_sheet.dart';
-import 'package:eefood/features/recipe/domain/repositories/shopping_repository.dart';
+import 'package:eefood/features/recipe/presentation/provider/shopping_cubit.dart';
 import 'package:eefood/features/recipe/presentation/screens/recipe_detail_page.dart';
 import 'package:eefood/l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
@@ -97,22 +97,9 @@ class _MealPlanDayItemsSectionState extends State<MealPlanDayItemsSection> {
 
   Future<void> _addSelectedToShoppingList() async {
     final l10n = AppLocalizations.of(context)!;
-    final servingsByRecipeId = <int, int>{};
+    final itemIds = _selectedItemIds.toList();
 
-    for (final item in widget.items) {
-      if (!_selectedItemIds.contains(item.id) || item.recipeId == null) {
-        continue;
-      }
-
-      final servings = item.actualServings ?? item.plannedServings ?? 1;
-      servingsByRecipeId.update(
-        item.recipeId!,
-        (current) => current + servings,
-        ifAbsent: () => servings,
-      );
-    }
-
-    if (servingsByRecipeId.isEmpty) {
+    if (itemIds.isEmpty) {
       showCustomSnackBar(
         context,
         l10n.mealPlanNoRecipeForShopping,
@@ -126,12 +113,7 @@ class _MealPlanDayItemsSectionState extends State<MealPlanDayItemsSection> {
     });
 
     try {
-      final repository = getIt<ShoppingRepository>();
-      await Future.wait(
-        servingsByRecipeId.entries.map(
-          (entry) => repository.addRecipe(entry.key, servings: entry.value),
-        ),
-      );
+      await getIt<ShoppingCubit>().addMealPlanItems(itemIds);
 
       if (!mounted) return;
 
@@ -141,7 +123,7 @@ class _MealPlanDayItemsSectionState extends State<MealPlanDayItemsSection> {
       });
       showCustomSnackBar(
         context,
-        l10n.mealPlanAddToShoppingSuccess(servingsByRecipeId.length),
+        l10n.mealPlanAddToShoppingSuccess(itemIds.length),
       );
     } catch (_) {
       if (!mounted) return;
