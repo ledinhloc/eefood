@@ -9,9 +9,10 @@ import 'package:stomp_dart_client/stomp_frame.dart';
 
 import '../../../../core/di/injection.dart';
 
-typedef UnsubscribeFn = void Function({
-  Map<String, String>? unsubscribeHeaders,
-});
+typedef UnsubscribeFn =
+    void Function({Map<String, String>? unsubscribeHeaders});
+
+typedef SubscribeFn = UnsubscribeFn Function();
 
 class LiveStreamWebSocketManager {
   final SharedPreferences prefs = getIt<SharedPreferences>();
@@ -20,6 +21,7 @@ class LiveStreamWebSocketManager {
   bool _isConnecting = false;
 
   final Map<String, UnsubscribeFn> _subscriptions = {};
+  final Map<String, SubscribeFn> _subscriptionFactories = {};
   final List<void Function()> _pendingOnConnected = [];
 
   bool get isConnected => _stompClient?.connected == true;
@@ -62,6 +64,7 @@ class LiveStreamWebSocketManager {
         onConnect: (frame) {
           _isConnecting = false;
           developer.log('WebSocket connected', name: logName);
+          _restoreSubscriptions(logName: logName);
           final callbacks = List<void Function()>.from(_pendingOnConnected);
           _pendingOnConnected.clear();
           for (final callback in callbacks) {
@@ -70,6 +73,7 @@ class LiveStreamWebSocketManager {
         },
         onWebSocketError: (err) {
           _isConnecting = false;
+          _subscriptions.clear();
           _pendingOnConnected.clear();
           developer.log('WS error: $err', name: logName);
           onError?.call('WebSocket error: $err');
@@ -80,6 +84,7 @@ class LiveStreamWebSocketManager {
         },
         onDisconnect: (frame) {
           _isConnecting = false;
+          _subscriptions.clear();
           _pendingOnConnected.clear();
           developer.log('WebSocket disconnected', name: logName);
         },
@@ -121,29 +126,34 @@ class LiveStreamWebSocketManager {
 
     final destination = '/topic/$topic/$liveStreamId';
 
-    if (_subscriptions.containsKey(destination)) {
+    if (_subscriptionFactories.containsKey(destination)) {
       developer.log('Already subscribed: $destination', name: logName);
       return;
     }
 
-    final unsubscribe = _stompClient!.subscribe(
-      destination: destination,
-      callback: (StompFrame frame) {
-        if (frame.body == null) return;
+    _subscriptionFactories[destination] = () {
+      return _stompClient!.subscribe(
+        destination: destination,
+        callback: (StompFrame frame) {
+          if (frame.body == null) return;
 
-        try {
-          final json = jsonDecode(frame.body!);
-          final data = fromJson(Map<String, dynamic>.from(json));
-          developer.log('Received $logPrefix from $destination', name: logName);
-          onData(data);
-        } catch (e) {
-          developer.log('Error parsing $logPrefix: $e', name: logName);
-          onError?.call('Error parsing $logPrefix: $e');
-        }
-      },
-    );
+          try {
+            final json = jsonDecode(frame.body!);
+            final data = fromJson(Map<String, dynamic>.from(json));
+            developer.log(
+              'Received $logPrefix from $destination',
+              name: logName,
+            );
+            onData(data);
+          } catch (e) {
+            developer.log('Error parsing $logPrefix: $e', name: logName);
+            onError?.call('Error parsing $logPrefix: $e');
+          }
+        },
+      );
+    };
 
-    _subscriptions[destination] = unsubscribe;
+    _subscriptions[destination] = _subscriptionFactories[destination]!();
     developer.log('Subscribed to: $destination', name: logName);
   }
 
@@ -159,25 +169,30 @@ class LiveStreamWebSocketManager {
     if (!isConnected) return;
 
     final destination = '/topic/$topic/$liveStreamId';
-    if (_subscriptions.containsKey(destination)) return;
+    if (_subscriptionFactories.containsKey(destination)) return;
 
-    final unsubscribe = _stompClient!.subscribe(
-      destination: destination,
-      callback: (StompFrame frame) {
-        if (frame.body == null) return;
-        try {
-          final decoded = jsonDecode(frame.body!); // dynamic: Map hoặc List
-          final data = fromJson(decoded);
-          developer.log('Received $logPrefix from $destination', name: logName);
-          onData(data);
-        } catch (e) {
-          developer.log('Error parsing $logPrefix: $e', name: logName);
-          onError?.call('Error parsing $logPrefix: $e');
-        }
-      },
-    );
+    _subscriptionFactories[destination] = () {
+      return _stompClient!.subscribe(
+        destination: destination,
+        callback: (StompFrame frame) {
+          if (frame.body == null) return;
+          try {
+            final decoded = jsonDecode(frame.body!); // dynamic: Map hoặc List
+            final data = fromJson(decoded);
+            developer.log(
+              'Received $logPrefix from $destination',
+              name: logName,
+            );
+            onData(data);
+          } catch (e) {
+            developer.log('Error parsing $logPrefix: $e', name: logName);
+            onError?.call('Error parsing $logPrefix: $e');
+          }
+        },
+      );
+    };
 
-    _subscriptions[destination] = unsubscribe;
+    _subscriptions[destination] = _subscriptionFactories[destination]!();
   }
 
   void subscribeUserQueue<T>({
@@ -189,35 +204,46 @@ class LiveStreamWebSocketManager {
     void Function(String error)? onError,
   }) {
     if (!isConnected) {
-      developer.log('Cannot subscribe user queue, WebSocket not connected', name: logName);
+      developer.log(
+        'Cannot subscribe user queue, WebSocket not connected',
+        name: logName,
+      );
       return;
     }
 
     final destination = '/user/queue/$queue';
 
-    if (_subscriptions.containsKey(destination)) {
-      developer.log('Already subscribed user queue: $destination', name: logName);
+    if (_subscriptionFactories.containsKey(destination)) {
+      developer.log(
+        'Already subscribed user queue: $destination',
+        name: logName,
+      );
       return;
     }
 
-    final unsubscribe = _stompClient!.subscribe(
-      destination: destination,
-      callback: (StompFrame frame) {
-        if (frame.body == null) return;
+    _subscriptionFactories[destination] = () {
+      return _stompClient!.subscribe(
+        destination: destination,
+        callback: (StompFrame frame) {
+          if (frame.body == null) return;
 
-        try {
-          final json = jsonDecode(frame.body!);
-          final data = fromJson(Map<String, dynamic>.from(json));
-          developer.log('Received USER $logPrefix from $destination', name: logName);
-          onData(data);
-        } catch (e) {
-          developer.log('Error parsing USER $logPrefix: $e', name: logName);
-          onError?.call('Error parsing USER $logPrefix: $e');
-        }
-      },
-    );
+          try {
+            final json = jsonDecode(frame.body!);
+            final data = fromJson(Map<String, dynamic>.from(json));
+            developer.log(
+              'Received USER $logPrefix from $destination',
+              name: logName,
+            );
+            onData(data);
+          } catch (e) {
+            developer.log('Error parsing USER $logPrefix: $e', name: logName);
+            onError?.call('Error parsing USER $logPrefix: $e');
+          }
+        },
+      );
+    };
 
-    _subscriptions[destination] = unsubscribe;
+    _subscriptions[destination] = _subscriptionFactories[destination]!();
     developer.log('Subscribed USER queue: $destination', name: logName);
   }
 
@@ -257,6 +283,7 @@ class LiveStreamWebSocketManager {
   }) {
     final destination = '/topic/$topic/$liveStreamId';
     final unsubscribe = _subscriptions.remove(destination);
+    _subscriptionFactories.remove(destination);
 
     if (unsubscribe != null) {
       unsubscribe();
@@ -264,12 +291,10 @@ class LiveStreamWebSocketManager {
     }
   }
 
-  void unsubscribeUserQueue({
-    required String queue,
-    required String logName,
-  }) {
+  void unsubscribeUserQueue({required String queue, required String logName}) {
     final destination = '/user/queue/$queue';
     final unsubscribe = _subscriptions.remove(destination);
+    _subscriptionFactories.remove(destination);
 
     if (unsubscribe != null) {
       unsubscribe();
@@ -283,6 +308,16 @@ class LiveStreamWebSocketManager {
       developer.log('Unsubscribed: ${entry.key}', name: logName);
     }
     _subscriptions.clear();
+    _subscriptionFactories.clear();
+  }
+
+  void _restoreSubscriptions({required String logName}) {
+    _subscriptions.clear();
+
+    for (final entry in _subscriptionFactories.entries) {
+      _subscriptions[entry.key] = entry.value();
+      developer.log('Resubscribed to: ${entry.key}', name: logName);
+    }
   }
 
   void disconnect({required String logName}) {
