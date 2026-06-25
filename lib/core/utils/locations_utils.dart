@@ -5,13 +5,21 @@ import 'package:geolocator/geolocator.dart';
 class LocationUtils {
   static bool _permissionChecked = false;
 
-  static Future<void> _ensurePermission() async {
-    if (_permissionChecked) return;
+  static Future<bool> isLocationServiceEnabled() {
+    return Geolocator.isLocationServiceEnabled();
+  }
 
+  static Future<bool> openLocationSettings() {
+    return Geolocator.openLocationSettings();
+  }
+
+  static Future<void> _ensurePermission() async {
     bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
     if (!serviceEnabled) {
       throw Exception('Location service chưa bật');
     }
+
+    if (_permissionChecked) return;
 
     LocationPermission permission = await Geolocator.checkPermission();
 

@@ -14,7 +14,11 @@ import 'package:shared_preferences/shared_preferences.dart';
 class CookingSessionView extends StatefulWidget {
   final String recipeTitle;
   final int recipeId;
-  const CookingSessionView({super.key, required this.recipeTitle, required this.recipeId});
+  const CookingSessionView({
+    super.key,
+    required this.recipeTitle,
+    required this.recipeId,
+  });
 
   @override
   State<CookingSessionView> createState() => _CookingSessionViewState();
@@ -31,7 +35,7 @@ class _CookingSessionViewState extends State<CookingSessionView> {
   }
 
   Future<void> _loadTimerPref() async {
-    final saved = prefs.getBool(AppKeys.cooking);
+    final saved = prefs.getBool(AppKeys.cooking) ?? false;
     logger.i("Time enabled: $saved");
     setState(() => _timerEnabled = saved);
   }
@@ -42,19 +46,20 @@ class _CookingSessionViewState extends State<CookingSessionView> {
   }
 
   Future<void> _openModePicker() async {
-    final result = await Navigator.push<bool>(
+    await Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (_) => ModePickerScaffold(
+        builder: (pickerContext) => ModePickerScaffold(
           recipeTitle: widget.recipeTitle,
-          onSelect: _saveTimerPref,
+          onSelect: (value) async {
+            await _saveTimerPref(value);
+            if (pickerContext.mounted) {
+              Navigator.pop(pickerContext);
+            }
+          },
         ),
       ),
     );
-
-    if (result != null) {
-      await _saveTimerPref(result);
-    }
   }
 
   @override
@@ -73,17 +78,10 @@ class _CookingSessionViewState extends State<CookingSessionView> {
           return _ErrorScaffold(message: state.error ?? 'Lỗi không xác định');
         }
 
-        if (_timerEnabled == null) {
-          return ModePickerScaffold(
-            recipeTitle: widget.recipeTitle,
-            onSelect: _saveTimerPref,
-          );
-        }
-
         return StepViewScaffold(
           recipeTitle: widget.recipeTitle,
           state: state,
-          timerEnabled: _timerEnabled!,
+          timerEnabled: _timerEnabled ?? false,
           onChangMode: _openModePicker,
         );
       },

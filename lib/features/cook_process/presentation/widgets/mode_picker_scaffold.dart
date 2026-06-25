@@ -48,7 +48,7 @@ class ModePickerScaffold extends StatelessWidget {
                 subtitle: 'Đếm ngược theo thời gian từng bước',
                 color: const Color(0xFFFF6B35),
                 onTap: () {
-                  Navigator.pop(context, true);
+                  onSelect(true);
                 },
               ),
               const SizedBox(height: 16),
@@ -58,7 +58,7 @@ class ModePickerScaffold extends StatelessWidget {
                 subtitle: 'Không tính giờ, làm theo nhịp của bạn',
                 color: const Color(0xFF2D9CDB),
                 onTap: () {
-                  Navigator.pop(context, false);
+                  onSelect(false);
                 },
               ),
               const Spacer(flex: 2),

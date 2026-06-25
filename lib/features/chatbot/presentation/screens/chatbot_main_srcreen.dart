@@ -1,3 +1,4 @@
+import 'package:eefood/core/utils/locations_utils.dart';
 import 'package:eefood/features/chatbot/presentation/provider/chatbot_cubit.dart';
 import 'package:eefood/features/chatbot/presentation/provider/chatbot_state.dart';
 import 'package:eefood/features/chatbot/presentation/widgets/bottom_bar/chatbot_input.dart';
@@ -14,20 +15,68 @@ class ChatbotMainScreen extends StatefulWidget {
   State<ChatbotMainScreen> createState() => _ChatbotMainScreenState();
 }
 
-class _ChatbotMainScreenState extends State<ChatbotMainScreen> {
+class _ChatbotMainScreenState extends State<ChatbotMainScreen>
+    with WidgetsBindingObserver {
   final ScrollController _scrollController = ScrollController();
+  bool _isLocationDialogShowing = false;
 
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
     final chatbotCubit = context.read<ChatbotCubit>();
     chatbotCubit.loadChatHistory(widget.userId);
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _showLocationEnableRequestIfNeeded();
+    });
   }
 
   @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
     _scrollController.dispose();
     super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) {
+      _showLocationEnableRequestIfNeeded();
+    }
+  }
+
+  Future<void> _showLocationEnableRequestIfNeeded() async {
+    if (!mounted || _isLocationDialogShowing) return;
+
+    final isEnabled = await LocationUtils.isLocationServiceEnabled();
+    if (!mounted || isEnabled) return;
+
+    _isLocationDialogShowing = true;
+    final shouldOpenSettings = await showDialog<bool>(
+      context: context,
+      barrierDismissible: false,
+      builder: (dialogContext) => AlertDialog(
+        title: const Text('Bật vị trí'),
+        content: const Text(
+          'eeFoodBot cần vị trí để gợi ý món ăn phù hợp với khu vực của bạn.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(dialogContext, false),
+            child: const Text('Để sau'),
+          ),
+          ElevatedButton(
+            onPressed: () => Navigator.pop(dialogContext, true),
+            child: const Text('Bật vị trí'),
+          ),
+        ],
+      ),
+    );
+    _isLocationDialogShowing = false;
+
+    if (shouldOpenSettings == true) {
+      await LocationUtils.openLocationSettings();
+    }
   }
 
   void _scrollToBottom({bool animate = true}) {

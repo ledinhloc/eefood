@@ -133,9 +133,15 @@ class ComparePostItem extends StatelessWidget {
                     color: Colors.grey.shade400,
                   ),
                   const SizedBox(width: 2),
-                  Text(
-                    post.region!,
-                    style: TextStyle(fontSize: 10, color: Colors.grey.shade500),
+                  Flexible(
+                    child: Text(
+                      post.region!,
+                      overflow: TextOverflow.ellipsis, 
+                      style: TextStyle(
+                        fontSize: 10,
+                        color: Colors.grey.shade500,
+                      ),
+                    ),
                   ),
                   const SizedBox(width: 8),
                 ],
