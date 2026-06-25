@@ -177,7 +177,7 @@ class MealPlanCubit extends Cubit<MealPlanState> {
           isSubmitting: false,
           plan: plan,
           dailySummaries: summaries,
-          selectedDate: selectedDate,
+          // selectedDate: selectedDate,
           dayItems: const [],
           highlightedDates: _buildHighlightedDates(
             request.startDate ?? selectedDate,
@@ -315,6 +315,20 @@ class MealPlanCubit extends Cubit<MealPlanState> {
 
       _emit(state.copyWith(isSubmitting: false, dayItems: updatedItems));
       await refreshDailySummaryByDate();
+      return true;
+    } catch (e) {
+      _emit(state.copyWith(isSubmitting: false, error: e.toString()));
+      return false;
+    }
+  }
+
+  Future<bool> addItemsToShopping(List<int> itemIds) async {
+    if (itemIds.isEmpty) return false;
+
+    _emit(state.copyWith(isSubmitting: true, clearError: true));
+    try {
+      await repository.addItemsToShopping(itemIds);
+      _emit(state.copyWith(isSubmitting: false));
       return true;
     } catch (e) {
       _emit(state.copyWith(isSubmitting: false, error: e.toString()));

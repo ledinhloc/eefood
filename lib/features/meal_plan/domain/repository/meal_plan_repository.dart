@@ -36,5 +36,7 @@ abstract class MealPlanRepository {
 
   Future<MealPlanItemResponse> getMealPlanItemDetail(int id);
 
+  Future<void> addItemsToShopping(List<int> itemIds);
+
   Future<MealPlanResponse> deleteMealPlanItem(int id);
 }

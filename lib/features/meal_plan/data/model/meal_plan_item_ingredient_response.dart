@@ -6,7 +6,7 @@ part 'meal_plan_item_ingredient_response.g.dart';
 class MealPlanItemIngredientResponse {
   final int? id;
   final String? name;
-  final String? quantity;
+  final double? quantity;
   final String? unit;
   final String? note;
 

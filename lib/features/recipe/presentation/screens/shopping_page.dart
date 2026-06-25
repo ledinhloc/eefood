@@ -13,8 +13,8 @@ class ShoppingPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return BlocProvider(
-      create: (_) => getIt<ShoppingCubit>()..load(),
+    return BlocProvider.value(
+      value: getIt<ShoppingCubit>()..load(),
       child: const ShoppingView(),
     );
   }
@@ -50,7 +50,7 @@ class ShoppingView extends StatelessWidget {
             ),
             const SizedBox(width: 12),
             Expanded(
-              child:  Text(
+              child: Text(
                 'Danh sách nguyên liệu',
                 overflow: TextOverflow.ellipsis,
                 style: TextStyle(
@@ -95,9 +95,9 @@ class ShoppingView extends StatelessWidget {
                         ),
                         title: "Xem theo món ăn",
                         onTap: () {
-                          context
-                              .read<ShoppingCubit>()
-                              .toggleView(ShoppingViewMode.byRecipe);
+                          context.read<ShoppingCubit>().toggleView(
+                            ShoppingViewMode.byRecipe,
+                          );
                         },
                       ),
                       BottomSheetOption(
@@ -107,9 +107,9 @@ class ShoppingView extends StatelessWidget {
                         ),
                         title: "Xem theo nguyên liệu",
                         onTap: () {
-                          context
-                              .read<ShoppingCubit>()
-                              .toggleView(ShoppingViewMode.byIngredient);
+                          context.read<ShoppingCubit>().toggleView(
+                            ShoppingViewMode.byIngredient,
+                          );
                         },
                       ),
                     ]);

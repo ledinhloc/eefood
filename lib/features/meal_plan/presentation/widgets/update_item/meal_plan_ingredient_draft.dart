@@ -38,7 +38,9 @@ class MealPlanIngredientDraft {
   ) {
     return MealPlanIngredientDraft(
       nameController: TextEditingController(text: item.name ?? ''),
-      quantityController: TextEditingController(text: item.quantity ?? ''),
+      quantityController: TextEditingController(
+        text: item.quantity?.toString() ?? '',
+      ),
       unitController: TextEditingController(text: item.unit ?? ''),
       noteController: TextEditingController(text: item.note ?? ''),
     );
@@ -49,6 +51,9 @@ class MealPlanIngredientDraft {
     final quantity = quantityController.text.trim();
     final unit = unitController.text.trim();
     final note = noteController.text.trim();
+    final parsedQuantity = quantity.isEmpty
+        ? null
+        : double.tryParse(quantity.replaceAll(',', '.'));
 
     final hasValue =
         name.isNotEmpty ||
@@ -59,7 +64,7 @@ class MealPlanIngredientDraft {
 
     return MealPlanItemIngredientUpsertRequest(
       name: name.isEmpty ? null : name,
-      quantity: quantity.isEmpty ? null : quantity,
+      quantity: parsedQuantity,
       unit: unit.isEmpty ? null : unit,
       note: note.isEmpty ? null : note,
     );
