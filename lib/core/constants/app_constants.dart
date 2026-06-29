@@ -219,7 +219,6 @@ class AppConstants {
     {"name": "Paleo", "icon": "🍖"},
     {"name": "Mediterranean diet", "icon": "🫒"},
   ];
-
   static const allergies = [
     {"name": "Lạc (đậu phộng)", "icon": "🥜"},
     {"name": "Hạt", "icon": "🌰"},
