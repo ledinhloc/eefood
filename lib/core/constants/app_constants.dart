@@ -210,28 +210,25 @@ class AppConstants {
   };
 
   static const diets = [
-    {"name": "Ăn chay", "icon": "🥦"},
-    {"name": "Thuần chay", "icon": "🌱"},
-    {"name": "Ăn cá", "icon": "🐟"},
-    {"name": "Không gluten", "icon": "🚫🌾"},
-    {"name": "Ít carb", "icon": "🥩"},
+    {"name": "Ăn chay trường", "icon": "🌱"},
+    {"name": "Ăn chay 1 phần", "icon": "🥗"},
+    {"name": "Keto", "icon": "🥩"},
+    {"name": "Low-carb", "icon": "🍗"},
+    {"name": "Ăn kiêng ít carb", "icon": "🥓"},
+    {"name": "Ăn kiêng ít béo", "icon": "🥦"},
     {"name": "Paleo", "icon": "🍖"},
-    {"name": "Halal", "icon": "🕌"},
-    {"name": "Kosher", "icon": "✡️"},
-    {"name": "Không đường", "icon": "🍬"},
-    {"name": "Thấp natri", "icon": "🧂"},
-    {"name": "Không sữa", "icon": "🥛"},
-    {"name": "Eat Clean", "icon": "🥗"},
+    {"name": "Mediterranean diet", "icon": "🫒"},
   ];
-  static final allergies = [
+  static const allergies = [
     {"name": "Lạc (đậu phộng)", "icon": "🥜"},
     {"name": "Hạt", "icon": "🌰"},
     {"name": "Sữa bò", "icon": "🥛"},
     {"name": "Trứng gà", "icon": "🥚"},
     {"name": "Lúa mì", "icon": "🌾"},
     {"name": "Đậu nành", "icon": "🫘"},
-    {"name": "Cá", "icon": "🐟"},
-    {"name": "Tôm/Cua biển", "icon": "🦐"},
+    {"name": "Cá biển", "icon": "🐟"},
+    {"name": "Tôm", "icon": "🦐"},
+    {"name": "Cua biển", "icon": "🦀"},
     {"name": "Mè (vừng)", "icon": "⚪"},
     {"name": "Mắm tôm", "icon": "🟣"},
     {"name": "Ốc, nghêu, sò", "icon": "🐚"},
@@ -259,20 +256,18 @@ class AppConstants {
     {"name": "Rối loạn tiêu hóa", "icon": "🍽️"},
     {"name": "Trào ngược dạ dày", "icon": "🔥"},
   ];
-  static final cuisines = [
-    {"name": "Gỏi/Salad", "icon": "🥗"},
-    {"name": "Trứng", "icon": "🍳"},
-    {"name": "Canh/Súp", "icon": "🍲"},
-    {"name": "Thịt heo/bò", "icon": "🍖"},
-    {"name": "Gà", "icon": "🍗"},
-    {"name": "Hải sản", "icon": "🦐"},
-    {"name": "Bánh mì kẹp", "icon": "🥪"},
-    {"name": "Bánh xèo", "icon": "🥞"},
-    {"name": "Phở", "icon": "🍜"},
-    {"name": "Bún chả", "icon": "🍢"},
-    {"name": "Cơm tấm", "icon": "🍚"},
-    {"name": "Pizza", "icon": "🍕"},
-    {"name": "Sushi", "icon": "🍣"},
+  static const cuisines = [
+    {"name": "Ăn chay 1 phần", "icon": "🥗"},
+    {"name": "Ít dầu mỡ", "icon": "🫒"},
+    {"name": "Thích đồ cay", "icon": "🌶️"},
+    {"name": "Ăn nhiều rau", "icon": "🥬"},
+    {"name": "Ưa thích hải sản", "icon": "🦐"},
+    {"name": "Thích đồ ngọt", "icon": "🍰"},
+    {"name": "Ăn uống lành mạnh", "icon": "💚"},
+    {"name": "Ăn chay trường", "icon": "🌱"},
+    {"name": "Thích đồ nướng", "icon": "🍖"},
+    {"name": "Ưa thích món truyền thống", "icon": "🍚"},
+    {"name": "Ít đường", "icon": "🚫🍬"},
   ];
 
   static const List<Map<String, String>> termsOfService = [
