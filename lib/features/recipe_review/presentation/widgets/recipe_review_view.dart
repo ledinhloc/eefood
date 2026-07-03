@@ -14,6 +14,7 @@ class RecipeReviewView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     return BlocConsumer<ReviewRecipeCubit, RecipeReviewState>(
       listener: (context, state) {
         if (state.status == RecipeReviewStatus.error && state.error != null) {
@@ -22,7 +23,7 @@ class RecipeReviewView extends StatelessWidget {
       },
       builder: (context, state) {
         return Scaffold(
-          backgroundColor: const Color(0xFF121212),
+          backgroundColor: theme.scaffoldBackgroundColor,
           body: SafeArea(child: _buildBody(context, state)),
         );
       },

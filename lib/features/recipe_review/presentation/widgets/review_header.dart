@@ -41,10 +41,10 @@ class ReviewHeader extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text(
+                 Text(
                   'Đánh giá món ăn',
                   style: TextStyle(
-                    color: Colors.white,
+                    color: theme.colorScheme.onSurface,
                     fontSize: 18,
                     fontWeight: FontWeight.w700,
                     letterSpacing: -0.3,
@@ -53,7 +53,7 @@ class ReviewHeader extends StatelessWidget {
                 Text(
                   'Chia sẻ trải nghiệm nấu ăn của bạn',
                   style: TextStyle(
-                    color: Colors.white.withOpacity(0.5),
+                    color: theme.colorScheme.onSurface.withOpacity(0.5),
                     fontSize: 12,
                   ),
                 ),
