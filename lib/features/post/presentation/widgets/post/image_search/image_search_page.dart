@@ -3,13 +3,13 @@ import 'dart:typed_data';
 
 import 'package:camera/camera.dart';
 import 'package:eefood/core/di/injection.dart';
+import 'package:eefood/core/utils/media_picker.dart';
 import 'package:eefood/features/post/presentation/provider/post_list_cubit.dart';
 import 'package:eefood/features/post/presentation/widgets/post/image_search/image_search_result.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:image_gallery_saver_plus/image_gallery_saver_plus.dart';
-import 'package:image_picker/image_picker.dart';
 import 'package:photo_manager/photo_manager.dart';
 
 class ImageSearchScreen extends StatefulWidget {
@@ -143,15 +143,13 @@ class _ImageSearchScreenState extends State<ImageSearchScreen> {
   }
 
   Future<void> _pickFromGallery() async {
-    final picker = ImagePicker();
-    final image = await picker.pickImage(source: ImageSource.gallery);
+    final File? image = await MediaPicker.pickImageNew();
     if (image == null) return;
-    final file = File(image.path);
     setState(() {
-      _capturedPhotoOverlay = file;
-      _recentPhotoFile = file;
+      _capturedPhotoOverlay = image;
+      _recentPhotoFile = image;
     });
-    await _handleImageSearch(file);
+    await _handleImageSearch(image);
   }
 
   void _showSearchResultsBottomSheet(

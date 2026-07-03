@@ -18,11 +18,12 @@ class ReviewQuestionCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isAnswered = selectedOptionId != null;
+    final theme = Theme.of(context);
     return AnimatedContainer(
       duration: const Duration(milliseconds: 300),
       margin: const EdgeInsets.only(bottom: 16),
       decoration: BoxDecoration(
-        color: const Color(0xFF1E1E1E),
+        color: theme.scaffoldBackgroundColor..withOpacity(0.4),
         borderRadius: BorderRadius.circular(20),
         border: Border.all(
           color: isAnswered
@@ -62,8 +63,8 @@ class ReviewQuestionCard extends StatelessWidget {
                       : Center(
                           child: Text(
                             '${index + 1}',
-                            style: const TextStyle(
-                              color: Color(0xFF666666),
+                            style: TextStyle(
+                              color: Colors.white,
                               fontSize: 13,
                               fontWeight: FontWeight.w600,
                             ),
@@ -74,8 +75,8 @@ class ReviewQuestionCard extends StatelessWidget {
                 Expanded(
                   child: Text(
                     question.content ?? '',
-                    style: const TextStyle(
-                      color: Colors.white,
+                    style: TextStyle(
+                      color: theme.colorScheme.onSurface,
                       fontSize: 15,
                       fontWeight: FontWeight.w600,
                       height: 1.4,

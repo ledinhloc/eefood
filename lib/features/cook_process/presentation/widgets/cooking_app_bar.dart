@@ -28,7 +28,7 @@ class CookingAppBar extends StatelessWidget {
               width: 40,
               height: 40,
               decoration: BoxDecoration(
-                color: theme.colorScheme.onSurface.withOpacity(0.1),
+                color: Colors.black45,
                 borderRadius: BorderRadius.circular(12),
               ),
               child: Icon(
@@ -46,7 +46,7 @@ class CookingAppBar extends StatelessWidget {
                 Text(
                   recipeTitle,
                   style: TextStyle(
-                    color: theme.colorScheme.onSurface,
+                    color: Colors.black,
                     fontSize: 15,
                     fontWeight: FontWeight.w700,
                   ),

@@ -17,11 +17,12 @@ class SubmitSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     return Container(
       padding: const EdgeInsets.fromLTRB(20, 16, 20, 24),
       decoration: BoxDecoration(
-        color: const Color(0xFF1A1A1A),
-        border: Border(top: BorderSide(color: Colors.white.withOpacity(0.06))),
+        color: theme.scaffoldBackgroundColor,
+        border: Border(top: BorderSide(color: Colors.grey.withOpacity(0.4))),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -32,7 +33,7 @@ class SubmitSection extends StatelessWidget {
               child: Text(
                 'Còn ${totalCount - answeredCount} câu chưa trả lời',
                 style: TextStyle(
-                  color: Colors.white.withOpacity(0.4),
+                  color: theme.colorScheme.onSurface.withOpacity(0.8),
                   fontSize: 12,
                 ),
                 textAlign: TextAlign.center,
@@ -44,7 +45,7 @@ class SubmitSection extends StatelessWidget {
               onPressed: (isAllAnswered && !isSubmitting) ? onSubmit : null,
               style: ElevatedButton.styleFrom(
                 backgroundColor: const Color(0xFFFF6B35),
-                disabledBackgroundColor: const Color(0xFF2A2A2A),
+                disabledBackgroundColor: Colors.grey.withOpacity(0.4),
                 foregroundColor: Colors.white,
                 disabledForegroundColor: const Color(0xFF555555),
                 shape: RoundedRectangleBorder(
@@ -58,13 +59,14 @@ class SubmitSection extends StatelessWidget {
                       width: 20,
                       height: 20,
                       child: CircularProgressIndicator(
-                        color: Colors.white,
+                        color: Colors.orange,
                         strokeWidth: 2,
                       ),
                     )
-                  : const Text(
+                  : Text(
                       'Gửi đánh giá',
                       style: TextStyle(
+                        color: theme.colorScheme.onSurface,
                         fontSize: 16,
                         fontWeight: FontWeight.w700,
                       ),

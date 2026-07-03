@@ -6,11 +6,12 @@ class InstructionCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: const Color(0xFF1A1A1A),
+        color: theme.scaffoldBackgroundColor,
         borderRadius: BorderRadius.circular(20),
         border: Border.all(color: Colors.white.withOpacity(0.07)),
       ),
@@ -28,7 +29,7 @@ class InstructionCard extends StatelessWidget {
               Text(
                 'Hướng dẫn',
                 style: TextStyle(
-                  color: Colors.white.withOpacity(0.5),
+                  color: theme.colorScheme.onSurface.withOpacity(0.5),
                   fontSize: 13,
                   fontWeight: FontWeight.w600,
                 ),
@@ -38,8 +39,8 @@ class InstructionCard extends StatelessWidget {
           const SizedBox(height: 12),
           Text(
             instruction,
-            style: const TextStyle(
-              color: Colors.white,
+            style:  TextStyle(
+              color: theme.colorScheme.onSurface,
               fontSize: 16,
               height: 1.7,
             ),

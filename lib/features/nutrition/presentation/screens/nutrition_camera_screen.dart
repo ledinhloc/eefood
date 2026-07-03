@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:camera/camera.dart';
 import 'package:eefood/core/di/injection.dart';
+import 'package:eefood/core/utils/media_picker.dart';
 import 'package:eefood/features/nutrition/presentation/provider/nutrition_cubit.dart';
 import 'package:eefood/features/nutrition/presentation/screens/nutrition_result_screen.dart';
 import 'package:eefood/features/nutrition/presentation/widgets/scan_overlay_painter.dart';
@@ -9,7 +10,6 @@ import 'package:eefood/l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:image_gallery_saver_plus/image_gallery_saver_plus.dart';
-import 'package:image_picker/image_picker.dart';
 import 'package:photo_manager/photo_manager.dart';
 
 class NutritionCameraScreen extends StatefulWidget {
@@ -108,15 +108,13 @@ class _NutritionCameraScreenState extends State<NutritionCameraScreen>
   }
 
   Future<void> _pickFromGallery() async {
-    final picker = ImagePicker();
-    final image = await picker.pickImage(source: ImageSource.gallery);
+    final File? image = await MediaPicker.pickImageNew();
     if (image == null) return;
-    final file = File(image.path);
     setState(() {
-      _capturedPhotoOverlay = file;
-      _recentPhotoFile = file;
+      _capturedPhotoOverlay = image;
+      _recentPhotoFile = image;
     });
-    await _startAnalysis(file);
+    await _startAnalysis(image);
   }
 
   Future<void> _startAnalysis(File file) async {

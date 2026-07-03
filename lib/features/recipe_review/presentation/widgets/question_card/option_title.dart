@@ -14,6 +14,7 @@ class OptionTitle extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     return GestureDetector(
       onTap: onTap,
       child: AnimatedContainer(
@@ -23,10 +24,10 @@ class OptionTitle extends StatelessWidget {
         decoration: BoxDecoration(
           color: isSelected
               ? const Color(0xFFFF6B35).withOpacity(0.12)
-              : const Color(0xFF272727),
+              : theme.scaffoldBackgroundColor,
           borderRadius: BorderRadius.circular(14),
           border: Border.all(
-            color: isSelected ? const Color(0xFFFF6B35) : Colors.transparent,
+            color: isSelected ? const Color(0xFFFF6B35) : theme.colorScheme.onSurface.withOpacity(0.3),
             width: 1.5,
           ),
         ),
@@ -57,7 +58,7 @@ class OptionTitle extends StatelessWidget {
               child: Text(
                 option.content ?? '',
                 style: TextStyle(
-                  color: isSelected ? Colors.white : Colors.white70,
+                  color: isSelected ? theme.colorScheme.onSurface : theme.colorScheme.onSurface.withOpacity(0.7),
                   fontSize: 14,
                   fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
                 ),
