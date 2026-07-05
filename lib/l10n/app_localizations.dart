@@ -914,7 +914,7 @@ abstract class AppLocalizations {
   /// No description provided for @mealPlanDaysHint.
   ///
   /// In en, this message translates to:
-  /// **'Up to 5 days per generation'**
+  /// **'From 2 to 4 days per generation'**
   String get mealPlanDaysHint;
 
   /// No description provided for @mealPlanInvalidGenerateInput.
