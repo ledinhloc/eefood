@@ -28,43 +28,74 @@ class _VnpayWebviewScreenState extends State<VnpayWebviewScreen> {
   @override
   void initState() {
     super.initState();
+    logger.i('Log ${widget.paymentUrl}');
     _initWebView();
     _listenDeepLink();
+  }
+
+  String? _convertToDeepLink(String url) {
+    try {
+      final uri = Uri.parse(url);
+
+      if (uri.scheme == 'https' &&
+          uri.host == 'eefood.app' &&
+          uri.path == '/payment/result') {
+        return Uri(
+          scheme: 'eefood',
+          host: uri.host,
+          path: uri.path,
+          queryParameters: uri.queryParameters,
+        ).toString();
+      }
+
+      if (uri.scheme == 'eefood') {
+        return url;
+      }
+    } catch (_) {}
+
+    return null;
   }
 
   void _initWebView() {
     _controller = WebViewController()
       ..setJavaScriptMode(JavaScriptMode.unrestricted)
-      ..setBackgroundColor(const Color(0xFF0F0F1A))
+      ..setBackgroundColor(Colors.white)
+      ..loadRequest(Uri.parse(widget.paymentUrl))
       ..setNavigationDelegate(
         NavigationDelegate(
           onPageStarted: (url) {
-          if (url.startsWith('eefood://')) {
-            _handleDeepLinkUrl(url);
-            return;
-          }
-          setState(() => _isLoading = true);
-        },
-          onPageFinished: (_) => setState(() => _isLoading = false),
+            logger.i(url);
+            final deepLink = _convertToDeepLink(url);
+
+            if (deepLink != null) {
+              _handleDeepLinkUrl(deepLink);
+              return;
+            }
+
+            setState(() => _isLoading = true);
+          },
+          onPageFinished: (_) {
+            setState(() => _isLoading = false);
+          },
           onWebResourceError: (error) {
             debugPrint('WebView error: ${error.description}');
-            final url = error.url ?? '';
-            if (url.startsWith('eefood://')) {
-              _handleDeepLinkUrl(url);
+            final deepLink = _convertToDeepLink(error.url ?? '');
+            if (deepLink != null) {
+              _handleDeepLinkUrl(deepLink);
             }
           },
           onNavigationRequest: (request) {
-            final url = request.url;
+            final deepLink = _convertToDeepLink(request.url);
 
-            if (url.startsWith('eefood://')) {
-              _handleDeepLinkUrl(url);
+            if (deepLink != null) {
+              _handleDeepLinkUrl(deepLink);
               return NavigationDecision.prevent;
             }
+
             return NavigationDecision.navigate;
           },
         ),
-      )
-      ..loadRequest(Uri.parse(widget.paymentUrl));
+      );
   }
 
   void _listenDeepLink() {
@@ -94,39 +125,39 @@ class _VnpayWebviewScreenState extends State<VnpayWebviewScreen> {
   }
 
   void _handleDeepLinkUri(Uri uri) {
-  if (!mounted) return;
+    if (!mounted) return;
 
-  debugPrint('=== Deep link received: $uri');
-  debugPrint('=== Params: ${uri.queryParameters}');
+    debugPrint('=== Deep link received: $uri');
+    debugPrint('=== Params: ${uri.queryParameters}');
 
-  final params = uri.queryParameters;
+    final params = uri.queryParameters;
 
-  bool success;
-  if (params.containsKey('success')) {
-    success = params['success'] == 'true';
-  } else {
-    // Đọc trực tiếp params VNPay
-    final responseCode = params['vnp_ResponseCode'];
-    final transactionStatus = params['vnp_TransactionStatus'];
-    success = responseCode == '00' && transactionStatus == '00';
+    bool success;
+    if (params.containsKey('success')) {
+      success = params['success'] == 'true';
+    } else {
+      // Đọc trực tiếp params VNPay
+      final responseCode = params['vnp_ResponseCode'];
+      final transactionStatus = params['vnp_TransactionStatus'];
+      success = responseCode == '00' && transactionStatus == '00';
+    }
+
+    final txnRef = params['txnRef'] ?? params['vnp_TxnRef'];
+    final amount = params['amount'] ?? params['vnp_Amount'];
+    final responseCode = params['responseCode'] ?? params['vnp_ResponseCode'];
+
+    debugPrint('=== isSuccess: $success');
+
+    Navigator.of(context).pushReplacementNamed(
+      AppRoutes.paymentResultScreen,
+      arguments: {
+        'isSuccess': success,
+        'txnRef': txnRef,
+        'amount': amount,
+        'responseCode': responseCode,
+      },
+    );
   }
-
-  final txnRef = params['txnRef'] ?? params['vnp_TxnRef'];
-  final amount = params['amount'] ?? params['vnp_Amount'];
-  final responseCode = params['responseCode'] ?? params['vnp_ResponseCode'];
-
-  debugPrint('=== isSuccess: $success');
-
-  Navigator.of(context).pushReplacementNamed(
-    AppRoutes.paymentResultScreen,
-    arguments: {
-      'isSuccess': success,
-      'txnRef': txnRef,
-      'amount': amount,
-      'responseCode': responseCode,
-    },
-  );
-}
 
   @override
   void dispose() {
@@ -136,22 +167,26 @@ class _VnpayWebviewScreenState extends State<VnpayWebviewScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     return Scaffold(
-      backgroundColor: const Color(0xFF0F0F1A),
+      backgroundColor: Colors.red,
       appBar: AppBar(
-        backgroundColor: const Color(0xFF1A1A2E),
+        backgroundColor: theme.scaffoldBackgroundColor,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.close, color: Colors.white),
+          icon: Icon(Icons.close, color: theme.colorScheme.onSurface),
           onPressed: () => _showCancelDialog(),
         ),
-        title: const Row(
+        title: Row(
           children: [
             Icon(Icons.lock, color: Color(0xFF4CAF50), size: 16),
             SizedBox(width: 6),
             Text(
               'Thanh toán VNPay',
-              style: TextStyle(color: Colors.white, fontSize: 16),
+              style: TextStyle(
+                color: theme.colorScheme.onSurface,
+                fontSize: 16,
+              ),
             ),
           ],
         ),
