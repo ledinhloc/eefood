@@ -419,7 +419,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get mealPlanGoalHint => 'Example: Lose weight, eat balanced meals, build muscle...';
 
   @override
-  String get mealPlanDaysHint => 'Up to 5 days per generation';
+  String get mealPlanDaysHint => 'From 2 to 4 days per generation';
 
   @override
   String get mealPlanInvalidGenerateInput => 'Please enter all valid required information';

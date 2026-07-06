@@ -48,7 +48,7 @@ class AuthRepositoryImpl implements AuthRepository {
   @override
   Future<User> loginWithGoogle(String idToken) async {
     try {
-      final fcmToken = await FirebaseMessaging.instance.getToken();
+      final fcmToken = await _getFcmTokenOrNull();
       debugPrint("TOKEN ID: $idToken");
       final response = await dio.post(
         '/v1/auth/google-login',
@@ -70,7 +70,7 @@ class AuthRepositoryImpl implements AuthRepository {
   @override
   Future<User> login(String email, String password) async {
     try {
-      final fcmToken = await FirebaseMessaging.instance.getToken();
+      final fcmToken = await _getFcmTokenOrNull();
       final response = await dio.post(
         '/v1/auth/login',
         data: {'email': email, 'password': password, 'fcmToken': fcmToken},
@@ -85,6 +85,15 @@ class AuthRepositoryImpl implements AuthRepository {
     } catch (e) {
       print(e);
       throw Exception('Login failed: $e');
+    }
+  }
+
+  Future<String?> _getFcmTokenOrNull() async {
+    try {
+      return await FirebaseMessaging.instance.getToken();
+    } catch (e) {
+      debugPrint('Get FCM token failed: $e');
+      return null;
     }
   }
 

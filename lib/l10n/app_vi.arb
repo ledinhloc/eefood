@@ -150,7 +150,7 @@
   "mealPlanGenerateSubtitle": "Nhập mục tiêu, ngày bắt đầu và số ngày để AI tạo kế hoạch bữa ăn.",
   "mealPlanGoal": "Mục tiêu",
   "mealPlanGoalHint": "Ví dụ: Giảm cân, ăn cân bằng, tăng cơ...",
-  "mealPlanDaysHint": "Tối đa 5 ngày mỗi lần tạo",
+  "mealPlanDaysHint": "Từ 2 đến 4 ngày mỗi lần tạo",
   "mealPlanInvalidGenerateInput": "Vui lòng nhập đầy đủ thông tin hợp lệ",
   "mealPlanCreateButton": "Tạo kế hoạch",
   "mealPlanUpdateTitle": "Cập nhật meal plan",
