@@ -102,7 +102,8 @@ dependencies:
   pdf: ^3.11.3
   printing: ^5.14.2
 
-  webview_flutter: ^4.7.0 #webview
+  webview_flutter: ^4.13.1 #webview
+  webview_flutter_android: ^4.10.1 #android webview ssl callbacks
 
 dev_dependencies:
   flutter_test:
