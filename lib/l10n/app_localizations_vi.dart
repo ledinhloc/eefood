@@ -419,7 +419,7 @@ class AppLocalizationsVi extends AppLocalizations {
   String get mealPlanGoalHint => 'Ví dụ: Giảm cân, ăn cân bằng, tăng cơ...';
 
   @override
-  String get mealPlanDaysHint => 'Tối đa 5 ngày mỗi lần tạo';
+  String get mealPlanDaysHint => 'Từ 2 đến 4 ngày mỗi lần tạo';
 
   @override
   String get mealPlanInvalidGenerateInput => 'Vui lòng nhập đầy đủ thông tin hợp lệ';

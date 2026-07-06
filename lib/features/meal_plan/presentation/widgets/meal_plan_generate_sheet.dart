@@ -168,7 +168,8 @@ Future<void> showMealPlanGenerateSheet({
 
                                   if (rawGoal.isEmpty ||
                                       rawDays == null ||
-                                      rawDays <= 0) {
+                                      rawDays <= 1 ||
+                                      rawDays >= 5) {
                                     showCustomSnackBar(
                                       context,
                                       l10n.mealPlanInvalidGenerateInput,

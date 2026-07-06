@@ -150,7 +150,7 @@
   "mealPlanGenerateSubtitle": "Enter a goal, start date, and number of days for AI to create your meal plan.",
   "mealPlanGoal": "Goal",
   "mealPlanGoalHint": "Example: Lose weight, eat balanced meals, build muscle...",
-  "mealPlanDaysHint": "Up to 5 days per generation",
+  "mealPlanDaysHint": "From 2 to 4 days per generation",
   "mealPlanInvalidGenerateInput": "Please enter all valid required information",
   "mealPlanCreateButton": "Create plan",
   "mealPlanUpdateTitle": "Update meal plan",
