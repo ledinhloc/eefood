@@ -35,7 +35,7 @@ class LiveLeaderboardCubit extends Cubit<LiveLeaderboardState> {
     emit(state.copyWith(status: LeaderboardStatus.loading));
     try {
       final entries = await repository.getLeaderBoard(livestreamId);
-      logger.e('🏆 Leaderboard loaded: ${entries.length} entries');
+      logger.i('🏆 Leaderboard loaded: ${entries.length} entries');
       emit(
         state.copyWith(
           status: LeaderboardStatus.loaded,

@@ -4,6 +4,8 @@ import 'package:app_links/app_links.dart';
 import 'package:eefood/app_routes.dart';
 import 'package:eefood/core/utils/logger.dart';
 import 'package:flutter/material.dart';
+import 'package:url_launcher/url_launcher.dart';
+import 'package:webview_flutter_android/webview_flutter_android.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 
 class VnpayWebviewScreen extends StatefulWidget {
@@ -23,11 +25,16 @@ class VnpayWebviewScreen extends StatefulWidget {
 class _VnpayWebviewScreenState extends State<VnpayWebviewScreen> {
   late final WebViewController _controller;
   bool _isLoading = true;
+  bool _hasHandledResult = false;
+  String? _errorMessage;
+  late Uri _paymentUri;
   StreamSubscription? _deepLinkSub;
 
   @override
   void initState() {
     super.initState();
+    _paymentUri = Uri.parse(widget.paymentUrl.trim());
+    logger.i('VNPay payment URL: $_paymentUri');
     _initWebView();
     _listenDeepLink();
   }
@@ -35,24 +42,38 @@ class _VnpayWebviewScreenState extends State<VnpayWebviewScreen> {
   void _initWebView() {
     _controller = WebViewController()
       ..setJavaScriptMode(JavaScriptMode.unrestricted)
-      ..setBackgroundColor(const Color(0xFF0F0F1A))
+      ..setBackgroundColor(Colors.white)
       ..setNavigationDelegate(
         NavigationDelegate(
           onPageStarted: (url) {
-          if (url.startsWith('eefood://')) {
-            _handleDeepLinkUrl(url);
-            return;
-          }
-          setState(() => _isLoading = true);
-        },
-          onPageFinished: (_) => setState(() => _isLoading = false),
-          onWebResourceError: (error) {
-            debugPrint('WebView error: ${error.description}');
-            final url = error.url ?? '';
             if (url.startsWith('eefood://')) {
               _handleDeepLinkUrl(url);
+              return;
+            }
+            _setLoading(true);
+          },
+          onPageFinished: (_) {
+            _setLoading(false);
+          },
+          onWebResourceError: (error) {
+            final url = error.url ?? '';
+            logger.e(
+              'VNPay WebView error: code=${error.errorCode}, '
+              'type=${error.errorType}, mainFrame=${error.isForMainFrame}, '
+              'url=$url, description=${error.description}',
+            );
+            if (url.startsWith('eefood://')) {
+              _handleDeepLinkUrl(url);
+              return;
+            }
+
+            if (error.isForMainFrame ?? true) {
+              _showLoadError(
+                'Khong the hien thi VNPay trong WebView.\n${error.description}',
+              );
             }
           },
+          onSslAuthError: _handleSslAuthError,
           onNavigationRequest: (request) {
             final url = request.url;
 
@@ -63,8 +84,7 @@ class _VnpayWebviewScreenState extends State<VnpayWebviewScreen> {
             return NavigationDecision.navigate;
           },
         ),
-      )
-      ..loadRequest(Uri.parse(widget.paymentUrl));
+      )..loadRequest(_paymentUri);
   }
 
   void _listenDeepLink() {
@@ -94,39 +114,90 @@ class _VnpayWebviewScreenState extends State<VnpayWebviewScreen> {
   }
 
   void _handleDeepLinkUri(Uri uri) {
-  if (!mounted) return;
+    if (!mounted || _hasHandledResult) return;
+    _hasHandledResult = true;
 
-  debugPrint('=== Deep link received: $uri');
-  debugPrint('=== Params: ${uri.queryParameters}');
+    debugPrint('=== Deep link received: $uri');
+    debugPrint('=== Params: ${uri.queryParameters}');
 
-  final params = uri.queryParameters;
+    final params = uri.queryParameters;
 
-  bool success;
-  if (params.containsKey('success')) {
-    success = params['success'] == 'true';
-  } else {
-    // Đọc trực tiếp params VNPay
-    final responseCode = params['vnp_ResponseCode'];
-    final transactionStatus = params['vnp_TransactionStatus'];
-    success = responseCode == '00' && transactionStatus == '00';
+    bool success;
+    if (params.containsKey('success')) {
+      success = params['success'] == 'true';
+    } else {
+      // Đọc trực tiếp params VNPay
+      final responseCode = params['vnp_ResponseCode'];
+      final transactionStatus = params['vnp_TransactionStatus'];
+      success = responseCode == '00' && transactionStatus == '00';
+    }
+
+    final txnRef = params['txnRef'] ?? params['vnp_TxnRef'];
+    final amount = params['amount'] ?? params['vnp_Amount'];
+    final responseCode = params['responseCode'] ?? params['vnp_ResponseCode'];
+
+    debugPrint('=== isSuccess: $success');
+
+    Navigator.of(context).pushReplacementNamed(
+      AppRoutes.paymentResultScreen,
+      arguments: {
+        'isSuccess': success,
+        'txnRef': txnRef,
+        'amount': amount,
+        'responseCode': responseCode,
+      },
+    );
   }
 
-  final txnRef = params['txnRef'] ?? params['vnp_TxnRef'];
-  final amount = params['amount'] ?? params['vnp_Amount'];
-  final responseCode = params['responseCode'] ?? params['vnp_ResponseCode'];
+  void _handleSslAuthError(SslAuthError error) {
+    final platformError = error.platform;
+    final errorUrl = platformError is AndroidSslAuthError
+        ? platformError.url
+        : _paymentUri.toString();
+    final host = Uri.tryParse(errorUrl)?.host.toLowerCase();
+    final allowedInSandbox =
+        host == 'sandbox.vnpayment.vn' ||
+        (host != null && host.endsWith('.ngrok-free.app'));
 
-  debugPrint('=== isSuccess: $success');
+    logger.w(
+      'VNPay SSL auth error: host=$host, '
+      'description=${platformError.description}, allowed=$allowedInSandbox',
+    );
 
-  Navigator.of(context).pushReplacementNamed(
-    AppRoutes.paymentResultScreen,
-    arguments: {
-      'isSuccess': success,
-      'txnRef': txnRef,
-      'amount': amount,
-      'responseCode': responseCode,
-    },
-  );
-}
+    if (allowedInSandbox) {
+      error.proceed();
+      return;
+    }
+
+    error.cancel();
+    _showLoadError('SSL khong hop le: ${platformError.description}');
+  }
+
+  void _setLoading(bool value) {
+    if (!mounted) return;
+    setState(() {
+      _isLoading = value;
+      if (value) _errorMessage = null;
+    });
+  }
+
+  void _showLoadError(String message) {
+    if (!mounted || _hasHandledResult) return;
+    setState(() {
+      _isLoading = false;
+      _errorMessage = message;
+    });
+  }
+
+  Future<void> _openInBrowser() async {
+    final opened = await launchUrl(
+      _paymentUri,
+      mode: LaunchMode.externalApplication,
+    );
+    if (!opened) {
+      _showLoadError('Khong the mo trinh duyet ngoai.');
+    }
+  }
 
   @override
   void dispose() {
@@ -136,22 +207,26 @@ class _VnpayWebviewScreenState extends State<VnpayWebviewScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     return Scaffold(
-      backgroundColor: const Color(0xFF0F0F1A),
+      backgroundColor: theme.scaffoldBackgroundColor,
       appBar: AppBar(
-        backgroundColor: const Color(0xFF1A1A2E),
+        backgroundColor: theme.scaffoldBackgroundColor,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.close, color: Colors.white),
+          icon: Icon(Icons.close, color: theme.colorScheme.onSurface),
           onPressed: () => _showCancelDialog(),
         ),
-        title: const Row(
+        title: Row(
           children: [
             Icon(Icons.lock, color: Color(0xFF4CAF50), size: 16),
             SizedBox(width: 6),
             Text(
               'Thanh toán VNPay',
-              style: TextStyle(color: Colors.white, fontSize: 16),
+              style: TextStyle(
+                color: theme.colorScheme.onSurface,
+                fontSize: 16,
+              ),
             ),
           ],
         ),
@@ -160,12 +235,74 @@ class _VnpayWebviewScreenState extends State<VnpayWebviewScreen> {
       body: Stack(
         children: [
           WebViewWidget(controller: _controller),
+          if (_errorMessage != null) _buildErrorView(theme),
           if (_isLoading)
             const Center(
               child: CircularProgressIndicator(
                 valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF7C6AFF)),
               ),
             ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildErrorView(ThemeData theme) {
+    return Container(
+      width: double.infinity,
+      height: double.infinity,
+      color: theme.scaffoldBackgroundColor,
+      padding: const EdgeInsets.all(24),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          const Icon(Icons.lock_clock, color: Color(0xFFFFB74D), size: 56),
+          const SizedBox(height: 16),
+          Text(
+            'Khong the tai trang thanh toan',
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              color: theme.colorScheme.onSurface,
+              fontSize: 18,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          const SizedBox(height: 10),
+          Text(
+            _errorMessage ?? '',
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              color: theme.colorScheme.onSurface.withValues(alpha: 0.7),
+              fontSize: 13,
+            ),
+          ),
+          const SizedBox(height: 24),
+          Row(
+            children: [
+              Expanded(
+                child: OutlinedButton(
+                  onPressed: () {
+                    _setLoading(true);
+                    _controller.loadRequest(_paymentUri);
+                  },
+                  child: const Text('Thu lai'),
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: ElevatedButton(
+                  onPressed: _openInBrowser,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFF7C6AFF),
+                  ),
+                  child: const Text(
+                    'Mo browser',
+                    style: TextStyle(color: Colors.white),
+                  ),
+                ),
+              ),
+            ],
+          ),
         ],
       ),
     );

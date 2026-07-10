@@ -1,4 +1,7 @@
+import 'dart:async';
+
 import 'package:eefood/app_routes.dart';
+import 'package:eefood/features/post/data/models/nullable.dart';
 import 'package:eefood/features/post/presentation/provider/post_list_cubit.dart';
 import 'package:eefood/features/recipe/presentation/widgets/compare_recipe/item_list_compare/compare_post_item.dart';
 import 'package:eefood/features/recipe/presentation/widgets/compare_recipe/item_list_compare/skeleton_item.dart';
@@ -22,6 +25,9 @@ class _CompareSelectorDrawerState extends State<CompareSelectorDrawer>
     with SingleTickerProviderStateMixin {
   final ScrollController _scrollController = ScrollController();
   late AnimationController _itemAnimController;
+  late final TextEditingController _searchController;
+  Timer? _debounce;
+
   int? _selectedRecipeId;
   String? _selectedTitle;
   String? _selectedImageUrl;
@@ -34,10 +40,16 @@ class _CompareSelectorDrawerState extends State<CompareSelectorDrawer>
       duration: const Duration(milliseconds: 400),
     )..forward();
     _scrollController.addListener(_onScroll);
+
+    final currentState = context.read<PostListCubit>().state;
+    _searchController = TextEditingController(text: currentState.keyword ?? '');
+    _searchController.addListener(() => setState(() {}));
   }
 
   @override
   void dispose() {
+    _debounce?.cancel();
+    _searchController.dispose();
     _scrollController.dispose();
     _itemAnimController.dispose();
     super.dispose();
@@ -70,6 +82,48 @@ class _CompareSelectorDrawerState extends State<CompareSelectorDrawer>
         'recipeIdB': _selectedRecipeId,
       },
     );
+  }
+
+  void _onSearchChanged(String value) {
+    if (_debounce?.isActive ?? false) _debounce!.cancel();
+    _debounce = Timer(const Duration(milliseconds: 400), () {
+      if (!mounted) return;
+      context.read<PostListCubit>().setFilters(
+        keyword: value.trim().isEmpty ? Nullable(null) : value.trim(),
+      );
+    });
+  }
+
+  void _onSelectDifficulty(String? value) {
+    context.read<PostListCubit>().setFilters(
+      difficulty: value == null ? Nullable(null) : value,
+    );
+  }
+
+  void _onSelectCookTime(int? value) {
+    context.read<PostListCubit>().setFilters(
+      maxCookTime: value == null ? Nullable(null) : value,
+    );
+  }
+
+  String _difficultyLabel(String difficulty) {
+    switch (difficulty) {
+      case 'EASY':
+        return 'Dễ';
+      case 'MEDIUM':
+        return 'Trung bình';
+      case 'HARD':
+        return 'Khó';
+      default:
+        return difficulty;
+    }
+  }
+
+  String _cookTimeLabel(int minutes) {
+    if (minutes <= 15) return '< 15 phút';
+    if (minutes <= 30) return '< 30 phút';
+    if (minutes <= 60) return '< 1 giờ';
+    return '> 1 giờ';
   }
 
   @override
@@ -215,7 +269,179 @@ class _CompareSelectorDrawerState extends State<CompareSelectorDrawer>
               ],
             ),
           ),
+          const SizedBox(height: 14),
+          _buildSearchBar(),
+          const SizedBox(height: 10),
+          BlocBuilder<PostListCubit, PostListState>(
+            builder: (context, state) => _buildFilterRow(state),
+          ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildSearchBar() {
+    return Container(
+      height: 44,
+      decoration: BoxDecoration(
+        color: const Color(0xFFF3F1ED),
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: TextField(
+        controller: _searchController,
+        onChanged: _onSearchChanged,
+        textInputAction: TextInputAction.search,
+        style: const TextStyle(fontSize: 14, color: Color(0xFF1A1A1A)),
+        decoration: InputDecoration(
+          isDense: true,
+          border: InputBorder.none,
+          hintText: 'Tìm công thức để so sánh...',
+          hintStyle: TextStyle(fontSize: 13, color: Colors.grey.shade500),
+          prefixIcon: Icon(
+            Icons.search_rounded,
+            size: 20,
+            color: Colors.grey.shade500,
+          ),
+          suffixIcon: _searchController.text.isNotEmpty
+              ? GestureDetector(
+                  onTap: () {
+                    _searchController.clear();
+                    _onSearchChanged('');
+                  },
+                  child: Icon(
+                    Icons.close_rounded,
+                    size: 18,
+                    color: Colors.grey.shade500,
+                  ),
+                )
+              : null,
+          contentPadding: const EdgeInsets.symmetric(vertical: 10),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildFilterRow(PostListState state) {
+    final hasFilters = state.hasFilters();
+
+    return SizedBox(
+      height: 34,
+      child: Row(
+        children: [
+          Expanded(
+            child: ListView(
+              scrollDirection: Axis.horizontal,
+              physics: const BouncingScrollPhysics(),
+              children: [
+                _buildFilterDropdown<String>(
+                  label: state.difficulty != null
+                      ? _difficultyLabel(state.difficulty!)
+                      : 'Độ khó',
+                  isActive: state.difficulty != null,
+                  icon: Icons.bolt_rounded,
+                  items: const [
+                    PopupMenuItem(value: 'EASY', child: Text('Dễ')),
+                    PopupMenuItem(value: 'MEDIUM', child: Text('Trung bình')),
+                    PopupMenuItem(value: 'HARD', child: Text('Khó')),
+                  ],
+                  onSelected: _onSelectDifficulty,
+                  onClear: () => _onSelectDifficulty(null),
+                ),
+                const SizedBox(width: 8),
+                _buildFilterDropdown<int>(
+                  label: state.maxCookTime != null
+                      ? _cookTimeLabel(state.maxCookTime!)
+                      : 'Thời gian',
+                  isActive: state.maxCookTime != null,
+                  icon: Icons.timer_outlined,
+                  items: const [
+                    PopupMenuItem(value: 15, child: Text('Dưới 15 phút')),
+                    PopupMenuItem(value: 30, child: Text('Dưới 30 phút')),
+                    PopupMenuItem(value: 60, child: Text('Dưới 1 giờ')),
+                  ],
+                  onSelected: _onSelectCookTime,
+                  onClear: () => _onSelectCookTime(null),
+                ),
+              ],
+            ),
+          ),
+          if (hasFilters)
+            GestureDetector(
+              onTap: () {
+                _searchController.clear();
+                context.read<PostListCubit>().resetFilters();
+              },
+              child: Padding(
+                padding: const EdgeInsets.only(left: 8),
+                child: Text(
+                  'Xóa lọc',
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: Colors.red.shade500,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildFilterDropdown<T>({
+    required String label,
+    required bool isActive,
+    required IconData icon,
+    required List<PopupMenuEntry<T>> items,
+    required ValueChanged<T?> onSelected,
+    required VoidCallback onClear,
+  }) {
+    return PopupMenuButton<T>(
+      onSelected: onSelected,
+      itemBuilder: (_) => items,
+      offset: const Offset(0, 36),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+        decoration: BoxDecoration(
+          color: isActive ? const Color(0xFFFFF3E0) : const Color(0xFFF3F1ED),
+          borderRadius: BorderRadius.circular(10),
+          border: isActive
+              ? Border.all(color: const Color(0xFFFF8C00), width: 1)
+              : null,
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(
+              icon,
+              size: 14,
+              color: isActive ? const Color(0xFFFF8C00) : Colors.grey.shade600,
+            ),
+            const SizedBox(width: 4),
+            Text(
+              label,
+              style: TextStyle(
+                fontSize: 12,
+                fontWeight: FontWeight.w600,
+                color: isActive
+                    ? const Color(0xFFFF8C00)
+                    : Colors.grey.shade700,
+              ),
+            ),
+            if (isActive) ...[
+              const SizedBox(width: 4),
+              GestureDetector(
+                onTap: onClear,
+                child: const Icon(
+                  Icons.close_rounded,
+                  size: 12,
+                  color: Color(0xFFFF8C00),
+                ),
+              ),
+            ],
+          ],
+        ),
       ),
     );
   }
